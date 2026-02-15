@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.CloneRepositoryWindow"
+        Title="Clone Repository"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="550" Height="350" CanResize="False"
+        FontFamily="Segoe UI" Background="#FF1E1E2E">
+    <Border BorderBrush="#FF3D3D4D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+        <Grid RowDefinitions="40,*,Auto">
+            <Grid Grid.Row="0" Background="#FF2D2D3D">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
+                        <TextBlock Text="Clone Repository" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#FF9399B2" VerticalAlignment="Center" Margin="16,0"/>
+                    </Panel>
+                    <Button Grid.Column="1" Width="46" Height="32" Background="Transparent" 
+                            BorderThickness="0" Click="CloseButton_Click">
+                        <TextBlock Text="X" FontSize="12" Foreground="#FF9399B2"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Grid>
+            <StackPanel Grid.Row="1" Margin="24" Spacing="20">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Repository URL" FontSize="13" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                    <TextBox Name="RepoUrlBox" Watermark="https://github.com/user/repo.git"
+                             Background="#FF363647" Foreground="#FFCDD6F4" BorderBrush="#FF3D3D4D"
+                             CornerRadius="6" Padding="12,10" TextChanged="RepoUrl_Changed"/>
+                </StackPanel>
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Local Path" FontSize="13" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Name="LocalPathBox" Margin="0,0,8,0"
+                                 Background="#FF363647" Foreground="#FFCDD6F4" BorderBrush="#FF3D3D4D"
+                                 CornerRadius="6" Padding="12,10"/>
+                        <Button Grid.Column="1" Content="Browse..." Padding="16,10"
+                                Background="Transparent" Foreground="#FFCDD6F4"
+                                BorderBrush="#FF3D3D4D" CornerRadius="6" Click="BrowsePath_Click"/>
+                    </Grid>
+                </StackPanel>
+                <Border Name="StatusPanel" Background="#FF363647" CornerRadius="6" Padding="12" IsVisible="False">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Name="StatusIcon" Text="..." FontSize="14"/>
+                        <TextBlock Name="StatusText" Text="Cloning..." FontSize="12" Foreground="#FF9399B2"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+            <Border Grid.Row="2" Background="#FF2D2D3D" Padding="24,16">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                    <Button Content="Cancel" Padding="20,10" Background="Transparent" 
+                            Foreground="#FFCDD6F4" BorderBrush="#FF3D3D4D" CornerRadius="6" Click="Cancel_Click"/>
+                    <Button Name="CloneButton" Content="Clone" Padding="20,10" 
+                            Background="#FFCBA6F7" Foreground="#FF1E1E2E" 
+                            CornerRadius="6" FontWeight="SemiBold" Click="Clone_Click" IsEnabled="False"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

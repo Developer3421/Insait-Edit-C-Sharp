@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <UseWindowsForms>true</UseWindowsForms>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.3.0"/>
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.0"/>
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0"/>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0"/>
+        <PackageReference Include="Avalonia.HtmlRenderer" Version="11.0.0"/>
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40"/>
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.0">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="React Ui\" />
+      <Folder Include="ViewModels\" />
+      <Folder Include="Monaco\" />
+    </ItemGroup>
+    
+    <!-- Include Monaco Editor HTML -->
+    <ItemGroup>
+      <Content Include="Monaco\**\*" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+    
+    <!-- Include React UI build output -->
+    <ItemGroup>
+      <EmbeddedResource Include="React Ui\dist\**\*" Condition="Exists('React Ui\dist\')" />
+      <Content Include="React Ui\dist\**\*" Condition="Exists('React Ui\dist\')" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+</Project>

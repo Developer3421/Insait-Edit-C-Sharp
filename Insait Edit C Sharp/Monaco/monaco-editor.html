@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monaco Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1e1e1e;
+        }
+        #editor-container {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="editor-container"></div>
+    
+    <!-- Load Monaco Editor from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+    <script>
+        // Configure Monaco loader
+        require.config({ 
+            paths: { 
+                'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' 
+            }
+        });
+
+        let editor = null;
+        let currentLanguage = 'csharp';
+        let isDirty = false;
+
+        // Define VS Code Dark+ theme colors
+        const darkPlusTheme = {
+            base: 'vs-dark',
+            inherit: true,
+            rules: [
+                { token: 'comment', foreground: '6A9955', fontStyle: 'italic' },
+                { token: 'keyword', foreground: '569CD6' },
+                { token: 'keyword.control', foreground: 'C586C0' },
+                { token: 'string', foreground: 'CE9178' },
+                { token: 'number', foreground: 'B5CEA8' },
+                { token: 'type', foreground: '4EC9B0' },
+                { token: 'class', foreground: '4EC9B0' },
+                { token: 'interface', foreground: '4EC9B0' },
+                { token: 'function', foreground: 'DCDCAA' },
+                { token: 'variable', foreground: '9CDCFE' },
+                { token: 'variable.predefined', foreground: '4FC1FF' },
+                { token: 'constant', foreground: '4FC1FF' },
+                { token: 'parameter', foreground: '9CDCFE' },
+                { token: 'property', foreground: '9CDCFE' },
+                { token: 'operator', foreground: 'D4D4D4' },
+                { token: 'delimiter', foreground: 'D4D4D4' },
+                { token: 'namespace', foreground: '4EC9B0' },
+            ],
+            colors: {
+                'editor.background': '#1E1E1E',
+                'editor.foreground': '#D4D4D4',
+                'editorLineNumber.foreground': '#858585',
+                'editorLineNumber.activeForeground': '#C6C6C6',
+                'editorCursor.foreground': '#AEAFAD',
+                'editor.selectionBackground': '#264F78',
+                'editor.inactiveSelectionBackground': '#3A3D41',
+                'editorIndentGuide.background': '#404040',
+                'editorIndentGuide.activeBackground': '#707070',
+                'editor.lineHighlightBackground': '#2A2D2E',
+                'editorBracketMatch.background': '#0D3A58',
+                'editorBracketMatch.border': '#888888',
+                'editorGutter.background': '#1E1E1E',
+                'minimap.background': '#1E1E1E',
+                'scrollbar.shadow': '#000000',
+                'scrollbarSlider.background': '#79797966',
+                'scrollbarSlider.hoverBackground': '#646464B3',
+                'scrollbarSlider.activeBackground': '#BFBFBF66',
+            }
+        };
+
+        // Initialize Monaco
+        require(['vs/editor/editor.main'], function() {
+            // Define custom theme
+            monaco.editor.defineTheme('insait-dark', darkPlusTheme);
+
+            // Create editor instance
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: getSampleCode(),
+                language: 'csharp',
+                theme: 'insait-dark',
+                automaticLayout: true,
+                minimap: { 
+                    enabled: true,
+                    scale: 1,
+                    showSlider: 'mouseover'
+                },
+                fontSize: 14,
+                fontFamily: "'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace",
+                fontLigatures: true,
+                lineNumbers: 'on',
+                roundedSelection: true,
+                scrollBeyondLastLine: false,
+                readOnly: false,
+                cursorStyle: 'line',
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+                smoothScrolling: true,
+                renderWhitespace: 'selection',
+                renderControlCharacters: false,
+                renderLineHighlight: 'all',
+                renderIndentGuides: true,
+                folding: true,
+                foldingStrategy: 'indentation',
+                showFoldingControls: 'mouseover',
+                bracketPairColorization: {
+                    enabled: true
+                },
+                guides: {
+                    bracketPairs: true,
+                    indentation: true
+                },
+                suggest: {
+                    preview: true,
+                    showMethods: true,
+                    showFunctions: true,
+                    showConstructors: true,
+                    showFields: true,
+                    showVariables: true,
+                    showClasses: true,
+                    showStructs: true,
+                    showInterfaces: true,
+                    showModules: true,
+                    showProperties: true,
+                    showEvents: true,
+                    showOperators: true,
+                    showUnits: true,
+                    showValues: true,
+                    showConstants: true,
+                    showEnums: true,
+                    showEnumMembers: true,
+                    showKeywords: true,
+                    showWords: true,
+                    showColors: true,
+                    showFiles: true,
+                    showReferences: true,
+                    showFolders: true,
+                    showTypeParameters: true,
+                    showSnippets: true,
+                },
+                quickSuggestions: {
+                    other: true,
+                    comments: false,
+                    strings: true
+                },
+                parameterHints: {
+                    enabled: true
+                },
+                wordWrap: 'off',
+                tabSize: 4,
+                insertSpaces: true,
+                formatOnPaste: true,
+                formatOnType: true,
+            });
+
+            // Track content changes
+            editor.onDidChangeModelContent(function(e) {
+                isDirty = true;
+                notifyContentChanged();
+            });
+
+            // Track cursor position changes
+            editor.onDidChangeCursorPosition(function(e) {
+                notifyCursorChanged(e.position.lineNumber, e.position.column);
+            });
+
+            // Notify C# that editor is ready
+            notifyEditorReady();
+        });
+
+        function getSampleCode() {
+            return `using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Controls;
+
+namespace Insait_Edit_C_Sharp
+{
+    /// <summary>
+    /// Main application entry point
+    /// </summary>
+    public class Program
+    {
+        // Application configuration
+        private static readonly string AppName = "Insait Edit";
+        private static readonly int MaxTabs = 100;
+
+        /// <summary>
+        /// Main method - application entry point
+        /// </summary>
+        [STAThread]
+        public static void Main(string[] args)
+        {
+            Console.WriteLine($"Starting {AppName}...");
+            
+            // Initialize the application
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+
+        /// <summary>
+        /// Builds the Avalonia application configuration
+        /// </summary>
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace();
+
+        /// <summary>
+        /// Process command line arguments
+        /// </summary>
+        private static Dictionary<string, string> ParseArguments(string[] args)
+        {
+            var result = new Dictionary<string, string>();
+            
+            foreach (var arg in args)
+            {
+                if (arg.StartsWith("--"))
+                {
+                    var parts = arg.Substring(2).Split('=', 2);
+                    result[parts[0]] = parts.Length > 1 ? parts[1] : "true";
+                }
+            }
+            
+            return result;
+        }
+    }
+}`;
+        }
+
+        // API functions for C# interop
+        function setContent(content, language) {
+            if (editor) {
+                const model = editor.getModel();
+                if (model) {
+                    monaco.editor.setModelLanguage(model, language || 'csharp');
+                }
+                editor.setValue(content);
+                isDirty = false;
+            }
+        }
+
+        function getContent() {
+            return editor ? editor.getValue() : '';
+        }
+
+        function setLanguage(language) {
+            if (editor) {
+                const model = editor.getModel();
+                if (model) {
+                    monaco.editor.setModelLanguage(model, language);
+                    currentLanguage = language;
+                }
+            }
+        }
+
+        function setTheme(themeName) {
+            monaco.editor.setTheme(themeName);
+        }
+
+        function setFontSize(size) {
+            if (editor) {
+                editor.updateOptions({ fontSize: size });
+            }
+        }
+
+        function goToLine(lineNumber) {
+            if (editor) {
+                editor.revealLineInCenter(lineNumber);
+                editor.setPosition({ lineNumber: lineNumber, column: 1 });
+                editor.focus();
+            }
+        }
+
+        function insertText(text) {
+            if (editor) {
+                editor.trigger('keyboard', 'type', { text: text });
+            }
+        }
+
+        function getSelectedText() {
+            if (editor) {
+                return editor.getModel().getValueInRange(editor.getSelection());
+            }
+            return '';
+        }
+
+        function formatDocument() {
+            if (editor) {
+                editor.getAction('editor.action.formatDocument').run();
+            }
+        }
+
+        function undo() {
+            if (editor) {
+                editor.trigger('keyboard', 'undo');
+            }
+        }
+
+        function redo() {
+            if (editor) {
+                editor.trigger('keyboard', 'redo');
+            }
+        }
+
+        function find() {
+            if (editor) {
+                editor.getAction('actions.find').run();
+            }
+        }
+
+        function replace() {
+            if (editor) {
+                editor.getAction('editor.action.startFindReplaceAction').run();
+            }
+        }
+
+        function setReadOnly(readOnly) {
+            if (editor) {
+                editor.updateOptions({ readOnly: readOnly });
+            }
+        }
+
+        function focus() {
+            if (editor) {
+                editor.focus();
+            }
+        }
+
+        // Notification functions to C#
+        function notifyEditorReady() {
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage({
+                    type: 'editorReady'
+                });
+            }
+        }
+
+        function notifyContentChanged() {
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage({
+                    type: 'contentChanged',
+                    isDirty: isDirty
+                });
+            }
+        }
+
+        function notifyCursorChanged(line, column) {
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage({
+                    type: 'cursorChanged',
+                    line: line,
+                    column: column
+                });
+            }
+        }
+
+        // Handle messages from C#
+        if (window.chrome && window.chrome.webview) {
+            window.chrome.webview.addEventListener('message', function(event) {
+                const message = event.data;
+                switch(message.action) {
+                    case 'setContent':
+                        setContent(message.content, message.language);
+                        break;
+                    case 'getContent':
+                        window.chrome.webview.postMessage({
+                            type: 'contentResponse',
+                            content: getContent()
+                        });
+                        break;
+                    case 'setLanguage':
+                        setLanguage(message.language);
+                        break;
+                    case 'goToLine':
+                        goToLine(message.line);
+                        break;
+                    case 'formatDocument':
+                        formatDocument();
+                        break;
+                    case 'undo':
+                        undo();
+                        break;
+                    case 'redo':
+                        redo();
+                        break;
+                    case 'find':
+                        find();
+                        break;
+                    case 'replace':
+                        replace();
+                        break;
+                    case 'setReadOnly':
+                        setReadOnly(message.readOnly);
+                        break;
+                    case 'focus':
+                        focus();
+                        break;
+                    case 'setFontSize':
+                        setFontSize(message.size);
+                        break;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

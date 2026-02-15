@@ -1,0 +1,341 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Insait_Edit_C_Sharp"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="Insait_Edit_C_Sharp.WelcomeWindow"
+        Title="Welcome to Insait Edit"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        Width="900"
+        Height="600"
+        CanResize="False"
+        UseLayoutRounding="True"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Window.Resources>
+        <!-- Dark Theme Colors -->
+        <Color x:Key="BgPrimary">#FF1E1E2E</Color>
+        <Color x:Key="BgSecondary">#FF2D2D3D</Color>
+        <Color x:Key="BgTertiary">#FF363647</Color>
+        <Color x:Key="BorderColor">#FF3D3D4D</Color>
+        <Color x:Key="TextPrimary">#FFCDD6F4</Color>
+        <Color x:Key="TextSecondary">#FF9399B2</Color>
+        <Color x:Key="TextMuted">#FF6C7086</Color>
+        <Color x:Key="AccentPurple">#FFCBA6F7</Color>
+        <Color x:Key="AccentBlue">#FF89B4FA</Color>
+        <Color x:Key="AccentGreen">#FFA6E3A1</Color>
+        <Color x:Key="AccentOrange">#FFFAB387</Color>
+        <Color x:Key="AccentRed">#FFF38BA8</Color>
+
+        <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource BgPrimary}"/>
+        <SolidColorBrush x:Key="BgSecondaryBrush" Color="{StaticResource BgSecondary}"/>
+        <SolidColorBrush x:Key="BgTertiaryBrush" Color="{StaticResource BgTertiary}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+        <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}"/>
+        <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource AccentPurple}"/>
+        <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlue}"/>
+        <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}"/>
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrange}"/>
+        
+        <!-- Gradients -->
+        <LinearGradientBrush x:Key="LogoGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FFCBA6F7" Offset="0"/>
+            <GradientStop Color="#FF89B4FA" Offset="0.5"/>
+            <GradientStop Color="#FFA6E3A1" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Resources>
+
+    <Window.Styles>
+        <!-- Window Control Buttons -->
+        <Style Selector="Button.window-control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.window-control:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <Style Selector="Button.window-control.close:pointerover">
+            <Setter Property="Background" Value="#E81123"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Action Buttons -->
+        <Style Selector="Button.action-btn">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.action-btn:pointerover">
+            <Setter Property="Background" Value="#FF424258"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+        </Style>
+        <Style Selector="Button.action-btn:pressed">
+            <Setter Property="Background" Value="#FF4A4A60"/>
+        </Style>
+
+        <!-- Project Item Button -->
+        <Style Selector="Button.project-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.project-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+        </Style>
+        <Style Selector="Button.project-item:pressed">
+            <Setter Property="Background" Value="#FF424258"/>
+        </Style>
+
+        <!-- Link Buttons -->
+        <Style Selector="Button.link-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBlueBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.link-btn:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource AccentPurpleBrush}"/>
+        </Style>
+
+        <!-- Search Box -->
+        <Style Selector="TextBox.search-box">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="TextBox.search-box:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <Window.Background>
+        <SolidColorBrush Color="{StaticResource BgPrimary}"/>
+    </Window.Background>
+
+    <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+        <Grid RowDefinitions="40,*">
+            
+            <!-- Title Bar -->
+            <Grid Grid.Row="0" Background="{StaticResource BgSecondaryBrush}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <!-- Draggable Area -->
+                    <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
+                        <TextBlock Text="Insait Edit" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" Margin="16,0"/>
+                    </Panel>
+                    
+                    <!-- Window Controls -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Classes="window-control" Click="MinimizeButton_Click">
+                            <TextBlock Text="─" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <Button Classes="window-control close" Click="CloseButton_Click">
+                            <TextBlock Text="✕" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1" ColumnDefinitions="320,*">
+                
+                <!-- Left Panel - Branding & Actions -->
+                <Border Grid.Column="0" Background="{StaticResource BgSecondaryBrush}" 
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                    <Grid RowDefinitions="Auto,Auto,*,Auto">
+                        
+                        <!-- Logo & Title -->
+                        <StackPanel Grid.Row="0" Margin="32,40,32,32" Spacing="16">
+                            <!-- Logo -->
+                            <Border Width="72" Height="72" CornerRadius="16" HorizontalAlignment="Left"
+                                    Background="{StaticResource LogoGradient}">
+                                <TextBlock Text="⚡" FontSize="36" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            
+                            <!-- Title -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Insait Edit" FontSize="28" FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="C# IDE powered by Monaco Editor" FontSize="13"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                            
+                            <!-- Version -->
+                            <Border Background="{StaticResource BgTertiaryBrush}" CornerRadius="4" 
+                                    Padding="8,4" HorizontalAlignment="Left">
+                                <TextBlock Text="Version 1.0.0 Preview" FontSize="11"
+                                           Foreground="{StaticResource TextMutedBrush}"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Action Buttons -->
+                        <StackPanel Grid.Row="1" Margin="24,0" Spacing="8">
+                            <Button Classes="action-btn" Click="NewProject_Click">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border Width="36" Height="36" CornerRadius="8" 
+                                            Background="{StaticResource AccentPurpleBrush}" Opacity="0.2">
+                                        <TextBlock Text="➕" FontSize="16" Foreground="{StaticResource AccentPurpleBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="New Project" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Create a new C# project" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                            
+                            <Button Classes="action-btn" Click="OpenProject_Click">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border Width="36" Height="36" CornerRadius="8" 
+                                            Background="{StaticResource AccentBlueBrush}" Opacity="0.2">
+                                        <TextBlock Text="📁" FontSize="16" Foreground="{StaticResource AccentBlueBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="Open" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Open project or solution" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                            
+                            <Button Classes="action-btn" Click="CloneRepository_Click">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border Width="36" Height="36" CornerRadius="8" 
+                                            Background="{StaticResource AccentGreenBrush}" Opacity="0.2">
+                                        <TextBlock Text="🔀" FontSize="16" Foreground="{StaticResource AccentGreenBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="Clone Repository" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Get code from Git repository" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Spacer -->
+                        <Panel Grid.Row="2"/>
+
+                        <!-- Footer Links -->
+                        <StackPanel Grid.Row="3" Margin="24,0,24,24" Spacing="12">
+                            <Separator Background="{StaticResource BorderBrush}" Height="1"/>
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <Button Classes="link-btn" Content="Documentation" Click="Documentation_Click"/>
+                                <Button Classes="link-btn" Content="GitHub" Click="GitHub_Click"/>
+                                <Button Classes="link-btn" Content="Settings" Click="Settings_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Right Panel - Recent Projects -->
+                <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="0">
+                    
+                    <!-- Search Bar -->
+                    <Border Grid.Row="0" Padding="24,20">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Classes="search-box" Name="SearchBox" 
+                                     Watermark="🔍  Search recent projects..."
+                                     TextChanged="SearchBox_TextChanged"/>
+                            <Button Grid.Column="1" Classes="link-btn" Content="Clear All" 
+                                    Margin="16,0,0,0" VerticalAlignment="Center"
+                                    Click="ClearRecent_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Recent Projects List -->
+                    <Border Grid.Row="1" Padding="12,0,12,12">
+                        <Grid RowDefinitions="Auto,*">
+                            <TextBlock Grid.Row="0" Text="Recent Projects" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}" 
+                                       Margin="12,0,0,12" LetterSpacing="0.5"/>
+                            
+                            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl Name="RecentProjectsList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="local:RecentProjectItem">
+                                            <Button Classes="project-item" 
+                                                    Click="RecentProject_Click"
+                                                    Tag="{Binding Path}">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <!-- Project Icon -->
+                                                    <Border Width="40" Height="40" CornerRadius="8"
+                                                            Background="{Binding IconBackground}">
+                                                        <TextBlock Text="{Binding Icon}" FontSize="18"
+                                                                   HorizontalAlignment="Center" 
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    
+                                                    <!-- Project Info -->
+                                                    <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                        <TextBlock Text="{Binding Path}" FontSize="11"
+                                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                    
+                                                    <!-- Last Opened -->
+                                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" 
+                                                                HorizontalAlignment="Right" Margin="8,0">
+                                                        <TextBlock Text="{Binding LastOpened}" FontSize="11"
+                                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                                   HorizontalAlignment="Right"/>
+                                                        <TextBlock Text="{Binding ProjectType}" FontSize="10"
+                                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                                   HorizontalAlignment="Right"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                            
+                            <!-- Empty State -->
+                            <StackPanel Grid.Row="1" Name="EmptyState" 
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        IsVisible="False">
+                                <TextBlock Text="📂" FontSize="48" HorizontalAlignment="Center" Opacity="0.5"/>
+                                <TextBlock Text="No recent projects" FontSize="16" 
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Center" Margin="0,16,0,4"/>
+                                <TextBlock Text="Open a project or create a new one to get started"
+                                           FontSize="12" Foreground="{StaticResource TextMutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
+

@@ -1,0 +1,251 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Insait_Edit_C_Sharp"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="550"
+        x:Class="Insait_Edit_C_Sharp.NewProjectWindow"
+        Title="New Project"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="700"
+        Height="550"
+        CanResize="False"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Window.Resources>
+        <Color x:Key="BgPrimary">#FF1E1E2E</Color>
+        <Color x:Key="BgSecondary">#FF2D2D3D</Color>
+        <Color x:Key="BgTertiary">#FF363647</Color>
+        <Color x:Key="BorderColor">#FF3D3D4D</Color>
+        <Color x:Key="TextPrimary">#FFCDD6F4</Color>
+        <Color x:Key="TextSecondary">#FF9399B2</Color>
+        <Color x:Key="AccentPurple">#FFCBA6F7</Color>
+        <Color x:Key="AccentGreen">#FFA6E3A1</Color>
+
+        <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource BgPrimary}"/>
+        <SolidColorBrush x:Key="BgSecondaryBrush" Color="{StaticResource BgSecondary}"/>
+        <SolidColorBrush x:Key="BgTertiaryBrush" Color="{StaticResource BgTertiary}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+        <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource AccentPurple}"/>
+        <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}"/>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Button.window-control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.window-control:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <Style Selector="Button.window-control.close:pointerover">
+            <Setter Property="Background" Value="#E81123"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style Selector="Button.template-btn">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.template-btn:pointerover">
+            <Setter Property="Background" Value="#FF424258"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+        </Style>
+        <Style Selector="Button.template-btn.selected">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="Background" Value="#FF424258"/>
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+        </Style>
+
+        <Style Selector="Button.primary-btn">
+            <Setter Property="Background" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary-btn:pointerover">
+            <Setter Property="Background" Value="#FFD4BDFF"/>
+        </Style>
+        <Style Selector="Button.primary-btn:disabled">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        </Style>
+
+        <Style Selector="Button.secondary-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.secondary-btn:pointerover">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <Window.Background>
+        <SolidColorBrush Color="{StaticResource BgPrimary}"/>
+    </Window.Background>
+
+    <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+        <Grid RowDefinitions="40,*,Auto">
+            
+            <!-- Title Bar -->
+            <Grid Grid.Row="0" Background="{StaticResource BgSecondaryBrush}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
+                        <TextBlock Text="New Project" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" Margin="16,0"/>
+                    </Panel>
+                    <Button Grid.Column="1" Classes="window-control close" Click="CloseButton_Click">
+                        <TextBlock Text="✕" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Grid>
+
+            <!-- Content -->
+            <ScrollViewer Grid.Row="1" Padding="24">
+                <StackPanel Spacing="24">
+                    
+                    <!-- Template Selection -->
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Select a template" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Classes="template-btn selected" Name="ConsoleTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="console">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="💻" FontSize="32" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Console App" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="A project for creating a command-line application"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Button Classes="template-btn" Name="ClassLibTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="classlib">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="📚" FontSize="32" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Class Library" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="A project for creating a class library (.dll)"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Button Classes="template-btn" Name="AvaloniaTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="avalonia">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="🖼️" FontSize="32" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Avalonia App" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="Cross-platform UI app with Avalonia"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Button Classes="template-btn" Name="WebApiTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="webapi">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="🌐" FontSize="32" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="ASP.NET Web API" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="A project for creating RESTful HTTP services"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- Project Settings -->
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Configure your project" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" 
+                              RowSpacing="12" ColumnSpacing="16">
+                            
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Project name"
+                                       VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Name="ProjectNameBox" 
+                                     Text="MyProject" TextChanged="ProjectName_Changed"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Location"
+                                       VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto">
+                                <TextBox Name="LocationBox" Text="" Margin="0,0,8,0"/>
+                                <Button Grid.Column="1" Classes="secondary-btn" Content="Browse..." 
+                                        Click="BrowseLocation_Click"/>
+                            </Grid>
+                            
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Solution name"
+                                       VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Name="SolutionNameBox" Text="MyProject"/>
+                        </Grid>
+                        
+                        <!-- Options -->
+                        <StackPanel Spacing="8" Margin="0,8,0,0">
+                            <CheckBox Name="CreateSolutionDir" IsChecked="True"
+                                      Foreground="{StaticResource TextPrimaryBrush}">
+                                <TextBlock Text="Place solution and project in the same directory"/>
+                            </CheckBox>
+                            <CheckBox Name="CreateGitRepo" IsChecked="True"
+                                      Foreground="{StaticResource TextPrimaryBrush}">
+                                <TextBlock Text="Create Git repository"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="{StaticResource BgSecondaryBrush}" Padding="24,16">
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <TextBlock Grid.Column="0" Name="ProjectPathPreview" FontSize="11"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    <Button Grid.Column="1" Classes="secondary-btn" Content="Cancel" 
+                            Margin="0,0,12,0" Click="Cancel_Click"/>
+                    <Button Grid.Column="2" Classes="primary-btn" Content="Create" 
+                            Name="CreateButton" Click="Create_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+

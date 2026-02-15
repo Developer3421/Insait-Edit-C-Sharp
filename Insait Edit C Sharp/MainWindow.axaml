@@ -1,0 +1,459 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="Insait_Edit_C_Sharp.MainWindow"
+        x:Name="MainWindowRoot"
+        Title="Insait Edit - C# IDE"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        Width="1200"
+        Height="800"
+        MinWidth="800"
+        MinHeight="600"
+        CanResize="True"
+        UseLayoutRounding="True"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <!-- LOCAL RESOURCES -->
+    <Window.Resources>
+        <!-- Color palette - IDE Dark Theme -->
+        <Color x:Key="AppBgColor">#FF1E1E2E</Color>
+        <Color x:Key="AppSurfaceColor">#FF2D2D3D</Color>
+        <Color x:Key="AppBorderColor">#FF3D3D4D</Color>
+        <Color x:Key="AppTextColor">#FFCDD6F4</Color>
+        <Color x:Key="AppTextMutedColor">#FF9399B2</Color>
+
+        <Color x:Key="AccentOrangeColor">#FFFAB387</Color>
+        <Color x:Key="AccentOrangeHoverColor">#FFFFC09F</Color>
+        <Color x:Key="AccentPurpleColor">#FFCBA6F7</Color>
+        <Color x:Key="AccentPurpleHoverColor">#FFE0C0FF</Color>
+        <Color x:Key="AccentGreenColor">#FFA6E3A1</Color>
+        <Color x:Key="AccentBlueColor">#FF89B4FA</Color>
+        <Color x:Key="AccentRedColor">#FFF38BA8</Color>
+
+        <SolidColorBrush x:Key="AppBgBrush" Color="{StaticResource AppBgColor}" />
+        <SolidColorBrush x:Key="AppSurfaceBrush" Color="{StaticResource AppSurfaceColor}" />
+        <SolidColorBrush x:Key="AppBorderBrush" Color="{StaticResource AppBorderColor}" />
+        <SolidColorBrush x:Key="AppTextBrush" Color="{StaticResource AppTextColor}" />
+        <SolidColorBrush x:Key="AppTextMutedBrush" Color="{StaticResource AppTextMutedColor}" />
+
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrangeColor}" />
+        <SolidColorBrush x:Key="AccentOrangeHoverBrush" Color="{StaticResource AccentOrangeHoverColor}" />
+        <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource AccentPurpleColor}" />
+        <SolidColorBrush x:Key="AccentPurpleHoverBrush" Color="{StaticResource AccentPurpleHoverColor}" />
+        <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreenColor}" />
+        <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlueColor}" />
+        <SolidColorBrush x:Key="AccentRedBrush" Color="{StaticResource AccentRedColor}" />
+
+        <!-- Title Bar Gradient -->
+        <LinearGradientBrush x:Key="TitleBarGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FF313244" Offset="0"/>
+            <GradientStop Color="#FF45475A" Offset="0.5"/>
+            <GradientStop Color="#FF313244" Offset="1"/>
+        </LinearGradientBrush>
+        
+        <!-- Sidebar Gradient -->
+        <LinearGradientBrush x:Key="SidebarGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#FF232334" Offset="0"/>
+            <GradientStop Color="#FF1E1E2E" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Resources>
+
+    <!-- LOCAL STYLES -->
+    <Window.Styles>
+        <!-- Window Control Buttons -->
+        <Style Selector="Button.window-control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.window-control:pointerover">
+            <Setter Property="Background" Value="#40FFFFFF"/>
+        </Style>
+        <Style Selector="Button.window-control.close:pointerover">
+            <Setter Property="Background" Value="#E81123"/>
+        </Style>
+
+        <!-- Toolbar button style -->
+        <Style Selector="Button.toolbar-button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.toolbar-button:pointerover">
+            <Setter Property="Background" Value="#40FFFFFF"/>
+        </Style>
+        <Style Selector="Button.toolbar-button:pressed">
+            <Setter Property="Background" Value="#60FFFFFF"/>
+        </Style>
+
+        <!-- Icon button style -->
+        <Style Selector="Button.icon-button">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.icon-button:pointerover">
+            <Setter Property="Background" Value="#40FFFFFF"/>
+        </Style>
+        <Style Selector="Button.icon-button:pressed">
+            <Setter Property="Background" Value="#60FFFFFF"/>
+        </Style>
+        
+        <!-- Sidebar button style -->
+        <Style Selector="Button.sidebar-button">
+            <Setter Property="Width" Value="48"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+        <Style Selector="Button.sidebar-button:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <Style Selector="Button.sidebar-button.active">
+            <Setter Property="Background" Value="{StaticResource AccentPurpleBrush}"/>
+        </Style>
+
+        <!-- Panels -->
+        <Style Selector="Border.panel">
+            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <!-- Tab style -->
+        <Style Selector="Button.tab-button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource AppTextMutedBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.tab-button:pointerover">
+            <Setter Property="Background" Value="#20FFFFFF"/>
+        </Style>
+        <Style Selector="Button.tab-button.active">
+            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
+        </Style>
+        
+        <!-- TreeView style -->
+        <Style Selector="TreeViewItem">
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+    </Window.Styles>
+
+    <!-- Window Background -->
+    <Window.Background>
+        <SolidColorBrush Color="{StaticResource AppBgColor}"/>
+    </Window.Background>
+
+    <!-- Root grid -->
+    <Grid RowDefinitions="36,*">
+
+        <!-- ROW 0: TITLE BAR (custom chrome) -->
+        <Grid Grid.Row="0" Height="36" Background="{StaticResource TitleBarGradient}">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <!-- Left: App icon and title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" Spacing="8">
+                    <Border Width="20" Height="20" CornerRadius="4" Background="{StaticResource AccentPurpleBrush}">
+                        <TextBlock Text="⚡" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="Insait Edit"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource AppTextBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Menu items -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0" Spacing="2">
+                    <Button Classes="toolbar-button" Name="MenuFile" Content="File" Click="MenuFile_Click"/>
+                    <Button Classes="toolbar-button" Name="MenuEdit" Content="Edit" Click="MenuEdit_Click"/>
+                    <Button Classes="toolbar-button" Name="MenuView" Content="View" Click="MenuView_Click"/>
+                    <Button Classes="toolbar-button" Name="MenuBuild" Content="Build" Click="MenuBuild_Click"/>
+                    <Button Classes="toolbar-button" Name="MenuDebug" Content="Debug" Click="MenuDebug_Click"/>
+                    <Button Classes="toolbar-button" Name="MenuTools" Content="Tools" Click="MenuTools_Click"/>
+                    <Button Classes="toolbar-button" Name="MenuHelp" Content="Help" Click="MenuHelp_Click"/>
+                </StackPanel>
+
+                <!-- Middle: draggable area -->
+                <Panel Grid.Column="2" Background="Transparent" PointerPressed="TitleBar_PointerPressed"/>
+
+                <!-- Right: window controls -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Name="MinimizeButton" Classes="window-control" Padding="0" Click="MinimizeButton_Click">
+                        <TextBlock Text="─" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                    <Button Name="MaximizeButton" Classes="window-control" Padding="0" Click="MaximizeButton_Click">
+                        <TextBlock Text="□" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                    <Button Name="CloseButton" Classes="window-control close" Padding="0" Click="CloseButton_Click">
+                        <TextBlock Text="✕" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <!-- ROW 1: MAIN CONTENT -->
+        <Grid Grid.Row="1" ColumnDefinitions="52,250,*,300">
+            
+            <!-- Activity Bar (leftmost sidebar) -->
+            <Border Grid.Column="0" Background="{StaticResource SidebarGradient}" Padding="2,8">
+                <StackPanel Spacing="4">
+                    <Button Classes="sidebar-button active" Name="ExplorerButton" ToolTip.Tip="Explorer (Ctrl+Shift+E)" Click="Explorer_Click">
+                        <TextBlock Text="📁" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="sidebar-button" Name="SearchButton" ToolTip.Tip="Search (Ctrl+Shift+F)" Click="Search_Click">
+                        <TextBlock Text="🔍" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="sidebar-button" Name="GitButton" ToolTip.Tip="Source Control (Ctrl+Shift+G)" Click="Git_Click">
+                        <TextBlock Text="🔀" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="sidebar-button" Name="DebugButton" ToolTip.Tip="Run and Debug (Ctrl+Shift+D)" Click="Debug_Click">
+                        <TextBlock Text="🐛" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="sidebar-button" Name="ExtensionsButton" ToolTip.Tip="Extensions (Ctrl+Shift+X)" Click="Extensions_Click">
+                        <TextBlock Text="🧩" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Spacer -->
+                    <Panel VerticalAlignment="Stretch"/>
+                    
+                    <!-- Bottom buttons -->
+                    <Button Classes="sidebar-button" Name="AccountButton" ToolTip.Tip="Account" Click="Account_Click">
+                        <TextBlock Text="👤" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="sidebar-button" Name="SettingsButton" ToolTip.Tip="Settings (Ctrl+,)" Click="Settings_Click">
+                        <TextBlock Text="⚙️" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Border>
+            
+            <!-- Side Panel (Explorer, Search, etc.) -->
+            <Border Grid.Column="1" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,*">
+                    <!-- Panel Header -->
+                    <Border Grid.Row="0" Padding="12,10" Background="#20000000">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="EXPLORER" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
+                                       LetterSpacing="1"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New File">
+                                    <TextBlock Text="📄" FontSize="12"/>
+                                </Button>
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Folder">
+                                    <TextBlock Text="📁" FontSize="12"/>
+                                </Button>
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Refresh">
+                                    <TextBlock Text="🔄" FontSize="12"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- File Tree -->
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                        <TreeView Name="FileTreeView" Margin="8,4"
+                                  ItemsSource="{Binding FileTreeItems}"
+                                  SelectionChanged="FileTreeView_SelectionChanged">
+                            <TreeView.ItemTemplate>
+                                <TreeDataTemplate ItemsSource="{Binding Children}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{Binding Icon}" FontSize="14"/>
+                                        <TextBlock Text="{Binding Name}" FontSize="12" 
+                                                   Foreground="{StaticResource AppTextBrush}"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </TreeDataTemplate>
+                            </TreeView.ItemTemplate>
+                            <TreeView.Styles>
+                                <Style Selector="TreeViewItem">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                </Style>
+                            </TreeView.Styles>
+                        </TreeView>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            
+            <!-- Main Editor Area -->
+            <Grid Grid.Column="2" RowDefinitions="Auto,*,Auto,200">
+                <!-- Tab Bar -->
+                <Border Grid.Row="0" Background="#20000000" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Tabs}" Height="36">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Classes="tab-button" 
+                                            Tag="{Binding}"
+                                            Click="TabButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="{Binding Language}" FontSize="10" 
+                                                       Foreground="{StaticResource AccentGreenBrush}" 
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding FileName}" VerticalAlignment="Center"/>
+                                            <Button Width="16" Height="16" 
+                                                    Background="Transparent" 
+                                                    BorderThickness="0" 
+                                                    Padding="0" 
+                                                    Cursor="Hand"
+                                                    Tag="{Binding}"
+                                                    Click="CloseTabButton_Click">
+                                                <TextBlock Text="✕" FontSize="10" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Monaco Editor Container (WebView) -->
+                <Border Grid.Row="1" Background="#FF1E1E1E" Name="MonacoEditorContainer">
+                    <!-- MonacoEditorControl will be added programmatically -->
+                </Border>
+                
+                <!-- Resize grip for terminal -->
+                <GridSplitter Grid.Row="2" Height="4" Background="{StaticResource AppBorderBrush}" 
+                              ResizeDirection="Rows" HorizontalAlignment="Stretch"/>
+                
+                <!-- Terminal / Output Panel -->
+                <Border Grid.Row="3" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,1,0,0">
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- Terminal tabs -->
+                        <Border Grid.Row="0" Background="#20000000" Padding="8,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Classes="tab-button" Height="28" Padding="8,0" Name="ProblemsTabButton" Click="ProblemsTab_Click">
+                                        <TextBlock Text="PROBLEMS" FontSize="11"/>
+                                    </Button>
+                                    <Button Classes="tab-button" Height="28" Padding="8,0" Name="OutputTabButton" Click="OutputTab_Click">
+                                        <TextBlock Text="OUTPUT" FontSize="11"/>
+                                    </Button>
+                                    <Button Classes="tab-button active" Height="28" Padding="8,0" Name="TerminalTabButton" Click="TerminalTab_Click">
+                                        <TextBlock Text="TERMINAL" FontSize="11"/>
+                                    </Button>
+                                    <Button Classes="tab-button" Height="28" Padding="8,0" Name="DebugConsoleTabButton" Click="DebugConsoleTab_Click">
+                                        <TextBlock Text="DEBUG CONSOLE" FontSize="11"/>
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Terminal" Name="NewTerminalButton" Click="NewTerminal_Click">
+                                        <TextBlock Text="➕" FontSize="10"/>
+                                    </Button>
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Run as Administrator" Name="AdminTerminalButton" Click="AdminTerminal_Click">
+                                        <TextBlock Text="🛡️" FontSize="10"/>
+                                    </Button>
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Clear Terminal" Name="ClearTerminalButton" Click="ClearTerminal_Click">
+                                        <TextBlock Text="🗑️" FontSize="10"/>
+                                    </Button>
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Maximize Panel">
+                                        <TextBlock Text="⬆️" FontSize="10"/>
+                                    </Button>
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Close Panel">
+                                        <TextBlock Text="✕" FontSize="10"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- Terminal Control -->
+                        <Border Grid.Row="1" Name="TerminalContainer" />
+                    </Grid>
+                </Border>
+            </Grid>
+            
+            <!-- Right Panel (AI Assistant / Properties) -->
+            <Border Grid.Column="3" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1,0,0,0">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Panel Header -->
+                    <Border Grid.Row="0" Padding="12,10" Background="#20000000">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="🤖" FontSize="16" VerticalAlignment="Center"/>
+                                <TextBlock Text="AI ASSISTANT" FontSize="11" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
+                                           LetterSpacing="1"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat">
+                                <TextBlock Text="➕" FontSize="12"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Chat messages -->
+                    <ScrollViewer Grid.Row="1" Margin="12,8">
+                        <StackPanel Spacing="12" Name="AIChatMessages">
+                            <!-- AI Welcome message -->
+                            <Border Background="#30CBA6F7" CornerRadius="8" Padding="12">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Welcome to Insait Edit!" FontWeight="SemiBold" Foreground="{StaticResource AppTextBrush}"/>
+                                    <TextBlock Text="I'm your AI coding assistant. I can help you with:" 
+                                               Foreground="{StaticResource AppTextMutedBrush}" TextWrapping="Wrap"/>
+                                    <StackPanel Spacing="4" Margin="8,4,0,0">
+                                        <TextBlock Text="• Writing and explaining code" Foreground="{StaticResource AppTextBrush}" FontSize="12"/>
+                                        <TextBlock Text="• Debugging and fixing errors" Foreground="{StaticResource AppTextBrush}" FontSize="12"/>
+                                        <TextBlock Text="• Code refactoring suggestions" Foreground="{StaticResource AppTextBrush}" FontSize="12"/>
+                                        <TextBlock Text="• Documentation generation" Foreground="{StaticResource AppTextBrush}" FontSize="12"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                    
+                    <!-- Chat input -->
+                    <Border Grid.Row="2" Padding="12" Background="#20000000">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+                            <TextBox Name="AIChatInput" 
+                                     Watermark="Ask me anything about your code..."
+                                     Background="#FF2D2D3D"
+                                     BorderBrush="{StaticResource AppBorderBrush}"
+                                     Foreground="{StaticResource AppTextBrush}"
+                                     CornerRadius="8"
+                                     Padding="12,10"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="False"/>
+                            <Button Grid.Column="1" Classes="icon-button" Margin="8,0,0,0" 
+                                    Background="{StaticResource AccentPurpleBrush}"
+                                    ToolTip.Tip="Send message" Name="SendAIButton" Click="SendAI_Click">
+                                <TextBlock Text="➤" FontSize="16" Foreground="#FF1E1E2E"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
