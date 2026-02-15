@@ -23,10 +23,11 @@
         <Color x:Key="TextPrimary">#FFCDD6F4</Color>
         <Color x:Key="TextSecondary">#FF9399B2</Color>
         <Color x:Key="TextMuted">#FF6C7086</Color>
+        <!-- Orange is now PRIMARY accent -->
+        <Color x:Key="AccentOrange">#FFFAB387</Color>
         <Color x:Key="AccentPurple">#FFCBA6F7</Color>
         <Color x:Key="AccentBlue">#FF89B4FA</Color>
         <Color x:Key="AccentGreen">#FFA6E3A1</Color>
-        <Color x:Key="AccentOrange">#FFFAB387</Color>
         <Color x:Key="AccentRed">#FFF38BA8</Color>
 
         <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource BgPrimary}"/>
@@ -36,16 +37,16 @@
         <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
         <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}"/>
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrange}"/>
         <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource AccentPurple}"/>
         <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlue}"/>
         <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}"/>
-        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrange}"/>
         
-        <!-- Gradients -->
+        <!-- Gradients - Orange first as primary -->
         <LinearGradientBrush x:Key="LogoGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#FFCBA6F7" Offset="0"/>
-            <GradientStop Color="#FF89B4FA" Offset="0.5"/>
-            <GradientStop Color="#FFA6E3A1" Offset="1"/>
+            <GradientStop Color="#FFFAB387" Offset="0"/>
+            <GradientStop Color="#FFCBA6F7" Offset="0.5"/>
+            <GradientStop Color="#FF89B4FA" Offset="1"/>
         </LinearGradientBrush>
     </Window.Resources>
 
@@ -80,7 +81,7 @@
         </Style>
         <Style Selector="Button.action-btn:pointerover">
             <Setter Property="Background" Value="#FF424258"/>
-            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
         <Style Selector="Button.action-btn:pressed">
             <Setter Property="Background" Value="#FF4A4A60"/>
@@ -112,7 +113,7 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.link-btn:pointerover">
-            <Setter Property="Foreground" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
 
         <!-- Search Box -->
@@ -126,7 +127,7 @@
             <Setter Property="FontSize" Value="13"/>
         </Style>
         <Style Selector="TextBox.search-box:focus">
-            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
     </Window.Styles>
 
@@ -137,13 +138,13 @@
     <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
         <Grid RowDefinitions="40,*">
             
-            <!-- Title Bar -->
-            <Grid Grid.Row="0" Background="{StaticResource BgSecondaryBrush}">
+            <!-- Title Bar - Gray -->
+            <Grid Grid.Row="0" Background="#FF3C3C3C">
                 <Grid ColumnDefinitions="*,Auto">
                     <!-- Draggable Area -->
                     <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
                         <TextBlock Text="Insait Edit" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{StaticResource AccentOrangeBrush}"
                                    VerticalAlignment="Center" Margin="16,0"/>
                     </Panel>
                     
@@ -197,8 +198,8 @@
                             <Button Classes="action-btn" Click="NewProject_Click">
                                 <Grid ColumnDefinitions="Auto,*">
                                     <Border Width="36" Height="36" CornerRadius="8" 
-                                            Background="{StaticResource AccentPurpleBrush}" Opacity="0.2">
-                                        <TextBlock Text="➕" FontSize="16" Foreground="{StaticResource AccentPurpleBrush}"
+                                            Background="{StaticResource AccentOrangeBrush}" Opacity="0.2">
+                                        <TextBlock Text="➕" FontSize="16" Foreground="{StaticResource AccentOrangeBrush}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">

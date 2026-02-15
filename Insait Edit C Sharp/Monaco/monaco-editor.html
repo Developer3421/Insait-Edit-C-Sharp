@@ -168,10 +168,23 @@
                 formatOnType: true,
             });
 
-            // Track content changes
+            // Debounce timer for content changes
+            let contentChangeTimer = null;
+            const DEBOUNCE_DELAY = 300; // ms
+
+            // Track content changes with debouncing
             editor.onDidChangeModelContent(function(e) {
                 isDirty = true;
-                notifyContentChanged();
+                
+                // Clear existing timer
+                if (contentChangeTimer) {
+                    clearTimeout(contentChangeTimer);
+                }
+                
+                // Set new timer to notify after debounce delay
+                contentChangeTimer = setTimeout(function() {
+                    notifyContentChanged();
+                }, DEBOUNCE_DELAY);
             });
 
             // Track cursor position changes
@@ -356,7 +369,8 @@ namespace Insait_Edit_C_Sharp
             if (window.chrome && window.chrome.webview) {
                 window.chrome.webview.postMessage({
                     type: 'contentChanged',
-                    isDirty: isDirty
+                    isDirty: isDirty,
+                    content: getContent()
                 });
             }
         }

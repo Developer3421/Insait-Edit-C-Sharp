@@ -2,8 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:Insait_Edit_C_Sharp.ViewModels"
+        xmlns:models="using:Insait_Edit_C_Sharp.Models"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="Insait_Edit_C_Sharp.MainWindow"
+        x:DataType="vm:MainViewModel"
         x:Name="MainWindowRoot"
         Title="Insait Edit - C# IDE"
         WindowStartupLocation="CenterScreen"
@@ -25,6 +28,7 @@
         <Color x:Key="AppTextColor">#FFCDD6F4</Color>
         <Color x:Key="AppTextMutedColor">#FF9399B2</Color>
 
+        <!-- Orange is now PRIMARY accent -->
         <Color x:Key="AccentOrangeColor">#FFFAB387</Color>
         <Color x:Key="AccentOrangeHoverColor">#FFFFC09F</Color>
         <Color x:Key="AccentPurpleColor">#FFCBA6F7</Color>
@@ -47,12 +51,8 @@
         <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlueColor}" />
         <SolidColorBrush x:Key="AccentRedBrush" Color="{StaticResource AccentRedColor}" />
 
-        <!-- Title Bar Gradient -->
-        <LinearGradientBrush x:Key="TitleBarGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#FF313244" Offset="0"/>
-            <GradientStop Color="#FF45475A" Offset="0.5"/>
-            <GradientStop Color="#FF313244" Offset="1"/>
-        </LinearGradientBrush>
+        <!-- Title Bar - Solid Gray -->
+        <SolidColorBrush x:Key="TitleBarGradient" Color="#FF3C3C3C"/>
         
         <!-- Sidebar Gradient -->
         <LinearGradientBrush x:Key="SidebarGradient" StartPoint="0,0" EndPoint="0,1">
@@ -85,18 +85,21 @@
             <Setter Property="Height" Value="32"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="0"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.toolbar-button:pointerover">
-            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="Background" Value="#30FFFFFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
         <Style Selector="Button.toolbar-button:pressed">
-            <Setter Property="Background" Value="#60FFFFFF"/>
+            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
 
         <!-- Icon button style -->
@@ -131,7 +134,9 @@
             <Setter Property="Background" Value="#30FFFFFF"/>
         </Style>
         <Style Selector="Button.sidebar-button.active">
-            <Setter Property="Background" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="Background" Value="#30FAB387"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,2,0"/>
         </Style>
 
         <!-- Panels -->
@@ -147,23 +152,102 @@
             <Setter Property="Height" Value="36"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource AppTextMutedBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="0,2,0,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.tab-button:pointerover">
             <Setter Property="Background" Value="#20FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#50FAB387"/>
         </Style>
         <Style Selector="Button.tab-button.active">
             <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
         
         <!-- TreeView style -->
         <Style Selector="TreeViewItem">
             <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
             <Setter Property="FontSize" Value="12"/>
+        </Style>
+        
+        <!-- Tool Window Tab (JetBrains Rider Style) -->
+        <Style Selector="Button.tool-window-tab">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFB0B0B0"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CornerRadius" Value="0"/>
+        </Style>
+        <Style Selector="Button.tool-window-tab:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+            <Setter Property="Foreground" Value="#FFE0E0E0"/>
+        </Style>
+        <Style Selector="Button.tool-window-tab.active">
+            <Setter Property="Background" Value="#FF4E5254"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+        <Style Selector="Button.tool-window-tab:pressed">
+            <Setter Property="Background" Value="#FF5A5D5F"/>
+        </Style>
+        
+        <!-- Tool Action Button (for toolbar) -->
+        <Style Selector="Button.tool-action-button">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFB0B0B0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.tool-action-button:pointerover">
+            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+        </Style>
+        <Style Selector="Button.tool-action-button:pressed">
+            <Setter Property="Background" Value="#60FFFFFF"/>
+        </Style>
+        
+        <!-- Status Bar Button (JetBrains Rider Style) -->
+        <Style Selector="Button.status-bar-button">
+            <Setter Property="Height" Value="22"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFB0B0B0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.status-bar-button:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+        </Style>
+        <Style Selector="Button.status-bar-button:pressed">
+            <Setter Property="Background" Value="#40FFFFFF"/>
+        </Style>
+        
+        <!-- GridSplitter style -->
+        <Style Selector="GridSplitter.tool-splitter">
+            <Setter Property="Background" Value="#FF3C3F41"/>
+            <Setter Property="Cursor" Value="SizeNorthSouth"/>
+        </Style>
+        <Style Selector="GridSplitter.tool-splitter:pointerover">
+            <Setter Property="Background" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
     </Window.Styles>
 
@@ -173,32 +257,89 @@
     </Window.Background>
 
     <!-- Root grid -->
-    <Grid RowDefinitions="36,*">
+    <Grid RowDefinitions="36,*,24">
 
         <!-- ROW 0: TITLE BAR (custom chrome) -->
         <Grid Grid.Row="0" Height="36" Background="{StaticResource TitleBarGradient}">
             <Grid ColumnDefinitions="Auto,Auto,*,Auto">
                 <!-- Left: App icon and title -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0" Spacing="8">
-                    <Border Width="20" Height="20" CornerRadius="4" Background="{StaticResource AccentPurpleBrush}">
-                        <TextBlock Text="⚡" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border Width="20" Height="20" CornerRadius="4" Background="{StaticResource AccentOrangeBrush}">
+                        <TextBlock Text="⚡" FontSize="12" Foreground="#1E1E2E" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="Insait Edit"
                                FontSize="13"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource AppTextBrush}"
+                               Foreground="{StaticResource AccentOrangeBrush}"
                                VerticalAlignment="Center"/>
                 </StackPanel>
                 
-                <!-- Menu items -->
+                <!-- Menu and Actions -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0" Spacing="2">
-                    <Button Classes="toolbar-button" Name="MenuFile" Content="File" Click="MenuFile_Click"/>
-                    <Button Classes="toolbar-button" Name="MenuEdit" Content="Edit" Click="MenuEdit_Click"/>
-                    <Button Classes="toolbar-button" Name="MenuView" Content="View" Click="MenuView_Click"/>
-                    <Button Classes="toolbar-button" Name="MenuBuild" Content="Build" Click="MenuBuild_Click"/>
-                    <Button Classes="toolbar-button" Name="MenuDebug" Content="Debug" Click="MenuDebug_Click"/>
-                    <Button Classes="toolbar-button" Name="MenuTools" Content="Tools" Click="MenuTools_Click"/>
-                    <Button Classes="toolbar-button" Name="MenuHelp" Content="Help" Click="MenuHelp_Click"/>
+                    <!-- Main Menu Button -->
+                    <Button Name="MainMenuButton" ToolTip.Tip="Menu"
+                            Click="MainMenu_Click"
+                            Background="#FF3D3D4D" 
+                            Foreground="White"
+                            CornerRadius="4"
+                            Padding="12,4"
+                            Height="28"
+                            Cursor="Hand">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="☰" FontSize="14"/>
+                            <TextBlock Text="Menu" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Separator -->
+                    <Border Width="1" Height="20" Background="#FF505053" Margin="8,0"/>
+                    
+                    <!-- Build Button -->
+                    <Button Name="BuildProjectButton" ToolTip.Tip="Build Project (Ctrl+Shift+B)"
+                            Click="BuildProject_Click"
+                            Background="#FF4CAF50" 
+                            Foreground="White"
+                            CornerRadius="4"
+                            Padding="12,4"
+                            Height="28"
+                            Cursor="Hand">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="🔨" FontSize="12"/>
+                            <TextBlock Text="Build" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Run Button -->
+                    <Button Name="RunProjectButton" ToolTip.Tip="Run Project (F5)"
+                            Click="RunProject_Click"
+                            Background="#FF2196F3" 
+                            Foreground="White"
+                            CornerRadius="4"
+                            Padding="12,4"
+                            Height="28"
+                            Cursor="Hand"
+                            Margin="4,0,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="▶" FontSize="12"/>
+                            <TextBlock Text="Run" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Cancel Build Button (hidden by default) -->
+                    <Button Name="CancelBuildButton" ToolTip.Tip="Cancel Build"
+                            Click="CancelBuild_Click"
+                            Background="#FFF44336" 
+                            Foreground="White"
+                            CornerRadius="4"
+                            Padding="8,4"
+                            Height="28"
+                            Cursor="Hand"
+                            IsVisible="False">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⏹" FontSize="11"/>
+                            <TextBlock Text="Stop" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Middle: draggable area -->
@@ -283,7 +424,7 @@
                                   ItemsSource="{Binding FileTreeItems}"
                                   SelectionChanged="FileTreeView_SelectionChanged">
                             <TreeView.ItemTemplate>
-                                <TreeDataTemplate ItemsSource="{Binding Children}">
+                                <TreeDataTemplate x:DataType="models:FileTreeItem" ItemsSource="{Binding Children}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <TextBlock Text="{Binding Icon}" FontSize="14"/>
                                         <TextBlock Text="{Binding Name}" FontSize="12" 
@@ -293,7 +434,7 @@
                                 </TreeDataTemplate>
                             </TreeView.ItemTemplate>
                             <TreeView.Styles>
-                                <Style Selector="TreeViewItem">
+                                <Style Selector="TreeViewItem" x:DataType="models:FileTreeItem">
                                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                 </Style>
                             </TreeView.Styles>
@@ -303,7 +444,7 @@
             </Border>
             
             <!-- Main Editor Area -->
-            <Grid Grid.Column="2" RowDefinitions="Auto,*,Auto,200">
+            <Grid Grid.Column="2" RowDefinitions="Auto,*,Auto,200" Name="EditorGrid">
                 <!-- Tab Bar -->
                 <Border Grid.Row="0" Background="#20000000" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1">
                     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
@@ -314,7 +455,7 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="models:EditorTab">
                                     <Button Classes="tab-button" 
                                             Tag="{Binding}"
                                             Click="TabButton_Click">
@@ -322,7 +463,7 @@
                                             <TextBlock Text="{Binding Language}" FontSize="10" 
                                                        Foreground="{StaticResource AccentGreenBrush}" 
                                                        VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding FileName}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding DisplayFileName}" VerticalAlignment="Center"/>
                                             <Button Width="16" Height="16" 
                                                     Background="Transparent" 
                                                     BorderThickness="0" 
@@ -346,57 +487,189 @@
                 </Border>
                 
                 <!-- Resize grip for terminal -->
-                <GridSplitter Grid.Row="2" Height="4" Background="{StaticResource AppBorderBrush}" 
+                <GridSplitter Grid.Row="2" Height="5" Classes="tool-splitter"
                               ResizeDirection="Rows" HorizontalAlignment="Stretch"/>
                 
-                <!-- Terminal / Output Panel -->
-                <Border Grid.Row="3" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,1,0,0">
-                    <Grid RowDefinitions="Auto,*">
-                        <!-- Terminal tabs -->
-                        <Border Grid.Row="0" Background="#20000000" Padding="8,0">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                                    <Button Classes="tab-button" Height="28" Padding="8,0" Name="ProblemsTabButton" Click="ProblemsTab_Click">
-                                        <TextBlock Text="PROBLEMS" FontSize="11"/>
+                <!-- Terminal / Output Panel (JetBrains Rider Style) -->
+                <Border Grid.Row="3" Background="#FF252529" BorderBrush="#FF3C3F41" BorderThickness="0,1,0,0">
+                    <Grid RowDefinitions="32,*">
+                        <!-- Tool Window Header Bar (Rider-style) -->
+                        <Border Grid.Row="0" Background="#FF3C3F41">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <!-- Left: Tabs -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Stretch">
+                                    <!-- Problems Tab -->
+                                    <Button Classes="tool-window-tab" Name="ProblemsTabButton" Click="ProblemsTab_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="⚠" FontSize="12" Foreground="#FFF5A623"/>
+                                            <TextBlock Text="Problems" FontSize="12"/>
+                                            <Border Background="#50F38BA8" CornerRadius="8" Padding="5,1" IsVisible="{Binding HasProblems}">
+                                                <TextBlock Text="{Binding ProblemsCount}" FontSize="10" Foreground="#FFF38BA8" FontWeight="SemiBold"/>
+                                            </Border>
+                                        </StackPanel>
                                     </Button>
-                                    <Button Classes="tab-button" Height="28" Padding="8,0" Name="OutputTabButton" Click="OutputTab_Click">
-                                        <TextBlock Text="OUTPUT" FontSize="11"/>
+                                    
+                                    <!-- Build Tab -->
+                                    <Button Classes="tool-window-tab" Name="BuildTabButton" Click="BuildTab_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="🔨" FontSize="11"/>
+                                            <TextBlock Text="Build" FontSize="12"/>
+                                        </StackPanel>
                                     </Button>
-                                    <Button Classes="tab-button active" Height="28" Padding="8,0" Name="TerminalTabButton" Click="TerminalTab_Click">
-                                        <TextBlock Text="TERMINAL" FontSize="11"/>
+                                    
+                                    <!-- Run Tab -->
+                                    <Button Classes="tool-window-tab" Name="RunTabButton" Click="RunTab_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="▶" FontSize="10" Foreground="#FFA6E3A1"/>
+                                            <TextBlock Text="Run" FontSize="12"/>
+                                        </StackPanel>
                                     </Button>
-                                    <Button Classes="tab-button" Height="28" Padding="8,0" Name="DebugConsoleTabButton" Click="DebugConsoleTab_Click">
-                                        <TextBlock Text="DEBUG CONSOLE" FontSize="11"/>
+                                    
+                                    <!-- Terminal Tab (Active by default) -->
+                                    <Button Classes="tool-window-tab active" Name="TerminalTabButton" Click="TerminalTab_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="⬛" FontSize="10"/>
+                                            <TextBlock Text="Terminal" FontSize="12"/>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- Git Tab -->
+                                    <Button Classes="tool-window-tab" Name="GitTabButton" Click="GitTab_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="🔀" FontSize="11"/>
+                                            <TextBlock Text="Git" FontSize="12"/>
+                                        </StackPanel>
+                                    </Button>
+                                    
+                                    <!-- Debug Tab -->
+                                    <Button Classes="tool-window-tab" Name="DebugConsoleTabButton" Click="DebugConsoleTab_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="🐛" FontSize="11"/>
+                                            <TextBlock Text="Debug" FontSize="12"/>
+                                        </StackPanel>
                                     </Button>
                                 </StackPanel>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Terminal" Name="NewTerminalButton" Click="NewTerminal_Click">
-                                        <TextBlock Text="➕" FontSize="10"/>
+                                
+                                <!-- Center: Empty space / Additional info -->
+                                <Panel Grid.Column="1"/>
+                                
+                                <!-- Right: Tool Actions -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,4,0" VerticalAlignment="Center">
+                                    <!-- Terminal dropdown -->
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Terminal: PowerShell" Name="TerminalDropdown">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="PowerShell" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                            <TextBlock Text="▾" FontSize="9" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                        </StackPanel>
                                     </Button>
-                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Run as Administrator" Name="AdminTerminalButton" Click="AdminTerminal_Click">
-                                        <TextBlock Text="🛡️" FontSize="10"/>
+                                    <Border Width="1" Height="16" Background="#FF505053" Margin="4,0"/>
+                                    <Button Classes="tool-action-button" ToolTip.Tip="New Terminal (Ctrl+Shift+`)" Name="NewTerminalButton" Click="NewTerminal_Click">
+                                        <TextBlock Text="+" FontSize="14" FontWeight="Bold"/>
                                     </Button>
-                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Clear Terminal" Name="ClearTerminalButton" Click="ClearTerminal_Click">
-                                        <TextBlock Text="🗑️" FontSize="10"/>
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Split Terminal" Name="SplitTerminalButton">
+                                        <TextBlock Text="⫿" FontSize="12"/>
                                     </Button>
-                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Maximize Panel">
-                                        <TextBlock Text="⬆️" FontSize="10"/>
+                                    <Border Width="1" Height="16" Background="#FF505053" Margin="4,0"/>
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Clear All" Name="ClearTerminalButton" Click="ClearTerminal_Click">
+                                        <TextBlock Text="🗑" FontSize="11"/>
                                     </Button>
-                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Close Panel">
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Scroll to End">
+                                        <TextBlock Text="↓" FontSize="12"/>
+                                    </Button>
+                                    <Border Width="1" Height="16" Background="#FF505053" Margin="4,0"/>
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Minimize" Name="MinimizePanelButton" Click="MinimizePanel_Click">
+                                        <TextBlock Text="▁" FontSize="10"/>
+                                    </Button>
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Maximize" Name="MaximizePanelButton" Click="MaximizePanel_Click">
+                                        <TextBlock Text="▢" FontSize="10"/>
+                                    </Button>
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Hide (Esc)" Name="HidePanelButton" Click="HidePanel_Click">
                                         <TextBlock Text="✕" FontSize="10"/>
                                     </Button>
                                 </StackPanel>
                             </Grid>
                         </Border>
                         
-                        <!-- Terminal Control -->
-                        <Border Grid.Row="1" Name="TerminalContainer" />
+                        <!-- Terminal Content Area -->
+                        <Grid Grid.Row="1">
+                            <!-- Left side: Terminal sessions list (optional, collapsed by default) -->
+                            <!-- Main Terminal Content -->
+                            <Border Name="TerminalContainer" Background="#FF1E1E1E"/>
+                            
+                            <!-- Problems Panel (hidden by default) -->
+                            <Border Name="ProblemsPanel" Background="#FF252529" IsVisible="False">
+                                <Grid RowDefinitions="Auto,*">
+                                    <Border Grid.Row="0" Background="#FF2D2D30" Padding="8,4">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="⛔" FontSize="11" Foreground="#FFF38BA8"/>
+                                                <TextBlock Text="0 Errors" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="⚠" FontSize="11" Foreground="#FFF5A623"/>
+                                                <TextBlock Text="0 Warnings" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="ℹ" FontSize="11" Foreground="#FF89B4FA"/>
+                                                <TextBlock Text="0 Messages" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                    <ScrollViewer Grid.Row="1">
+                                        <TextBlock Text="No problems detected" FontSize="12" Foreground="{StaticResource AppTextMutedBrush}" 
+                                                   Margin="16,12" FontStyle="Italic"/>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Build Output Panel (hidden by default) -->
+                            <Border Name="BuildPanel" Background="#FF1E1E1E" IsVisible="False">
+                                <ScrollViewer Name="BuildOutputScrollViewer" 
+                                              HorizontalScrollBarVisibility="Auto" 
+                                              VerticalScrollBarVisibility="Auto">
+                                    <TextBlock Name="BuildOutputText" 
+                                               Text="Build output will appear here..." 
+                                               FontFamily="Consolas, Monaco, monospace" 
+                                               FontSize="12"
+                                               Foreground="{StaticResource AppTextBrush}" 
+                                               Margin="12,8"
+                                               TextWrapping="Wrap"/>
+                                </ScrollViewer>
+                            </Border>
+                            
+                            <!-- Run Output Panel (hidden by default) -->
+                            <Border Name="RunPanel" Background="#FF1E1E1E" IsVisible="False">
+                                <ScrollViewer>
+                                    <TextBlock Name="RunOutputText" Text="Run output will appear here..." 
+                                               FontFamily="Consolas, Monaco, monospace" FontSize="12"
+                                               Foreground="{StaticResource AppTextMutedBrush}" Margin="12,8"/>
+                                </ScrollViewer>
+                            </Border>
+                            
+                            <!-- Git Panel (hidden by default) -->
+                            <Border Name="GitPanel" Background="#FF252529" IsVisible="False">
+                                <StackPanel Margin="12,8" Spacing="8">
+                                    <TextBlock Text="Git Log" FontWeight="SemiBold" Foreground="{StaticResource AppTextBrush}"/>
+                                    <TextBlock Text="No repository opened" FontSize="12" Foreground="{StaticResource AppTextMutedBrush}" FontStyle="Italic"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Debug Panel (hidden by default) -->
+                            <Border Name="DebugPanel" Background="#FF1E1E1E" IsVisible="False">
+                                <ScrollViewer>
+                                    <TextBlock Name="DebugOutputText" Text="Debug console ready..." 
+                                               FontFamily="Consolas, Monaco, monospace" FontSize="12"
+                                               Foreground="{StaticResource AppTextMutedBrush}" Margin="12,8"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>
             
             <!-- Right Panel (AI Assistant / Properties) -->
-            <Border Grid.Column="3" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1,0,0,0">
+            <Border Grid.Column="3" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1,0,0,0"
+                    Name="AIPanelBorder">
                 <Grid RowDefinitions="Auto,*,Auto">
                     <!-- Panel Header -->
                     <Border Grid.Row="0" Padding="12,10" Background="#20000000">
@@ -407,9 +680,15 @@
                                            Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
                                            LetterSpacing="1"/>
                             </StackPanel>
-                            <Button Grid.Column="1" Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat">
-                                <TextBlock Text="➕" FontSize="12"/>
-                            </Button>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat">
+                                    <TextBlock Text="➕" FontSize="12"/>
+                                </Button>
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Close Panel" 
+                                        Name="CloseAIPanelButton" Click="CloseAIPanel_Click">
+                                    <TextBlock Text="✕" FontSize="12"/>
+                                </Button>
+                            </StackPanel>
                         </Grid>
                     </Border>
                     
@@ -417,7 +696,7 @@
                     <ScrollViewer Grid.Row="1" Margin="12,8">
                         <StackPanel Spacing="12" Name="AIChatMessages">
                             <!-- AI Welcome message -->
-                            <Border Background="#30CBA6F7" CornerRadius="8" Padding="12">
+                            <Border Background="#30FAB387" CornerRadius="8" Padding="12">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="Welcome to Insait Edit!" FontWeight="SemiBold" Foreground="{StaticResource AppTextBrush}"/>
                                     <TextBlock Text="I'm your AI coding assistant. I can help you with:" 
@@ -446,7 +725,7 @@
                                      TextWrapping="Wrap"
                                      AcceptsReturn="False"/>
                             <Button Grid.Column="1" Classes="icon-button" Margin="8,0,0,0" 
-                                    Background="{StaticResource AccentPurpleBrush}"
+                                    Background="{StaticResource AccentOrangeBrush}"
                                     ToolTip.Tip="Send message" Name="SendAIButton" Click="SendAI_Click">
                                 <TextBlock Text="➤" FontSize="16" Foreground="#FF1E1E2E"/>
                             </Button>
@@ -455,5 +734,81 @@
                 </Grid>
             </Border>
         </Grid>
+        
+        <!-- ROW 2: STATUS BAR (JetBrains Rider Style) -->
+        <Border Grid.Row="2" Background="#FF3C3F41" BorderBrush="#FF505053" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Left: Branch info and status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
+                    <!-- Git Branch -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Git Branch">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⎇" FontSize="11" Foreground="#FFA6E3A1"/>
+                            <TextBlock Text="main" FontSize="11" Foreground="#FFB0B0B0" Name="GitBranchText"/>
+                        </StackPanel>
+                    </Button>
+                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <!-- Sync status -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Synchronize Changes">
+                        <StackPanel Orientation="Horizontal" Spacing="3">
+                            <TextBlock Text="↓0" FontSize="10" Foreground="#FF89B4FA"/>
+                            <TextBlock Text="↑0" FontSize="10" Foreground="#FFA6E3A1"/>
+                        </StackPanel>
+                    </Button>
+                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <!-- Errors/Warnings -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="View Problems" Name="StatusProblemsButton" Click="StatusProblems_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                <TextBlock Text="⛔" FontSize="9" Foreground="#FFF38BA8"/>
+                                <TextBlock Text="{Binding ErrorsCount}" FontSize="11" Foreground="#FFF38BA8" Name="StatusErrorsCount"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                <TextBlock Text="⚠" FontSize="9" Foreground="#FFF5A623"/>
+                                <TextBlock Text="{Binding WarningsCount}" FontSize="11" Foreground="#FFF5A623" Name="StatusWarningsCount"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                
+                <!-- Center: Status message -->
+                <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="11" 
+                           Foreground="#FF9399B2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Name="StatusMessageText"/>
+                
+                <!-- Right: Editor info -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <!-- Encoding -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Select Encoding">
+                        <TextBlock Text="UTF-8" FontSize="11" Foreground="#FFB0B0B0"/>
+                    </Button>
+                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <!-- Line Endings -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Select End of Line Sequence">
+                        <TextBlock Text="CRLF" FontSize="11" Foreground="#FFB0B0B0" Name="LineEndingsText"/>
+                    </Button>
+                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <!-- Language -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Select Language Mode">
+                        <TextBlock Text="C#" FontSize="11" Foreground="#FFB0B0B0" Name="LanguageModeText"/>
+                    </Button>
+                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <!-- Cursor Position -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Go to Line">
+                        <TextBlock Text="Ln 1, Col 1" FontSize="11" Foreground="#FFB0B0B0" Name="CursorPositionText"/>
+                    </Button>
+                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <!-- Spaces/Tabs -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Select Indentation">
+                        <TextBlock Text="Spaces: 4" FontSize="11" Foreground="#FFB0B0B0"/>
+                    </Button>
+                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <!-- Notifications -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Notifications" Name="NotificationsButton">
+                        <TextBlock Text="🔔" FontSize="11" Foreground="#FFB0B0B0"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

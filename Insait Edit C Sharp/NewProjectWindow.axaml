@@ -20,6 +20,8 @@
         <Color x:Key="BorderColor">#FF3D3D4D</Color>
         <Color x:Key="TextPrimary">#FFCDD6F4</Color>
         <Color x:Key="TextSecondary">#FF9399B2</Color>
+        <!-- Orange is now PRIMARY accent -->
+        <Color x:Key="AccentOrange">#FFFAB387</Color>
         <Color x:Key="AccentPurple">#FFCBA6F7</Color>
         <Color x:Key="AccentGreen">#FFA6E3A1</Color>
 
@@ -29,6 +31,7 @@
         <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
         <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrange}"/>
         <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource AccentPurple}"/>
         <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}"/>
     </Window.Resources>
@@ -61,10 +64,10 @@
         </Style>
         <Style Selector="Button.template-btn:pointerover">
             <Setter Property="Background" Value="#FF424258"/>
-            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
         <Style Selector="Button.template-btn.selected">
-            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
             <Setter Property="Background" Value="#FF424258"/>
         </Style>
 
@@ -77,11 +80,11 @@
             <Setter Property="Padding" Value="12,10"/>
         </Style>
         <Style Selector="TextBox:focus">
-            <Setter Property="BorderBrush" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
 
         <Style Selector="Button.primary-btn">
-            <Setter Property="Background" Value="{StaticResource AccentPurpleBrush}"/>
+            <Setter Property="Background" Value="{StaticResource AccentOrangeBrush}"/>
             <Setter Property="Foreground" Value="#FF1E1E2E"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
@@ -90,7 +93,7 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.primary-btn:pointerover">
-            <Setter Property="Background" Value="#FFD4BDFF"/>
+            <Setter Property="Background" Value="#FFFFC09F"/>
         </Style>
         <Style Selector="Button.primary-btn:disabled">
             <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
@@ -118,12 +121,12 @@
     <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
         <Grid RowDefinitions="40,*,Auto">
             
-            <!-- Title Bar -->
-            <Grid Grid.Row="0" Background="{StaticResource BgSecondaryBrush}">
+            <!-- Title Bar - Gray -->
+            <Grid Grid.Row="0" Background="#FF3C3C3C">
                 <Grid ColumnDefinitions="*,Auto">
                     <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
                         <TextBlock Text="New Project" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{StaticResource AccentOrangeBrush}"
                                    VerticalAlignment="Center" Margin="16,0"/>
                     </Panel>
                     <Button Grid.Column="1" Classes="window-control close" Click="CloseButton_Click">

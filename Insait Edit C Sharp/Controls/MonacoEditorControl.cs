@@ -18,12 +18,17 @@ public class MonacoEditorControl : NativeControlHost
     private string _pendingContent = string.Empty;
     private string _pendingLanguage = "csharp";
     private TaskCompletionSource<bool>? _initializationTask;
+    private string _currentContent = string.Empty;
+    private bool _isDirty;
 
     public event EventHandler? EditorReady;
     public event EventHandler? ContentChanged;
+    public event EventHandler<ContentChangedEventArgs>? ContentChangedWithValue;
     public event EventHandler<CursorPositionChangedEventArgs>? CursorPositionChanged;
 
     public bool IsEditorReady => _isInitialized;
+    public bool IsDirty => _isDirty;
+    public string CurrentContent => _currentContent;
 
     public MonacoEditorControl()
     {
@@ -124,6 +129,12 @@ public class MonacoEditorControl : NativeControlHost
                         break;
 
                     case "contentChanged":
+                        _isDirty = true;
+                        if (root.TryGetProperty("content", out var contentElement))
+                        {
+                            _currentContent = contentElement.GetString() ?? string.Empty;
+                            ContentChangedWithValue?.Invoke(this, new ContentChangedEventArgs(_currentContent));
+                        }
                         ContentChanged?.Invoke(this, EventArgs.Empty);
                         break;
 
@@ -162,6 +173,9 @@ public class MonacoEditorControl : NativeControlHost
             return;
         }
 
+        _currentContent = content;
+        _isDirty = false;
+
         if (_webView?.CoreWebView2 != null)
         {
             var escapedContent = System.Text.Json.JsonSerializer.Serialize(content);
@@ -173,16 +187,25 @@ public class MonacoEditorControl : NativeControlHost
     public async Task<string> GetContentAsync()
     {
         if (_webView?.CoreWebView2 == null || !_isInitialized)
-            return string.Empty;
+            return _currentContent;
 
         var result = await _webView.CoreWebView2.ExecuteScriptAsync("getContent();");
         
         if (!string.IsNullOrEmpty(result) && result != "null")
         {
-            return System.Text.Json.JsonSerializer.Deserialize<string>(result) ?? string.Empty;
+            _currentContent = System.Text.Json.JsonSerializer.Deserialize<string>(result) ?? string.Empty;
+            return _currentContent;
         }
         
-        return string.Empty;
+        return _currentContent;
+    }
+
+    /// <summary>
+    /// Marks the content as saved (not dirty)
+    /// </summary>
+    public void MarkAsSaved()
+    {
+        _isDirty = false;
     }
 
     public void SetLanguage(string language)
@@ -280,6 +303,16 @@ public class CursorPositionChangedEventArgs : EventArgs
     {
         Line = line;
         Column = column;
+    }
+}
+
+public class ContentChangedEventArgs : EventArgs
+{
+    public string NewContent { get; }
+
+    public ContentChangedEventArgs(string newContent)
+    {
+        NewContent = newContent;
     }
 }
 

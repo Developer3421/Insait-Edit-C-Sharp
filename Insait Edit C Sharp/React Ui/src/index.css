@@ -5,6 +5,9 @@
   --text-color: #cdd6f4;
   --text-muted: #9399b2;
   
+  /* Inverted: Orange is now main accent, Purple is secondary */
+  --accent-primary: #fab387;
+  --accent-secondary: #cba6f7;
   --accent-orange: #fab387;
   --accent-purple: #cba6f7;
   --accent-green: #a6e3a1;
@@ -169,7 +172,7 @@ html, body, #root {
   justify-content: space-between;
   padding: 0 12px;
   height: 24px;
-  background: var(--accent-purple);
+  background: var(--accent-orange);
   color: #1e1e2e;
   font-size: 12px;
 }
@@ -212,7 +215,7 @@ html, body, #root {
   width: 40px;
   height: 40px;
   border: 3px solid var(--border-color);
-  border-top-color: var(--accent-purple);
+  border-top-color: var(--accent-orange);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -276,7 +279,7 @@ html, body, #root {
 
 .welcome-action:hover {
   background: var(--border-color);
-  border-color: var(--accent-purple);
+  border-color: var(--accent-orange);
 }
 
 .welcome-action-icon {

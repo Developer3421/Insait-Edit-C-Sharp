@@ -19,6 +19,8 @@ public class MainViewModel : INotifyPropertyChanged
     private bool _isBuildInProgress;
     private string _searchQuery = string.Empty;
     private string? _currentProjectPath;
+    private int _errorsCount;
+    private int _warningsCount;
 
     public MainViewModel()
     {
@@ -27,6 +29,9 @@ public class MainViewModel : INotifyPropertyChanged
         Problems = new ObservableCollection<DiagnosticItem>();
         OutputLines = new ObservableCollection<string>();
         FileTreeItems = new ObservableCollection<FileTreeItem>();
+        
+        // Subscribe to Problems collection changes
+        Problems.CollectionChanged += (s, e) => UpdateProblemsCounts();
     }
 
     #region Properties
@@ -68,11 +73,42 @@ public class MainViewModel : INotifyPropertyChanged
         get => _currentProjectPath;
         set => SetProperty(ref _currentProjectPath, value);
     }
+    
+    public int ErrorsCount
+    {
+        get => _errorsCount;
+        set => SetProperty(ref _errorsCount, value);
+    }
+    
+    public int WarningsCount
+    {
+        get => _warningsCount;
+        set => SetProperty(ref _warningsCount, value);
+    }
+    
+    public int ProblemsCount => ErrorsCount + WarningsCount;
+    
+    public bool HasProblems => ProblemsCount > 0;
 
     public ObservableCollection<string> RecentFiles { get; }
     public ObservableCollection<DiagnosticItem> Problems { get; }
     public ObservableCollection<string> OutputLines { get; }
     public ObservableCollection<FileTreeItem> FileTreeItems { get; }
+    
+    private void UpdateProblemsCounts()
+    {
+        ErrorsCount = 0;
+        WarningsCount = 0;
+        foreach (var problem in Problems)
+        {
+            if (problem.Severity == DiagnosticSeverity.Error)
+                ErrorsCount++;
+            else if (problem.Severity == DiagnosticSeverity.Warning)
+                WarningsCount++;
+        }
+        OnPropertyChanged(nameof(ProblemsCount));
+        OnPropertyChanged(nameof(HasProblems));
+    }
 
     #endregion
 
@@ -217,7 +253,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    public virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }

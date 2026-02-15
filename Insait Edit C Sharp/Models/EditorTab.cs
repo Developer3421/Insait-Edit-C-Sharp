@@ -1,22 +1,116 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Insait_Edit_C_Sharp.Models;
 
 /// <summary>
 /// Represents an open editor tab
 /// </summary>
-public class EditorTab
+public class EditorTab : INotifyPropertyChanged
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string FileName { get; set; } = string.Empty;
-    public string FilePath { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-    public string Language { get; set; } = "plaintext";
-    public bool IsDirty { get; set; }
-    public bool IsActive { get; set; }
-    public int CursorLine { get; set; } = 1;
-    public int CursorColumn { get; set; } = 1;
-    public DateTime LastModified { get; set; } = DateTime.Now;
+    private string _id = Guid.NewGuid().ToString();
+    private string _fileName = string.Empty;
+    private string _filePath = string.Empty;
+    private string _content = string.Empty;
+    private string _language = "plaintext";
+    private bool _isDirty;
+    private bool _isActive;
+    private int _cursorLine = 1;
+    private int _cursorColumn = 1;
+    private DateTime _lastModified = DateTime.Now;
+
+    public string Id 
+    { 
+        get => _id; 
+        set => SetProperty(ref _id, value); 
+    }
+    
+    public string FileName 
+    { 
+        get => _fileName; 
+        set => SetProperty(ref _fileName, value); 
+    }
+    
+    public string FilePath 
+    { 
+        get => _filePath; 
+        set => SetProperty(ref _filePath, value); 
+    }
+    
+    public string Content 
+    { 
+        get => _content; 
+        set => SetProperty(ref _content, value); 
+    }
+    
+    public string Language 
+    { 
+        get => _language; 
+        set => SetProperty(ref _language, value); 
+    }
+    
+    public bool IsDirty 
+    { 
+        get => _isDirty; 
+        set 
+        { 
+            if (SetProperty(ref _isDirty, value))
+            {
+                OnPropertyChanged(nameof(DisplayFileName));
+            }
+        } 
+    }
+    
+    public bool IsActive 
+    { 
+        get => _isActive; 
+        set => SetProperty(ref _isActive, value); 
+    }
+    
+    public int CursorLine 
+    { 
+        get => _cursorLine; 
+        set => SetProperty(ref _cursorLine, value); 
+    }
+    
+    public int CursorColumn 
+    { 
+        get => _cursorColumn; 
+        set => SetProperty(ref _cursorColumn, value); 
+    }
+    
+    public DateTime LastModified 
+    { 
+        get => _lastModified; 
+        set => SetProperty(ref _lastModified, value); 
+    }
+
+    /// <summary>
+    /// Gets the display name for the tab (with * if dirty)
+    /// </summary>
+    public string DisplayFileName => IsDirty ? $"● {FileName}" : FileName;
+    
+    #region INotifyPropertyChanged
+    
+    public event PropertyChangedEventHandler? PropertyChanged;
+    
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+    
+    protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    {
+        if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+            return false;
+        
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
+    
+    #endregion
     
     /// <summary>
     /// Gets the language identifier based on file extension

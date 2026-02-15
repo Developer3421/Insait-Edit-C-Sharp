@@ -30,6 +30,7 @@ public class TerminalControl : UserControl
     private TextBlock? _outputTextBlock;
     private ScrollViewer? _scrollViewer;
     private StackPanel? _mainPanel;
+    private TextBlock? _promptLabel;
     
     public event EventHandler<TerminalOutputEventArgs>? OutputReceived;
     public event EventHandler? ProcessExited;
@@ -63,9 +64,53 @@ public class TerminalControl : UserControl
         {
             if (Directory.Exists(value))
             {
+                var oldDir = _workingDirectory;
                 _workingDirectory = value;
                 SetValue(WorkingDirectoryProperty, value);
+                
+                // Update prompt label
+                UpdatePrompt();
+                
+                // If a process is running, change directory
+                if (_isRunning && _inputWriter != null && oldDir != value)
+                {
+                    // Send cd command to change directory
+                    _inputWriter.WriteLine($"cd /d \"{value}\"");
+                }
             }
+        }
+    }
+    
+    /// <summary>
+    /// Update the prompt to show current working directory
+    /// </summary>
+    private void UpdatePrompt()
+    {
+        if (_promptLabel != null)
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _promptLabel.Text = $"{_workingDirectory}> ";
+            });
+        }
+    }
+    
+    /// <summary>
+    /// Change to the specified directory
+    /// </summary>
+    public void ChangeDirectory(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            WorkingDirectory = path;
+            if (!_isRunning)
+            {
+                AppendOutput($"Changed directory to: {path}{Environment.NewLine}", Color.Parse("#858585"));
+            }
+        }
+        else
+        {
+            AppendOutput($"Directory not found: {path}{Environment.NewLine}", Color.Parse("#F44747"));
         }
     }
     
@@ -122,9 +167,9 @@ public class TerminalControl : UserControl
             Margin = new Thickness(0, 2, 0, 0)
         };
         
-        var promptLabel = new TextBlock
+        _promptLabel = new TextBlock
         {
-            Text = "> ",
+            Text = $"{_workingDirectory}> ",
             FontFamily = new FontFamily("Consolas, Courier New, monospace"),
             FontSize = 14,
             Foreground = new SolidColorBrush(Color.Parse("#569CD6")),
@@ -132,17 +177,17 @@ public class TerminalControl : UserControl
             Padding = new Thickness(8, 0, 0, 0)
         };
         
-        Grid.SetColumn(promptLabel, 0);
-        inputPanel.Children.Add(promptLabel);
+        Grid.SetColumn(_promptLabel, 0);
+        inputPanel.Children.Add(_promptLabel);
         
         _inputTextBox = new TextBox
         {
             FontFamily = new FontFamily("Consolas, Courier New, monospace"),
             FontSize = 14,
-            Foreground = new SolidColorBrush(Color.Parse("#CCCCCC")),
+            Foreground = new SolidColorBrush(Color.Parse("#6B2F9C")),
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(0),
-            CaretBrush = new SolidColorBrush(Color.Parse("#CCCCCC")),
+            CaretBrush = new SolidColorBrush(Color.Parse("#6B2F9C")),
             Padding = new Thickness(4, 8),
             AcceptsReturn = false
         };
@@ -241,10 +286,12 @@ public class TerminalControl : UserControl
     
     private bool HandleBuiltInCommand(string command)
     {
-        var parts = command.Trim().ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var parts = command.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0) return false;
         
-        switch (parts[0])
+        var cmd = parts[0].ToLowerInvariant();
+        
+        switch (cmd)
         {
             case "clear":
             case "cls":
@@ -277,6 +324,48 @@ public class TerminalControl : UserControl
             case "pwd":
                 AppendOutput($"{_workingDirectory}{Environment.NewLine}");
                 return true;
+            
+            case "cd":
+                // Handle cd command when no process is running
+                if (!_isRunning && parts.Length > 1)
+                {
+                    var targetPath = parts[1].Trim().Trim('"');
+                    
+                    // Handle relative paths
+                    string newPath;
+                    if (Path.IsPathRooted(targetPath))
+                    {
+                        newPath = targetPath;
+                    }
+                    else if (targetPath == "..")
+                    {
+                        var parent = Directory.GetParent(_workingDirectory);
+                        newPath = parent?.FullName ?? _workingDirectory;
+                    }
+                    else
+                    {
+                        newPath = Path.Combine(_workingDirectory, targetPath);
+                    }
+                    
+                    if (Directory.Exists(newPath))
+                    {
+                        _workingDirectory = Path.GetFullPath(newPath);
+                        UpdatePrompt();
+                        AppendOutput($"{_workingDirectory}{Environment.NewLine}");
+                    }
+                    else
+                    {
+                        AppendOutput($"The system cannot find the path specified.{Environment.NewLine}", Color.Parse("#F44747"));
+                    }
+                    return true;
+                }
+                else if (!_isRunning && parts.Length == 1)
+                {
+                    // Just show current directory
+                    AppendOutput($"{_workingDirectory}{Environment.NewLine}");
+                    return true;
+                }
+                return false; // Let the running process handle it
                 
             default:
                 return false;
@@ -377,6 +466,7 @@ public class TerminalControl : UserControl
             ProcessStarted?.Invoke(this, EventArgs.Empty);
             
             AppendOutput($"Interactive {ShellType} session started.{Environment.NewLine}", Color.Parse("#4EC9B0"));
+            AppendOutput($"Working directory: {_workingDirectory}{Environment.NewLine}", Color.Parse("#858585"));
         }
         catch (Exception ex)
         {
@@ -590,24 +680,6 @@ public class TerminalControl : UserControl
     public void FocusInput()
     {
         _inputTextBox?.Focus();
-    }
-    
-    /// <summary>
-    /// Change working directory
-    /// </summary>
-    public bool ChangeDirectory(string path)
-    {
-        if (Directory.Exists(path))
-        {
-            _workingDirectory = path;
-            AppendOutput($"Changed directory to: {path}{Environment.NewLine}", Color.Parse("#4EC9B0"));
-            return true;
-        }
-        else
-        {
-            AppendOutput($"Directory not found: {path}{Environment.NewLine}", Color.Parse("#F44747"));
-            return false;
-        }
     }
     
     protected override void OnUnloaded(Avalonia.Interactivity.RoutedEventArgs e)
