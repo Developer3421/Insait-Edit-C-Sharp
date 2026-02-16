@@ -1,0 +1,203 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="using:Insait_Edit_C_Sharp.Services"
+        x:Class="Insait_Edit_C_Sharp.RunConfigurationsWindow"
+        Title="Run/Debug Configurations"
+        Width="800"
+        Height="600"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="None"
+        Background="#FF1E1E2E">
+    
+    <Window.Styles>
+        <Style Selector="Button.action-button">
+            <Setter Property="Background" Value="#FF3D3D4D"/>
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.action-button:pointerover">
+            <Setter Property="Background" Value="#FF4D4D5D"/>
+        </Style>
+        <Style Selector="Button.primary-button">
+            <Setter Property="Background" Value="#FFFAB387"/>
+            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary-button:pointerover">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="#50FAB387"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#FF363647"/>
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="BorderBrush" Value="#FF3D3D4D"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#FF363647"/>
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="BorderBrush" Value="#FF3D3D4D"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#FF3D3D4D" BorderThickness="1" CornerRadius="8">
+        <Grid RowDefinitions="36,*,Auto">
+            <!-- Title Bar -->
+            <Border Grid.Row="0" Background="#FF3C3C3C" CornerRadius="8,8,0,0" Name="TitleBar">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
+                        <TextBlock Text="⚡" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="Run/Debug Configurations" FontSize="13" FontWeight="SemiBold" 
+                                   Foreground="#FFCDD6F4" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="✕" Background="Transparent" Foreground="#FF9399B2"
+                            BorderThickness="0" Width="36" Height="36" Name="CloseButton"/>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1" ColumnDefinitions="250,*">
+                <!-- Left Panel: Configuration List -->
+                <Border Grid.Column="0" Background="#FF252529" BorderBrush="#FF3D3D4D" BorderThickness="0,0,1,0">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <!-- Search -->
+                        <TextBox Grid.Row="0" Watermark="🔍 Search configurations..." Margin="8" Name="SearchBox"/>
+                        
+                        <!-- Configuration List -->
+                        <ListBox Grid.Row="1" Name="ConfigurationsList" Background="Transparent" SelectionChanged="ConfigurationsList_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="services:RunConfiguration">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="▶" FontSize="12" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#FFCDD6F4" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        
+                        <!-- Add/Remove Buttons -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="8">
+                            <Button Content="+" Classes="action-button" Width="32" Height="32" ToolTip.Tip="Add Configuration" Name="AddConfigButton"/>
+                            <Button Content="−" Classes="action-button" Width="32" Height="32" ToolTip.Tip="Remove Configuration" Name="RemoveConfigButton"/>
+                            <Button Content="📋" Classes="action-button" Width="32" Height="32" ToolTip.Tip="Duplicate Configuration" Name="DuplicateConfigButton"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Right Panel: Configuration Details -->
+                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" Spacing="16" Name="ConfigDetailsPanel">
+                        <!-- Name -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Name" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <TextBox Name="ConfigNameBox" Watermark="Configuration name"/>
+                        </StackPanel>
+
+                        <!-- Project -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <ComboBox Name="ProjectComboBox" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <!-- Configuration (Debug/Release) -->
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
+                            <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,8,0">
+                                <TextBlock Text="Build Configuration" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                                <ComboBox Name="BuildConfigComboBox" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Debug"/>
+                                    <ComboBoxItem Content="Release"/>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0">
+                                <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                                <ComboBox Name="FrameworkComboBox" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Launch Profile -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Launch Profile (Optional)" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <ComboBox Name="LaunchProfileComboBox" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <!-- Working Directory -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Working Directory" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Grid.Column="0" Name="WorkingDirBox" Watermark="Working directory path"/>
+                                <Button Grid.Column="1" Content="📁" Classes="action-button" Margin="8,0,0,0" Width="40" Name="BrowseWorkingDirButton"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Command Line Arguments -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Program Arguments" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <TextBox Name="ArgumentsBox" Watermark="--arg1 value1 --arg2 value2" Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <!-- Environment Variables -->
+                        <StackPanel Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="Environment Variables" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                                <Button Grid.Column="1" Content="+ Add" Classes="action-button" FontSize="11" Name="AddEnvVarButton"/>
+                            </Grid>
+                            <Border Background="#FF2D2D3D" CornerRadius="6" Padding="8" MinHeight="60">
+                                <StackPanel Name="EnvVarsPanel" Spacing="4">
+                                    <TextBlock Text="No environment variables defined" FontSize="11" Foreground="#FF9399B2" FontStyle="Italic"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Options -->
+                        <Border Background="#FF2D2D3D" CornerRadius="6" Padding="12">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Run Options" FontWeight="SemiBold" Foreground="#FFFAB387" Margin="0,0,0,4"/>
+                                <CheckBox Content="Allow parallel run" Name="AllowParallelRunCheck"/>
+                                <CheckBox Content="Build before run" IsChecked="True" Name="BuildBeforeRunCheck"/>
+                                <CheckBox Content="Activate tool window on output" IsChecked="True" Name="ActivateToolWindowCheck"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#FF2D2D3D" Padding="16,12">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <Button Content="▶ Run" Classes="primary-button" Name="RunButton"/>
+                        <Button Content="🐛 Debug" Classes="action-button" Name="DebugButton"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <Button Content="Apply" Classes="action-button" Name="ApplyButton"/>
+                        <Button Content="Cancel" Classes="action-button" Name="CancelButton"/>
+                        <Button Content="OK" Classes="primary-button" Name="OkButton"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+

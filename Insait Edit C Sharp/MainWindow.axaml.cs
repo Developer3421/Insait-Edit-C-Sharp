@@ -12,6 +12,7 @@ using Insait_Edit_C_Sharp.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,10 +28,14 @@ public partial class MainWindow : Window
     private readonly MainViewModel _viewModel;
     private readonly FileService _fileService;
     private readonly BuildService _buildService;
+    private readonly CodeAnalysisService _codeAnalysisService;
+    private readonly RunConfigurationService _runConfigService;
+    private readonly PublishService _publishService;
     private string? _projectPath;
     private MonacoEditorControl? _monacoEditor;
     private TerminalControl? _terminalControl;
     private bool _isBuildInProgress;
+    private bool _isAnalysisInProgress;
     private readonly StringBuilder _buildOutput = new();
 
     public MainWindow() : this(null)
@@ -44,9 +49,21 @@ public partial class MainWindow : Window
         _viewModel = new MainViewModel();
         _fileService = new FileService();
         _buildService = new BuildService();
+        _codeAnalysisService = new CodeAnalysisService();
+        _runConfigService = new RunConfigurationService();
+        _publishService = new PublishService();
         _projectPath = projectPath;
         
         DataContext = _viewModel;
+        
+        // Wire up file watcher refresh action to run on UI thread
+        _viewModel.RefreshTreeAction = () =>
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                RefreshFileTree();
+            });
+        };
         
         // Set initial window position for restore
         _restoreSize = new Size(Width, Height);
@@ -56,6 +73,9 @@ public partial class MainWindow : Window
         
         // Initialize Build Service events
         InitializeBuildService();
+        
+        // Initialize Code Analysis Service events
+        InitializeCodeAnalysisService();
         
         // Load project if specified, otherwise load current directory
         if (!string.IsNullOrEmpty(projectPath))
@@ -113,10 +133,30 @@ public partial class MainWindow : Window
             await OpenNewFileAsync();
             e.Handled = true;
         }
-        // Ctrl+N - New file
+        // Ctrl+N - New file / Ctrl+Shift+N - New Project
         else if (e.Key == Key.N && e.KeyModifiers.HasFlag(KeyModifiers.Control))
         {
-            CreateNewFile();
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                // Ctrl+Shift+N - New Project
+                var projectWindow = new NewProjectWindow();
+                var projectResult = await projectWindow.ShowDialog<string?>(this);
+                if (!string.IsNullOrEmpty(projectResult))
+                {
+                    var projectDir = Path.GetDirectoryName(projectResult);
+                    if (!string.IsNullOrEmpty(projectDir))
+                    {
+                        _projectPath = projectDir;
+                        LoadProject(projectDir);
+                        UpdateTitle();
+                    }
+                }
+            }
+            else
+            {
+                // Ctrl+N - New file
+                CreateNewFile();
+            }
             e.Handled = true;
         }
         // Ctrl+B - Build project
@@ -132,6 +172,12 @@ public partial class MainWindow : Window
                 // Ctrl+B - Build
                 await BuildProjectAsync();
             }
+            e.Handled = true;
+        }
+        // Ctrl+Shift+A - Analyze code
+        else if (e.Key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            await AnalyzeProjectAsync();
             e.Handled = true;
         }
         // F5 - Run project
@@ -234,7 +280,14 @@ public partial class MainWindow : Window
         var dir = new DirectoryInfo(startPath);
         while (dir != null)
         {
-            // Look for .sln or .csproj files
+            // Look for .slnx files first (new format)
+            var slnxFiles = dir.GetFiles("*.slnx");
+            if (slnxFiles.Length > 0)
+            {
+                return dir.FullName;
+            }
+            
+            // Look for .sln files
             var slnFiles = dir.GetFiles("*.sln");
             if (slnFiles.Length > 0)
             {
@@ -310,29 +363,49 @@ public partial class MainWindow : Window
         {
             var extension = Path.GetExtension(projectPath).ToLowerInvariant();
             
-            if (extension == ".sln")
+            if (extension == ".sln" || extension == ".slnx")
             {
                 // Load solution - load its directory
                 var directory = Path.GetDirectoryName(projectPath);
-                if (!string.IsNullOrEmpty(directory))
+                if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
                     _viewModel.LoadProjectFolder(directory);
+                    _viewModel.StatusText = $"Loaded solution: {Path.GetFileName(projectPath)}";
+                    
+                    // Load run configurations for the solution
+                    _ = _runConfigService.LoadConfigurationsAsync(projectPath);
+                    
+                    // Update Git panel
+                    UpdateGitPanel(directory);
                 }
-                _viewModel.StatusText = $"Loaded solution: {Path.GetFileName(projectPath)}";
+                else
+                {
+                    _viewModel.StatusText = $"Solution directory not found: {directory}";
+                }
             }
             else if (extension == ".csproj" || extension == ".fsproj" || extension == ".vbproj")
             {
                 // Load project - load its directory
                 var directory = Path.GetDirectoryName(projectPath);
-                if (!string.IsNullOrEmpty(directory))
+                if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
                     _viewModel.LoadProjectFolder(directory);
+                    _viewModel.StatusText = $"Loaded project: {Path.GetFileName(projectPath)}";
+                    
+                    // Load run configurations for the project
+                    _ = _runConfigService.LoadConfigurationsAsync(projectPath);
+                    
+                    // Update Git panel
+                    UpdateGitPanel(directory);
                 }
-                _viewModel.StatusText = $"Loaded project: {Path.GetFileName(projectPath)}";
+                else
+                {
+                    _viewModel.StatusText = $"Project directory not found: {directory}";
+                }
             }
             else
             {
-                // Open as single file d d
+                // Open as single file
                 _viewModel.OpenFile(projectPath);
                 OpenFileInEditor(projectPath);
             }
@@ -341,6 +414,29 @@ public partial class MainWindow : Window
         {
             // Load folder
             _viewModel.LoadProjectFolder(projectPath);
+            _viewModel.StatusText = $"Loaded folder: {Path.GetFileName(projectPath)}";
+            
+            // Try to find solution/project and load configurations
+            var solutionFile = FindSolutionFile();
+            if (!string.IsNullOrEmpty(solutionFile))
+            {
+                _ = _runConfigService.LoadConfigurationsAsync(solutionFile);
+            }
+            
+            // Update Git panel
+            UpdateGitPanel(projectPath);
+        }
+        else
+        {
+            _viewModel.StatusText = $"Path not found: {projectPath}";
+        }
+    }
+
+    private void UpdateGitPanel(string path)
+    {
+        if (_gitPanelControl != null)
+        {
+            _ = _gitPanelControl.SetRepositoryPathAsync(path);
         }
     }
 
@@ -509,6 +605,31 @@ public partial class MainWindow : Window
     {
         switch (action)
         {
+            // Solution & Project actions
+            case "NewSolution":
+                await CreateNewSolutionAsync();
+                break;
+            case "NewProject":
+                var projectWindow = new NewProjectWindow();
+                var projectResult = await projectWindow.ShowDialog<string?>(this);
+                if (!string.IsNullOrEmpty(projectResult))
+                {
+                    var projectDir = Path.GetDirectoryName(projectResult);
+                    if (!string.IsNullOrEmpty(projectDir))
+                    {
+                        _projectPath = projectDir;
+                        LoadProject(projectDir);
+                        UpdateTitle();
+                    }
+                }
+                break;
+            case "AddProjectToSolution":
+                await AddNewProjectToSolutionAsync();
+                break;
+            case "OpenSolution":
+                await OpenSolutionAsync();
+                break;
+            
             // File actions
             case "NewFile":
                 CreateNewFile();
@@ -597,6 +718,9 @@ public partial class MainWindow : Window
             case "Rebuild":
                 await RebuildProjectAsync();
                 break;
+            case "Analyze":
+                await AnalyzeProjectAsync();
+                break;
             case "Clean":
                 await CleanProjectAsync();
                 break;
@@ -605,9 +729,16 @@ public partial class MainWindow : Window
                 break;
             case "Stop":
                 CancelBuild();
+                StopRunningProcess();
                 break;
             case "RestorePackages":
                 await RestorePackagesAsync();
+                break;
+            case "RunConfigurations":
+                await ShowRunConfigurationsAsync();
+                break;
+            case "Publish":
+                await ShowPublishWindowAsync();
                 break;
 
             // Debug actions
@@ -705,7 +836,16 @@ public partial class MainWindow : Window
     {
         if (!string.IsNullOrEmpty(_projectPath))
         {
-            _viewModel.LoadProjectFolder(_projectPath);
+            // Use the ViewModel's RefreshFileTree method which preserves expanded state
+            if (!string.IsNullOrEmpty(_viewModel.CurrentProjectPath))
+            {
+                _viewModel.RefreshFileTree();
+            }
+            else
+            {
+                // First time loading, use LoadProjectFolder
+                _viewModel.LoadProjectFolder(_projectPath);
+            }
         }
     }
 
@@ -883,39 +1023,170 @@ public partial class MainWindow : Window
 
     #region Sidebar Handlers
 
+    private GitPanelControl? _gitPanelControl;
+    private string _currentSidePanel = "explorer";
+
     private void Explorer_Click(object? sender, RoutedEventArgs e)
     {
-        // TODO: Show explorer panel
+        SwitchSidePanel("explorer");
     }
 
     private void Search_Click(object? sender, RoutedEventArgs e)
     {
-        // TODO: Show search panel
+        SwitchSidePanel("search");
     }
 
-    private void Git_Click(object? sender, RoutedEventArgs e)
+    private async void Git_Click(object? sender, RoutedEventArgs e)
     {
-        // TODO: Show git panel
+        SwitchSidePanel("git");
+        
+        // Initialize Git panel if not done yet
+        if (_gitPanelControl == null)
+        {
+            InitializeGitPanel();
+        }
+        
+        // Refresh Git status when panel is shown
+        if (_gitPanelControl != null)
+        {
+            await _gitPanelControl.RefreshAsync();
+        }
     }
 
     private void Debug_Click(object? sender, RoutedEventArgs e)
     {
-        // TODO: Show debug panel
+        SwitchSidePanel("debug");
     }
 
     private void Extensions_Click(object? sender, RoutedEventArgs e)
     {
-        // TODO: Show extensions panel
+        SwitchSidePanel("extensions");
     }
 
     private void Account_Click(object? sender, RoutedEventArgs e)
     {
-        // TODO: Show account panel
+        // TODO: Show account panel/dialog
+        _viewModel.StatusText = "Account settings coming soon...";
     }
 
     private void Settings_Click(object? sender, RoutedEventArgs e)
     {
         // TODO: Show settings
+        _viewModel.StatusText = "Settings coming soon...";
+    }
+
+    private void SwitchSidePanel(string panelName)
+    {
+        _currentSidePanel = panelName;
+        
+        // Get all panels
+        var explorerPanel = this.FindControl<Grid>("ExplorerPanel");
+        var searchPanel = this.FindControl<Grid>("SearchPanel");
+        var gitPanel = this.FindControl<Border>("GitSidePanel");
+        var debugPanel = this.FindControl<Grid>("DebugSidePanel");
+        var extensionsPanel = this.FindControl<Grid>("ExtensionsPanel");
+        
+        // Get all sidebar buttons
+        var explorerButton = this.FindControl<Button>("ExplorerButton");
+        var searchButton = this.FindControl<Button>("SearchButton");
+        var gitButton = this.FindControl<Button>("GitButton");
+        var debugButton = this.FindControl<Button>("DebugButton");
+        var extensionsButton = this.FindControl<Button>("ExtensionsButton");
+        
+        // Hide all panels
+        if (explorerPanel != null) explorerPanel.IsVisible = false;
+        if (searchPanel != null) searchPanel.IsVisible = false;
+        if (gitPanel != null) gitPanel.IsVisible = false;
+        if (debugPanel != null) debugPanel.IsVisible = false;
+        if (extensionsPanel != null) extensionsPanel.IsVisible = false;
+        
+        // Remove active class from all buttons
+        explorerButton?.Classes.Remove("active");
+        searchButton?.Classes.Remove("active");
+        gitButton?.Classes.Remove("active");
+        debugButton?.Classes.Remove("active");
+        extensionsButton?.Classes.Remove("active");
+        
+        // Show selected panel and activate button
+        switch (panelName)
+        {
+            case "explorer":
+                if (explorerPanel != null) explorerPanel.IsVisible = true;
+                explorerButton?.Classes.Add("active");
+                break;
+            case "search":
+                if (searchPanel != null) searchPanel.IsVisible = true;
+                searchButton?.Classes.Add("active");
+                // Focus search input
+                var searchInput = this.FindControl<TextBox>("SearchInputBox");
+                searchInput?.Focus();
+                break;
+            case "git":
+                if (gitPanel != null) gitPanel.IsVisible = true;
+                gitButton?.Classes.Add("active");
+                break;
+            case "debug":
+                if (debugPanel != null) debugPanel.IsVisible = true;
+                debugButton?.Classes.Add("active");
+                break;
+            case "extensions":
+                if (extensionsPanel != null) extensionsPanel.IsVisible = true;
+                extensionsButton?.Classes.Add("active");
+                break;
+        }
+    }
+
+    private void InitializeGitPanel()
+    {
+        var gitPanelContainer = this.FindControl<Border>("GitSidePanel");
+        if (gitPanelContainer == null) return;
+        
+        _gitPanelControl = new GitPanelControl();
+        
+        // Subscribe to events
+        _gitPanelControl.FileOpenRequested += (s, filePath) =>
+        {
+            OpenFileInEditor(filePath);
+        };
+        
+        _gitPanelControl.FileDiffRequested += (s, filePath) =>
+        {
+            // TODO: Show diff view
+            OpenFileInEditor(filePath);
+        };
+        
+        _gitPanelControl.CloneRepositoryRequested += async (s, e) =>
+        {
+            var cloneWindow = new CloneRepositoryWindow();
+            var result = await cloneWindow.ShowDialog<string?>(this);
+            if (!string.IsNullOrEmpty(result))
+            {
+                _projectPath = result;
+                LoadProject(result);
+                UpdateTitle();
+                await _gitPanelControl.SetRepositoryPathAsync(result);
+            }
+        };
+        
+        _gitPanelControl.StatusChanged += (s, status) =>
+        {
+            _viewModel.StatusText = status;
+        };
+        
+        // Add to container
+        gitPanelContainer.Child = _gitPanelControl;
+        
+        // Set repository path
+        if (!string.IsNullOrEmpty(_projectPath))
+        {
+            _ = _gitPanelControl.SetRepositoryPathAsync(_projectPath);
+        }
+    }
+
+    private void StartDebug_Click(object? sender, RoutedEventArgs e)
+    {
+        // Start debugging
+        _ = RunProjectAsync();
     }
 
     #endregion
@@ -955,6 +1226,665 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             _viewModel.StatusText = $"Error opening file: {ex.Message}";
+        }
+    }
+
+    private FileTreeItem? GetSelectedTreeItem()
+    {
+        var treeView = this.FindControl<TreeView>("FileTreeView");
+        return treeView?.SelectedItem as FileTreeItem;
+    }
+
+    private string GetTargetDirectory()
+    {
+        var selectedItem = GetSelectedTreeItem();
+        if (selectedItem != null)
+        {
+            string targetPath;
+            if (selectedItem.IsDirectory)
+            {
+                targetPath = selectedItem.FullPath;
+            }
+            else
+            {
+                targetPath = Path.GetDirectoryName(selectedItem.FullPath) ?? _projectPath ?? Environment.CurrentDirectory;
+            }
+            
+            // Verify the directory exists
+            if (Directory.Exists(targetPath))
+            {
+                return targetPath;
+            }
+        }
+        
+        // Fallback to _projectPath if it exists
+        if (!string.IsNullOrEmpty(_projectPath) && Directory.Exists(_projectPath))
+        {
+            return _projectPath;
+        }
+        
+        // Final fallback to current directory
+        return Environment.CurrentDirectory;
+    }
+
+    #endregion
+
+    #region File Tree Context Menu Handlers
+
+    private void ExplorerNewFile_Click(object? sender, RoutedEventArgs e)
+    {
+        AddNewItem_Click(sender, e);
+    }
+
+    private void ExplorerNewFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        AddNewFolder_Click(sender, e);
+    }
+
+    private async void AddNewItem_Click(object? sender, RoutedEventArgs e)
+    {
+        var targetDir = GetTargetDirectory();
+        
+        // Ensure directory exists before opening the dialog
+        if (!Directory.Exists(targetDir))
+        {
+            _viewModel.StatusText = $"Error: Target directory does not exist: {targetDir}";
+            return;
+        }
+        
+        var addItemWindow = new AddNewItemWindow(targetDir);
+        var result = await addItemWindow.ShowDialog<string?>(this);
+        
+        if (!string.IsNullOrEmpty(result))
+        {
+            RefreshFileTree();
+            OpenFileInEditor(result);
+            _viewModel.StatusText = $"Created: {Path.GetFileName(result)}";
+        }
+    }
+
+    private async void AddNewFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        var targetDir = GetTargetDirectory();
+        
+        var folderName = await ShowInputDialogAsync("New Folder", "Enter folder name:", "NewFolder");
+        if (!string.IsNullOrEmpty(folderName))
+        {
+            try
+            {
+                var newFolderPath = Path.Combine(targetDir, folderName);
+                Directory.CreateDirectory(newFolderPath);
+                RefreshFileTree();
+                _viewModel.StatusText = $"Created folder: {folderName}";
+            }
+            catch (Exception ex)
+            {
+                _viewModel.StatusText = $"Error creating folder: {ex.Message}";
+            }
+        }
+    }
+
+    private async void AddNewProject_Click(object? sender, RoutedEventArgs e)
+    {
+        // Find solution file
+        var solutionPath = FindSolutionFile();
+        if (string.IsNullOrEmpty(solutionPath))
+        {
+            _viewModel.StatusText = "No solution file found. Create a solution first.";
+            return;
+        }
+
+        var addProjectWindow = new AddProjectToSolutionWindow(solutionPath);
+        var result = await addProjectWindow.ShowDialog<string?>(this);
+        
+        if (!string.IsNullOrEmpty(result))
+        {
+            RefreshFileTree();
+            _viewModel.StatusText = $"Added project: {Path.GetFileNameWithoutExtension(result)}";
+        }
+    }
+
+    private async void RenameItem_Click(object? sender, RoutedEventArgs e)
+    {
+        var selectedItem = GetSelectedTreeItem();
+        if (selectedItem == null) return;
+
+        var newName = await ShowInputDialogAsync("Rename", "Enter new name:", selectedItem.Name);
+        if (!string.IsNullOrEmpty(newName) && newName != selectedItem.Name)
+        {
+            try
+            {
+                var directory = Path.GetDirectoryName(selectedItem.FullPath);
+                if (directory == null) return;
+
+                var newPath = Path.Combine(directory, newName);
+                
+                if (selectedItem.IsDirectory)
+                {
+                    Directory.Move(selectedItem.FullPath, newPath);
+                }
+                else
+                {
+                    File.Move(selectedItem.FullPath, newPath);
+                    
+                    // Update tab if file is open
+                    var tab = _viewModel.FindTabByPath(selectedItem.FullPath);
+                    if (tab != null)
+                    {
+                        tab.FilePath = newPath;
+                        tab.FileName = newName;
+                    }
+                }
+                
+                RefreshFileTree();
+                _viewModel.StatusText = $"Renamed to: {newName}";
+            }
+            catch (Exception ex)
+            {
+                _viewModel.StatusText = $"Error renaming: {ex.Message}";
+            }
+        }
+    }
+
+    private async void DeleteItem_Click(object? sender, RoutedEventArgs e)
+    {
+        var selectedItem = GetSelectedTreeItem();
+        if (selectedItem == null) return;
+
+        var confirmDelete = await ShowConfirmDialogAsync(
+            "Confirm Delete",
+            $"Are you sure you want to delete '{selectedItem.Name}'?" + 
+            (selectedItem.IsDirectory ? "\n\nThis will delete all contents." : ""));
+
+        if (confirmDelete)
+        {
+            try
+            {
+                if (selectedItem.IsDirectory)
+                {
+                    Directory.Delete(selectedItem.FullPath, true);
+                }
+                else
+                {
+                    File.Delete(selectedItem.FullPath);
+                    
+                    // Close tab if file is open
+                    var tab = _viewModel.FindTabByPath(selectedItem.FullPath);
+                    if (tab != null)
+                    {
+                        _viewModel.CloseTab(tab);
+                    }
+                }
+                
+                RefreshFileTree();
+                _viewModel.StatusText = $"Deleted: {selectedItem.Name}";
+            }
+            catch (Exception ex)
+            {
+                _viewModel.StatusText = $"Error deleting: {ex.Message}";
+            }
+        }
+    }
+
+    private void CopyPath_Click(object? sender, RoutedEventArgs e)
+    {
+        var selectedItem = GetSelectedTreeItem();
+        if (selectedItem == null) return;
+
+        _ = CopyToClipboardAsync(selectedItem.FullPath);
+        _viewModel.StatusText = $"Copied path: {selectedItem.FullPath}";
+    }
+
+    private async Task CopyToClipboardAsync(string text)
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard != null)
+        {
+            await clipboard.SetTextAsync(text);
+        }
+    }
+
+    private void OpenInExplorer_Click(object? sender, RoutedEventArgs e)
+    {
+        var selectedItem = GetSelectedTreeItem();
+        if (selectedItem == null) return;
+
+        try
+        {
+            var path = selectedItem.IsDirectory ? selectedItem.FullPath : Path.GetDirectoryName(selectedItem.FullPath);
+            if (!string.IsNullOrEmpty(path))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{path}\"",
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = $"Error opening explorer: {ex.Message}";
+        }
+    }
+
+    private void OpenInTerminal_Click(object? sender, RoutedEventArgs e)
+    {
+        var selectedItem = GetSelectedTreeItem();
+        if (selectedItem == null) return;
+
+        var targetDir = selectedItem.IsDirectory ? selectedItem.FullPath : Path.GetDirectoryName(selectedItem.FullPath);
+        if (!string.IsNullOrEmpty(targetDir))
+        {
+            _terminalControl?.ChangeDirectory(targetDir);
+            SwitchToolWindowPanel("terminal");
+            _viewModel.StatusText = $"Terminal directory: {targetDir}";
+        }
+    }
+
+    private void RefreshTree_Click(object? sender, RoutedEventArgs e)
+    {
+        RefreshFileTree();
+    }
+
+    private string? FindSolutionFile()
+    {
+        if (string.IsNullOrEmpty(_projectPath)) return null;
+        
+        // Ensure the path exists
+        if (!Directory.Exists(_projectPath))
+        {
+            // Try parent directory if _projectPath is a file
+            if (File.Exists(_projectPath))
+            {
+                var parentDir = Path.GetDirectoryName(_projectPath);
+                if (string.IsNullOrEmpty(parentDir) || !Directory.Exists(parentDir))
+                    return null;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        try
+        {
+            var dir = new DirectoryInfo(_projectPath);
+            while (dir != null && dir.Exists)
+            {
+                // Look for .slnx files first (new format)
+                var slnxFiles = dir.GetFiles("*.slnx");
+                if (slnxFiles.Length > 0)
+                {
+                    return slnxFiles[0].FullName;
+                }
+                
+                // Then look for .sln files (legacy format)
+                var slnFiles = dir.GetFiles("*.sln");
+                if (slnFiles.Length > 0)
+                {
+                    return slnFiles[0].FullName;
+                }
+                dir = dir.Parent;
+            }
+        }
+        catch (Exception)
+        {
+            // Ignore any IO errors
+        }
+        
+        return null;
+    }
+
+    private async Task<string?> ShowInputDialogAsync(string title, string message, string defaultValue = "")
+    {
+        var dialog = new Window
+        {
+            Title = title,
+            Width = 400,
+            Height = 170,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            ShowInTaskbar = false,
+            SystemDecorations = SystemDecorations.None,
+            Background = new SolidColorBrush(Color.Parse("#FF1E1E2E"))
+        };
+
+        string? result = null;
+        
+        var rootGrid = new Grid
+        {
+            RowDefinitions = new RowDefinitions("36,*,Auto")
+        };
+
+        // Title bar
+        var titleBar = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse("#FF3C3C3C")),
+            CornerRadius = new CornerRadius(8, 8, 0, 0)
+        };
+        Grid.SetRow(titleBar, 0);
+
+        var titleGrid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
+        var titleText = new TextBlock
+        {
+            Text = $"📝 {title}",
+            FontSize = 13,
+            FontWeight = FontWeight.SemiBold,
+            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Margin = new Thickness(12, 0)
+        };
+        titleGrid.Children.Add(titleText);
+        titleBar.Child = titleGrid;
+        titleBar.PointerPressed += (s, e) => { if (e.GetCurrentPoint(dialog).Properties.IsLeftButtonPressed) dialog.BeginMoveDrag(e); };
+
+        // Content
+        var contentStack = new StackPanel
+        {
+            Margin = new Thickness(20, 16),
+            Spacing = 12
+        };
+        Grid.SetRow(contentStack, 1);
+
+        contentStack.Children.Add(new TextBlock
+        {
+            Text = message,
+            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
+            FontSize = 13
+        });
+
+        var inputBox = new TextBox
+        {
+            Text = defaultValue,
+            Background = new SolidColorBrush(Color.Parse("#FF363647")),
+            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
+            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(12, 10)
+        };
+        contentStack.Children.Add(inputBox);
+
+        // Buttons
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 10,
+            Margin = new Thickness(20, 0, 20, 16)
+        };
+        Grid.SetRow(buttonPanel, 2);
+
+        var okButton = new Button
+        {
+            Content = "OK",
+            Width = 80,
+            Background = new SolidColorBrush(Color.Parse("#FFFAB387")),
+            Foreground = new SolidColorBrush(Color.Parse("#FF1E1E2E")),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(16, 8)
+        };
+        okButton.Click += (s, e) => { result = inputBox.Text; dialog.Close(); };
+
+        var cancelButton = new Button
+        {
+            Content = "Cancel",
+            Width = 80,
+            Background = Brushes.Transparent,
+            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
+            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(16, 8)
+        };
+        cancelButton.Click += (s, e) => dialog.Close();
+
+        buttonPanel.Children.Add(cancelButton);
+        buttonPanel.Children.Add(okButton);
+
+        rootGrid.Children.Add(titleBar);
+        rootGrid.Children.Add(contentStack);
+        rootGrid.Children.Add(buttonPanel);
+
+        var outerBorder = new Border
+        {
+            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Child = rootGrid
+        };
+
+        dialog.Content = outerBorder;
+        
+        // Focus input and select all
+        dialog.Opened += (s, e) =>
+        {
+            inputBox.Focus();
+            inputBox.SelectAll();
+        };
+
+        await dialog.ShowDialog(this);
+        return result;
+    }
+
+    private async Task<bool> ShowConfirmDialogAsync(string title, string message)
+    {
+        var dialog = new Window
+        {
+            Title = title,
+            Width = 400,
+            Height = 180,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false,
+            ShowInTaskbar = false,
+            SystemDecorations = SystemDecorations.None,
+            Background = new SolidColorBrush(Color.Parse("#FF1E1E2E"))
+        };
+
+        bool result = false;
+        
+        var rootGrid = new Grid
+        {
+            RowDefinitions = new RowDefinitions("36,*,Auto")
+        };
+
+        // Title bar
+        var titleBar = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse("#FF3C3C3C")),
+            CornerRadius = new CornerRadius(8, 8, 0, 0)
+        };
+        Grid.SetRow(titleBar, 0);
+
+        var titleText = new TextBlock
+        {
+            Text = $"⚠️ {title}",
+            FontSize = 13,
+            FontWeight = FontWeight.SemiBold,
+            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Margin = new Thickness(12, 0)
+        };
+        titleBar.Child = titleText;
+        titleBar.PointerPressed += (s, e) => { if (e.GetCurrentPoint(dialog).Properties.IsLeftButtonPressed) dialog.BeginMoveDrag(e); };
+
+        // Content
+        var messageText = new TextBlock
+        {
+            Text = message,
+            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
+            FontSize = 13,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            Margin = new Thickness(20, 20)
+        };
+        Grid.SetRow(messageText, 1);
+
+        // Buttons
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 10,
+            Margin = new Thickness(20, 0, 20, 16)
+        };
+        Grid.SetRow(buttonPanel, 2);
+
+        var yesButton = new Button
+        {
+            Content = "Yes",
+            Width = 80,
+            Background = new SolidColorBrush(Color.Parse("#FFF38BA8")),
+            Foreground = new SolidColorBrush(Color.Parse("#FF1E1E2E")),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(16, 8)
+        };
+        yesButton.Click += (s, e) => { result = true; dialog.Close(); };
+
+        var noButton = new Button
+        {
+            Content = "No",
+            Width = 80,
+            Background = Brushes.Transparent,
+            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
+            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(16, 8)
+        };
+        noButton.Click += (s, e) => dialog.Close();
+
+        buttonPanel.Children.Add(noButton);
+        buttonPanel.Children.Add(yesButton);
+
+        rootGrid.Children.Add(titleBar);
+        rootGrid.Children.Add(messageText);
+        rootGrid.Children.Add(buttonPanel);
+
+        var outerBorder = new Border
+        {
+            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Child = rootGrid
+        };
+
+        dialog.Content = outerBorder;
+        await dialog.ShowDialog(this);
+        return result;
+    }
+
+    #endregion
+
+    #region Solution and Project Management
+
+    /// <summary>
+    /// Open an existing solution file
+    /// </summary>
+    public async Task OpenSolutionAsync()
+    {
+        var topLevel = GetTopLevel(this);
+        if (topLevel == null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Solution",
+            AllowMultiple = false,
+            FileTypeFilter = new List<FilePickerFileType>
+            {
+                new("Solution Files") { Patterns = new[] { "*.slnx", "*.sln" } },
+                new("Project Files") { Patterns = new[] { "*.csproj", "*.fsproj", "*.vbproj" } },
+                new("All Files") { Patterns = new[] { "*.*" } }
+            }
+        });
+
+        if (files.Count > 0)
+        {
+            var file = files[0];
+            var filePath = file.Path.LocalPath;
+            var directory = Path.GetDirectoryName(filePath);
+            
+            if (!string.IsNullOrEmpty(directory))
+            {
+                _projectPath = directory;
+                LoadProject(filePath);
+                UpdateTitle();
+                _viewModel.StatusText = $"Opened: {Path.GetFileName(filePath)}";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Create a new solution
+    /// </summary>
+    public async Task CreateNewSolutionAsync()
+    {
+        var newSolutionWindow = new NewSolutionWindow();
+        var result = await newSolutionWindow.ShowDialog<string?>(this);
+        
+        if (!string.IsNullOrEmpty(result))
+        {
+            var solutionDir = Path.GetDirectoryName(result);
+            if (!string.IsNullOrEmpty(solutionDir))
+            {
+                // Wait a bit for the file system to update
+                await Task.Delay(100);
+                
+                // Verify the solution file was created
+                if (File.Exists(result))
+                {
+                    _projectPath = solutionDir;
+                    _viewModel.LoadProjectFolder(solutionDir);
+                    UpdateTitle();
+                    _viewModel.StatusText = $"Created solution: {Path.GetFileName(result)}";
+                }
+                else
+                {
+                    // Try to load directory anyway
+                    if (Directory.Exists(solutionDir))
+                    {
+                        _projectPath = solutionDir;
+                        _viewModel.LoadProjectFolder(solutionDir);
+                        UpdateTitle();
+                        _viewModel.StatusText = $"Created solution directory: {Path.GetFileName(solutionDir)}";
+                    }
+                    else
+                    {
+                        _viewModel.StatusText = $"Error: Solution file was not created at {result}";
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Add a new project to the current solution
+    /// </summary>
+    public async Task AddNewProjectToSolutionAsync()
+    {
+        var solutionPath = FindSolutionFile();
+        if (string.IsNullOrEmpty(solutionPath))
+        {
+            _viewModel.StatusText = "No solution file found. Create a solution first.";
+            
+            // Offer to create a solution
+            var createSolution = await ShowConfirmDialogAsync(
+                "No Solution Found",
+                "Would you like to create a new solution?");
+            
+            if (createSolution)
+            {
+                await CreateNewSolutionAsync();
+            }
+            return;
+        }
+
+        var addProjectWindow = new AddProjectToSolutionWindow(solutionPath);
+        var result = await addProjectWindow.ShowDialog<string?>(this);
+        
+        if (!string.IsNullOrEmpty(result))
+        {
+            RefreshFileTree();
+            _viewModel.StatusText = $"Added project: {Path.GetFileNameWithoutExtension(result)}";
         }
     }
 
@@ -1761,6 +2691,10 @@ public partial class MainWindow : Window
             _isBuildInProgress = false;
             UpdateBuildButtons();
             
+            // Parse build output for errors and warnings
+            var buildOutput = _buildOutput.ToString();
+            ParseAndShowBuildProblems(buildOutput);
+            
             if (e.Result.Success)
             {
                 _viewModel.StatusText = "Build succeeded";
@@ -1768,6 +2702,11 @@ public partial class MainWindow : Window
             else
             {
                 _viewModel.StatusText = $"Build failed: {e.Result.ErrorMessage ?? "Unknown error"}";
+                // Switch to problems panel if there are errors
+                if (_viewModel.Problems.Count > 0)
+                {
+                    SwitchToolWindowPanel("problems");
+                }
             }
         });
     }
@@ -1822,11 +2761,108 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Debug project button click handler
+    /// </summary>
+    private async void DebugProject_Click(object? sender, RoutedEventArgs e)
+    {
+        // For now, just run without actual debugging
+        await RunProjectAsync();
+    }
+
+    /// <summary>
     /// Cancel build button click handler
     /// </summary>
     private void CancelBuild_Click(object? sender, RoutedEventArgs e)
     {
         CancelBuild();
+        StopRunningProcess();
+    }
+
+    /// <summary>
+    /// Run configuration dropdown click handler
+    /// </summary>
+    private async void RunConfigDropdown_Click(object? sender, RoutedEventArgs e)
+    {
+        await ShowRunConfigurationMenuAsync();
+    }
+
+    /// <summary>
+    /// Edit configurations button click handler
+    /// </summary>
+    private async void EditConfigurations_Click(object? sender, RoutedEventArgs e)
+    {
+        await ShowRunConfigurationsAsync();
+    }
+
+    /// <summary>
+    /// Publish button click handler
+    /// </summary>
+    private async void Publish_Click(object? sender, RoutedEventArgs e)
+    {
+        await ShowPublishWindowAsync();
+    }
+
+    /// <summary>
+    /// Show run configuration context menu
+    /// </summary>
+    private async Task ShowRunConfigurationMenuAsync()
+    {
+        // Ensure configurations are loaded
+        if (_runConfigService.Configurations.Count == 0)
+        {
+            var projectPath = GetCurrentProjectPath();
+            if (!string.IsNullOrEmpty(projectPath))
+            {
+                await _runConfigService.LoadConfigurationsAsync(projectPath);
+            }
+        }
+
+        // Create context menu
+        var menu = new ContextMenu();
+        
+        foreach (var config in _runConfigService.Configurations)
+        {
+            var menuItem = new MenuItem
+            {
+                Header = config.Name,
+                Icon = new TextBlock { Text = config == _runConfigService.ActiveConfiguration ? "✓" : " ", FontSize = 12 }
+            };
+            
+            var capturedConfig = config;
+            menuItem.Click += async (s, e) =>
+            {
+                _runConfigService.SetActiveConfiguration(capturedConfig);
+                UpdateRunConfigurationDisplay();
+            };
+            
+            menu.Items.Add(menuItem);
+        }
+
+        // Add separator and Edit Configurations
+        menu.Items.Add(new Separator());
+        
+        var editItem = new MenuItem { Header = "Edit Configurations..." };
+        editItem.Click += async (s, e) => await ShowRunConfigurationsAsync();
+        menu.Items.Add(editItem);
+
+        // Show the menu
+        var button = this.FindControl<Button>("RunConfigDropdownButton");
+        if (button != null)
+        {
+            menu.Open(button);
+        }
+    }
+
+    /// <summary>
+    /// Update run configuration display in toolbar
+    /// </summary>
+    private void UpdateRunConfigurationDisplay()
+    {
+        var configNameText = this.FindControl<TextBlock>("RunConfigNameText");
+        if (configNameText != null)
+        {
+            configNameText.Text = _runConfigService.ActiveConfiguration?.Name ?? "Default";
+        }
     }
 
     /// <summary>
@@ -1874,9 +2910,9 @@ public partial class MainWindow : Window
     /// </summary>
     public async Task RunProjectAsync()
     {
-        if (_isBuildInProgress)
+        if (_isBuildInProgress || _runConfigService.IsRunning)
         {
-            _viewModel.StatusText = "Build already in progress";
+            _viewModel.StatusText = "Build or run already in progress";
             return;
         }
 
@@ -1888,25 +2924,273 @@ public partial class MainWindow : Window
             return;
         }
 
-        // Clear previous build output
-        _buildOutput.Clear();
-        UpdateBuildOutput();
-
-        // Switch to Build tab
-        SwitchToolWindowPanel("build");
-
-        // Build and run the project
-        var result = await _buildService.BuildAndRunAsync(projectPath);
-        
-        // Update status
-        if (result.Success)
+        // Check if we have run configurations loaded
+        if (_runConfigService.Configurations.Count == 0)
         {
-            _viewModel.StatusText = "Project started successfully";
+            await _runConfigService.LoadConfigurationsAsync(projectPath);
+        }
+
+        // If we have an active configuration, use it
+        if (_runConfigService.ActiveConfiguration != null)
+        {
+            await RunWithConfigurationAsync(_runConfigService.ActiveConfiguration);
         }
         else
         {
-            _viewModel.StatusText = "Build failed - see Build output for details";
+            // Fall back to simple build and run
+            _buildOutput.Clear();
+            UpdateBuildOutput();
+            SwitchToolWindowPanel("run");
+
+            var result = await _buildService.BuildAndRunAsync(projectPath);
+            
+            if (result.Success)
+            {
+                _viewModel.StatusText = "Project started successfully";
+            }
+            else
+            {
+                _viewModel.StatusText = "Build failed - see Build output for details";
+            }
         }
+    }
+
+    /// <summary>
+    /// Run with a specific configuration
+    /// </summary>
+    private async Task RunWithConfigurationAsync(RunConfiguration config)
+    {
+        // Clear output
+        _buildOutput.Clear();
+        UpdateBuildOutput();
+        UpdateRunOutput("");
+        
+        // Switch to Run panel
+        SwitchToolWindowPanel("run");
+
+        // Subscribe to output events
+        _runConfigService.OutputReceived += OnRunOutputReceived;
+        _runConfigService.RunCompleted += OnRunCompleted;
+        _runConfigService.RunStarted += OnRunStarted;
+
+        try
+        {
+            _viewModel.StatusText = $"Running: {config.Name}";
+            UpdateRunButtons(true);
+
+            var result = await _runConfigService.RunConfigurationAsync(config, false);
+            
+            if (result.Success)
+            {
+                _viewModel.StatusText = $"Run completed: {config.Name}";
+            }
+            else
+            {
+                _viewModel.StatusText = $"Run failed: {result.ErrorMessage ?? "Unknown error"}";
+            }
+        }
+        finally
+        {
+            _runConfigService.OutputReceived -= OnRunOutputReceived;
+            _runConfigService.RunCompleted -= OnRunCompleted;
+            _runConfigService.RunStarted -= OnRunStarted;
+            UpdateRunButtons(false);
+        }
+    }
+
+    private void OnRunOutputReceived(object? sender, RunOutputEventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            AppendRunOutput(e.Output);
+        });
+    }
+
+    private void OnRunStarted(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            _viewModel.StatusText = "Running...";
+            UpdateRunButtons(true);
+        });
+    }
+
+    private void OnRunCompleted(object? sender, RunCompletedEventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            UpdateRunButtons(false);
+        });
+    }
+
+    private void UpdateRunOutput(string text)
+    {
+        var runOutputText = this.FindControl<TextBlock>("RunOutputText");
+        if (runOutputText != null)
+        {
+            runOutputText.Text = text;
+        }
+    }
+
+    private void AppendRunOutput(string text)
+    {
+        var runOutputText = this.FindControl<TextBlock>("RunOutputText");
+        if (runOutputText != null)
+        {
+            if (runOutputText.Text == "Run output will appear here...")
+            {
+                runOutputText.Text = text;
+            }
+            else
+            {
+                runOutputText.Text += text;
+            }
+        }
+    }
+
+    private void UpdateRunButtons(bool isRunning)
+    {
+        var runButton = this.FindControl<Button>("RunProjectButton");
+        var cancelButton = this.FindControl<Button>("CancelBuildButton");
+        
+        if (runButton != null)
+        {
+            runButton.IsEnabled = !isRunning;
+        }
+        
+        if (cancelButton != null)
+        {
+            cancelButton.IsVisible = isRunning;
+        }
+    }
+
+    /// <summary>
+    /// Stop the running process
+    /// </summary>
+    public void StopRunningProcess()
+    {
+        if (_runConfigService.IsRunning)
+        {
+            _runConfigService.Stop();
+            _viewModel.StatusText = "Process stopped";
+            UpdateRunButtons(false);
+        }
+    }
+
+    /// <summary>
+    /// Show Run Configurations window
+    /// </summary>
+    public async Task ShowRunConfigurationsAsync()
+    {
+        var projectPath = GetCurrentProjectPath() ?? _projectPath ?? "";
+        var window = new RunConfigurationsWindow(projectPath);
+        var result = await window.ShowDialog<RunConfiguration?>(this);
+        
+        if (result != null)
+        {
+            _runConfigService.SetActiveConfiguration(result);
+            await RunWithConfigurationAsync(result);
+        }
+    }
+
+    /// <summary>
+    /// Show Publish window
+    /// </summary>
+    public async Task ShowPublishWindowAsync()
+    {
+        var projectPath = GetCurrentProjectPath() ?? _projectPath ?? "";
+        var window = new PublishWindow(projectPath);
+        var result = await window.ShowDialog<PublishProfile?>(this);
+        
+        if (result != null)
+        {
+            await PublishProjectAsync(result);
+        }
+    }
+
+    /// <summary>
+    /// Publish the project with specified profile
+    /// </summary>
+    public async Task PublishProjectAsync(PublishProfile profile)
+    {
+        // Clear output and switch to build panel
+        _buildOutput.Clear();
+        UpdateBuildOutput();
+        SwitchToolWindowPanel("build");
+
+        // Subscribe to output events
+        _publishService.OutputReceived += OnPublishOutputReceived;
+        _publishService.PublishCompleted += OnPublishCompleted;
+        _publishService.PublishStarted += OnPublishStarted;
+
+        try
+        {
+            _viewModel.StatusText = $"Publishing: {profile.Name}";
+            
+            var result = await _publishService.PublishAsync(profile);
+            
+            if (result.Success)
+            {
+                _viewModel.StatusText = $"Publish succeeded: {result.OutputPath}";
+                
+                // Offer to open the output folder
+                var openFolder = await ShowConfirmDialogAsync(
+                    "Publish Succeeded",
+                    $"Project published successfully to:\n{result.OutputPath}\n\nWould you like to open the output folder?");
+                
+                if (openFolder && !string.IsNullOrEmpty(result.OutputPath))
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = $"\"{result.OutputPath}\"",
+                            UseShellExecute = true
+                        });
+                    }
+                    catch
+                    {
+                        // Ignore errors opening explorer
+                    }
+                }
+            }
+            else
+            {
+                _viewModel.StatusText = $"Publish failed: {result.ErrorMessage ?? "Unknown error"}";
+            }
+        }
+        finally
+        {
+            _publishService.OutputReceived -= OnPublishOutputReceived;
+            _publishService.PublishCompleted -= OnPublishCompleted;
+            _publishService.PublishStarted -= OnPublishStarted;
+        }
+    }
+
+    private void OnPublishOutputReceived(object? sender, PublishOutputEventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            _buildOutput.Append(e.Output);
+            UpdateBuildOutput();
+        });
+    }
+
+    private void OnPublishStarted(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            _viewModel.StatusText = "Publishing...";
+        });
+    }
+
+    private void OnPublishCompleted(object? sender, PublishCompletedEventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            // Status will be updated in the main publish method
+        });
     }
 
     /// <summary>
@@ -2015,6 +3299,246 @@ public partial class MainWindow : Window
         
         // Fall back to _projectPath
         return _projectPath;
+    }
+
+    #endregion
+
+    #region Code Analysis
+
+    /// <summary>
+    /// Initialize code analysis service events
+    /// </summary>
+    private void InitializeCodeAnalysisService()
+    {
+        _codeAnalysisService.AnalysisCompleted += OnAnalysisCompleted;
+        _codeAnalysisService.AnalysisProgress += OnAnalysisProgress;
+    }
+
+    private void OnAnalysisCompleted(object? sender, AnalysisCompletedEventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            _isAnalysisInProgress = false;
+            UpdateAnalyzeButton();
+
+            if (e.Success)
+            {
+                // Clear old problems and add new ones
+                _viewModel.Problems.Clear();
+                foreach (var diagnostic in e.Diagnostics)
+                {
+                    _viewModel.Problems.Add(diagnostic);
+                }
+
+                var errorCount = e.Diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error);
+                var warningCount = e.Diagnostics.Count(d => d.Severity == DiagnosticSeverity.Warning);
+
+                if (e.Diagnostics.Count == 0)
+                {
+                    _viewModel.StatusText = "Analysis complete - No problems found!";
+                }
+                else
+                {
+                    _viewModel.StatusText = $"Analysis complete - {errorCount} error(s), {warningCount} warning(s)";
+                }
+
+                // Switch to problems panel if there are issues
+                if (e.Diagnostics.Count > 0)
+                {
+                    SwitchToolWindowPanel("problems");
+                }
+            }
+            else
+            {
+                _viewModel.StatusText = $"Analysis failed: {e.ErrorMessage ?? "Unknown error"}";
+            }
+        });
+    }
+
+    private void OnAnalysisProgress(object? sender, AnalysisProgressEventArgs e)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            _viewModel.StatusText = e.Message;
+        });
+    }
+
+    /// <summary>
+    /// Analyze button click handler
+    /// </summary>
+    private async void AnalyzeProject_Click(object? sender, RoutedEventArgs e)
+    {
+        await AnalyzeProjectAsync();
+    }
+
+    /// <summary>
+    /// Refresh analysis button click handler
+    /// </summary>
+    private async void RefreshAnalysis_Click(object? sender, RoutedEventArgs e)
+    {
+        await AnalyzeProjectAsync();
+    }
+
+    /// <summary>
+    /// Clear problems button click handler
+    /// </summary>
+    private void ClearProblems_Click(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.Problems.Clear();
+        _viewModel.StatusText = "Problems cleared";
+    }
+
+    /// <summary>
+    /// Problems list selection changed - navigate to file location
+    /// </summary>
+    private void ProblemsListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.AddedItems.Count > 0 && e.AddedItems[0] is DiagnosticItem diagnostic)
+        {
+            // Open file and navigate to location
+            if (!string.IsNullOrEmpty(diagnostic.FilePath) && File.Exists(diagnostic.FilePath))
+            {
+                OpenFileInEditor(diagnostic.FilePath);
+                
+                // Navigate to the specific line in Monaco
+                _monacoEditor?.GoToLine(diagnostic.Line, diagnostic.Column);
+                
+                _viewModel.StatusText = $"{diagnostic.SeverityIcon} {diagnostic.Code}: {diagnostic.Message}";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Analyze the current project with Roslyn
+    /// </summary>
+    public async Task AnalyzeProjectAsync()
+    {
+        if (_isAnalysisInProgress)
+        {
+            _viewModel.StatusText = "Analysis already in progress";
+            return;
+        }
+
+        // Get project path
+        var projectPath = GetCurrentProjectPath();
+        if (string.IsNullOrEmpty(projectPath))
+        {
+            _viewModel.StatusText = "No project loaded to analyze";
+            return;
+        }
+
+        _isAnalysisInProgress = true;
+        UpdateAnalyzeButton();
+
+        // Switch to Problems panel
+        SwitchToolWindowPanel("problems");
+
+        _viewModel.StatusText = "Starting code analysis...";
+
+        try
+        {
+            // Run analysis
+            await _codeAnalysisService.AnalyzeProjectWithCallbackAsync(projectPath);
+        }
+        catch (Exception ex)
+        {
+            _isAnalysisInProgress = false;
+            UpdateAnalyzeButton();
+            _viewModel.StatusText = $"Analysis error: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Analyze current file only
+    /// </summary>
+    public async Task AnalyzeCurrentFileAsync()
+    {
+        if (_viewModel.ActiveTab == null || string.IsNullOrEmpty(_viewModel.ActiveTab.FilePath))
+        {
+            _viewModel.StatusText = "No file to analyze";
+            return;
+        }
+
+        var filePath = _viewModel.ActiveTab.FilePath;
+        if (!filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            _viewModel.StatusText = "Code analysis is only available for C# files";
+            return;
+        }
+
+        _isAnalysisInProgress = true;
+        UpdateAnalyzeButton();
+        _viewModel.StatusText = "Analyzing current file...";
+
+        try
+        {
+            // Get content from Monaco editor if available
+            string? content = null;
+            if (_monacoEditor != null)
+            {
+                content = await _monacoEditor.GetContentAsync();
+            }
+
+            var diagnostics = await _codeAnalysisService.AnalyzeFileAsync(filePath, content);
+
+            // Update problems
+            _viewModel.Problems.Clear();
+            foreach (var diagnostic in diagnostics)
+            {
+                _viewModel.Problems.Add(diagnostic);
+            }
+
+            var errorCount = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error);
+            var warningCount = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Warning);
+
+            if (diagnostics.Count == 0)
+            {
+                _viewModel.StatusText = $"No problems in {_viewModel.ActiveTab.FileName}";
+            }
+            else
+            {
+                _viewModel.StatusText = $"{_viewModel.ActiveTab.FileName}: {errorCount} error(s), {warningCount} warning(s)";
+                SwitchToolWindowPanel("problems");
+            }
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = $"Analysis error: {ex.Message}";
+        }
+        finally
+        {
+            _isAnalysisInProgress = false;
+            UpdateAnalyzeButton();
+        }
+    }
+
+    /// <summary>
+    /// Parse build output and show problems from build
+    /// </summary>
+    private void ParseAndShowBuildProblems(string buildOutput)
+    {
+        var diagnostics = _codeAnalysisService.ParseBuildOutput(buildOutput);
+        
+        if (diagnostics.Count > 0)
+        {
+            _viewModel.Problems.Clear();
+            foreach (var diagnostic in diagnostics)
+            {
+                _viewModel.Problems.Add(diagnostic);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Update analyze button state
+    /// </summary>
+    private void UpdateAnalyzeButton()
+    {
+        var analyzeButton = this.FindControl<Button>("AnalyzeProjectButton");
+        if (analyzeButton != null)
+        {
+            analyzeButton.IsEnabled = !_isAnalysisInProgress;
+        }
     }
 
     #endregion

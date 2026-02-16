@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterScreen"
         SystemDecorations="None"
         Width="900"
-        Height="600"
+        Height="650"
         CanResize="False"
         UseLayoutRounding="True"
         FontFamily="Segoe UI, Arial, Tahoma">
@@ -195,6 +195,21 @@
 
                         <!-- Action Buttons -->
                         <StackPanel Grid.Row="1" Margin="24,0" Spacing="8">
+                            <Button Classes="action-btn" Click="NewSolution_Click">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border Width="36" Height="36" CornerRadius="8" 
+                                            Background="{StaticResource AccentPurpleBrush}" Opacity="0.2">
+                                        <TextBlock Text="📦" FontSize="16" Foreground="{StaticResource AccentPurpleBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="New Solution" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Create a new .sln solution" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                            
                             <Button Classes="action-btn" Click="NewProject_Click">
                                 <Grid ColumnDefinitions="Auto,*">
                                     <Border Width="36" Height="36" CornerRadius="8" 

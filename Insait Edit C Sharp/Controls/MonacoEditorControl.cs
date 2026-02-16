@@ -219,9 +219,14 @@ public class MonacoEditorControl : NativeControlHost
 
     public void GoToLine(int lineNumber)
     {
+        GoToLine(lineNumber, 1);
+    }
+
+    public void GoToLine(int lineNumber, int column)
+    {
         if (_webView?.CoreWebView2 != null && _isInitialized)
         {
-            var script = $"goToLine({lineNumber});";
+            var script = $"goToLine({lineNumber}, {column});";
             _ = _webView.CoreWebView2.ExecuteScriptAsync(script);
         }
     }

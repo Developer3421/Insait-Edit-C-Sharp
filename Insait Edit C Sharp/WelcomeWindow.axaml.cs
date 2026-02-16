@@ -105,6 +105,17 @@ public partial class WelcomeWindow : Window
 
     #region Action Buttons
 
+    private async void NewSolution_Click(object? sender, RoutedEventArgs e)
+    {
+        var newSolutionWindow = new NewSolutionWindow();
+        var result = await newSolutionWindow.ShowDialog<string?>(this);
+        
+        if (!string.IsNullOrEmpty(result))
+        {
+            OpenProjectAndShowMainWindow(result);
+        }
+    }
+
     private async void NewProject_Click(object? sender, RoutedEventArgs e)
     {
         var newProjectWindow = new NewProjectWindow();

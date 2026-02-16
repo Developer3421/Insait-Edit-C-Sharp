@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:Insait_Edit_C_Sharp.ViewModels"
         xmlns:models="using:Insait_Edit_C_Sharp.Models"
+        xmlns:controls="using:Insait_Edit_C_Sharp.Controls"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="Insait_Edit_C_Sharp.MainWindow"
         x:DataType="vm:MainViewModel"
@@ -100,6 +101,25 @@
         <Style Selector="Button.toolbar-button:pressed">
             <Setter Property="Background" Value="#40FFFFFF"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+
+        <!-- Primary button style -->
+        <Style Selector="Button.primary-button">
+            <Setter Property="Background" Value="{StaticResource AccentOrangeBrush}"/>
+            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary-button:pointerover">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+        </Style>
+        <Style Selector="Button.primary-button:pressed">
+            <Setter Property="Background" Value="#FFE09070"/>
         </Style>
 
         <!-- Icon button style -->
@@ -309,10 +329,10 @@
                         </StackPanel>
                     </Button>
                     
-                    <!-- Run Button -->
-                    <Button Name="RunProjectButton" ToolTip.Tip="Run Project (F5)"
-                            Click="RunProject_Click"
-                            Background="#FF2196F3" 
+                    <!-- Analyze Button -->
+                    <Button Name="AnalyzeProjectButton" ToolTip.Tip="Analyze Code (Ctrl+Shift+A)"
+                            Click="AnalyzeProject_Click"
+                            Background="#FF9C27B0" 
                             Foreground="White"
                             CornerRadius="4"
                             Padding="12,4"
@@ -320,13 +340,78 @@
                             Cursor="Hand"
                             Margin="4,0,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="🔍" FontSize="12"/>
+                            <TextBlock Text="Analyze" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Run Configuration Selector (JetBrains Rider Style) -->
+                    <Border Background="#FF3D3D4D" CornerRadius="4" Height="28" Margin="4,0,0,0" Padding="4,0">
+                        <Grid ColumnDefinitions="Auto,Auto,Auto">
+                            <!-- Configuration Name -->
+                            <Button Name="RunConfigDropdownButton" ToolTip.Tip="Select Run Configuration (Shift+Alt+F10)"
+                                    Click="RunConfigDropdown_Click"
+                                    Background="Transparent" 
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Padding="8,0"
+                                    Height="26"
+                                    Cursor="Hand">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="▶" FontSize="10" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Default" FontSize="11" Name="RunConfigNameText" VerticalAlignment="Center" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="▼" FontSize="8" Foreground="#FF9399B2" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Separator -->
+                            <Border Grid.Column="1" Width="1" Height="16" Background="#FF505053" Margin="2,0"/>
+                            
+                            <!-- Edit Configurations Button -->
+                            <Button Grid.Column="2" Name="EditConfigurationsButton" ToolTip.Tip="Edit Configurations..."
+                                    Click="EditConfigurations_Click"
+                                    Background="Transparent" 
+                                    Foreground="#FF9399B2"
+                                    BorderThickness="0"
+                                    Padding="6,0"
+                                    Height="26"
+                                    Cursor="Hand">
+                                <TextBlock Text="⚙" FontSize="12"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Run Button -->
+                    <Button Name="RunProjectButton" ToolTip.Tip="Run Project (F5)"
+                            Click="RunProject_Click"
+                            Background="#FF4CAF50" 
+                            Foreground="White"
+                            CornerRadius="4"
+                            Padding="10,4"
+                            Height="28"
+                            Cursor="Hand"
+                            Margin="4,0,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBlock Text="▶" FontSize="12"/>
                             <TextBlock Text="Run" FontSize="12" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
                     
-                    <!-- Cancel Build Button (hidden by default) -->
-                    <Button Name="CancelBuildButton" ToolTip.Tip="Cancel Build"
+                    <!-- Debug Button -->
+                    <Button Name="DebugProjectButton" ToolTip.Tip="Debug Project (F5 with debugger)"
+                            Click="DebugProject_Click"
+                            Background="#FF9C27B0" 
+                            Foreground="White"
+                            CornerRadius="4"
+                            Padding="8,4"
+                            Height="28"
+                            Cursor="Hand"
+                            Margin="2,0,0,0">
+                        <TextBlock Text="🐛" FontSize="12"/>
+                    </Button>
+                    
+                    <!-- Stop Button (hidden by default) -->
+                    <Button Name="CancelBuildButton" ToolTip.Tip="Stop (Shift+F5)"
                             Click="CancelBuild_Click"
                             Background="#FFF44336" 
                             Foreground="White"
@@ -334,10 +419,29 @@
                             Padding="8,4"
                             Height="28"
                             Cursor="Hand"
-                            IsVisible="False">
+                            IsVisible="False"
+                            Margin="2,0,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBlock Text="⏹" FontSize="11"/>
                             <TextBlock Text="Stop" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Separator -->
+                    <Border Width="1" Height="20" Background="#FF505053" Margin="8,0"/>
+                    
+                    <!-- Publish Button -->
+                    <Button Name="PublishButton" ToolTip.Tip="Publish Project..."
+                            Click="Publish_Click"
+                            Background="#FF2196F3" 
+                            Foreground="White"
+                            CornerRadius="4"
+                            Padding="10,4"
+                            Height="28"
+                            Cursor="Hand">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="📦" FontSize="11"/>
+                            <TextBlock Text="Publish" FontSize="12" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -395,23 +499,28 @@
                 </StackPanel>
             </Border>
             
-            <!-- Side Panel (Explorer, Search, etc.) -->
+            <!-- Side Panel (Explorer, Search, Git, etc.) -->
             <Border Grid.Column="1" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,1,0">
-                <Grid RowDefinitions="Auto,*">
-                    <!-- Panel Header -->
-                    <Border Grid.Row="0" Padding="12,10" Background="#20000000">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Text="EXPLORER" FontSize="11" FontWeight="SemiBold" 
-                                       Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
-                                       LetterSpacing="1"/>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New File">
-                                    <TextBlock Text="📄" FontSize="12"/>
-                                </Button>
-                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Folder">
-                                    <TextBlock Text="📁" FontSize="12"/>
-                                </Button>
-                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Refresh">
+                <Grid>
+                    <!-- Explorer Panel (default) -->
+                    <Grid RowDefinitions="Auto,*" Name="ExplorerPanel">
+                        <!-- Panel Header -->
+                        <Border Grid.Row="0" Padding="12,10" Background="#20000000">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="EXPLORER" FontSize="11" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
+                                           LetterSpacing="1" Name="SidePanelHeaderText"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Name="ExplorerHeaderActions">
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New File" 
+                                            Name="NewFileButton" Click="ExplorerNewFile_Click">
+                                        <TextBlock Text="📄" FontSize="12"/>
+                                    </Button>
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Folder"
+                                            Name="NewFolderButton" Click="ExplorerNewFolder_Click">
+                                        <TextBlock Text="📁" FontSize="12"/>
+                                    </Button>
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Refresh"
+                                        Name="RefreshTreeButton" Click="RefreshTree_Click">
                                     <TextBlock Text="🔄" FontSize="12"/>
                                 </Button>
                             </StackPanel>
@@ -419,27 +528,163 @@
                     </Border>
                     
                     <!-- File Tree -->
-                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Name="ExplorerScrollViewer">
                         <TreeView Name="FileTreeView" Margin="8,4"
                                   ItemsSource="{Binding FileTreeItems}"
                                   SelectionChanged="FileTreeView_SelectionChanged">
+                            <TreeView.ContextMenu>
+                                <ContextMenu Name="FileTreeContextMenu">
+                                    <MenuItem Header="📄 Add New Item..." Click="AddNewItem_Click"/>
+                                    <MenuItem Header="📁 Add New Folder" Click="AddNewFolder_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="📦 Add New Project..." Click="AddNewProject_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="✏️ Rename" Click="RenameItem_Click"/>
+                                    <MenuItem Header="🗑️ Delete" Click="DeleteItem_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="📋 Copy Path" Click="CopyPath_Click"/>
+                                    <MenuItem Header="📂 Open in Explorer" Click="OpenInExplorer_Click"/>
+                                    <MenuItem Header="💻 Open in Terminal" Click="OpenInTerminal_Click"/>
+                                    <Separator/>
+                                    <MenuItem Header="🔄 Refresh" Click="RefreshTree_Click"/>
+                                </ContextMenu>
+                            </TreeView.ContextMenu>
                             <TreeView.ItemTemplate>
                                 <TreeDataTemplate x:DataType="models:FileTreeItem" ItemsSource="{Binding Children}">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="{Binding Icon}" FontSize="14"/>
-                                        <TextBlock Text="{Binding Name}" FontSize="12" 
-                                                   Foreground="{StaticResource AppTextBrush}"
+                                    <Grid ColumnDefinitions="Auto,Auto,*" Height="24">
+                                        <!-- Icon with proper color binding -->
+                                        <Border Grid.Column="0" 
+                                                Width="20" Height="20" 
+                                                CornerRadius="4"
+                                                Margin="0,0,8,0"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                Background="{Binding IconBackgroundColor}">
+                                            <TextBlock Text="{Binding Icon}" 
+                                                       Foreground="{Binding IconColor}"
+                                                       FontSize="12" 
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center" 
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
+                                        <!-- File/Folder name with proper styling -->
+                                        <TextBlock Grid.Column="1" 
+                                                   Text="{Binding DisplayName}" 
+                                                   FontSize="13" 
+                                                   Foreground="{Binding NameColor}"
+                                                   FontWeight="{Binding FontWeight}"
                                                    VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                        <!-- Project info for solution items -->
+                                        <TextBlock Grid.Column="2" 
+                                                   Text="{Binding Description}" 
+                                                   FontSize="10" 
+                                                   Foreground="#FF6C6C80"
+                                                   FontStyle="Italic"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0,0,0"
+                                                   IsVisible="{Binding HasDescription}"/>
+                                    </Grid>
                                 </TreeDataTemplate>
                             </TreeView.ItemTemplate>
                             <TreeView.Styles>
                                 <Style Selector="TreeViewItem" x:DataType="models:FileTreeItem">
                                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                 </Style>
+                                <!-- Style for nested code-behind files -->
+                                <Style Selector="TreeViewItem TreeViewItem">
+                                    <Setter Property="Margin" Value="10,0,0,0"/>
+                                </Style>
                             </TreeView.Styles>
                         </TreeView>
                     </ScrollViewer>
+                </Grid>
+                
+                <!-- Search Panel (hidden by default) -->
+                <Grid RowDefinitions="Auto,Auto,*" Name="SearchPanel" IsVisible="False">
+                    <Border Grid.Row="0" Padding="12,10" Background="#20000000">
+                        <TextBlock Text="SEARCH" FontSize="11" FontWeight="SemiBold" 
+                                   Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
+                                   LetterSpacing="1"/>
+                    </Border>
+                    <Border Grid.Row="1" Margin="8,8,8,0" Padding="8" Background="#20000000" CornerRadius="6">
+                        <StackPanel Spacing="8">
+                            <TextBox Name="SearchInputBox" Watermark="Search..." 
+                                     Background="#FF1E1E2E" BorderBrush="{StaticResource AppBorderBrush}"
+                                     Foreground="{StaticResource AppTextBrush}" CornerRadius="4" Padding="8,6"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Grid.Column="0" Name="ReplaceInputBox" Watermark="Replace..." 
+                                         Background="#FF1E1E2E" BorderBrush="{StaticResource AppBorderBrush}"
+                                         Foreground="{StaticResource AppTextBrush}" CornerRadius="4" Padding="8,6"/>
+                                <Button Grid.Column="1" Classes="icon-button" Margin="4,0,0,0" Width="28" Height="28"
+                                        ToolTip.Tip="Replace All" Name="ReplaceAllButton">
+                                    <TextBlock Text="↻" FontSize="14"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer Grid.Row="2" Margin="8">
+                        <StackPanel Name="SearchResultsPanel">
+                            <TextBlock Text="Enter a search term above" FontSize="12" 
+                                       Foreground="{StaticResource AppTextMutedBrush}" FontStyle="Italic"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+                
+                <!-- Git Panel (hidden by default) - placeholder container -->
+                <Border Name="GitSidePanel" IsVisible="False">
+                    <!-- GitPanelControl will be added programmatically -->
+                </Border>
+                
+                <!-- Debug Panel (hidden by default) -->
+                <Grid RowDefinitions="Auto,*" Name="DebugSidePanel" IsVisible="False">
+                    <Border Grid.Row="0" Padding="12,10" Background="#20000000">
+                        <TextBlock Text="RUN AND DEBUG" FontSize="11" FontWeight="SemiBold" 
+                                   Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
+                                   LetterSpacing="1"/>
+                    </Border>
+                    <ScrollViewer Grid.Row="1" Margin="8">
+                        <StackPanel Spacing="12">
+                            <Button Classes="primary-button" Content="▶ Start Debugging" 
+                                    HorizontalAlignment="Stretch" Name="StartDebugButton" Click="StartDebug_Click"/>
+                            <Expander Header="Variables" IsExpanded="True">
+                                <TextBlock Text="No debugging session" FontSize="12" 
+                                           Foreground="{StaticResource AppTextMutedBrush}" Margin="8"/>
+                            </Expander>
+                            <Expander Header="Watch">
+                                <TextBlock Text="Add expressions to watch" FontSize="12" 
+                                           Foreground="{StaticResource AppTextMutedBrush}" Margin="8"/>
+                            </Expander>
+                            <Expander Header="Call Stack">
+                                <TextBlock Text="No call stack" FontSize="12" 
+                                           Foreground="{StaticResource AppTextMutedBrush}" Margin="8"/>
+                            </Expander>
+                            <Expander Header="Breakpoints" IsExpanded="True">
+                                <TextBlock Text="No breakpoints set" FontSize="12" 
+                                           Foreground="{StaticResource AppTextMutedBrush}" Margin="8"/>
+                            </Expander>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+                
+                <!-- Extensions Panel (hidden by default) -->
+                <Grid RowDefinitions="Auto,Auto,*" Name="ExtensionsPanel" IsVisible="False">
+                    <Border Grid.Row="0" Padding="12,10" Background="#20000000">
+                        <TextBlock Text="EXTENSIONS" FontSize="11" FontWeight="SemiBold" 
+                                   Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
+                                   LetterSpacing="1"/>
+                    </Border>
+                    <Border Grid.Row="1" Margin="8,8,8,0" Padding="8" Background="#20000000" CornerRadius="6">
+                        <TextBox Watermark="Search extensions..." 
+                                 Background="#FF1E1E2E" BorderBrush="{StaticResource AppBorderBrush}"
+                                 Foreground="{StaticResource AppTextBrush}" CornerRadius="4" Padding="8,6"/>
+                    </Border>
+                    <ScrollViewer Grid.Row="2" Margin="8">
+                        <StackPanel>
+                            <TextBlock Text="Extensions coming soon..." FontSize="12" 
+                                       Foreground="{StaticResource AppTextMutedBrush}" FontStyle="Italic"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
                 </Grid>
             </Border>
             
@@ -600,25 +845,79 @@
                             <Border Name="ProblemsPanel" Background="#FF252529" IsVisible="False">
                                 <Grid RowDefinitions="Auto,*">
                                     <Border Grid.Row="0" Background="#FF2D2D30" Padding="8,4">
-                                        <StackPanel Orientation="Horizontal" Spacing="12">
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <TextBlock Text="⛔" FontSize="11" Foreground="#FFF38BA8"/>
-                                                <TextBlock Text="0 Errors" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="⛔" FontSize="11" Foreground="#FFF38BA8"/>
+                                                    <TextBlock Text="{Binding ErrorsCount, StringFormat='{}{0} Errors'}" FontSize="11" Foreground="#FFF38BA8" Name="ProblemsErrorsText"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="⚠" FontSize="11" Foreground="#FFF5A623"/>
+                                                    <TextBlock Text="{Binding WarningsCount, StringFormat='{}{0} Warnings'}" FontSize="11" Foreground="#FFF5A623" Name="ProblemsWarningsText"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="ℹ" FontSize="11" Foreground="#FF89B4FA"/>
+                                                    <TextBlock Text="0 Messages" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}" Name="ProblemsMessagesText"/>
+                                                </StackPanel>
                                             </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <TextBlock Text="⚠" FontSize="11" Foreground="#FFF5A623"/>
-                                                <TextBlock Text="0 Warnings" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                                                <Button Classes="tool-action-button" ToolTip.Tip="Refresh Analysis" Name="RefreshAnalysisButton" Click="RefreshAnalysis_Click">
+                                                    <TextBlock Text="🔄" FontSize="11"/>
+                                                </Button>
+                                                <Button Classes="tool-action-button" ToolTip.Tip="Clear Problems" Name="ClearProblemsButton" Click="ClearProblems_Click">
+                                                    <TextBlock Text="🗑" FontSize="11"/>
+                                                </Button>
                                             </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <TextBlock Text="ℹ" FontSize="11" Foreground="#FF89B4FA"/>
-                                                <TextBlock Text="0 Messages" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}"/>
-                                            </StackPanel>
-                                        </StackPanel>
+                                        </Grid>
                                     </Border>
-                                    <ScrollViewer Grid.Row="1">
-                                        <TextBlock Text="No problems detected" FontSize="12" Foreground="{StaticResource AppTextMutedBrush}" 
-                                                   Margin="16,12" FontStyle="Italic"/>
-                                    </ScrollViewer>
+                                    <ListBox Grid.Row="1" Name="ProblemsListBox" 
+                                             ItemsSource="{Binding Problems}"
+                                             Background="Transparent"
+                                             SelectionChanged="ProblemsListBox_SelectionChanged">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:DiagnosticItem">
+                                                <Grid ColumnDefinitions="24,Auto,*,Auto" Margin="4,2" Background="Transparent">
+                                                    <!-- Severity Icon -->
+                                                    <TextBlock Grid.Column="0" Text="{Binding SeverityIcon}" FontSize="12" VerticalAlignment="Center"/>
+                                                    <!-- Code -->
+                                                    <Border Grid.Column="1" Background="#30808080" CornerRadius="3" Padding="4,1" Margin="4,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Code}" FontSize="10" Foreground="#FF89B4FA" FontFamily="Consolas"/>
+                                                    </Border>
+                                                    <!-- Message -->
+                                                    <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="12" 
+                                                               Foreground="{StaticResource AppTextBrush}" 
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Margin="4,0"/>
+                                                    <!-- Location -->
+                                                    <TextBlock Grid.Column="3" Text="{Binding Location}" FontSize="11" 
+                                                               Foreground="{StaticResource AppTextMutedBrush}" 
+                                                               VerticalAlignment="Center"
+                                                               FontFamily="Consolas"
+                                                               Margin="8,0,4,0"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                        <ListBox.Styles>
+                                            <Style Selector="ListBoxItem">
+                                                <Setter Property="Padding" Value="0"/>
+                                                <Setter Property="MinHeight" Value="24"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                            </Style>
+                                            <Style Selector="ListBoxItem:pointerover">
+                                                <Setter Property="Background" Value="#20FFFFFF"/>
+                                            </Style>
+                                            <Style Selector="ListBoxItem:selected">
+                                                <Setter Property="Background" Value="#30FAB387"/>
+                                            </Style>
+                                        </ListBox.Styles>
+                                    </ListBox>
+                                    <!-- Empty state -->
+                                    <TextBlock Grid.Row="1" Text="No problems detected. Press Analyze to check for issues." 
+                                               FontSize="12" Foreground="{StaticResource AppTextMutedBrush}" 
+                                               Margin="16,12" FontStyle="Italic"
+                                               IsVisible="{Binding !HasProblems}"
+                                               Name="NoProblemsText"/>
                                 </Grid>
                             </Border>
                             

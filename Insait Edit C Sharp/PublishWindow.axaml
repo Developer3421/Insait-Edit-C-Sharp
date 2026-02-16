@@ -1,0 +1,190 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.PublishWindow"
+        Title="Publish Project"
+        Width="700"
+        Height="650"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="None"
+        Background="#FF1E1E2E">
+    
+    <Window.Styles>
+        <Style Selector="Button.action-button">
+            <Setter Property="Background" Value="#FF3D3D4D"/>
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.action-button:pointerover">
+            <Setter Property="Background" Value="#FF4D4D5D"/>
+        </Style>
+        <Style Selector="Button.primary-button">
+            <Setter Property="Background" Value="#FFFAB387"/>
+            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary-button:pointerover">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#FF363647"/>
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="BorderBrush" Value="#FF3D3D4D"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#FF363647"/>
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="BorderBrush" Value="#FF3D3D4D"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+        </Style>
+        <Style Selector="RadioButton">
+            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#FF3D3D4D" BorderThickness="1" CornerRadius="8">
+        <Grid RowDefinitions="36,*,Auto">
+            <!-- Title Bar -->
+            <Border Grid.Row="0" Background="#FF3C3C3C" CornerRadius="8,8,0,0" Name="TitleBar">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
+                        <TextBlock Text="📦" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="Publish Project" FontSize="13" FontWeight="SemiBold" 
+                                   Foreground="#FFCDD6F4" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="✕" Background="Transparent" Foreground="#FF9399B2"
+                            BorderThickness="0" Width="36" Height="36" Name="CloseButton"/>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20" Spacing="20">
+                    <!-- Project Selection -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                        <ComboBox Name="ProjectComboBox" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Deployment Mode -->
+                    <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Deployment Mode" FontWeight="SemiBold" Foreground="#FFFAB387" FontSize="13"/>
+                            <RadioButton Content="Framework-dependent (requires .NET runtime on target)" 
+                                         Name="FrameworkDependentRadio" IsChecked="True" GroupName="DeploymentMode"/>
+                            <RadioButton Content="Self-contained (includes .NET runtime)" 
+                                         Name="SelfContainedRadio" GroupName="DeploymentMode"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Target Runtime -->
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto">
+                        <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,8,0">
+                            <TextBlock Text="Configuration" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                            <ComboBox Name="ConfigurationComboBox" HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="Release" IsSelected="True"/>
+                                <ComboBoxItem Content="Debug"/>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0">
+                            <TextBlock Text="Target Runtime" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                            <ComboBox Name="RuntimeComboBox" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Target Framework -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                        <ComboBox Name="FrameworkComboBox" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Output Path -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Output Folder" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Grid.Column="0" Name="OutputPathBox" Watermark="bin\publish"/>
+                            <Button Grid.Column="1" Content="📁" Classes="action-button" Margin="8,0,0,0" Width="40" Name="BrowseOutputButton"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Publish Options -->
+                    <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Publish Options" FontWeight="SemiBold" Foreground="#FFFAB387" FontSize="13"/>
+                            
+                            <CheckBox Content="Produce single file" Name="SingleFileCheck" ToolTip.Tip="Bundles the application into a single executable"/>
+                            
+                            <CheckBox Content="Enable ReadyToRun compilation" Name="ReadyToRunCheck" 
+                                      ToolTip.Tip="Pre-compiles assemblies to native code for faster startup"/>
+                            
+                            <CheckBox Content="Trim unused assemblies" Name="TrimCheck" 
+                                      ToolTip.Tip="Removes unused code to reduce size (may affect reflection)"/>
+                            
+                            <CheckBox Content="Enable compression in single file" Name="CompressionCheck" 
+                                      ToolTip.Tip="Compresses the single file to reduce size" IsEnabled="{Binding #SingleFileCheck.IsChecked}"/>
+                            
+                            <CheckBox Content="Include native libraries for self-extract" Name="NativeLibrariesCheck"
+                                      ToolTip.Tip="Bundles native libraries into the single file" IsEnabled="{Binding #SingleFileCheck.IsChecked}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Publish Profiles -->
+                    <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="Publish Profile (Optional)" FontWeight="SemiBold" Foreground="#FF89B4FA" FontSize="13"/>
+                                <Button Grid.Column="1" Content="+ New Profile" Classes="action-button" FontSize="11" Name="NewProfileButton"/>
+                            </Grid>
+                            <ComboBox Name="PublishProfileComboBox" HorizontalAlignment="Stretch"/>
+                            <TextBlock Text="Use existing publish profiles from Properties/PublishProfiles folder" 
+                                       FontSize="11" Foreground="#FF9399B2" FontStyle="Italic"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Quick Presets -->
+                    <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Quick Presets" FontWeight="SemiBold" Foreground="#FFA6E3A1" FontSize="13"/>
+                            <WrapPanel Orientation="Horizontal">
+                                <Button Content="🪟 Windows x64" Classes="action-button" Margin="0,0,8,8" Name="PresetWinX64Button"/>
+                                <Button Content="🪟 Windows ARM64" Classes="action-button" Margin="0,0,8,8" Name="PresetWinArm64Button"/>
+                                <Button Content="🐧 Linux x64" Classes="action-button" Margin="0,0,8,8" Name="PresetLinuxX64Button"/>
+                                <Button Content="🍎 macOS x64" Classes="action-button" Margin="0,0,8,8" Name="PresetMacX64Button"/>
+                                <Button Content="🍎 macOS ARM64" Classes="action-button" Margin="0,0,8,8" Name="PresetMacArm64Button"/>
+                                <Button Content="📱 Portable" Classes="action-button" Margin="0,0,8,8" Name="PresetPortableButton"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#FF2D2D3D" Padding="16,12">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="📊" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="Estimated output size will appear after publish" FontSize="11" 
+                                   Foreground="#FF9399B2" VerticalAlignment="Center" Name="EstimatedSizeText"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <Button Content="Cancel" Classes="action-button" Name="CancelButton"/>
+                        <Button Content="📦 Publish" Classes="primary-button" Name="PublishButton"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+
