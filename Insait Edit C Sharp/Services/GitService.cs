@@ -42,8 +42,20 @@ public class GitService
     /// </summary>
     public async Task<GitResult> InitAsync(string path)
     {
-        _repositoryPath = path;
-        return await RunGitCommandAsync("init");
+        // Ensure path is a directory
+        string dirPath = path;
+        if (File.Exists(path))
+        {
+            dirPath = Path.GetDirectoryName(path) ?? path;
+        }
+        
+        if (!Directory.Exists(dirPath))
+        {
+            return new GitResult { Success = false, Error = $"Directory does not exist: {dirPath}" };
+        }
+        
+        _repositoryPath = dirPath;
+        return await RunGitCommandAsync("init", dirPath);
     }
 
     /// <summary>
@@ -64,7 +76,13 @@ public class GitService
     /// </summary>
     public bool IsGitRepository(string path)
     {
-        return Directory.Exists(Path.Combine(path, ".git"));
+        // Ensure path is a directory
+        string dirPath = path;
+        if (File.Exists(path))
+        {
+            dirPath = Path.GetDirectoryName(path) ?? path;
+        }
+        return Directory.Exists(Path.Combine(dirPath, ".git"));
     }
 
     /// <summary>
@@ -72,10 +90,22 @@ public class GitService
     /// </summary>
     public async Task<string?> FindRepositoryRootAsync(string path)
     {
-        var result = await RunGitCommandAsync("rev-parse --show-toplevel", path);
+        // Ensure path is a directory
+        string dirPath = path;
+        if (File.Exists(path))
+        {
+            dirPath = Path.GetDirectoryName(path) ?? path;
+        }
+        
+        // Normalize path
+        dirPath = Path.GetFullPath(dirPath);
+        
+        var result = await RunGitCommandAsync("rev-parse --show-toplevel", dirPath);
         if (result.Success && !string.IsNullOrWhiteSpace(result.Output))
         {
             var repoRoot = result.Output.Trim();
+            // Normalize the repo root path (git returns forward slashes on Windows)
+            repoRoot = Path.GetFullPath(repoRoot.Replace('/', Path.DirectorySeparatorChar));
             _repositoryPath = repoRoot;
             return repoRoot;
         }
@@ -745,6 +775,27 @@ public class GitService
     private async Task<GitResult> RunGitCommandAsync(string arguments, string? workingDirectory = null)
     {
         workingDirectory ??= _repositoryPath;
+        
+        // Validate working directory
+        if (!string.IsNullOrEmpty(workingDirectory))
+        {
+            // Ensure it's a directory, not a file
+            if (File.Exists(workingDirectory))
+            {
+                workingDirectory = Path.GetDirectoryName(workingDirectory);
+            }
+            
+            // Check if directory exists
+            if (!Directory.Exists(workingDirectory))
+            {
+                return new GitResult
+                {
+                    Success = false,
+                    Error = $"Working directory does not exist: {workingDirectory}",
+                    ExitCode = -1
+                };
+            }
+        }
         
         try
         {

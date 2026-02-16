@@ -20,15 +20,17 @@ public class TerminalControl : UserControl
 {
     private Process? _process;
     private StreamWriter? _inputWriter;
+    private ConPtyHost? _conPty;
+    private bool _usingConPty;
     private readonly StringBuilder _outputBuffer = new();
     private readonly ConcurrentQueue<string> _inputHistory = new();
     private int _historyIndex = -1;
     private bool _isRunning;
+    private bool _isGitHubCliMode;
     private string _workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     
     private TextBox? _inputTextBox;
-    private TextBlock? _outputTextBlock;
-    private ScrollViewer? _scrollViewer;
+    private AnsiGridTerminalControl? _ansiTerminal;
     private StackPanel? _mainPanel;
     private TextBlock? _promptLabel;
     
@@ -45,6 +47,19 @@ public class TerminalControl : UserControl
     public static readonly StyledProperty<string> WorkingDirectoryProperty =
         AvaloniaProperty.Register<TerminalControl, string>(nameof(WorkingDirectory), defaultValue: "");
     
+    public static readonly StyledProperty<bool> UsePseudoConsoleProperty =
+        AvaloniaProperty.Register<TerminalControl, bool>(nameof(UsePseudoConsole), defaultValue: true);
+
+    /// <summary>
+    /// If true (default), uses Windows ConPTY (pseudo console) for interactive shells.
+    /// This is required for many interactive CLIs to behave correctly inside the app.
+    /// </summary>
+    public bool UsePseudoConsole
+    {
+        get => GetValue(UsePseudoConsoleProperty);
+        set => SetValue(UsePseudoConsoleProperty, value);
+    }
+
     public bool IsAdministrator
     {
         get => GetValue(IsAdministratorProperty);
@@ -90,7 +105,14 @@ public class TerminalControl : UserControl
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                _promptLabel.Text = $"{_workingDirectory}> ";
+                if (_isGitHubCliMode)
+                {
+                    _promptLabel.Text = $"🐙 gh [{_workingDirectory}]> ";
+                }
+                else
+                {
+                    _promptLabel.Text = $"{_workingDirectory}> ";
+                }
             });
         }
     }
@@ -124,41 +146,19 @@ public class TerminalControl : UserControl
     private void InitializeUI()
     {
         Background = new SolidColorBrush(Color.Parse("#1E1E1E"));
-        
+
         var grid = new Grid
         {
             RowDefinitions = new RowDefinitions("*,Auto")
         };
-        
+
         // Output area with scroll
-        _scrollViewer = new ScrollViewer
-        {
-            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
-            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
-            Background = new SolidColorBrush(Color.Parse("#1E1E1E"))
-        };
-        
-        _mainPanel = new StackPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Vertical
-        };
-        
-        _outputTextBlock = new TextBlock
-        {
-            FontFamily = new FontFamily("Consolas, Courier New, monospace"),
-            FontSize = 14,
-            Foreground = new SolidColorBrush(Color.Parse("#CCCCCC")),
-            TextWrapping = TextWrapping.Wrap,
-            Padding = new Thickness(8),
-            IsVisible = true
-        };
-        
-        _mainPanel.Children.Add(_outputTextBlock);
-        _scrollViewer.Content = _mainPanel;
-        
-        Grid.SetRow(_scrollViewer, 0);
-        grid.Children.Add(_scrollViewer);
-        
+        // Replace TextBlock-only output with an ANSI-aware renderer.
+        _ansiTerminal = new AnsiGridTerminalControl();
+
+        Grid.SetRow(_ansiTerminal, 0);
+        grid.Children.Add(_ansiTerminal);
+
         // Input area
         var inputPanel = new Grid
         {
@@ -260,28 +260,43 @@ public class TerminalControl : UserControl
     public void ExecuteCommand(string command)
     {
         if (string.IsNullOrWhiteSpace(command)) return;
-        
+
         // Add to history
         _inputHistory.Enqueue(command);
         _historyIndex = -1;
-        
+
         // Show command in output
-        AppendOutput($"> {command}{Environment.NewLine}", Color.Parse("#569CD6"));
-        
+        var prompt = _isGitHubCliMode ? "gh> " : "> ";
+        AppendOutput($"{prompt}{command}{Environment.NewLine}", Color.Parse("#569CD6"));
+
         // Handle built-in commands
         if (HandleBuiltInCommand(command)) return;
         
+        // GitHub CLI mode - wrap commands with gh prefix
+        if (_isGitHubCliMode)
+        {
+            _ = ExecuteGitHubCliCommandAsync(command);
+            return;
+        }
+
         // Execute external command
-        if (_isRunning && _inputWriter != null)
+        if (_isRunning)
         {
-            // Send to running process
-            _inputWriter.WriteLine(command);
+            if (_usingConPty && _conPty != null)
+            {
+                _conPty.WriteLine(command);
+                return;
+            }
+
+            if (_inputWriter != null)
+            {
+                _inputWriter.WriteLine(command);
+                return;
+            }
         }
-        else
-        {
-            // Start new command
-            _ = ExecuteExternalCommandAsync(command);
-        }
+
+        // Start new command
+        _ = ExecuteExternalCommandAsync(command);
     }
     
     private bool HandleBuiltInCommand(string command)
@@ -316,8 +331,38 @@ public class TerminalControl : UserControl
                 ShellType = TerminalShellType.Cmd;
                 AppendOutput($"Switched to CMD mode.{Environment.NewLine}", Color.Parse("#4EC9B0"));
                 return true;
+            
+            case "github":
+            case "ghshell":
+                // Start GitHub CLI shell mode
+                ShellType = TerminalShellType.GitHubCli;
+                _ = StartGitHubCliShellAsync();
+                return true;
+            
+            case "copilot":
+            case "gh-copilot":
+                // Open GitHub Copilot CLI in external terminal (requires real TTY)
+                var copilotArgs = parts.Length > 1 ? parts[1] : null;
+                OpenGitHubCopilotTerminal(copilotArgs);
+                return true;
+            
+            case "terminal":
+            case "wt":
+                // Open external Windows Terminal
+                var termCommand = parts.Length > 1 ? parts[1] : null;
+                OpenExternalTerminal(termCommand);
+                return true;
                 
             case "exit":
+                if (_isGitHubCliMode)
+                {
+                    _isGitHubCliMode = false;
+                    _isRunning = false;
+                    UpdatePrompt();
+                    AppendOutput($"Exited GitHub CLI shell.{Environment.NewLine}", Color.Parse("#4EC9B0"));
+                    ProcessExited?.Invoke(this, EventArgs.Empty);
+                    return true;
+                }
                 StopCurrentProcess();
                 return true;
                 
@@ -385,7 +430,8 @@ public class TerminalControl : UserControl
 ║  admin         - Start new administrator shell                ║
 ║  powershell,ps - Switch to PowerShell mode                    ║
 ║  cmd           - Switch to CMD mode                           ║
-║  exit          - Stop current process                         ║
+║  github, gh    - Switch to GitHub CLI mode                    ║
+║  exit          - Stop current process/mode                    ║
 ║  pwd           - Print working directory                      ║
 ║                                                               ║
 ║  Keyboard Shortcuts:                                          ║
@@ -396,7 +442,164 @@ public class TerminalControl : UserControl
 ╚══════════════════════════════════════════════════════════════╝
 
 ";
+        if (_isGitHubCliMode)
+        {
+            help += @"
+╔══════════════════════════════════════════════════════════════╗
+║                  GITHUB CLI SHELL COMMANDS                    ║
+╠══════════════════════════════════════════════════════════════╣
+║  Repository:    repo create|clone|view|list|fork|delete       ║
+║  Pull Requests: pr create|list|view|checkout|merge|close      ║
+║  Issues:        issue create|list|view|close|reopen|edit      ║
+║  Workflows:     workflow list|view|run|enable|disable         ║
+║  Releases:      release create|list|view|download|delete      ║
+║  Gists:         gist create|list|view|edit|delete|clone       ║
+║  Authentication: auth login|logout|status|refresh             ║
+║  Other:         browse|codespace|search|api|copilot           ║
+║                                                               ║
+║  💡 Commands run with 'gh' prefix automatically              ║
+║  Example: Type 'pr list' instead of 'gh pr list'             ║
+╚══════════════════════════════════════════════════════════════╝
+
+";
+        }
         AppendOutput(help, Color.Parse("#4EC9B0"));
+    }
+    
+    /// <summary>
+    /// Execute a GitHub CLI command
+    /// </summary>
+    private async Task ExecuteGitHubCliCommandAsync(string command)
+    {
+        try
+        {
+            var ghPath = FindGhExecutable();
+            var trimmedCommand = command.Trim();
+            
+            // Handle special shell commands
+            if (trimmedCommand.Equals("exit", StringComparison.OrdinalIgnoreCase))
+            {
+                _isGitHubCliMode = false;
+                _isRunning = false;
+                AppendOutput($"Exited GitHub CLI shell.{Environment.NewLine}", Color.Parse("#4EC9B0"));
+                ProcessExited?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+            
+            if (trimmedCommand.Equals("gh-help", StringComparison.OrdinalIgnoreCase) || 
+                trimmedCommand.Equals("help", StringComparison.OrdinalIgnoreCase))
+            {
+                ShowHelp();
+                return;
+            }
+            
+            // Handle cd command
+            if (trimmedCommand.StartsWith("cd ", StringComparison.OrdinalIgnoreCase))
+            {
+                var targetPath = trimmedCommand.Substring(3).Trim().Trim('"');
+                string newPath;
+                if (Path.IsPathRooted(targetPath))
+                    newPath = targetPath;
+                else if (targetPath == "..")
+                    newPath = Directory.GetParent(_workingDirectory)?.FullName ?? _workingDirectory;
+                else
+                    newPath = Path.Combine(_workingDirectory, targetPath);
+                
+                if (Directory.Exists(newPath))
+                {
+                    _workingDirectory = Path.GetFullPath(newPath);
+                    UpdatePrompt();
+                    AppendOutput($"Changed directory to: {_workingDirectory}{Environment.NewLine}", Color.Parse("#4EC9B0"));
+                }
+                else
+                {
+                    AppendOutput($"Directory not found: {newPath}{Environment.NewLine}", Color.Parse("#F44747"));
+                }
+                return;
+            }
+            
+            // Handle pwd command
+            if (trimmedCommand.Equals("pwd", StringComparison.OrdinalIgnoreCase))
+            {
+                AppendOutput($"{_workingDirectory}{Environment.NewLine}");
+                return;
+            }
+            
+            // Determine if command already has 'gh' prefix
+            string ghArgs;
+            if (trimmedCommand.StartsWith("gh ", StringComparison.OrdinalIgnoreCase))
+            {
+                // Command already has 'gh' prefix, remove it
+                ghArgs = trimmedCommand.Substring(3).Trim();
+            }
+            else
+            {
+                // Add command as gh argument
+                ghArgs = trimmedCommand;
+            }
+            
+            // Interactive GitHub Copilot commands need external terminal (real TTY)
+            if (ghArgs.StartsWith("copilot ", StringComparison.OrdinalIgnoreCase) ||
+                ghArgs.Equals("copilot", StringComparison.OrdinalIgnoreCase))
+            {
+                var copilotSubArgs = ghArgs.Length > 8 ? ghArgs.Substring(8).Trim() : "";
+                
+                // suggest and explain require interactive TUI - open in external terminal
+                if (string.IsNullOrEmpty(copilotSubArgs) ||
+                    copilotSubArgs.StartsWith("suggest", StringComparison.OrdinalIgnoreCase) ||
+                    copilotSubArgs.StartsWith("explain", StringComparison.OrdinalIgnoreCase))
+                {
+                    AppendOutput($"ℹ️ Interactive Copilot commands require a real terminal.{Environment.NewLine}", Color.Parse("#DCDCAA"));
+                    OpenGitHubCopilotTerminal(copilotSubArgs);
+                    return;
+                }
+            }
+            
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = ghPath,
+                Arguments = ghArgs,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                WorkingDirectory = _workingDirectory
+            };
+            
+            using var process = new Process { StartInfo = startInfo };
+            process.Start();
+            
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+            
+            await process.WaitForExitAsync();
+            
+            var output = await outputTask;
+            var error = await errorTask;
+            
+            if (!string.IsNullOrEmpty(output))
+            {
+                AppendOutput(output + Environment.NewLine);
+            }
+            
+            if (!string.IsNullOrEmpty(error))
+            {
+                // Some gh commands output to stderr for progress, not always errors
+                if (process.ExitCode != 0)
+                    AppendOutput(error + Environment.NewLine, Color.Parse("#F44747"));
+                else
+                    AppendOutput(error + Environment.NewLine, Color.Parse("#DCDCAA"));
+            }
+            
+            if (process.ExitCode != 0 && string.IsNullOrEmpty(output) && string.IsNullOrEmpty(error))
+            {
+                AppendOutput($"Command exited with code: {process.ExitCode}{Environment.NewLine}", Color.Parse("#F44747"));
+            }
+        }
+        catch (Exception ex)
+        {
+            AppendOutput($"Error executing command: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
+        }
     }
     
     /// <summary>
@@ -424,6 +627,299 @@ public class TerminalControl : UserControl
     }
     
     /// <summary>
+    /// Opens an external Windows terminal (Windows Terminal or cmd.exe) with the specified command.
+    /// Used for interactive CLI commands like gh copilot suggest/explain that require a real TTY.
+    /// </summary>
+    public void OpenExternalTerminal(string? command = null, string? title = null)
+    {
+        try
+        {
+            ProcessStartInfo startInfo;
+            
+            // Try to use Windows Terminal first (wt.exe) - provides best experience
+            var wtPath = FindWindowsTerminal();
+            
+            if (!string.IsNullOrEmpty(wtPath))
+            {
+                // Windows Terminal available
+                var wtArgs = $"-d \"{_workingDirectory}\"";
+                if (!string.IsNullOrEmpty(title))
+                    wtArgs += $" --title \"{title}\"";
+                if (!string.IsNullOrEmpty(command))
+                    wtArgs += $" cmd /k \"{command}\"";
+                
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = wtPath,
+                    Arguments = wtArgs,
+                    UseShellExecute = true,
+                    WorkingDirectory = _workingDirectory
+                };
+            }
+            else
+            {
+                // Fallback to cmd.exe
+                var cmdArgs = string.IsNullOrEmpty(command) 
+                    ? "/k" 
+                    : $"/k \"{command}\"";
+                
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = cmdArgs,
+                    UseShellExecute = true,
+                    WorkingDirectory = _workingDirectory
+                };
+            }
+            
+            Process.Start(startInfo);
+            
+            var terminalName = !string.IsNullOrEmpty(wtPath) ? "Windows Terminal" : "Command Prompt";
+            AppendOutput($"✅ Opened {terminalName} in new window.{Environment.NewLine}", Color.Parse("#4EC9B0"));
+            if (!string.IsNullOrEmpty(command))
+                AppendOutput($"   Running: {command}{Environment.NewLine}", Color.Parse("#858585"));
+        }
+        catch (Exception ex)
+        {
+            AppendOutput($"❌ Error opening terminal: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
+        }
+    }
+    
+    /// <summary>
+    /// Opens GitHub Copilot CLI in an external terminal for interactive TUI commands.
+    /// </summary>
+    public void OpenGitHubCopilotTerminal(string? copilotArgs = null)
+    {
+        try
+        {
+            // Find the full path to gh.exe
+            var ghPath = FindGhExecutable();
+            
+            // If gh.exe is just the name (in PATH), try to resolve full path
+            if (ghPath == "gh.exe" || ghPath == "gh")
+            {
+                ghPath = ResolveFullGhPath() ?? "gh";
+            }
+            
+            // Build the gh copilot command with full path
+            var ghCommand = string.IsNullOrEmpty(copilotArgs) 
+                ? $"\"{ghPath}\" copilot" 
+                : $"\"{ghPath}\" copilot {copilotArgs}";
+            
+            ProcessStartInfo startInfo;
+            
+            // Try Windows Terminal first for best TUI experience
+            var wtPath = FindWindowsTerminal();
+            
+            if (!string.IsNullOrEmpty(wtPath))
+            {
+                // Windows Terminal - provides best TTY support for interactive CLIs
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = wtPath,
+                    Arguments = $"-d \"{_workingDirectory}\" --title \"GitHub Copilot CLI\" cmd /k {ghCommand}",
+                    UseShellExecute = true,
+                    WorkingDirectory = _workingDirectory
+                };
+            }
+            else
+            {
+                // Fallback to cmd.exe 
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/k {ghCommand}",
+                    UseShellExecute = true,
+                    WorkingDirectory = _workingDirectory
+                };
+            }
+            
+            Process.Start(startInfo);
+            
+            var terminalName = !string.IsNullOrEmpty(wtPath) ? "Windows Terminal" : "Command Prompt";
+            AppendOutput($"🤖 Opened GitHub Copilot CLI in {terminalName}{Environment.NewLine}", Color.Parse("#4EC9B0"));
+            AppendOutput($"   Command: {ghCommand}{Environment.NewLine}", Color.Parse("#858585"));
+            AppendOutput($"   Working directory: {_workingDirectory}{Environment.NewLine}", Color.Parse("#858585"));
+        }
+        catch (Exception ex)
+        {
+            AppendOutput($"❌ Error opening GitHub Copilot: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
+        }
+    }
+    
+    /// <summary>
+    /// Resolves the full path to gh.exe by searching PATH and common locations
+    /// </summary>
+    private static string? ResolveFullGhPath()
+    {
+        // Search in PATH
+        var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";
+        foreach (var path in pathEnv.Split(';'))
+        {
+            if (string.IsNullOrWhiteSpace(path)) continue;
+            var ghPath = Path.Combine(path.Trim(), "gh.exe");
+            if (File.Exists(ghPath))
+                return ghPath;
+        }
+        
+        // Check common installation locations
+        var possiblePaths = new[]
+        {
+            @"C:\Program Files\GitHub CLI\gh.exe",
+            @"C:\Program Files (x86)\GitHub CLI\gh.exe",
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Programs\gh\gh.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"GitHub CLI\gh.exe")
+        };
+        
+        foreach (var path in possiblePaths)
+        {
+            if (File.Exists(path))
+                return path;
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
+    /// Finds Windows Terminal (wt.exe) if installed
+    /// </summary>
+    private static string? FindWindowsTerminal()
+    {
+        // Check if wt.exe is in PATH
+        var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";
+        foreach (var path in pathEnv.Split(';'))
+        {
+            if (string.IsNullOrWhiteSpace(path)) continue;
+            var wtPath = Path.Combine(path.Trim(), "wt.exe");
+            if (File.Exists(wtPath))
+                return wtPath;
+        }
+        
+        // Check common installation locations
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var possiblePaths = new[]
+        {
+            Path.Combine(localAppData, @"Microsoft\WindowsApps\wt.exe"),
+        };
+        
+        foreach (var path in possiblePaths)
+        {
+            if (File.Exists(path))
+                return path;
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
+    /// Start a GitHub CLI interactive shell session
+    /// This creates a special shell mode focused on GitHub CLI commands
+    /// </summary>
+    private async Task StartGitHubCliShellAsync()
+    {
+        try
+        {
+            var ghPath = FindGhExecutable();
+            
+            // Check if gh is installed
+            try
+            {
+                var testProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = ghPath,
+                        Arguments = "--version",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    }
+                };
+                testProcess.Start();
+                var version = await testProcess.StandardOutput.ReadToEndAsync();
+                await testProcess.WaitForExitAsync();
+                
+                if (testProcess.ExitCode != 0)
+                {
+                    AppendOutput("❌ GitHub CLI (gh) is not installed.{Environment.NewLine}", Color.Parse("#F44747"));
+                    AppendOutput("Install with: winget install GitHub.cli{Environment.NewLine}", Color.Parse("#DCDCAA"));
+                    return;
+                }
+                
+                AppendOutput($"🐙 GitHub CLI Shell{Environment.NewLine}", Color.Parse("#4EC9B0"));
+                AppendOutput($"━━━━━━━━━━━━━━━━━━━━━━━━{Environment.NewLine}", Color.Parse("#858585"));
+                AppendOutput($"{version}", Color.Parse("#858585"));
+            }
+            catch (Exception ex)
+            {
+                AppendOutput($"❌ GitHub CLI (gh) not found: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
+                AppendOutput($"Install with: winget install GitHub.cli{Environment.NewLine}", Color.Parse("#DCDCAA"));
+                return;
+            }
+            
+            // Check authentication status
+            var authProcess = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = ghPath,
+                    Arguments = "auth status",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    WorkingDirectory = _workingDirectory
+                }
+            };
+            authProcess.Start();
+            var authOutput = await authProcess.StandardOutput.ReadToEndAsync();
+            var authError = await authProcess.StandardError.ReadToEndAsync();
+            await authProcess.WaitForExitAsync();
+            
+            if (authProcess.ExitCode == 0)
+            {
+                // Get logged in user
+                var userProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = ghPath,
+                        Arguments = "api user --jq .login",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
+                userProcess.Start();
+                var userName = (await userProcess.StandardOutput.ReadToEndAsync()).Trim();
+                await userProcess.WaitForExitAsync();
+                
+                AppendOutput($"✅ Logged in as: {userName}{Environment.NewLine}", Color.Parse("#4EC9B0"));
+            }
+            else
+            {
+                AppendOutput($"⚠️ Not authenticated. Run 'gh auth login' to sign in.{Environment.NewLine}", Color.Parse("#DCDCAA"));
+            }
+            
+            AppendOutput($"Working directory: {_workingDirectory}{Environment.NewLine}", Color.Parse("#858585"));
+            AppendOutput($"{Environment.NewLine}", Color.Parse("#858585"));
+            AppendOutput($"💡 Available commands: help or type 'gh <command>'{Environment.NewLine}", Color.Parse("#858585"));
+            AppendOutput($"   Quick: repo, pr, issue, workflow, release, gist, browse{Environment.NewLine}", Color.Parse("#858585"));
+            AppendOutput($"{Environment.NewLine}", Color.Parse("#858585"));
+            
+            _isRunning = true;
+            _isGitHubCliMode = true;
+            UpdatePrompt();
+            ProcessStarted?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            AppendOutput($"Error starting GitHub CLI shell: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
+        }
+    }
+    
+    /// <summary>
     /// Start a persistent interactive shell session
     /// </summary>
     public async Task StartInteractiveShellAsync()
@@ -432,6 +928,48 @@ public class TerminalControl : UserControl
         
         try
         {
+            // For GitHubCli, we start an interactive PowerShell session with gh prompt customization
+            if (ShellType == TerminalShellType.GitHubCli)
+            {
+                await StartGitHubCliShellAsync();
+                return;
+            }
+            
+            // Prefer ConPTY (pseudo console) for interactive sessions.
+            if (UsePseudoConsole)
+            {
+                var exe = GetShellExecutable();
+                var args = ShellType switch
+                {
+                    TerminalShellType.PowerShell => "-NoLogo -NoExit",
+                    TerminalShellType.PowerShellCore => "-NoLogo -NoExit",
+                    _ => ""
+                };
+
+                _conPty = new ConPtyHost(exe, args, _workingDirectory);
+                _usingConPty = true;
+
+                _conPty.Output += (_, text) =>
+                {
+                    // ConPTY gives raw chunks (may include escape sequences).
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        AppendOutput(text);
+                        OutputReceived?.Invoke(this, new TerminalOutputEventArgs(text, false));
+                    });
+                };
+
+                _isRunning = true;
+                ProcessStarted?.Invoke(this, EventArgs.Empty);
+
+                AppendOutput($"Interactive {ShellType} session started (ConPTY).{Environment.NewLine}", Color.Parse("#4EC9B0"));
+                AppendOutput($"Working directory: {_workingDirectory}{Environment.NewLine}", Color.Parse("#858585"));
+
+                await Task.CompletedTask;
+                return;
+            }
+
+            // Fallback: old redirected pipes approach
             var startInfo = new ProcessStartInfo
             {
                 FileName = GetShellExecutable(),
@@ -463,6 +1001,7 @@ public class TerminalControl : UserControl
             _process.BeginErrorReadLine();
             
             _isRunning = true;
+            _usingConPty = false;
             ProcessStarted?.Invoke(this, EventArgs.Empty);
             
             AppendOutput($"Interactive {ShellType} session started.{Environment.NewLine}", Color.Parse("#4EC9B0"));
@@ -480,6 +1019,41 @@ public class TerminalControl : UserControl
     {
         try
         {
+            // If ConPTY is enabled, run the command inside a ConPTY host too (so TTY apps work).
+            if (UsePseudoConsole)
+            {
+                StopCurrentProcess();
+
+                var exe = GetShellExecutable();
+                var args = GetShellArguments(command);
+
+                _conPty = new ConPtyHost(exe, args, _workingDirectory);
+                _usingConPty = true;
+
+                _conPty.Output += (_, text) =>
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        AppendOutput(text);
+                        OutputReceived?.Invoke(this, new TerminalOutputEventArgs(text, false));
+                    });
+                };
+
+                _isRunning = true;
+                ProcessStarted?.Invoke(this, EventArgs.Empty);
+
+                await _conPty.WaitForExitAsync();
+
+                _isRunning = false;
+                _usingConPty = false;
+                _conPty.Dispose();
+                _conPty = null;
+
+                ProcessExited?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+
+            // Old approach
             var startInfo = new ProcessStartInfo
             {
                 FileName = GetShellExecutable(),
@@ -493,24 +1067,24 @@ public class TerminalControl : UserControl
                 StandardOutputEncoding = Encoding.UTF8,
                 StandardErrorEncoding = Encoding.UTF8
             };
-            
+
             _process = new Process { StartInfo = startInfo };
             _process.OutputDataReceived += OnOutputDataReceived;
             _process.ErrorDataReceived += OnErrorDataReceived;
             _process.Exited += OnProcessExited;
             _process.EnableRaisingEvents = true;
-            
+
             _isRunning = true;
             _process.Start();
             _inputWriter = _process.StandardInput;
-            
+
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
-            
+
             ProcessStarted?.Invoke(this, EventArgs.Empty);
-            
+
             await _process.WaitForExitAsync();
-            
+
             _isRunning = false;
             _inputWriter = null;
         }
@@ -571,8 +1145,59 @@ public class TerminalControl : UserControl
             TerminalShellType.PowerShellCore => "pwsh.exe",
             TerminalShellType.Cmd => "cmd.exe",
             TerminalShellType.GitBash => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "bash.exe"),
+            TerminalShellType.GitHubCli => FindGhExecutable(),
             _ => "cmd.exe"
         };
+    }
+    
+    private string FindGhExecutable()
+    {
+        // Try common locations for GitHub CLI
+        var possiblePaths = new[]
+        {
+            "gh.exe", // In PATH
+            @"C:\Program Files\GitHub CLI\gh.exe",
+            @"C:\Program Files (x86)\GitHub CLI\gh.exe",
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Programs\gh\gh.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"GitHub CLI\gh.exe")
+        };
+        
+        foreach (var path in possiblePaths)
+        {
+            if (path == "gh.exe")
+            {
+                // Check if gh is in PATH
+                try
+                {
+                    var testProcess = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "gh",
+                            Arguments = "--version",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true
+                        }
+                    };
+                    testProcess.Start();
+                    testProcess.WaitForExit(1000);
+                    if (testProcess.ExitCode == 0)
+                        return "gh.exe";
+                }
+                catch
+                {
+                    // Continue to next path
+                }
+            }
+            else if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+        
+        // Fallback to gh.exe (might be in PATH)
+        return "gh.exe";
     }
     
     private string GetShellArguments(string command)
@@ -583,6 +1208,7 @@ public class TerminalControl : UserControl
             TerminalShellType.PowerShellCore => $"-NoProfile -Command \"{command}\"",
             TerminalShellType.Cmd => $"/c {command}",
             TerminalShellType.GitBash => $"-c \"{command}\"",
+            TerminalShellType.GitHubCli => command, // Commands are passed directly to gh
             _ => $"/c {command}"
         };
     }
@@ -628,6 +1254,16 @@ public class TerminalControl : UserControl
     {
         try
         {
+            if (_usingConPty && _conPty != null)
+            {
+                _conPty.Kill();
+                _conPty.Dispose();
+                _conPty = null;
+                _usingConPty = false;
+                AppendOutput($"{Environment.NewLine}^C Process terminated.{Environment.NewLine}", Color.Parse("#DCDCAA"));
+                return;
+            }
+
             if (_process != null && !_process.HasExited)
             {
                 _process.Kill(entireProcessTree: true);
@@ -650,16 +1286,15 @@ public class TerminalControl : UserControl
     /// </summary>
     public void AppendOutput(string text, Color? color = null)
     {
-        if (_outputTextBlock == null) return;
-        
+        // Prefer ANSI renderer
+        if (_ansiTerminal != null)
+        {
+            _ansiTerminal.Write(text);
+            return;
+        }
+
+        // If renderer isn't initialized yet, buffer output.
         _outputBuffer.Append(text);
-        
-        // For simplicity, we update the entire text block
-        // In a more advanced implementation, you could use Inlines for different colors
-        _outputTextBlock.Text = _outputBuffer.ToString();
-        
-        // Scroll to bottom
-        _scrollViewer?.ScrollToEnd();
     }
     
     /// <summary>
@@ -668,10 +1303,7 @@ public class TerminalControl : UserControl
     public void ClearOutput()
     {
         _outputBuffer.Clear();
-        if (_outputTextBlock != null)
-        {
-            _outputTextBlock.Text = string.Empty;
-        }
+        _ansiTerminal?.Clear();
     }
     
     /// <summary>
@@ -687,6 +1319,8 @@ public class TerminalControl : UserControl
         base.OnUnloaded(e);
         StopCurrentProcess();
         _process?.Dispose();
+        _conPty?.Dispose();
+        _conPty = null;
     }
 }
 
@@ -698,7 +1332,8 @@ public enum TerminalShellType
     Cmd,
     PowerShell,
     PowerShellCore,
-    GitBash
+    GitBash,
+    GitHubCli
 }
 
 /// <summary>

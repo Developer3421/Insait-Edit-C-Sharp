@@ -3,266 +3,385 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="using:Insait_Edit_C_Sharp.Models"
-             mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="280" d:DesignHeight="700"
              x:Class="Insait_Edit_C_Sharp.Controls.GitPanelControl">
     
     <UserControl.Resources>
-        <!-- Colors -->
-        <SolidColorBrush x:Key="GitBgBrush" Color="#FF2D2D3D"/>
-        <SolidColorBrush x:Key="GitSurfaceBrush" Color="#FF252535"/>
-        <SolidColorBrush x:Key="GitBorderBrush" Color="#FF3D3D4D"/>
-        <SolidColorBrush x:Key="GitTextBrush" Color="#FFCDD6F4"/>
-        <SolidColorBrush x:Key="GitTextMutedBrush" Color="#FF9399B2"/>
-        <SolidColorBrush x:Key="GitAccentBrush" Color="#FFFAB387"/>
-        <SolidColorBrush x:Key="GitGreenBrush" Color="#FFA6E3A1"/>
-        <SolidColorBrush x:Key="GitRedBrush" Color="#FFF38BA8"/>
-        <SolidColorBrush x:Key="GitBlueBrush" Color="#FF89B4FA"/>
-        <SolidColorBrush x:Key="GitYellowBrush" Color="#FFF9E2AF"/>
+        <!-- Colors - JetBrains Dark Theme -->
+        <SolidColorBrush x:Key="GitBgBrush" Color="#FF2B2D30"/>
+        <SolidColorBrush x:Key="GitSurfaceBrush" Color="#FF1E1F22"/>
+        <SolidColorBrush x:Key="GitBorderBrush" Color="#FF393B40"/>
+        <SolidColorBrush x:Key="GitTextBrush" Color="#FFBCBEC4"/>
+        <SolidColorBrush x:Key="GitTextMutedBrush" Color="#FF6F737A"/>
+        <SolidColorBrush x:Key="GitAccentBrush" Color="#FF548AF7"/>
+        <SolidColorBrush x:Key="GitGreenBrush" Color="#FF6AAB73"/>
+        <SolidColorBrush x:Key="GitRedBrush" Color="#FFEF5350"/>
+        <SolidColorBrush x:Key="GitBlueBrush" Color="#FF6897BB"/>
+        <SolidColorBrush x:Key="GitYellowBrush" Color="#FFBB9A6F"/>
+        <SolidColorBrush x:Key="GitTabActiveBrush" Color="#FF4A82C7"/>
+        <SolidColorBrush x:Key="GitHoverBrush" Color="#FF393B40"/>
+        <SolidColorBrush x:Key="GitSelectedBrush" Color="#FF2E436E"/>
     </UserControl.Resources>
     
     <UserControl.Styles>
-        <!-- Section Header Style -->
-        <Style Selector="Expander.section">
+        <!-- Tab Button Style -->
+        <Style Selector="Button.git-tab">
             <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource GitTextMutedBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CornerRadius" Value="0"/>
         </Style>
-        <Style Selector="Expander.section > ToggleButton">
-            <Setter Property="Background" Value="#20FFFFFF"/>
-            <Setter Property="Padding" Value="8,6"/>
+        <Style Selector="Button.git-tab:pointerover">
+            <Setter Property="Background" Value="{StaticResource GitHoverBrush}"/>
+        </Style>
+        <Style Selector="Button.git-tab.active">
+            <Setter Property="Foreground" Value="{StaticResource GitTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource GitTabActiveBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
         </Style>
         
-        <!-- Git Action Button Style -->
-        <Style Selector="Button.git-action">
+        <!-- Toolbar Button Style -->
+        <Style Selector="Button.git-toolbar">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource GitTextBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="6,4"/>
-            <Setter Property="Width" Value="28"/>
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="CornerRadius" Value="3"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-        <Style Selector="Button.git-action:pointerover">
-            <Setter Property="Background" Value="#30FFFFFF"/>
+        <Style Selector="Button.git-toolbar:pointerover">
+            <Setter Property="Background" Value="{StaticResource GitHoverBrush}"/>
         </Style>
-        <Style Selector="Button.git-action:pressed">
-            <Setter Property="Background" Value="#40FFFFFF"/>
+        <Style Selector="Button.git-toolbar:pressed">
+            <Setter Property="Background" Value="#FF45474D"/>
+        </Style>
+        <Style Selector="Button.git-toolbar:disabled">
+            <Setter Property="Opacity" Value="0.4"/>
         </Style>
         
-        <!-- Git Primary Button Style -->
+        <!-- Primary Action Button -->
         <Style Selector="Button.git-primary">
             <Setter Property="Background" Value="{StaticResource GitAccentBrush}"/>
-            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,6"/>
+            <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="Normal"/>
         </Style>
         <Style Selector="Button.git-primary:pointerover">
-            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Background" Value="#FF6B9CF0"/>
         </Style>
         <Style Selector="Button.git-primary:pressed">
-            <Setter Property="Background" Value="#FFE09070"/>
+            <Setter Property="Background" Value="#FF4570C4"/>
         </Style>
         <Style Selector="Button.git-primary:disabled">
-            <Setter Property="Background" Value="#50FAB387"/>
-            <Setter Property="Opacity" Value="0.5"/>
+            <Setter Property="Background" Value="#FF404347"/>
+            <Setter Property="Foreground" Value="{StaticResource GitTextMutedBrush}"/>
         </Style>
         
-        <!-- Git Secondary Button Style -->
-        <Style Selector="Button.git-secondary">
-            <Setter Property="Background" Value="#30FFFFFF"/>
-            <Setter Property="Foreground" Value="{StaticResource GitTextBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{StaticResource GitBorderBrush}"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="FontSize" Value="11"/>
+        <!-- Section Header Style -->
+        <Style Selector="Expander.git-section">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
         </Style>
-        <Style Selector="Button.git-secondary:pointerover">
-            <Setter Property="Background" Value="#40FFFFFF"/>
+        <Style Selector="Expander.git-section > ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="6,4"/>
+        </Style>
+        <Style Selector="Expander.git-section > ToggleButton:pointerover">
+            <Setter Property="Background" Value="{StaticResource GitHoverBrush}"/>
         </Style>
         
         <!-- File Item Style -->
-        <Style Selector="Border.file-item">
+        <Style Selector="Border.git-file-item">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="Margin" Value="0,1"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="4,3"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="CornerRadius" Value="3"/>
         </Style>
-        <Style Selector="Border.file-item:pointerover">
-            <Setter Property="Background" Value="#20FFFFFF"/>
+        <Style Selector="Border.git-file-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource GitHoverBrush}"/>
+        </Style>
+        
+        <!-- Commit Item Style -->
+        <Style Selector="Border.git-commit-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="CornerRadius" Value="3"/>
+        </Style>
+        <Style Selector="Border.git-commit-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource GitHoverBrush}"/>
+        </Style>
+        
+        <!-- Small Action Button -->
+        <Style Selector="Button.git-small-action">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+        <Style Selector="Button.git-small-action:pointerover">
+            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="Opacity" Value="1"/>
         </Style>
     </UserControl.Styles>
     
-    <Grid RowDefinitions="Auto,*">
-        <!-- Header -->
-        <Border Grid.Row="0" Padding="12,10" Background="#20000000">
+    <Grid RowDefinitions="Auto,Auto,*" Background="{StaticResource GitSurfaceBrush}">
+        
+        <!-- Tab Bar -->
+        <Border Grid.Row="0" Background="{StaticResource GitBgBrush}" BorderBrush="{StaticResource GitBorderBrush}" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+                <Button Classes="git-tab active" Name="LocalChangesTab" Click="LocalChangesTab_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="📝" FontSize="12"/>
+                        <TextBlock Text="Local Changes"/>
+                        <Border Background="#40FFFFFF" CornerRadius="8" Padding="6,1" Name="ChangesCountBadge" IsVisible="False">
+                            <TextBlock Text="0" FontSize="10" Foreground="{StaticResource GitTextBrush}" Name="TotalChangesCount"/>
+                        </Border>
+                    </StackPanel>
+                </Button>
+                <Button Classes="git-tab" Name="LogTab" Click="LogTab_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="📋" FontSize="12"/>
+                        <TextBlock Text="Log"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="git-tab" Name="ConsoleTab" Click="ConsoleTab_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="⌨" FontSize="12"/>
+                        <TextBlock Text="Console"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+        
+        <!-- Toolbar -->
+        <Border Grid.Row="1" Background="{StaticResource GitBgBrush}" Padding="4,2" BorderBrush="{StaticResource GitBorderBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="SOURCE CONTROL" FontSize="11" FontWeight="SemiBold" 
-                           Foreground="{StaticResource GitTextMutedBrush}" VerticalAlignment="Center"
-                           LetterSpacing="1"/>
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <Button Classes="git-toolbar" ToolTip.Tip="Commit (Ctrl+K)" Name="CommitToolbarButton" Click="CommitToolbar_Click">
+                        <TextBlock Text="✓" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitGreenBrush}"/>
+                    </Button>
+                    <Button Classes="git-toolbar" ToolTip.Tip="Update Project (Ctrl+T)" Name="UpdateToolbarButton" Click="Update_Click">
+                        <TextBlock Text="↓" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitBlueBrush}"/>
+                    </Button>
+                    <Button Classes="git-toolbar" ToolTip.Tip="Push (Ctrl+Shift+K)" Name="PushToolbarButton" Click="Push_Click">
+                        <TextBlock Text="↑" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitGreenBrush}"/>
+                    </Button>
+                    <Border Width="1" Background="{StaticResource GitBorderBrush}" Margin="4,4"/>
+                    <Button Classes="git-toolbar" ToolTip.Tip="Show History" Name="HistoryToolbarButton" Click="ShowHistory_Click">
+                        <TextBlock Text="🕒" FontSize="13"/>
+                    </Button>
+                    <Button Classes="git-toolbar" ToolTip.Tip="Rollback" Name="RollbackToolbarButton" Click="Rollback_Click">
+                        <TextBlock Text="↺" FontSize="14"/>
+                    </Button>
+                    <Border Width="1" Background="{StaticResource GitBorderBrush}" Margin="4,4"/>
+                    <Button Classes="git-toolbar" ToolTip.Tip="Shelve Changes" Name="ShelveToolbarButton" Click="Shelve_Click">
+                        <TextBlock Text="📦" FontSize="12"/>
+                    </Button>
+                    <Button Classes="git-toolbar" ToolTip.Tip="Unshelve Changes" Name="UnshelveToolbarButton" Click="Unshelve_Click">
+                        <TextBlock Text="📤" FontSize="12"/>
+                    </Button>
+                </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-                    <Button Classes="git-action" ToolTip.Tip="Refresh" Name="RefreshButton" Click="Refresh_Click">
+                    <Button Classes="git-toolbar" ToolTip.Tip="Group By: Directory" Name="GroupByButton" Click="GroupBy_Click">
+                        <TextBlock Text="📁" FontSize="12"/>
+                    </Button>
+                    <Button Classes="git-toolbar" ToolTip.Tip="Refresh (Ctrl+F5)" Name="RefreshToolbarButton" Click="Refresh_Click">
                         <TextBlock Text="🔄" FontSize="12"/>
                     </Button>
-                    <Button Classes="git-action" ToolTip.Tip="More Actions" Name="MoreActionsButton" Click="MoreActions_Click">
-                        <TextBlock Text="⋯" FontSize="14" FontWeight="Bold"/>
+                    <Button Classes="git-toolbar" ToolTip.Tip="Settings" Name="SettingsToolbarButton" Click="Settings_Click">
+                        <TextBlock Text="⚙" FontSize="13"/>
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
         
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="8">
-                
-                <!-- No Repository State -->
-                <StackPanel Name="NoRepositoryPanel" Spacing="12" Margin="4,20">
-                    <TextBlock Text="🔀" FontSize="48" HorizontalAlignment="Center" Opacity="0.5"/>
-                    <TextBlock Text="No Git repository" FontSize="14" FontWeight="SemiBold" 
-                               HorizontalAlignment="Center" Foreground="{StaticResource GitTextBrush}"/>
-                    <TextBlock Text="Open a folder containing a Git repository to see source control information."
-                               FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
-                               Foreground="{StaticResource GitTextMutedBrush}" Margin="8,0"/>
+        <!-- Content Area -->
+        <Grid Grid.Row="2">
+            
+            <!-- No Repository State -->
+            <StackPanel Name="NoRepositoryPanel" Spacing="16" Margin="16,40" HorizontalAlignment="Center">
+                <TextBlock Text="🔀" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                <TextBlock Text="No Git Repository" FontSize="14" FontWeight="SemiBold" 
+                           HorizontalAlignment="Center" Foreground="{StaticResource GitTextBrush}"/>
+                <TextBlock Text="Open a folder containing a Git repository or initialize a new one."
+                           FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
+                           Foreground="{StaticResource GitTextMutedBrush}" MaxWidth="200"/>
+                <StackPanel Spacing="8" Margin="0,8,0,0">
                     <Button Classes="git-primary" Content="Initialize Repository" 
-                            HorizontalAlignment="Center" Margin="0,8"
+                            HorizontalAlignment="Stretch"
                             Name="InitRepoButton" Click="InitRepo_Click"/>
-                    <Button Classes="git-secondary" Content="Clone Repository..." 
-                            HorizontalAlignment="Center"
+                    <Button Background="{StaticResource GitHoverBrush}" Foreground="{StaticResource GitTextBrush}"
+                            BorderThickness="0" Padding="16,6" CornerRadius="4" FontSize="12"
+                            Content="Clone Repository..." HorizontalAlignment="Stretch"
                             Name="CloneRepoButton" Click="CloneRepo_Click"/>
                 </StackPanel>
+            </StackPanel>
+            
+            <!-- Local Changes Panel -->
+            <Grid Name="LocalChangesPanel" IsVisible="False" RowDefinitions="Auto,*,Auto">
                 
-                <!-- Repository Content -->
-                <StackPanel Name="RepositoryPanel" IsVisible="False" Spacing="8">
-                    
-                    <!-- Branch Selector -->
-                    <Border Background="#20FFFFFF" CornerRadius="6" Padding="8">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <TextBlock Grid.Column="0" Text="⎇" FontSize="14" Foreground="{StaticResource GitGreenBrush}" 
-                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <Button Grid.Column="1" Background="Transparent" BorderThickness="0" 
-                                    HorizontalContentAlignment="Left" Name="BranchButton" Click="Branch_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="main" FontSize="13" FontWeight="SemiBold" 
-                                               Foreground="{StaticResource GitTextBrush}" Name="CurrentBranchText"/>
-                                    <TextBlock Text="▾" FontSize="10" Foreground="{StaticResource GitTextMutedBrush}" 
-                                               VerticalAlignment="Center"/>
+                <!-- Branch Info Bar -->
+                <Border Grid.Row="0" Background="{StaticResource GitBgBrush}" Padding="8,6" 
+                        BorderBrush="{StaticResource GitBorderBrush}" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="⎇" FontSize="13" Foreground="{StaticResource GitGreenBrush}" VerticalAlignment="Center"/>
+                            <Button Background="Transparent" BorderThickness="0" Padding="0" 
+                                    Name="BranchButton" Click="Branch_Click" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="main" FontSize="12" FontWeight="SemiBold" 
+                                               Foreground="{StaticResource GitTextBrush}" Name="CurrentBranchText" VerticalAlignment="Center"/>
+                                    <TextBlock Text="▼" FontSize="8" Foreground="{StaticResource GitTextMutedBrush}" 
+                                               VerticalAlignment="Center" Margin="0,1,0,0"/>
                                 </StackPanel>
                             </Button>
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
-                                <Button Classes="git-action" ToolTip.Tip="Fetch" Name="FetchButton" Click="Fetch_Click">
-                                    <TextBlock Text="⬇" FontSize="12"/>
-                                </Button>
-                                <Button Classes="git-action" ToolTip.Tip="Pull" Name="PullButton" Click="Pull_Click">
-                                    <TextBlock Text="⤵" FontSize="14"/>
-                                </Button>
-                                <Button Classes="git-action" ToolTip.Tip="Push" Name="PushButton" Click="Push_Click">
-                                    <TextBlock Text="⤴" FontSize="14"/>
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                    
-                    <!-- Sync Status -->
-                    <Border Name="SyncStatusBorder" IsVisible="False" Background="#20FFFFFF" CornerRadius="4" Padding="8,4" Margin="0,4">
-                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="↓" FontSize="12" Foreground="{StaticResource GitBlueBrush}"/>
-                                <TextBlock Text="0" FontSize="12" Foreground="{StaticResource GitBlueBrush}" Name="BehindCountText"/>
-                            </StackPanel>
-                            <TextBlock Text="•" Foreground="{StaticResource GitTextMutedBrush}"/>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Text="↑" FontSize="12" Foreground="{StaticResource GitGreenBrush}"/>
-                                <TextBlock Text="0" FontSize="12" Foreground="{StaticResource GitGreenBrush}" Name="AheadCountText"/>
-                            </StackPanel>
                         </StackPanel>
-                    </Border>
-                    
-                    <!-- Commit Section -->
-                    <Border Background="#20000000" CornerRadius="6" Padding="8" Margin="0,8,0,0">
-                        <StackPanel Spacing="8">
-                            <TextBox Name="CommitMessageBox" 
-                                     Watermark="Commit message (press Ctrl+Enter to commit)"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     MinHeight="60"
-                                     MaxHeight="120"
-                                     Background="#FF1E1E2E"
-                                     BorderBrush="{StaticResource GitBorderBrush}"
-                                     Foreground="{StaticResource GitTextBrush}"
-                                     FontSize="12"
-                                     CornerRadius="4"
-                                     Padding="8"/>
-                            
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Button Grid.Column="0" Classes="git-primary" Content="✓ Commit" 
-                                        Name="CommitButton" Click="Commit_Click"
-                                        IsEnabled="False"/>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                                    <Button Classes="git-action" ToolTip.Tip="Commit and Push" Name="CommitPushButton" Click="CommitPush_Click">
-                                        <TextBlock Text="⤴" FontSize="14"/>
-                                    </Button>
-                                    <Button Classes="git-action" ToolTip.Tip="Amend Previous Commit" Name="AmendButton" Click="Amend_Click">
-                                        <TextBlock Text="✎" FontSize="12"/>
-                                    </Button>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                            <!-- Sync Status -->
+                            <StackPanel Orientation="Horizontal" Spacing="4" Name="SyncStatusPanel" IsVisible="False">
+                                <StackPanel Orientation="Horizontal" Spacing="2" Name="BehindPanel">
+                                    <TextBlock Text="↓" FontSize="11" Foreground="{StaticResource GitBlueBrush}"/>
+                                    <TextBlock Text="0" FontSize="11" Foreground="{StaticResource GitBlueBrush}" Name="BehindCountText"/>
                                 </StackPanel>
-                            </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="2" Name="AheadPanel">
+                                    <TextBlock Text="↑" FontSize="11" Foreground="{StaticResource GitGreenBrush}"/>
+                                    <TextBlock Text="0" FontSize="11" Foreground="{StaticResource GitGreenBrush}" Name="AheadCountText"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Text="→" FontSize="10" Foreground="{StaticResource GitTextMutedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="origin/main" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}" 
+                                       Name="TrackingBranchText" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Border>
-                    
-                    <!-- Staged Changes Section -->
-                    <Border Margin="0,8,0,0">
-                        <Expander Name="StagedChangesExpander" IsExpanded="True">
+                    </Grid>
+                </Border>
+                
+                <!-- Changes List -->
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,4">
+                        
+                        <!-- Staged Changes (Default Changelist) -->
+                        <Expander Classes="git-section" Name="StagedChangesExpander" IsExpanded="True">
                             <Expander.Header>
-                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,0,8,0">
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="Staged Changes" FontSize="12" FontWeight="SemiBold" 
+                                        <TextBlock Text="📋" FontSize="11"/>
+                                        <TextBlock Text="Default Changelist" FontSize="12" 
                                                    Foreground="{StaticResource GitTextBrush}"/>
-                                        <Border Background="#30A6E3A1" CornerRadius="8" Padding="6,2">
-                                            <TextBlock Text="0" FontSize="10" Foreground="{StaticResource GitGreenBrush}" 
-                                                       FontWeight="SemiBold" Name="StagedCountText"/>
-                                        </Border>
+                                        <TextBlock Text="0" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}" Name="StagedCountText"/>
                                     </StackPanel>
-                                    <Button Grid.Column="1" Classes="git-action" ToolTip.Tip="Unstage All" 
-                                            Name="UnstageAllButton" Click="UnstageAll_Click" Width="24" Height="24">
-                                        <TextBlock Text="−" FontSize="16" FontWeight="Bold"/>
-                                    </Button>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                                        <Button Classes="git-small-action" ToolTip.Tip="Rollback" 
+                                                Name="UnstageAllButton" Click="UnstageAll_Click">
+                                            <TextBlock Text="↺" FontSize="12" Foreground="{StaticResource GitTextMutedBrush}"/>
+                                        </Button>
+                                    </StackPanel>
                                 </Grid>
                             </Expander.Header>
-                            <ItemsControl Name="StagedChangesList" Margin="0,4">
+                            <ItemsControl Name="StagedChangesList" Margin="16,2,0,0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="models:GitFileChange">
-                                        <Border Classes="file-item" PointerPressed="StagedFile_PointerPressed">
+                                        <Border Classes="git-file-item" PointerPressed="StagedFile_PointerPressed">
                                             <Border.ContextMenu>
                                                 <ContextMenu>
-                                                    <MenuItem Header="Unstage" Click="UnstageFile_Click"/>
-                                                    <MenuItem Header="View Changes" Click="ViewChanges_Click"/>
+                                                    <MenuItem Header="Move to Another Changelist" IsEnabled="False"/>
+                                                    <Separator/>
+                                                    <MenuItem Header="Show Diff" Click="ViewChanges_Click"/>
+                                                    <MenuItem Header="Rollback" Click="UnstageFile_Click"/>
+                                                    <Separator/>
+                                                    <MenuItem Header="Jump to Source" Click="OpenFile_Click"/>
+                                                </ContextMenu>
+                                            </Border.ContextMenu>
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <TextBlock Grid.Column="0" Text="{Binding StatusIcon}" FontSize="11" FontWeight="Bold"
+                                                           Foreground="{Binding StatusColor}" Width="16" TextAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="4,0">
+                                                    <TextBlock Text="{Binding FileName}" FontSize="12" 
+                                                               Foreground="{StaticResource GitTextBrush}" 
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Directory}" FontSize="11" 
+                                                               Foreground="{StaticResource GitTextMutedBrush}" 
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Classes="git-small-action" ToolTip.Tip="Rollback" 
+                                                        Tag="{Binding}" Click="UnstageFileButton_Click">
+                                                    <TextBlock Text="↺" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}"/>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Expander>
+                        
+                        <!-- Unversioned Files -->
+                        <Expander Classes="git-section" Name="ChangesExpander" IsExpanded="True" Margin="0,4,0,0">
+                            <Expander.Header>
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,0,8,0">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="❓" FontSize="11"/>
+                                        <TextBlock Text="Unversioned Files" FontSize="12" 
+                                                   Foreground="{StaticResource GitTextBrush}"/>
+                                        <TextBlock Text="0" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}" Name="ChangesCountText"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                                        <Button Classes="git-small-action" ToolTip.Tip="Delete" 
+                                                Name="DiscardAllButton" Click="DiscardAll_Click">
+                                            <TextBlock Text="🗑" FontSize="10" Foreground="{StaticResource GitTextMutedBrush}"/>
+                                        </Button>
+                                        <Button Classes="git-small-action" ToolTip.Tip="Add to VCS" 
+                                                Name="StageAllButton" Click="StageAll_Click">
+                                            <TextBlock Text="+" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitGreenBrush}"/>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Expander.Header>
+                            <ItemsControl Name="ChangesList" Margin="16,2,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:GitFileChange">
+                                        <Border Classes="git-file-item" PointerPressed="UnstagedFile_PointerPressed">
+                                            <Border.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Add to VCS" Click="StageFile_Click"/>
+                                                    <MenuItem Header="Delete" Click="DiscardFile_Click"/>
+                                                    <Separator/>
+                                                    <MenuItem Header="Show Diff" Click="ViewChanges_Click"/>
+                                                    <MenuItem Header="Jump to Source" Click="OpenFile_Click"/>
                                                 </ContextMenu>
                                             </Border.ContextMenu>
                                             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                                                <Border Grid.Column="0" Width="20" Height="20" CornerRadius="4" 
-                                                        Background="#20A6E3A1" 
-                                                        Margin="0,0,8,0">
-                                                    <TextBlock Text="{Binding StatusIcon}" FontSize="11" FontWeight="Bold"
-                                                               Foreground="{Binding StatusColor}"
-                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                                <TextBlock Grid.Column="1" Text="{Binding FileName}" FontSize="12" 
-                                                           Foreground="{StaticResource GitTextBrush}" 
-                                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Grid.Column="2" Text="{Binding Directory}" FontSize="10" 
-                                                           Foreground="{StaticResource GitTextMutedBrush}" 
-                                                           VerticalAlignment="Center" Margin="8,0" 
-                                                           TextTrimming="CharacterEllipsis" MaxWidth="80"/>
-                                                <Button Grid.Column="3" Classes="git-action" Width="22" Height="22"
-                                                        ToolTip.Tip="Unstage" Tag="{Binding}"
-                                                        Click="UnstageFileButton_Click">
-                                                    <TextBlock Text="−" FontSize="14" FontWeight="Bold"/>
+                                                <TextBlock Grid.Column="0" Text="{Binding StatusIcon}" FontSize="11" FontWeight="Bold"
+                                                           Foreground="{Binding StatusColor}" Width="16" TextAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="4,0">
+                                                    <TextBlock Text="{Binding FileName}" FontSize="12" 
+                                                               Foreground="{StaticResource GitTextBrush}" 
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Directory}" FontSize="11" 
+                                                               Foreground="{StaticResource GitTextMutedBrush}" 
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Classes="git-small-action" ToolTip.Tip="Delete"
+                                                        Tag="{Binding}" Click="DiscardFileButton_Click">
+                                                    <TextBlock Text="🗑" FontSize="9" Foreground="{StaticResource GitTextMutedBrush}"/>
+                                                </Button>
+                                                <Button Grid.Column="3" Classes="git-small-action" ToolTip.Tip="Add to VCS"
+                                                        Tag="{Binding}" Click="StageFileButton_Click">
+                                                    <TextBlock Text="+" FontSize="12" FontWeight="Bold" Foreground="{StaticResource GitGreenBrush}"/>
                                                 </Button>
                                             </Grid>
                                         </Border>
@@ -270,198 +389,157 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </Expander>
-                    </Border>
-                    
-                    <!-- Changes Section (Unstaged) -->
-                    <Border Margin="0,4,0,0">
-                        <Expander Name="ChangesExpander" IsExpanded="True">
-                            <Expander.Header>
-                                <Grid ColumnDefinitions="*,Auto,Auto">
-                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="Changes" FontSize="12" FontWeight="SemiBold" 
-                                                   Foreground="{StaticResource GitTextBrush}"/>
-                                        <Border Background="#30FAB387" CornerRadius="8" Padding="6,2">
-                                            <TextBlock Text="0" FontSize="10" Foreground="{StaticResource GitAccentBrush}" 
-                                                       FontWeight="SemiBold" Name="ChangesCountText"/>
-                                        </Border>
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Classes="git-action" ToolTip.Tip="Discard All Changes" 
-                                            Name="DiscardAllButton" Click="DiscardAll_Click" Width="24" Height="24">
-                                        <TextBlock Text="↺" FontSize="14"/>
-                                    </Button>
-                                    <Button Grid.Column="2" Classes="git-action" ToolTip.Tip="Stage All" 
-                                            Name="StageAllButton" Click="StageAll_Click" Width="24" Height="24">
-                                        <TextBlock Text="+" FontSize="16" FontWeight="Bold"/>
-                                    </Button>
-                                </Grid>
-                            </Expander.Header>
-                            <ItemsControl Name="ChangesList" Margin="0,4">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="models:GitFileChange">
-                                        <Border Classes="file-item" PointerPressed="UnstagedFile_PointerPressed">
-                                            <Border.ContextMenu>
-                                                <ContextMenu>
-                                                    <MenuItem Header="Stage" Click="StageFile_Click"/>
-                                                    <MenuItem Header="Discard Changes" Click="DiscardFile_Click"/>
-                                                    <Separator/>
-                                                    <MenuItem Header="View Changes" Click="ViewChanges_Click"/>
-                                                    <MenuItem Header="Open File" Click="OpenFile_Click"/>
-                                                </ContextMenu>
-                                            </Border.ContextMenu>
-                                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
-                                                <Border Grid.Column="0" Width="20" Height="20" CornerRadius="4" 
-                                                        Background="#209399B2" 
-                                                        Margin="0,0,8,0">
-                                                    <TextBlock Text="{Binding StatusIcon}" FontSize="11" FontWeight="Bold"
-                                                               Foreground="{Binding StatusColor}"
-                                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                                <TextBlock Grid.Column="1" Text="{Binding FileName}" FontSize="12" 
-                                                           Foreground="{StaticResource GitTextBrush}" 
-                                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Grid.Column="2" Text="{Binding Directory}" FontSize="10" 
-                                                           Foreground="{StaticResource GitTextMutedBrush}" 
-                                                           VerticalAlignment="Center" Margin="8,0" 
-                                                           TextTrimming="CharacterEllipsis" MaxWidth="60"/>
-                                                <Button Grid.Column="3" Classes="git-action" Width="22" Height="22"
-                                                        ToolTip.Tip="Discard Changes" Tag="{Binding}"
-                                                        Click="DiscardFileButton_Click">
-                                                    <TextBlock Text="↺" FontSize="12"/>
-                                                </Button>
-                                                <Button Grid.Column="4" Classes="git-action" Width="22" Height="22"
-                                                        ToolTip.Tip="Stage" Tag="{Binding}"
-                                                        Click="StageFileButton_Click">
-                                                    <TextBlock Text="+" FontSize="14" FontWeight="Bold"/>
-                                                </Button>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Expander>
-                    </Border>
-                    
-                    <!-- Stashes Section -->
-                    <Border Margin="0,8,0,0">
-                        <Expander Name="StashesExpander" IsExpanded="False">
-                            <Expander.Header>
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="Stashes" FontSize="12" FontWeight="SemiBold" 
-                                                   Foreground="{StaticResource GitTextBrush}"/>
-                                        <Border Background="#30CBA6F7" CornerRadius="8" Padding="6,2" Name="StashCountBorder" IsVisible="False">
-                                            <TextBlock Text="0" FontSize="10" Foreground="#FFCBA6F7" 
-                                                       FontWeight="SemiBold" Name="StashCountText"/>
-                                        </Border>
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Classes="git-action" ToolTip.Tip="Stash Changes" 
-                                            Name="StashButton" Click="Stash_Click" Width="24" Height="24">
-                                        <TextBlock Text="📦" FontSize="11"/>
-                                    </Button>
-                                </Grid>
-                            </Expander.Header>
-                            <StackPanel>
-                                <ItemsControl Name="StashesList" Margin="0,4">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="models:GitStash">
-                                            <Border Classes="file-item">
-                                                <Border.ContextMenu>
-                                                    <ContextMenu>
-                                                        <MenuItem Header="Apply Stash" Click="ApplyStash_Click"/>
-                                                        <MenuItem Header="Pop Stash" Click="PopStash_Click"/>
-                                                        <Separator/>
-                                                        <MenuItem Header="Drop Stash" Click="DropStash_Click"/>
-                                                    </ContextMenu>
-                                                </Border.ContextMenu>
-                                                <Grid ColumnDefinitions="Auto,*,Auto">
-                                                    <TextBlock Grid.Column="0" Text="📦" FontSize="12" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Message}" FontSize="12" 
-                                                                   Foreground="{StaticResource GitTextBrush}"
-                                                                   TextTrimming="CharacterEllipsis"/>
-                                                        <TextBlock Text="{Binding Branch}" FontSize="10" 
-                                                                   Foreground="{StaticResource GitTextMutedBrush}"/>
-                                                    </StackPanel>
-                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
-                                                        <Button Classes="git-action" Width="22" Height="22" ToolTip.Tip="Apply" Tag="{Binding}"
-                                                                Click="ApplyStashButton_Click">
-                                                            <TextBlock Text="↩" FontSize="12"/>
-                                                        </Button>
-                                                        <Button Classes="git-action" Width="22" Height="22" ToolTip.Tip="Drop" Tag="{Binding}"
-                                                                Click="DropStashButton_Click">
-                                                            <TextBlock Text="🗑" FontSize="10"/>
-                                                        </Button>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                                <StackPanel Name="NoStashesPanel" IsVisible="True" Margin="8">
-                                    <TextBlock Text="No stashes" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}" 
-                                               FontStyle="Italic"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Expander>
-                    </Border>
-                    
-                    <!-- Recent Commits Section -->
-                    <Border Margin="0,8,0,0">
-                        <Expander Name="CommitsExpander" IsExpanded="False">
-                            <Expander.Header>
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="Recent Commits" FontSize="12" FontWeight="SemiBold" 
-                                               Foreground="{StaticResource GitTextBrush}"/>
-                                </StackPanel>
-                            </Expander.Header>
-                            <StackPanel>
-                                <ItemsControl Name="CommitsList" Margin="0,4">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="models:GitCommit">
-                                            <Border Classes="file-item" Padding="8,6">
-                                                <Grid ColumnDefinitions="Auto,*">
-                                                    <Border Grid.Column="0" Width="28" Height="28" CornerRadius="14" 
-                                                            Background="#30FAB387" Margin="0,0,10,0">
-                                                        <TextBlock Text="{Binding AuthorInitials}" FontSize="10" FontWeight="Bold"
-                                                                   Foreground="{StaticResource GitAccentBrush}"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Message}" FontSize="12" 
-                                                                   Foreground="{StaticResource GitTextBrush}"
-                                                                   TextTrimming="CharacterEllipsis"/>
-                                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                                            <TextBlock Text="{Binding ShortHash}" FontSize="10" 
-                                                                       Foreground="{StaticResource GitBlueBrush}"
-                                                                       FontFamily="Consolas"/>
-                                                            <TextBlock Text="{Binding RelativeDate}" FontSize="10" 
-                                                                       Foreground="{StaticResource GitTextMutedBrush}"/>
-                                                        </StackPanel>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                                <Button Classes="git-secondary" Content="View Full History" 
-                                        HorizontalAlignment="Stretch" Margin="4"
-                                        Name="ViewHistoryButton" Click="ViewHistory_Click"/>
-                            </StackPanel>
-                        </Expander>
-                    </Border>
-                    
-                </StackPanel>
+                        
+                        <!-- Empty State -->
+                        <StackPanel Name="NoChangesPanel" IsVisible="False" Margin="16,32" HorizontalAlignment="Center">
+                            <TextBlock Text="✓" FontSize="32" HorizontalAlignment="Center" Foreground="{StaticResource GitGreenBrush}" Opacity="0.5"/>
+                            <TextBlock Text="Nothing to commit" FontSize="13" HorizontalAlignment="Center" 
+                                       Foreground="{StaticResource GitTextMutedBrush}" Margin="0,8,0,0"/>
+                            <TextBlock Text="Working tree is clean" FontSize="11" HorizontalAlignment="Center" 
+                                       Foreground="{StaticResource GitTextMutedBrush}"/>
+                        </StackPanel>
+                        
+                    </StackPanel>
+                </ScrollViewer>
                 
-            </StackPanel>
-        </ScrollViewer>
+                <!-- Commit Area -->
+                <Border Grid.Row="2" Background="{StaticResource GitBgBrush}" Padding="8" 
+                        BorderBrush="{StaticResource GitBorderBrush}" BorderThickness="0,1,0,0">
+                    <StackPanel Spacing="8">
+                        <TextBox Name="CommitMessageBox" 
+                                 Watermark="Commit Message"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="50"
+                                 MaxHeight="100"
+                                 Background="{StaticResource GitSurfaceBrush}"
+                                 BorderBrush="{StaticResource GitBorderBrush}"
+                                 Foreground="{StaticResource GitTextBrush}"
+                                 FontSize="12"
+                                 CornerRadius="3"
+                                 Padding="8,6"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Button Grid.Column="0" Classes="git-primary" Content="Commit" 
+                                    Name="CommitButton" Click="Commit_Click"
+                                    IsEnabled="False" HorizontalAlignment="Stretch"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="4,0,0,0">
+                                <Button Classes="git-toolbar" ToolTip.Tip="Commit and Push" 
+                                        Name="CommitPushButton" Click="CommitPush_Click" Width="28" Height="28">
+                                    <TextBlock Text="↑" FontSize="14" FontWeight="Bold"/>
+                                </Button>
+                                <Button Classes="git-toolbar" ToolTip.Tip="Amend Commit" 
+                                        Name="AmendButton" Click="Amend_Click" Width="28" Height="28">
+                                    <TextBlock Text="✎" FontSize="12"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+            </Grid>
+            
+            <!-- Log Panel -->
+            <Grid Name="LogPanel" IsVisible="False" RowDefinitions="Auto,*">
+                
+                <!-- Log Search/Filter -->
+                <Border Grid.Row="0" Background="{StaticResource GitBgBrush}" Padding="8,6" 
+                        BorderBrush="{StaticResource GitBorderBrush}" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0" Watermark="Filter by message, author, hash..."
+                                 Background="{StaticResource GitSurfaceBrush}"
+                                 BorderBrush="{StaticResource GitBorderBrush}"
+                                 Foreground="{StaticResource GitTextBrush}"
+                                 FontSize="12" CornerRadius="3" Padding="8,4"
+                                 Name="LogFilterBox"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="4,0,0,0">
+                            <Button Classes="git-toolbar" ToolTip.Tip="All Branches" Width="24" Height="24">
+                                <TextBlock Text="⎇" FontSize="11"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                
+                <!-- Commit List -->
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl Name="CommitsList" Margin="0,4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:GitCommit">
+                                <Border Classes="git-commit-item">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Checkout Revision"/>
+                                            <MenuItem Header="New Branch..."/>
+                                            <MenuItem Header="New Tag..."/>
+                                            <Separator/>
+                                            <MenuItem Header="Cherry-Pick"/>
+                                            <MenuItem Header="Revert Commit"/>
+                                            <Separator/>
+                                            <MenuItem Header="Copy Revision Number"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <!-- Graph line placeholder -->
+                                        <Border Grid.Column="0" Width="24" Margin="0,0,4,0">
+                                            <Ellipse Width="8" Height="8" Fill="{StaticResource GitAccentBrush}" 
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock Text="{Binding Message}" FontSize="12" 
+                                                       Foreground="{StaticResource GitTextBrush}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding ShortHash}" FontSize="11" 
+                                                           Foreground="{StaticResource GitBlueBrush}"
+                                                           FontFamily="Consolas, monospace"/>
+                                                <TextBlock Text="{Binding AuthorName}" FontSize="11" 
+                                                           Foreground="{StaticResource GitTextMutedBrush}"/>
+                                                <TextBlock Text="{Binding RelativeDate}" FontSize="11" 
+                                                           Foreground="{StaticResource GitTextMutedBrush}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                
+            </Grid>
+            
+            <!-- Console Panel -->
+            <Grid Name="ConsolePanel" IsVisible="False" RowDefinitions="Auto,*">
+                
+                <!-- Console Toolbar -->
+                <Border Grid.Row="0" Background="{StaticResource GitBgBrush}" Padding="4,2" 
+                        BorderBrush="{StaticResource GitBorderBrush}" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Button Classes="git-toolbar" ToolTip.Tip="Clear" Name="ClearConsoleButton" Click="ClearConsole_Click">
+                            <TextBlock Text="🗑" FontSize="11"/>
+                        </Button>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Console Output -->
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Name="ConsoleScrollViewer">
+                    <TextBlock Name="ConsoleOutputText" 
+                               FontFamily="Consolas, Monaco, monospace" FontSize="12"
+                               Foreground="{StaticResource GitTextBrush}" 
+                               Margin="8,4" TextWrapping="NoWrap"
+                               Text="Git console ready..."/>
+                </ScrollViewer>
+                
+            </Grid>
+            
+        </Grid>
         
         <!-- Loading Overlay -->
-        <Border Grid.Row="0" Grid.RowSpan="2" Background="#80000000" Name="LoadingOverlay" IsVisible="False">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
-                <TextBlock Text="⏳" FontSize="32" HorizontalAlignment="Center"/>
-                <TextBlock Text="Loading..." FontSize="14" Foreground="{StaticResource GitTextBrush}" Name="LoadingText"/>
+        <Border Grid.RowSpan="3" Background="#CC1E1F22" Name="LoadingOverlay" IsVisible="False">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+                <TextBlock Text="⏳" FontSize="24" HorizontalAlignment="Center"/>
+                <TextBlock Text="Loading..." FontSize="12" Foreground="{StaticResource GitTextBrush}" Name="LoadingText"/>
             </StackPanel>
         </Border>
+        
     </Grid>
 </UserControl>
 

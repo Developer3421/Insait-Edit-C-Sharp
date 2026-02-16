@@ -31,6 +31,7 @@ public partial class MainWindow : Window
     private readonly CodeAnalysisService _codeAnalysisService;
     private readonly RunConfigurationService _runConfigService;
     private readonly PublishService _publishService;
+    private readonly CopilotCliService _copilotCliService;
     private string? _projectPath;
     private MonacoEditorControl? _monacoEditor;
     private TerminalControl? _terminalControl;
@@ -52,6 +53,7 @@ public partial class MainWindow : Window
         _codeAnalysisService = new CodeAnalysisService();
         _runConfigService = new RunConfigurationService();
         _publishService = new PublishService();
+        _copilotCliService = new CopilotCliService();
         _projectPath = projectPath;
         
         DataContext = _viewModel;
@@ -436,7 +438,13 @@ public partial class MainWindow : Window
     {
         if (_gitPanelControl != null)
         {
-            _ = _gitPanelControl.SetRepositoryPathAsync(path);
+            // Ensure we pass a directory path, not a file path
+            string dirPath = path;
+            if (File.Exists(path))
+            {
+                dirPath = Path.GetDirectoryName(path) ?? path;
+            }
+            _ = _gitPanelControl.SetRepositoryPathAsync(dirPath);
         }
     }
 
@@ -1063,6 +1071,648 @@ public partial class MainWindow : Window
         SwitchSidePanel("extensions");
     }
 
+    private async void GitStatus_Click(object? sender, RoutedEventArgs e)
+    {
+        await ShowGitStatusDialog();
+    }
+
+    private async Task ShowGitStatusDialog()
+    {
+        var gitService = new GitService();
+        
+        // Перевірка чи Git встановлений
+        var isGitInstalled = await gitService.IsGitInstalledAsync();
+        
+        if (!isGitInstalled)
+        {
+            await ShowGitNotInstalledDialog();
+            return;
+        }
+
+        // Перевірка стану репозиторію
+        if (string.IsNullOrEmpty(_projectPath))
+        {
+            await ShowNoProjectOpenedDialog();
+            return;
+        }
+
+        // Отримуємо директорію проекту (якщо _projectPath - це файл, беремо його директорію)
+        var projectDirectory = GetProjectDirectory(_projectPath);
+        
+        if (string.IsNullOrEmpty(projectDirectory) || !Directory.Exists(projectDirectory))
+        {
+            await ShowNoProjectOpenedDialog();
+            return;
+        }
+
+        var gitStatusResult = await CheckGitRepositoryStatus(projectDirectory);
+        await ShowGitStatusResultDialog(gitStatusResult);
+    }
+
+    /// <summary>
+    /// Отримує директорію проекту з шляху (може бути файл або папка)
+    /// </summary>
+    private string? GetProjectDirectory(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return null;
+
+        // Якщо це файл (має розширення типу .csproj, .sln, тощо), беремо його директорію
+        if (File.Exists(path))
+        {
+            return Path.GetDirectoryName(path);
+        }
+        
+        // Якщо це директорія, повертаємо як є
+        if (Directory.Exists(path))
+        {
+            return path;
+        }
+
+        // Спробуємо отримати директорію
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
+        {
+            return directory;
+        }
+
+        return null;
+    }
+
+    private async Task<GitRepositoryCheckResult> CheckGitRepositoryStatus(string path)
+    {
+        var result = new GitRepositoryCheckResult { Path = path };
+        var gitPath = Path.Combine(path, ".git");
+
+        // Перевірка існування .git директорії
+        if (!Directory.Exists(gitPath))
+        {
+            result.Status = GitRepoStatus.NotInitialized;
+            result.Message = "Git репозиторій не ініціалізований";
+            return result;
+        }
+
+        // Перевірка чи це справжня директорія Git
+        var gitService = new GitService(path);
+        var statusResult = await gitService.GetStatusAsync();
+
+        // Спробувати виконати команду git status для перевірки цілісності
+        try
+        {
+            var testResult = await RunGitCommandAsync("status", path);
+            if (testResult.ExitCode != 0)
+            {
+                if (testResult.Error.Contains("fatal") || testResult.Error.Contains("corrupt"))
+                {
+                    result.Status = GitRepoStatus.Corrupted;
+                    result.Message = $"Git репозиторій пошкоджений: {testResult.Error}";
+                    return result;
+                }
+            }
+            
+            result.Status = GitRepoStatus.Healthy;
+            result.Message = $"Git репозиторій OK. Гілка: {statusResult.CurrentBranch}";
+            result.BranchName = statusResult.CurrentBranch;
+            result.ChangesCount = statusResult.TotalChanges;
+        }
+        catch (Exception ex)
+        {
+            result.Status = GitRepoStatus.Corrupted;
+            result.Message = $"Помилка перевірки Git: {ex.Message}";
+        }
+
+        return result;
+    }
+
+    private async Task<(int ExitCode, string Output, string Error)> RunGitCommandAsync(string arguments, string workingDirectory)
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = arguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                WorkingDirectory = workingDirectory
+            };
+
+            using var process = new Process { StartInfo = startInfo };
+            process.Start();
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            
+            return (process.ExitCode, output, error);
+        }
+        catch (Exception ex)
+        {
+            return (-1, "", ex.Message);
+        }
+    }
+
+    private async Task ShowGitNotInstalledDialog()
+    {
+        var dialog = new Window
+        {
+            Title = "Git Status",
+            Width = 450,
+            Height = 250,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            SystemDecorations = SystemDecorations.None,
+            Background = Avalonia.Media.Brushes.Transparent,
+            TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent }
+        };
+
+        var mainGrid = new Grid { RowDefinitions = RowDefinitions.Parse("*,Auto") };
+        
+        var content = new StackPanel 
+        { 
+            Spacing = 16, 
+            Margin = new Thickness(24),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        
+        content.Children.Add(new TextBlock
+        {
+            Text = "⚠️",
+            FontSize = 48,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        });
+        
+        content.Children.Add(new TextBlock
+        {
+            Text = "Git не встановлений",
+            FontSize = 18,
+            FontWeight = FontWeight.Bold,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Foreground = Avalonia.Media.Brushes.White
+        });
+        
+        content.Children.Add(new TextBlock
+        {
+            Text = "Для роботи з Git необхідно встановити Git.\nЗавантажте з https://git-scm.com/",
+            FontSize = 13,
+            TextAlignment = Avalonia.Media.TextAlignment.Center,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#9399B2"))
+        });
+
+        Grid.SetRow(content, 0);
+        mainGrid.Children.Add(content);
+
+        var buttonPanel = new StackPanel 
+        { 
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Spacing = 12,
+            Margin = new Thickness(0, 0, 0, 20)
+        };
+        
+        var closeButton = new Button 
+        { 
+            Content = "Закрити", 
+            Width = 100,
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
+            Foreground = Avalonia.Media.Brushes.White
+        };
+        closeButton.Click += (s, e) => dialog.Close();
+        buttonPanel.Children.Add(closeButton);
+        
+        Grid.SetRow(buttonPanel, 1);
+        mainGrid.Children.Add(buttonPanel);
+
+        var border = new Border
+        {
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
+            BorderBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(12),
+            Child = mainGrid
+        };
+
+        dialog.Content = border;
+        await dialog.ShowDialog(this);
+    }
+
+    private async Task ShowNoProjectOpenedDialog()
+    {
+        var dialog = new Window
+        {
+            Title = "Git Status",
+            Width = 400,
+            Height = 200,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            SystemDecorations = SystemDecorations.None,
+            Background = Avalonia.Media.Brushes.Transparent
+        };
+
+        var content = new StackPanel 
+        { 
+            Spacing = 16, 
+            Margin = new Thickness(24),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        
+        content.Children.Add(new TextBlock
+        {
+            Text = "📂",
+            FontSize = 40,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        });
+        
+        content.Children.Add(new TextBlock
+        {
+            Text = "Немає відкритого проекту",
+            FontSize = 16,
+            FontWeight = FontWeight.Bold,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Foreground = Avalonia.Media.Brushes.White
+        });
+
+        var closeButton = new Button 
+        { 
+            Content = "Закрити", 
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Width = 100,
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
+            Foreground = Avalonia.Media.Brushes.White
+        };
+        closeButton.Click += (s, e) => dialog.Close();
+        content.Children.Add(closeButton);
+
+        dialog.Content = new Border
+        {
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
+            BorderBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(12),
+            Child = content
+        };
+
+        await dialog.ShowDialog(this);
+    }
+
+    private async Task ShowGitStatusResultDialog(GitRepositoryCheckResult result)
+    {
+        var dialog = new Window
+        {
+            Title = "Git Status",
+            Width = 500,
+            Height = 380,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            SystemDecorations = SystemDecorations.None,
+            Background = Avalonia.Media.Brushes.Transparent
+        };
+
+        var mainGrid = new Grid { RowDefinitions = RowDefinitions.Parse("*,Auto") };
+
+        var content = new StackPanel 
+        { 
+            Spacing = 16, 
+            Margin = new Thickness(24),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+
+        // Іконка та статус
+        var statusIcon = result.Status switch
+        {
+            GitRepoStatus.Healthy => "✅",
+            GitRepoStatus.NotInitialized => "📁",
+            GitRepoStatus.Corrupted => "⚠️",
+            _ => "❓"
+        };
+
+        var statusColor = result.Status switch
+        {
+            GitRepoStatus.Healthy => "#A6E3A1",
+            GitRepoStatus.NotInitialized => "#89B4FA",
+            GitRepoStatus.Corrupted => "#F38BA8",
+            _ => "#9399B2"
+        };
+
+        content.Children.Add(new TextBlock
+        {
+            Text = statusIcon,
+            FontSize = 48,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        });
+
+        var statusTitle = result.Status switch
+        {
+            GitRepoStatus.Healthy => "Git репозиторій OK",
+            GitRepoStatus.NotInitialized => "Git не ініціалізований",
+            GitRepoStatus.Corrupted => "Git репозиторій пошкоджений",
+            _ => "Невідомий статус"
+        };
+
+        content.Children.Add(new TextBlock
+        {
+            Text = statusTitle,
+            FontSize = 18,
+            FontWeight = FontWeight.Bold,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(statusColor))
+        });
+
+        content.Children.Add(new TextBlock
+        {
+            Text = result.Message,
+            FontSize = 13,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            TextAlignment = Avalonia.Media.TextAlignment.Center,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#9399B2"))
+        });
+
+        if (result.Status == GitRepoStatus.Healthy && result.ChangesCount > 0)
+        {
+            content.Children.Add(new TextBlock
+            {
+                Text = $"Змін: {result.ChangesCount}",
+                FontSize = 13,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FAB387"))
+            });
+        }
+
+        Grid.SetRow(content, 0);
+        mainGrid.Children.Add(content);
+
+        // Кнопки
+        var buttonPanel = new StackPanel 
+        { 
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Spacing = 12,
+            Margin = new Thickness(0, 0, 0, 20)
+        };
+
+        if (result.Status == GitRepoStatus.NotInitialized)
+        {
+            var initButton = new Button 
+            { 
+                Content = "🔧 Ініціалізувати Git", 
+                Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#89B4FA")),
+                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
+                FontWeight = FontWeight.SemiBold,
+                Padding = new Thickness(16, 10)
+            };
+            initButton.Click += async (s, e) =>
+            {
+                dialog.Close();
+                await InitializeGitRepository(result.Path);
+            };
+            buttonPanel.Children.Add(initButton);
+        }
+        else if (result.Status == GitRepoStatus.Corrupted)
+        {
+            var repairButton = new Button 
+            { 
+                Content = "🔧 Спробувати відновити", 
+                Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FAB387")),
+                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
+                FontWeight = FontWeight.SemiBold,
+                Padding = new Thickness(16, 10)
+            };
+            repairButton.Click += async (s, e) =>
+            {
+                dialog.Close();
+                await RepairGitRepository(result.Path);
+            };
+            buttonPanel.Children.Add(repairButton);
+
+            var reinitButton = new Button 
+            { 
+                Content = "🗑️ Видалити та створити новий", 
+                Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#F38BA8")),
+                Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
+                FontWeight = FontWeight.SemiBold,
+                Padding = new Thickness(16, 10)
+            };
+            reinitButton.Click += async (s, e) =>
+            {
+                dialog.Close();
+                await ReinitializeGitRepository(result.Path);
+            };
+            buttonPanel.Children.Add(reinitButton);
+        }
+
+        var closeButton = new Button 
+        { 
+            Content = "Закрити", 
+            Width = 100,
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
+            Foreground = Avalonia.Media.Brushes.White,
+            Padding = new Thickness(16, 10)
+        };
+        closeButton.Click += (s, e) => dialog.Close();
+        buttonPanel.Children.Add(closeButton);
+
+        Grid.SetRow(buttonPanel, 1);
+        mainGrid.Children.Add(buttonPanel);
+
+        dialog.Content = new Border
+        {
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
+            BorderBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(12),
+            Child = mainGrid
+        };
+
+        // Оновлюємо індикатор
+        UpdateGitStatusIndicator(result.Status);
+
+        await dialog.ShowDialog(this);
+    }
+
+    private async Task InitializeGitRepository(string path)
+    {
+        _viewModel.StatusText = "Ініціалізація Git репозиторію...";
+        
+        var result = await RunGitCommandAsync("init", path);
+        
+        if (result.ExitCode == 0)
+        {
+            _viewModel.StatusText = "✅ Git репозиторій успішно ініціалізовано!";
+            UpdateGitStatusIndicator(GitRepoStatus.Healthy);
+            
+            // Оновлюємо Git панель якщо вона відкрита
+            if (_gitPanelControl != null)
+            {
+                await _gitPanelControl.SetRepositoryPathAsync(path);
+            }
+        }
+        else
+        {
+            _viewModel.StatusText = $"❌ Помилка ініціалізації: {result.Error}";
+        }
+    }
+
+    private async Task RepairGitRepository(string path)
+    {
+        _viewModel.StatusText = "Спроба відновлення Git репозиторію...";
+
+        // Спробувати git fsck
+        var fsckResult = await RunGitCommandAsync("fsck --full", path);
+        
+        if (fsckResult.ExitCode == 0 || !fsckResult.Error.Contains("fatal"))
+        {
+            // Спробувати git gc
+            var gcResult = await RunGitCommandAsync("gc --prune=now", path);
+            
+            _viewModel.StatusText = "✅ Git репозиторій відновлено!";
+            UpdateGitStatusIndicator(GitRepoStatus.Healthy);
+        }
+        else
+        {
+            _viewModel.StatusText = $"⚠️ Не вдалося відновити: {fsckResult.Error}";
+            
+            // Показати діалог з пропозицією переініціалізувати
+            await ShowRepairFailedDialog(path);
+        }
+    }
+
+    private async Task ShowRepairFailedDialog(string path)
+    {
+        var dialog = new Window
+        {
+            Title = "Відновлення не вдалося",
+            Width = 450,
+            Height = 250,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            SystemDecorations = SystemDecorations.None,
+            Background = Avalonia.Media.Brushes.Transparent
+        };
+
+        var mainGrid = new Grid { RowDefinitions = RowDefinitions.Parse("*,Auto") };
+
+        var content = new StackPanel 
+        { 
+            Spacing = 12, 
+            Margin = new Thickness(24),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+
+        content.Children.Add(new TextBlock
+        {
+            Text = "⚠️",
+            FontSize = 40,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        });
+
+        content.Children.Add(new TextBlock
+        {
+            Text = "Не вдалося відновити репозиторій",
+            FontSize = 16,
+            FontWeight = FontWeight.Bold,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#F38BA8"))
+        });
+
+        content.Children.Add(new TextBlock
+        {
+            Text = "Бажаєте видалити пошкоджений Git та створити новий?",
+            FontSize = 13,
+            TextAlignment = Avalonia.Media.TextAlignment.Center,
+            Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#9399B2"))
+        });
+
+        Grid.SetRow(content, 0);
+        mainGrid.Children.Add(content);
+
+        var buttonPanel = new StackPanel 
+        { 
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Spacing = 12,
+            Margin = new Thickness(0, 0, 0, 20)
+        };
+
+        var reinitButton = new Button 
+        { 
+            Content = "Так, переініціалізувати", 
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FAB387")),
+            Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
+            FontWeight = FontWeight.SemiBold,
+            Padding = new Thickness(16, 10)
+        };
+        reinitButton.Click += async (s, e) =>
+        {
+            dialog.Close();
+            await ReinitializeGitRepository(path);
+        };
+        buttonPanel.Children.Add(reinitButton);
+
+        var cancelButton = new Button 
+        { 
+            Content = "Скасувати", 
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
+            Foreground = Avalonia.Media.Brushes.White,
+            Padding = new Thickness(16, 10)
+        };
+        cancelButton.Click += (s, e) => dialog.Close();
+        buttonPanel.Children.Add(cancelButton);
+
+        Grid.SetRow(buttonPanel, 1);
+        mainGrid.Children.Add(buttonPanel);
+
+        dialog.Content = new Border
+        {
+            Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
+            BorderBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(12),
+            Child = mainGrid
+        };
+
+        await dialog.ShowDialog(this);
+    }
+
+    private async Task ReinitializeGitRepository(string path)
+    {
+        _viewModel.StatusText = "Видалення пошкодженого Git...";
+
+        var gitPath = Path.Combine(path, ".git");
+        
+        try
+        {
+            if (Directory.Exists(gitPath))
+            {
+                // Видаляємо .git директорію
+                Directory.Delete(gitPath, true);
+            }
+
+            _viewModel.StatusText = "Ініціалізація нового Git репозиторію...";
+            
+            // Створюємо новий репозиторій
+            await InitializeGitRepository(path);
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = $"❌ Помилка: {ex.Message}";
+        }
+    }
+
+    private void UpdateGitStatusIndicator(GitRepoStatus status)
+    {
+        var indicator = this.FindControl<Border>("GitStatusIndicator");
+        if (indicator == null) return;
+
+        var color = status switch
+        {
+            GitRepoStatus.Healthy => "#A6E3A1",      // Зелений
+            GitRepoStatus.NotInitialized => "#89B4FA", // Синій
+            GitRepoStatus.Corrupted => "#F38BA8",    // Червоний
+            _ => "#6C6C6C"                           // Сірий
+        };
+
+        indicator.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(color));
+    }
+
     private void Account_Click(object? sender, RoutedEventArgs e)
     {
         // TODO: Show account panel/dialog
@@ -1164,7 +1814,9 @@ public partial class MainWindow : Window
                 _projectPath = result;
                 LoadProject(result);
                 UpdateTitle();
-                await _gitPanelControl.SetRepositoryPathAsync(result);
+                // Ensure we pass directory path
+                string dirPath = File.Exists(result) ? Path.GetDirectoryName(result) ?? result : result;
+                await _gitPanelControl.SetRepositoryPathAsync(dirPath);
             }
         };
         
@@ -1179,7 +1831,9 @@ public partial class MainWindow : Window
         // Set repository path
         if (!string.IsNullOrEmpty(_projectPath))
         {
-            _ = _gitPanelControl.SetRepositoryPathAsync(_projectPath);
+            // Ensure we pass directory path
+            string dirPath = File.Exists(_projectPath) ? Path.GetDirectoryName(_projectPath) ?? _projectPath : _projectPath;
+            _ = _gitPanelControl.SetRepositoryPathAsync(dirPath);
         }
     }
 
@@ -2440,7 +3094,6 @@ public partial class MainWindow : Window
         var input = this.FindControl<TextBox>("AIChatInput");
         if (input != null && !string.IsNullOrWhiteSpace(input.Text))
         {
-            // TODO: Send message to AI assistant
             var message = input.Text;
             input.Text = string.Empty;
             
@@ -2451,8 +3104,242 @@ public partial class MainWindow : Window
 
     private async void ProcessAIMessage(string message)
     {
-        // TODO: Implement AI integration
-        await Task.Delay(100); // Placeholder
+        // Add user message to chat
+        AddUserMessage(message);
+        
+        // Update working directory for Copilot CLI
+        if (!string.IsNullOrEmpty(_projectPath))
+        {
+            var workingDir = Directory.Exists(_projectPath) ? _projectPath : Path.GetDirectoryName(_projectPath);
+            if (!string.IsNullOrEmpty(workingDir))
+            {
+                _copilotCliService.WorkingDirectory = workingDir;
+            }
+        }
+        
+        // Check if it's a CLI command (starts with / or common commands)
+        var trimmedMessage = message.Trim();
+        var isCliCommand = trimmedMessage.StartsWith("/") || 
+                          IsCliCommandKeyword(trimmedMessage.Split(' ')[0].ToLowerInvariant());
+        
+        if (isCliCommand)
+        {
+            // Remove leading / if present
+            var command = trimmedMessage.StartsWith("/") ? trimmedMessage.Substring(1) : trimmedMessage;
+            
+            // Execute CLI command
+            var result = await _copilotCliService.ExecuteAsync(command);
+            
+            // Add response to chat
+            if (result.Success)
+            {
+                AddAIResponse(result.Output, isSuccess: true);
+                
+                // Refresh file tree if file was created/deleted/renamed
+                var cmdLower = command.Split(' ')[0].ToLowerInvariant();
+                if (cmdLower is "create" or "new" or "delete" or "rm" or "remove" or "mkdir" or "rmdir" 
+                    or "rename" or "mv" or "copy" or "cp" or "touch" or "template")
+                {
+                    RefreshFileTree();
+                }
+            }
+            else
+            {
+                AddAIResponse(result.Output, isSuccess: false);
+            }
+        }
+        else
+        {
+            // Regular AI chat - show hint about CLI commands
+            var response = GetAIResponse(message);
+            AddAIResponse(response, isSuccess: true);
+        }
+    }
+    
+    private bool IsCliCommandKeyword(string word)
+    {
+        var cliCommands = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "create", "new", "delete", "rm", "remove", "mkdir", "rmdir",
+            "rename", "mv", "copy", "cp", "touch", "write", "append",
+            "read", "cat", "ls", "dir", "tree", "pwd", "cd",
+            "find", "search", "template", "help", "info", "exists",
+            // GitHub CLI commands
+            "gh", "gh-install", "gh-auth", "gh-repo", "gh-pr", "gh-issue", "gh-workflow", "gh-status"
+        };
+        return cliCommands.Contains(word);
+    }
+    
+    private void AddUserMessage(string message)
+    {
+        var chatPanel = this.FindControl<StackPanel>("AIChatMessages");
+        if (chatPanel == null) return;
+        
+        var messageBorder = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse("#50569CD6")),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(12),
+            Margin = new Thickness(0, 4),
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            MaxWidth = 280
+        };
+        
+        var messageText = new SelectableTextBlock
+        {
+            Text = message,
+            Foreground = new SolidColorBrush(Color.Parse("#FFFFFF")),
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            FontFamily = new FontFamily("Consolas, Monaco, monospace"),
+            FontSize = 12
+        };
+        
+        messageBorder.Child = messageText;
+        chatPanel.Children.Add(messageBorder);
+        
+        // Scroll to bottom
+        ScrollAIChatToBottom();
+    }
+    
+    private void AddAIResponse(string response, bool isSuccess)
+    {
+        var chatPanel = this.FindControl<StackPanel>("AIChatMessages");
+        if (chatPanel == null) return;
+        
+        var responseBorder = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse(isSuccess ? "#403D3D4D" : "#40F38BA8")),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(12),
+            Margin = new Thickness(0, 4),
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+            MaxWidth = 300
+        };
+        
+        var responsePanel = new StackPanel { Spacing = 4 };
+        
+        // Header with icon
+        var headerPanel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 6 };
+        headerPanel.Children.Add(new TextBlock 
+        { 
+            Text = isSuccess ? "🤖" : "⚠️", 
+            FontSize = 12 
+        });
+        headerPanel.Children.Add(new TextBlock 
+        { 
+            Text = isSuccess ? "Copilot" : "Error", 
+            FontWeight = FontWeight.SemiBold,
+            FontSize = 11,
+            Foreground = new SolidColorBrush(Color.Parse(isSuccess ? "#A6E3A1" : "#F38BA8"))
+        });
+        responsePanel.Children.Add(headerPanel);
+        
+        // Response content - SelectableTextBlock for copying
+        var responseText = new SelectableTextBlock
+        {
+            Text = response,
+            Foreground = new SolidColorBrush(Color.Parse("#FFFFFF")),
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            FontFamily = new FontFamily("Consolas, Monaco, monospace"),
+            FontSize = 11
+        };
+        responsePanel.Children.Add(responseText);
+        
+        responseBorder.Child = responsePanel;
+        chatPanel.Children.Add(responseBorder);
+        
+        // Scroll to bottom
+        ScrollAIChatToBottom();
+    }
+    
+    private void ScrollAIChatToBottom()
+    {
+        var scrollViewer = this.FindControl<ScrollViewer>("AIChatScrollViewer");
+        scrollViewer?.ScrollToEnd();
+    }
+    
+    private string GetAIResponse(string message)
+    {
+        // Simple responses for common queries - this is a placeholder for real AI integration
+        var lowerMessage = message.ToLowerInvariant();
+        
+        if (lowerMessage.Contains("help") || lowerMessage.Contains("command"))
+        {
+            return "💡 Copilot CLI Commands:\n\n" +
+                   "📁 File Operations:\n" +
+                   "  create <path> - Create file\n" +
+                   "  delete <path> - Delete file\n" +
+                   "  template <type> <path> - Create from template\n\n" +
+                   "📂 Navigation:\n" +
+                   "  ls, dir - List files\n" +
+                   "  tree - Show tree view\n" +
+                   "  cd <path> - Change directory\n\n" +
+                   "🔍 Search:\n" +
+                   "  find <pattern> - Find files\n" +
+                   "  search <text> - Search in files\n\n" +
+                   "Type 'help' for full command list.";
+        }
+        
+        if (lowerMessage.Contains("create") || lowerMessage.Contains("new file"))
+        {
+            return "To create a file, use:\n  create <filename>\n\nExample:\n  create MyClass.cs\n  create src/Utils/Helper.cs";
+        }
+        
+        if (lowerMessage.Contains("delete") || lowerMessage.Contains("remove"))
+        {
+            return "To delete a file, use:\n  delete <filename>\n\nUse --force for directories:\n  delete src/OldFolder --force";
+        }
+        
+        return "I'm your Copilot CLI assistant! 🤖\n\n" +
+               "You can use CLI commands directly:\n" +
+               "  /create MyClass.cs\n" +
+               "  /ls\n" +
+               "  /help\n\n" +
+               "Or type 'help' for all available commands.";
+    }
+    
+    private void ClearAIChat_Click(object? sender, RoutedEventArgs e)
+    {
+        var chatPanel = this.FindControl<StackPanel>("AIChatMessages");
+        if (chatPanel == null) return;
+        
+        chatPanel.Children.Clear();
+        
+        // Add welcome message back
+        var welcomeBorder = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse("#40FAB387")),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(12)
+        };
+        
+        var welcomePanel = new StackPanel { Spacing = 8 };
+        welcomePanel.Children.Add(new TextBlock 
+        { 
+            Text = "🚀 Copilot CLI Ready!", 
+            FontWeight = FontWeight.SemiBold,
+            Foreground = new SolidColorBrush(Color.Parse("#FFFFFF"))
+        });
+        welcomePanel.Children.Add(new TextBlock 
+        { 
+            Text = "Type 'help' for available commands",
+            Foreground = new SolidColorBrush(Color.Parse("#E0E0E0")),
+            FontSize = 12
+        });
+        
+        welcomeBorder.Child = welcomePanel;
+        chatPanel.Children.Add(welcomeBorder);
+        
+        _viewModel.StatusText = "Chat cleared";
+    }
+    
+    private void AIChatInput_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            SendAI_Click(sender, e);
+            e.Handled = true;
+        }
     }
 
     #endregion
@@ -3542,4 +4429,27 @@ public partial class MainWindow : Window
     }
 
     #endregion
+}
+
+/// <summary>
+/// Статус Git репозиторію
+/// </summary>
+public enum GitRepoStatus
+{
+    Unknown,
+    Healthy,
+    NotInitialized,
+    Corrupted
+}
+
+/// <summary>
+/// Результат перевірки Git репозиторію
+/// </summary>
+public class GitRepositoryCheckResult
+{
+    public string Path { get; set; } = string.Empty;
+    public GitRepoStatus Status { get; set; } = GitRepoStatus.Unknown;
+    public string Message { get; set; } = string.Empty;
+    public string? BranchName { get; set; }
+    public int ChangesCount { get; set; }
 }

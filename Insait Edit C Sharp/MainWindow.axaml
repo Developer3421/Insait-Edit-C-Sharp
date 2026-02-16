@@ -975,13 +975,14 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock Text="🤖" FontSize="16" VerticalAlignment="Center"/>
-                                <TextBlock Text="AI ASSISTANT" FontSize="11" FontWeight="SemiBold" 
+                                <TextBlock Text="COPILOT CLI" FontSize="11" FontWeight="SemiBold" 
                                            Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
                                            LetterSpacing="1"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat">
-                                    <TextBlock Text="➕" FontSize="12"/>
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat"
+                                        Name="ClearAIChatButton" Click="ClearAIChat_Click">
+                                    <TextBlock Text="🗑️" FontSize="10"/>
                                 </Button>
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Close Panel" 
                                         Name="CloseAIPanelButton" Click="CloseAIPanel_Click">
@@ -992,20 +993,31 @@
                     </Border>
                     
                     <!-- Chat messages -->
-                    <ScrollViewer Grid.Row="1" Margin="12,8">
+                    <ScrollViewer Grid.Row="1" Margin="12,8" Name="AIChatScrollViewer">
                         <StackPanel Spacing="12" Name="AIChatMessages">
                             <!-- AI Welcome message -->
-                            <Border Background="#30FAB387" CornerRadius="8" Padding="12">
+                            <Border Background="#40FAB387" CornerRadius="8" Padding="12">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Welcome to Insait Edit!" FontWeight="SemiBold" Foreground="{StaticResource AppTextBrush}"/>
-                                    <TextBlock Text="I'm your AI coding assistant. I can help you with:" 
-                                               Foreground="{StaticResource AppTextMutedBrush}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="🚀 Copilot CLI Ready!" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                    <TextBlock Text="Manage your project files with commands:" 
+                                               Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="12"/>
                                     <StackPanel Spacing="4" Margin="8,4,0,0">
-                                        <TextBlock Text="• Writing and explaining code" Foreground="{StaticResource AppTextBrush}" FontSize="12"/>
-                                        <TextBlock Text="• Debugging and fixing errors" Foreground="{StaticResource AppTextBrush}" FontSize="12"/>
-                                        <TextBlock Text="• Code refactoring suggestions" Foreground="{StaticResource AppTextBrush}" FontSize="12"/>
-                                        <TextBlock Text="• Documentation generation" Foreground="{StaticResource AppTextBrush}" FontSize="12"/>
+                                        <TextBlock Text="📁 create, delete, rename" Foreground="#FFFFFF" FontSize="11"/>
+                                        <TextBlock Text="📂 ls, tree, cd, pwd" Foreground="#FFFFFF" FontSize="11"/>
+                                        <TextBlock Text="🔍 find, search" Foreground="#FFFFFF" FontSize="11"/>
+                                        <TextBlock Text="📝 template, touch, write" Foreground="#FFFFFF" FontSize="11"/>
                                     </StackPanel>
+                                    <TextBlock Text="GitHub CLI Commands:" 
+                                               Foreground="#89B4FA" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                                    <StackPanel Spacing="4" Margin="8,4,0,0">
+                                        <TextBlock Text="🐙 gh-status, gh-install" Foreground="#FFFFFF" FontSize="11"/>
+                                        <TextBlock Text="🔑 gh-auth login/logout" Foreground="#FFFFFF" FontSize="11"/>
+                                        <TextBlock Text="📦 gh-repo create/clone/view" Foreground="#FFFFFF" FontSize="11"/>
+                                        <TextBlock Text="🔀 gh-pr create/list/checkout" Foreground="#FFFFFF" FontSize="11"/>
+                                        <TextBlock Text="🐛 gh-issue create/list/close" Foreground="#FFFFFF" FontSize="11"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Type 'help' for full command list" 
+                                               Foreground="#89B4FA" FontSize="11" FontStyle="Italic" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -1015,17 +1027,21 @@
                     <Border Grid.Row="2" Padding="12" Background="#20000000">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
                             <TextBox Name="AIChatInput" 
-                                     Watermark="Ask me anything about your code..."
-                                     Background="#FF2D2D3D"
-                                     BorderBrush="{StaticResource AppBorderBrush}"
-                                     Foreground="{StaticResource AppTextBrush}"
+                                     Watermark="Enter command (create, ls, help...)"
+                                     Background="#FF0A0A0A"
+                                     BorderBrush="#FF3D3D4D"
+                                     BorderThickness="1"
+                                     Foreground="BlueViolet"
                                      CornerRadius="8"
                                      Padding="12,10"
+                                     FontFamily="Consolas, Monaco, monospace"
+                                     FontSize="12"
                                      TextWrapping="Wrap"
-                                     AcceptsReturn="False"/>
+                                     AcceptsReturn="False"
+                                     KeyDown="AIChatInput_KeyDown"/>
                             <Button Grid.Column="1" Classes="icon-button" Margin="8,0,0,0" 
                                     Background="{StaticResource AccentOrangeBrush}"
-                                    ToolTip.Tip="Send message" Name="SendAIButton" Click="SendAI_Click">
+                                    ToolTip.Tip="Execute command" Name="SendAIButton" Click="SendAI_Click">
                                 <TextBlock Text="➤" FontSize="16" Foreground="#FF1E1E2E"/>
                             </Button>
                         </Grid>

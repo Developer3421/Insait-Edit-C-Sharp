@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,6 +15,8 @@ public partial class GitPanelControl : UserControl
     private readonly GitService _gitService;
     private string? _repositoryPath;
     private GitStatus? _currentStatus;
+    private string _currentTab = "localchanges";
+    private StringBuilder _consoleOutput = new();
     
     public event EventHandler<string>? FileOpenRequested;
     public event EventHandler<string>? FileDiffRequested;
@@ -36,16 +39,26 @@ public partial class GitPanelControl : UserControl
 
     public async Task SetRepositoryPathAsync(string? path)
     {
-        _repositoryPath = path;
-        
         if (string.IsNullOrEmpty(path))
         {
+            _repositoryPath = null;
             ShowNoRepository();
             return;
         }
 
+        // Ensure path is a directory, not a file
+        string directoryPath = path;
+        if (System.IO.File.Exists(path))
+        {
+            directoryPath = System.IO.Path.GetDirectoryName(path) ?? path;
+        }
+        
+        _repositoryPath = directoryPath;
+        AppendToConsole($"SetRepositoryPath: {directoryPath}");
+
         // Try to find repository root
-        var repoRoot = await _gitService.FindRepositoryRootAsync(path);
+        var repoRoot = await _gitService.FindRepositoryRootAsync(directoryPath);
+        AppendToConsole($"Found repository root: {repoRoot ?? "null"}");
         if (repoRoot != null)
         {
             _repositoryPath = repoRoot;
@@ -54,7 +67,7 @@ public partial class GitPanelControl : UserControl
         }
         else
         {
-            _gitService.RepositoryPath = path;
+            _gitService.RepositoryPath = directoryPath;
             ShowNoRepository();
         }
     }
@@ -88,13 +101,32 @@ public partial class GitPanelControl : UserControl
             // Update unstaged changes
             UpdateUnstagedChanges(_currentStatus.UnstagedChanges);
             
-            // Update stashes
-            var stashes = await _gitService.GetStashListAsync();
-            UpdateStashes(stashes);
+            // Update changes count badge
+            var totalChanges = _currentStatus.TotalChanges;
+            var badge = this.FindControl<Border>("ChangesCountBadge");
+            var countText = this.FindControl<TextBlock>("TotalChangesCount");
+            if (badge != null) badge.IsVisible = totalChanges > 0;
+            if (countText != null) countText.Text = totalChanges.ToString();
             
-            // Update commits
-            var commits = await _gitService.GetCommitHistoryAsync(10);
-            UpdateCommits(commits);
+            // Update no changes panel visibility
+            var noChanges = this.FindControl<StackPanel>("NoChangesPanel");
+            var stagedExpander = this.FindControl<Expander>("StagedChangesExpander");
+            var changesExpander = this.FindControl<Expander>("ChangesExpander");
+            
+            if (noChanges != null && stagedExpander != null && changesExpander != null)
+            {
+                var hasChanges = _currentStatus.HasStagedChanges || _currentStatus.HasUnstagedChanges;
+                noChanges.IsVisible = !hasChanges;
+                stagedExpander.IsVisible = hasChanges;
+                changesExpander.IsVisible = hasChanges;
+            }
+            
+            // Update commits if on Log tab
+            if (_currentTab == "log")
+            {
+                var commits = await _gitService.GetCommitHistoryAsync(50);
+                UpdateCommits(commits);
+            }
             
             // Update commit button state
             UpdateCommitButtonState();
@@ -104,6 +136,7 @@ public partial class GitPanelControl : UserControl
         catch (Exception ex)
         {
             StatusChanged?.Invoke(this, $"Error: {ex.Message}");
+            AppendToConsole($"Error: {ex.Message}");
         }
         finally
         {
@@ -111,22 +144,99 @@ public partial class GitPanelControl : UserControl
         }
     }
 
+    #region Tab Navigation
+
+    private void LocalChangesTab_Click(object? sender, RoutedEventArgs e)
+    {
+        SwitchTab("localchanges");
+    }
+
+    private async void LogTab_Click(object? sender, RoutedEventArgs e)
+    {
+        SwitchTab("log");
+        // Load commits when switching to log
+        if (_gitService.IsRepository)
+        {
+            var commits = await _gitService.GetCommitHistoryAsync(50);
+            UpdateCommits(commits);
+        }
+    }
+
+    private void ConsoleTab_Click(object? sender, RoutedEventArgs e)
+    {
+        SwitchTab("console");
+    }
+
+    private void SwitchTab(string tab)
+    {
+        _currentTab = tab;
+        
+        // Get tab buttons
+        var localChangesTab = this.FindControl<Button>("LocalChangesTab");
+        var logTab = this.FindControl<Button>("LogTab");
+        var consoleTab = this.FindControl<Button>("ConsoleTab");
+        
+        // Get panels
+        var localChangesPanel = this.FindControl<Grid>("LocalChangesPanel");
+        var logPanel = this.FindControl<Grid>("LogPanel");
+        var consolePanel = this.FindControl<Grid>("ConsolePanel");
+        var noRepoPanel = this.FindControl<StackPanel>("NoRepositoryPanel");
+        
+        // Remove active from all tabs
+        localChangesTab?.Classes.Remove("active");
+        logTab?.Classes.Remove("active");
+        consoleTab?.Classes.Remove("active");
+        
+        // Hide all panels
+        if (localChangesPanel != null) localChangesPanel.IsVisible = false;
+        if (logPanel != null) logPanel.IsVisible = false;
+        if (consolePanel != null) consolePanel.IsVisible = false;
+        
+        // Show the right panel based on repository state
+        bool hasRepo = _gitService.IsRepository;
+        
+        switch (tab)
+        {
+            case "localchanges":
+                localChangesTab?.Classes.Add("active");
+                if (hasRepo && localChangesPanel != null) localChangesPanel.IsVisible = true;
+                else if (noRepoPanel != null) noRepoPanel.IsVisible = true;
+                break;
+            case "log":
+                logTab?.Classes.Add("active");
+                if (hasRepo && logPanel != null) logPanel.IsVisible = true;
+                else if (noRepoPanel != null) noRepoPanel.IsVisible = true;
+                break;
+            case "console":
+                consoleTab?.Classes.Add("active");
+                if (consolePanel != null) consolePanel.IsVisible = true;
+                break;
+        }
+    }
+
+    #endregion
+
+    #region Panel States
+
     private void ShowNoRepository()
     {
         var noRepoPanel = this.FindControl<StackPanel>("NoRepositoryPanel");
-        var repoPanel = this.FindControl<StackPanel>("RepositoryPanel");
+        var localChangesPanel = this.FindControl<Grid>("LocalChangesPanel");
+        var logPanel = this.FindControl<Grid>("LogPanel");
         
         if (noRepoPanel != null) noRepoPanel.IsVisible = true;
-        if (repoPanel != null) repoPanel.IsVisible = false;
+        if (localChangesPanel != null) localChangesPanel.IsVisible = false;
+        if (logPanel != null) logPanel.IsVisible = false;
     }
 
     private void ShowRepository()
     {
         var noRepoPanel = this.FindControl<StackPanel>("NoRepositoryPanel");
-        var repoPanel = this.FindControl<StackPanel>("RepositoryPanel");
+        var localChangesPanel = this.FindControl<Grid>("LocalChangesPanel");
         
         if (noRepoPanel != null) noRepoPanel.IsVisible = false;
-        if (repoPanel != null) repoPanel.IsVisible = true;
+        if (_currentTab == "localchanges" && localChangesPanel != null) 
+            localChangesPanel.IsVisible = true;
     }
 
     private void ShowLoading(string message = "Loading...")
@@ -144,27 +254,41 @@ public partial class GitPanelControl : UserControl
         if (overlay != null) overlay.IsVisible = false;
     }
 
+    #endregion
+
+    #region UI Updates
+
     private void UpdateBranchDisplay(string branchName)
     {
         var branchText = this.FindControl<TextBlock>("CurrentBranchText");
+        var trackingText = this.FindControl<TextBlock>("TrackingBranchText");
+        
         if (branchText != null)
         {
             branchText.Text = branchName;
+        }
+        if (trackingText != null)
+        {
+            trackingText.Text = $"origin/{branchName}";
         }
     }
 
     private void UpdateSyncStatus(int ahead, int behind)
     {
-        var syncBorder = this.FindControl<Border>("SyncStatusBorder");
+        var syncPanel = this.FindControl<StackPanel>("SyncStatusPanel");
         var aheadText = this.FindControl<TextBlock>("AheadCountText");
         var behindText = this.FindControl<TextBlock>("BehindCountText");
+        var aheadPanel = this.FindControl<StackPanel>("AheadPanel");
+        var behindPanel = this.FindControl<StackPanel>("BehindPanel");
         
-        if (syncBorder != null)
+        if (syncPanel != null)
         {
-            syncBorder.IsVisible = ahead > 0 || behind > 0;
+            syncPanel.IsVisible = ahead > 0 || behind > 0;
         }
         if (aheadText != null) aheadText.Text = ahead.ToString();
         if (behindText != null) behindText.Text = behind.ToString();
+        if (aheadPanel != null) aheadPanel.IsVisible = ahead > 0;
+        if (behindPanel != null) behindPanel.IsVisible = behind > 0;
     }
 
     private void UpdateStagedChanges(IEnumerable<GitFileChange> changes)
@@ -187,19 +311,6 @@ public partial class GitPanelControl : UserControl
         
         if (list != null) list.ItemsSource = changesList;
         if (countText != null) countText.Text = changesList.Count.ToString();
-    }
-
-    private void UpdateStashes(List<GitStash> stashes)
-    {
-        var list = this.FindControl<ItemsControl>("StashesList");
-        var countBorder = this.FindControl<Border>("StashCountBorder");
-        var countText = this.FindControl<TextBlock>("StashCountText");
-        var noStashesPanel = this.FindControl<StackPanel>("NoStashesPanel");
-        
-        if (list != null) list.ItemsSource = stashes;
-        if (countBorder != null) countBorder.IsVisible = stashes.Count > 0;
-        if (countText != null) countText.Text = stashes.Count.ToString();
-        if (noStashesPanel != null) noStashesPanel.IsVisible = stashes.Count == 0;
     }
 
     private void UpdateCommits(List<GitCommit> commits)
@@ -234,73 +345,162 @@ public partial class GitPanelControl : UserControl
         }
     }
 
-    #region Header Actions
+    #endregion
+
+    #region Console
+
+    private void AppendToConsole(string text)
+    {
+        _consoleOutput.AppendLine($"[{DateTime.Now:HH:mm:ss}] {text}");
+        var consoleText = this.FindControl<TextBlock>("ConsoleOutputText");
+        if (consoleText != null)
+        {
+            consoleText.Text = _consoleOutput.ToString();
+        }
+        
+        // Auto scroll
+        var scrollViewer = this.FindControl<ScrollViewer>("ConsoleScrollViewer");
+        scrollViewer?.ScrollToEnd();
+    }
+
+    private void ClearConsole_Click(object? sender, RoutedEventArgs e)
+    {
+        _consoleOutput.Clear();
+        var consoleText = this.FindControl<TextBlock>("ConsoleOutputText");
+        if (consoleText != null)
+        {
+            consoleText.Text = "Git console ready...";
+        }
+    }
+
+    #endregion
+
+    #region Toolbar Actions
+
+    private void CommitToolbar_Click(object? sender, RoutedEventArgs e)
+    {
+        // Focus commit message box
+        var commitBox = this.FindControl<TextBox>("CommitMessageBox");
+        commitBox?.Focus();
+        SwitchTab("localchanges");
+    }
+
+    private async void Update_Click(object? sender, RoutedEventArgs e)
+    {
+        ShowLoading("Updating project...");
+        AppendToConsole("Fetching from origin...");
+        
+        var fetchResult = await _gitService.FetchAsync();
+        if (fetchResult.Success)
+        {
+            AppendToConsole("Fetch completed. Pulling...");
+            var pullResult = await _gitService.PullAsync();
+            if (pullResult.Success)
+            {
+                StatusChanged?.Invoke(this, "Project updated successfully");
+                AppendToConsole("Pull completed successfully");
+            }
+            else
+            {
+                StatusChanged?.Invoke(this, $"Pull failed: {pullResult.Error}");
+                AppendToConsole($"Pull failed: {pullResult.Error}");
+            }
+        }
+        else
+        {
+            StatusChanged?.Invoke(this, $"Fetch failed: {fetchResult.Error}");
+            AppendToConsole($"Fetch failed: {fetchResult.Error}");
+        }
+        
+        HideLoading();
+        await RefreshAsync();
+    }
+
+    private void ShowHistory_Click(object? sender, RoutedEventArgs e)
+    {
+        SwitchTab("log");
+    }
+
+    private async void Rollback_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_currentStatus == null || !_currentStatus.HasChanges) return;
+        
+        ShowLoading("Rolling back changes...");
+        AppendToConsole("Rolling back all changes...");
+        
+        var result = await _gitService.DiscardAllChangesAsync();
+        
+        HideLoading();
+        
+        if (result.Success)
+        {
+            StatusChanged?.Invoke(this, "All changes rolled back");
+            AppendToConsole("Rollback completed");
+            await RefreshAsync();
+        }
+        else
+        {
+            StatusChanged?.Invoke(this, $"Rollback failed: {result.Error}");
+            AppendToConsole($"Rollback failed: {result.Error}");
+        }
+    }
+
+    private async void Shelve_Click(object? sender, RoutedEventArgs e)
+    {
+        ShowLoading("Shelving changes...");
+        AppendToConsole("Stashing changes...");
+        
+        var result = await _gitService.StashAsync();
+        
+        HideLoading();
+        
+        if (result.Success)
+        {
+            StatusChanged?.Invoke(this, "Changes shelved (stashed)");
+            AppendToConsole("Stash created successfully");
+            await RefreshAsync();
+        }
+        else
+        {
+            StatusChanged?.Invoke(this, $"Shelve failed: {result.Error}");
+            AppendToConsole($"Stash failed: {result.Error}");
+        }
+    }
+
+    private async void Unshelve_Click(object? sender, RoutedEventArgs e)
+    {
+        ShowLoading("Unshelving changes...");
+        AppendToConsole("Popping stash...");
+        
+        var result = await _gitService.StashPopAsync();
+        
+        HideLoading();
+        
+        if (result.Success)
+        {
+            StatusChanged?.Invoke(this, "Changes unshelved (stash popped)");
+            AppendToConsole("Stash popped successfully");
+            await RefreshAsync();
+        }
+        else
+        {
+            StatusChanged?.Invoke(this, $"Unshelve failed: {result.Error}");
+            AppendToConsole($"Stash pop failed: {result.Error}");
+        }
+    }
+
+    private void GroupBy_Click(object? sender, RoutedEventArgs e)
+    {
+        // TODO: Toggle grouping mode
+        StatusChanged?.Invoke(this, "Group by: Directory (toggle not implemented yet)");
+    }
 
     private async void Refresh_Click(object? sender, RoutedEventArgs e)
     {
         await RefreshAsync();
     }
 
-    private void MoreActions_Click(object? sender, RoutedEventArgs e)
-    {
-        var button = sender as Button;
-        if (button == null) return;
-
-        var menu = new ContextMenu
-        {
-            Items =
-            {
-                new MenuItem { Header = "🔀 Create Branch...", Command = new RelayCommand(() => _ = CreateBranchAsync()) },
-                new MenuItem { Header = "🏷️ Create Tag...", Command = new RelayCommand(() => _ = CreateTagAsync()) },
-                new Separator(),
-                new MenuItem { Header = "↩️ Undo Last Commit", Command = new RelayCommand(() => _ = UndoLastCommitAsync()) },
-                new MenuItem { Header = "🔄 Reset Branch...", Command = new RelayCommand(() => _ = ResetBranchAsync()) },
-                new Separator(),
-                new MenuItem { Header = "⚙️ Git Settings", Command = new RelayCommand(OpenGitSettings) }
-            }
-        };
-        
-        menu.Open(button);
-    }
-
-    private async Task CreateBranchAsync()
-    {
-        // TODO: Implement branch creation dialog
-        StatusChanged?.Invoke(this, "Create branch - not implemented yet");
-        await Task.CompletedTask;
-    }
-
-    private async Task CreateTagAsync()
-    {
-        // TODO: Implement tag creation dialog
-        StatusChanged?.Invoke(this, "Create tag - not implemented yet");
-        await Task.CompletedTask;
-    }
-
-    private async Task UndoLastCommitAsync()
-    {
-        ShowLoading("Undoing last commit...");
-        var result = await _gitService.RunGitCommandInternalAsync("reset --soft HEAD~1");
-        HideLoading();
-        if (result)
-        {
-            await RefreshAsync();
-            StatusChanged?.Invoke(this, "Last commit undone");
-        }
-        else
-        {
-            StatusChanged?.Invoke(this, "Failed to undo last commit");
-        }
-    }
-
-    private async Task ResetBranchAsync()
-    {
-        // TODO: Implement reset dialog
-        StatusChanged?.Invoke(this, "Reset branch - not implemented yet");
-        await Task.CompletedTask;
-    }
-
-    private void OpenGitSettings()
+    private void Settings_Click(object? sender, RoutedEventArgs e)
     {
         // TODO: Open git settings
         StatusChanged?.Invoke(this, "Git settings - not implemented yet");
@@ -319,6 +519,7 @@ public partial class GitPanelControl : UserControl
         }
 
         ShowLoading("Initializing repository...");
+        AppendToConsole($"git init {_repositoryPath}");
         
         var result = await _gitService.InitAsync(_repositoryPath);
         
@@ -327,11 +528,13 @@ public partial class GitPanelControl : UserControl
         if (result.Success)
         {
             StatusChanged?.Invoke(this, "Git repository initialized");
+            AppendToConsole("Repository initialized successfully");
             await RefreshAsync();
         }
         else
         {
             StatusChanged?.Invoke(this, $"Failed to initialize: {result.Error}");
+            AppendToConsole($"Init failed: {result.Error}");
         }
     }
 
@@ -399,9 +602,17 @@ public partial class GitPanelControl : UserControl
         menu.Open(button);
     }
 
+    private async Task CreateBranchAsync()
+    {
+        // TODO: Implement branch creation dialog
+        StatusChanged?.Invoke(this, "Create branch - not implemented yet");
+        await Task.CompletedTask;
+    }
+
     private async Task CheckoutBranch(string branchName)
     {
         ShowLoading($"Checking out {branchName}...");
+        AppendToConsole($"git checkout {branchName}");
         
         var result = await _gitService.CheckoutBranchAsync(branchName);
         
@@ -410,82 +621,13 @@ public partial class GitPanelControl : UserControl
         if (result.Success)
         {
             StatusChanged?.Invoke(this, $"Switched to branch: {branchName}");
+            AppendToConsole($"Switched to branch '{branchName}'");
             await RefreshAsync();
         }
         else
         {
             StatusChanged?.Invoke(this, $"Failed to checkout: {result.Error}");
-        }
-    }
-
-    private async void Fetch_Click(object? sender, RoutedEventArgs e)
-    {
-        ShowLoading("Fetching...");
-        
-        var result = await _gitService.FetchAsync();
-        
-        HideLoading();
-        
-        if (result.Success)
-        {
-            StatusChanged?.Invoke(this, "Fetch completed");
-            await RefreshAsync();
-        }
-        else
-        {
-            StatusChanged?.Invoke(this, $"Fetch failed: {result.Error}");
-        }
-    }
-
-    private async void Pull_Click(object? sender, RoutedEventArgs e)
-    {
-        ShowLoading("Pulling...");
-        
-        var result = await _gitService.PullAsync();
-        
-        HideLoading();
-        
-        if (result.Success)
-        {
-            StatusChanged?.Invoke(this, "Pull completed");
-            await RefreshAsync();
-        }
-        else
-        {
-            StatusChanged?.Invoke(this, $"Pull failed: {result.Error}");
-        }
-    }
-
-    private async void Push_Click(object? sender, RoutedEventArgs e)
-    {
-        ShowLoading("Pushing...");
-        
-        var result = await _gitService.PushAsync();
-        
-        HideLoading();
-        
-        if (result.Success)
-        {
-            StatusChanged?.Invoke(this, "Push completed");
-            await RefreshAsync();
-        }
-        else
-        {
-            // Check if we need to set upstream
-            if (result.Error.Contains("no upstream"))
-            {
-                var currentBranch = await _gitService.GetCurrentBranchAsync();
-                result = await _gitService.PushAsync("origin", currentBranch, setUpstream: true);
-                
-                if (result.Success)
-                {
-                    StatusChanged?.Invoke(this, "Push completed (upstream set)");
-                    await RefreshAsync();
-                    return;
-                }
-            }
-            
-            StatusChanged?.Invoke(this, $"Push failed: {result.Error}");
+            AppendToConsole($"Checkout failed: {result.Error}");
         }
     }
 
@@ -517,6 +659,7 @@ public partial class GitPanelControl : UserControl
         if (string.IsNullOrEmpty(message) && !amend) return;
 
         ShowLoading("Committing...");
+        AppendToConsole($"git commit {(amend ? "--amend " : "")}-m \"{message}\"");
 
         var result = await _gitService.CommitAsync(message ?? "", amend);
 
@@ -524,18 +667,22 @@ public partial class GitPanelControl : UserControl
         {
             commitMessageBox.Text = "";
             StatusChanged?.Invoke(this, amend ? "Commit amended" : "Changes committed");
+            AppendToConsole("Commit successful");
 
             if (andPush)
             {
                 ShowLoading("Pushing...");
+                AppendToConsole("git push");
                 var pushResult = await _gitService.PushAsync();
                 if (!pushResult.Success)
                 {
                     StatusChanged?.Invoke(this, $"Committed but push failed: {pushResult.Error}");
+                    AppendToConsole($"Push failed: {pushResult.Error}");
                 }
                 else
                 {
                     StatusChanged?.Invoke(this, "Changes committed and pushed");
+                    AppendToConsole("Push successful");
                 }
             }
 
@@ -544,9 +691,48 @@ public partial class GitPanelControl : UserControl
         else
         {
             StatusChanged?.Invoke(this, $"Commit failed: {result.Error}");
+            AppendToConsole($"Commit failed: {result.Error}");
         }
 
         HideLoading();
+    }
+
+    private async void Push_Click(object? sender, RoutedEventArgs e)
+    {
+        ShowLoading("Pushing...");
+        AppendToConsole("git push");
+        
+        var result = await _gitService.PushAsync();
+        
+        HideLoading();
+        
+        if (result.Success)
+        {
+            StatusChanged?.Invoke(this, "Push completed");
+            AppendToConsole("Push successful");
+            await RefreshAsync();
+        }
+        else
+        {
+            // Check if we need to set upstream
+            if (result.Error.Contains("no upstream"))
+            {
+                var currentBranch = await _gitService.GetCurrentBranchAsync();
+                AppendToConsole($"git push -u origin {currentBranch}");
+                result = await _gitService.PushAsync("origin", currentBranch, setUpstream: true);
+                
+                if (result.Success)
+                {
+                    StatusChanged?.Invoke(this, "Push completed (upstream set)");
+                    AppendToConsole("Push successful (upstream set)");
+                    await RefreshAsync();
+                    return;
+                }
+            }
+            
+            StatusChanged?.Invoke(this, $"Push failed: {result.Error}");
+            AppendToConsole($"Push failed: {result.Error}");
+        }
     }
 
     #endregion
@@ -556,6 +742,7 @@ public partial class GitPanelControl : UserControl
     private async void StageAll_Click(object? sender, RoutedEventArgs e)
     {
         ShowLoading("Staging all changes...");
+        AppendToConsole("git add -A");
         
         var result = await _gitService.StageAllAsync();
         
@@ -563,17 +750,20 @@ public partial class GitPanelControl : UserControl
         
         if (result.Success)
         {
+            AppendToConsole("All changes staged");
             await RefreshAsync();
         }
         else
         {
             StatusChanged?.Invoke(this, $"Stage failed: {result.Error}");
+            AppendToConsole($"Stage failed: {result.Error}");
         }
     }
 
     private async void UnstageAll_Click(object? sender, RoutedEventArgs e)
     {
         ShowLoading("Unstaging all changes...");
+        AppendToConsole("git reset HEAD");
         
         var result = await _gitService.UnstageAllAsync();
         
@@ -581,11 +771,13 @@ public partial class GitPanelControl : UserControl
         
         if (result.Success)
         {
+            AppendToConsole("All changes unstaged");
             await RefreshAsync();
         }
         else
         {
             StatusChanged?.Invoke(this, $"Unstage failed: {result.Error}");
+            AppendToConsole($"Unstage failed: {result.Error}");
         }
     }
 
@@ -593,6 +785,7 @@ public partial class GitPanelControl : UserControl
     {
         // TODO: Add confirmation dialog
         ShowLoading("Discarding all changes...");
+        AppendToConsole("Discarding all untracked files...");
         
         var result = await _gitService.DiscardAllChangesAsync();
         
@@ -601,11 +794,13 @@ public partial class GitPanelControl : UserControl
         if (result.Success)
         {
             StatusChanged?.Invoke(this, "All changes discarded");
+            AppendToConsole("All changes discarded");
             await RefreshAsync();
         }
         else
         {
             StatusChanged?.Invoke(this, $"Discard failed: {result.Error}");
+            AppendToConsole($"Discard failed: {result.Error}");
         }
     }
 
@@ -613,6 +808,7 @@ public partial class GitPanelControl : UserControl
     {
         if (sender is Button button && button.Tag is GitFileChange change)
         {
+            AppendToConsole($"git add \"{change.FilePath}\"");
             var result = await _gitService.StageFileAsync(change.FilePath);
             if (result.Success)
             {
@@ -625,6 +821,7 @@ public partial class GitPanelControl : UserControl
     {
         if (sender is Button button && button.Tag is GitFileChange change)
         {
+            AppendToConsole($"git reset HEAD \"{change.FilePath}\"");
             var result = await _gitService.UnstageFileAsync(change.FilePath);
             if (result.Success)
             {
@@ -637,6 +834,7 @@ public partial class GitPanelControl : UserControl
     {
         if (sender is Button button && button.Tag is GitFileChange change)
         {
+            AppendToConsole($"Discarding changes: \"{change.FilePath}\"");
             var result = await _gitService.DiscardChangesAsync(change.FilePath);
             if (result.Success)
             {
@@ -710,86 +908,9 @@ public partial class GitPanelControl : UserControl
     {
         if (sender is MenuItem menuItem && menuItem.DataContext is GitFileChange change)
         {
+            AppendToConsole($"Opening file: {change.FullPath}");
             FileOpenRequested?.Invoke(this, change.FullPath);
         }
-    }
-
-    #endregion
-
-    #region Stash Actions
-
-    private async void Stash_Click(object? sender, RoutedEventArgs e)
-    {
-        ShowLoading("Stashing changes...");
-        
-        var result = await _gitService.StashAsync();
-        
-        HideLoading();
-        
-        if (result.Success)
-        {
-            StatusChanged?.Invoke(this, "Changes stashed");
-            await RefreshAsync();
-        }
-        else
-        {
-            StatusChanged?.Invoke(this, $"Stash failed: {result.Error}");
-        }
-    }
-
-    private async void ApplyStash_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem menuItem && menuItem.DataContext is GitStash stash)
-        {
-            await _gitService.StashApplyAsync(stash.Name);
-            await RefreshAsync();
-        }
-    }
-
-    private async void PopStash_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem menuItem && menuItem.DataContext is GitStash stash)
-        {
-            await _gitService.StashPopAsync(stash.Name);
-            await RefreshAsync();
-        }
-    }
-
-    private async void DropStash_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem menuItem && menuItem.DataContext is GitStash stash)
-        {
-            await _gitService.StashDropAsync(stash.Name);
-            await RefreshAsync();
-        }
-    }
-
-    private async void ApplyStashButton_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.Tag is GitStash stash)
-        {
-            await _gitService.StashApplyAsync(stash.Name);
-            await RefreshAsync();
-        }
-    }
-
-    private async void DropStashButton_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.Tag is GitStash stash)
-        {
-            await _gitService.StashDropAsync(stash.Name);
-            await RefreshAsync();
-        }
-    }
-
-    #endregion
-
-    #region History
-
-    private void ViewHistory_Click(object? sender, RoutedEventArgs e)
-    {
-        // TODO: Open full history view
-        StatusChanged?.Invoke(this, "Full history view - not implemented yet");
     }
 
     #endregion
