@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -13,12 +14,24 @@ public partial class NewProjectWindow : Window
 {
     private string _selectedTemplate = "console";
     private readonly string _defaultLocation;
+    private readonly string? _currentSolutionPath;
 
     public string? CreatedProjectPath { get; private set; }
 
-    public NewProjectWindow()
+    /// <summary>
+    /// Path of the solution file (.sln or .slnx) that was created or used
+    /// </summary>
+    public string? CreatedSolutionPath { get; private set; }
+
+    public NewProjectWindow() : this(null)
+    {
+    }
+
+    public NewProjectWindow(string? currentSolutionPath)
     {
         InitializeComponent();
+        
+        _currentSolutionPath = currentSolutionPath;
         
         _defaultLocation = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
@@ -27,8 +40,32 @@ public partial class NewProjectWindow : Window
         var locationBox = this.FindControl<TextBox>("LocationBox");
         if (locationBox != null)
         {
-            locationBox.Text = _defaultLocation;
+            // If we have a current solution, use its directory as default location
+            if (!string.IsNullOrEmpty(_currentSolutionPath))
+            {
+                var slnDir = Path.GetDirectoryName(_currentSolutionPath);
+                if (!string.IsNullOrEmpty(slnDir))
+                {
+                    locationBox.Text = slnDir;
+                }
+                else
+                {
+                    locationBox.Text = _defaultLocation;
+                }
+            }
+            else
+            {
+                locationBox.Text = _defaultLocation;
+            }
         }
+
+        // Attach format change handlers
+        var slnxFormatRadio = this.FindControl<RadioButton>("SlnxFormat");
+        var slnFormatRadio = this.FindControl<RadioButton>("SlnFormat");
+        if (slnxFormatRadio != null)
+            slnxFormatRadio.IsCheckedChanged += (_, _) => UpdateProjectPathPreview();
+        if (slnFormatRadio != null)
+            slnFormatRadio.IsCheckedChanged += (_, _) => UpdateProjectPathPreview();
         
         UpdateProjectPathPreview();
     }
@@ -46,14 +83,26 @@ public partial class NewProjectWindow : Window
         Close();
     }
 
-    private void Template_Click(object? sender, RoutedEventArgs e)
+    private async void Template_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is string template)
         {
+            // nanoFramework opens its own dedicated window
+            if (template == "nano")
+            {
+                var espWindow = new Insait_Edit_C_Sharp.Esp.Windows.NewNanoProjectWindow(_currentSolutionPath);
+                var result = await espWindow.ShowDialog<string?>(this);
+                if (!string.IsNullOrEmpty(result))
+                {
+                    Close(result);
+                }
+                return;
+            }
+
             _selectedTemplate = template;
             
             // Update visual selection
-            var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate", "WebApiTemplate" };
+            var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate", "WebApiTemplate", "NanoTemplate" };
             foreach (var name in templates)
             {
                 var btn = this.FindControl<Button>(name);
@@ -64,6 +113,11 @@ public partial class NewProjectWindow : Window
             }
             button.Classes.Add("selected");
         }
+    }
+
+    private void SolutionFormat_Changed(object? sender, RoutedEventArgs e)
+    {
+        UpdateProjectPathPreview();
     }
 
     private void ProjectName_Changed(object? sender, TextChangedEventArgs e)
@@ -107,23 +161,31 @@ public partial class NewProjectWindow : Window
         var locationBox = this.FindControl<TextBox>("LocationBox");
         var previewText = this.FindControl<TextBlock>("ProjectPathPreview");
         var sameDir = this.FindControl<CheckBox>("CreateSolutionDir");
+        var slnxFormat = this.FindControl<RadioButton>("SlnxFormat");
         
         if (projectNameBox != null && locationBox != null && previewText != null)
         {
             var projectName = projectNameBox.Text ?? "MyProject";
             var location = locationBox.Text ?? _defaultLocation;
-            
-            string fullPath;
+            var useSlnx = slnxFormat?.IsChecked != false; // default to slnx
+            var slnExt = useSlnx ? ".slnx" : ".sln";
+            var solutionNameBox = this.FindControl<TextBox>("SolutionNameBox");
+            var solutionName = solutionNameBox?.Text ?? projectName;
+
+            string slnDir;
             if (sameDir?.IsChecked == true)
             {
-                fullPath = Path.Combine(location, projectName);
+                // Project and solution share the same folder: location\projectName
+                slnDir = Path.Combine(location, projectName);
             }
             else
             {
-                fullPath = Path.Combine(location, projectName, projectName);
+                // Solution folder contains project subfolder: location\solutionName\projectName
+                slnDir = Path.Combine(location, solutionName);
             }
-            
-            previewText.Text = $"Project will be created at: {fullPath}";
+
+            var solutionPath = Path.Combine(slnDir, $"{solutionName}{slnExt}");
+            previewText.Text = $"Solution: {solutionPath}";
         }
     }
 
@@ -139,12 +201,14 @@ public partial class NewProjectWindow : Window
         var solutionNameBox = this.FindControl<TextBox>("SolutionNameBox");
         var sameDir = this.FindControl<CheckBox>("CreateSolutionDir");
         var createGit = this.FindControl<CheckBox>("CreateGitRepo");
+        var slnxFormatRadio = this.FindControl<RadioButton>("SlnxFormat");
 
         if (projectNameBox == null || locationBox == null) return;
 
         var projectName = projectNameBox.Text?.Trim() ?? "MyProject";
         var location = locationBox.Text?.Trim() ?? _defaultLocation;
         var solutionName = solutionNameBox?.Text?.Trim() ?? projectName;
+        var useSlnx = slnxFormatRadio?.IsChecked != false; // default to slnx
 
         if (string.IsNullOrWhiteSpace(projectName))
         {
@@ -154,13 +218,17 @@ public partial class NewProjectWindow : Window
 
         // Create project directory
         string projectDir;
+        string slnDir;
+        
         if (sameDir?.IsChecked == true)
         {
             projectDir = Path.Combine(location, projectName);
+            slnDir = projectDir;
         }
         else
         {
-            projectDir = Path.Combine(location, solutionName, projectName);
+            slnDir = Path.Combine(location, solutionName);
+            projectDir = Path.Combine(slnDir, projectName);
         }
 
         try
@@ -192,56 +260,102 @@ public partial class NewProjectWindow : Window
             };
 
             process.Start();
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
+
+            Debug.WriteLine($"dotnet new output: {output}");
+            Debug.WriteLine($"dotnet new error: {error}");
+            Debug.WriteLine($"dotnet new exit code: {process.ExitCode}");
 
             if (process.ExitCode == 0)
             {
-                // Create solution if needed
-                if (sameDir?.IsChecked != true)
+                var csprojPath = Path.Combine(projectDir, $"{projectName}.csproj");
+                string? slnFilePath = null;
+                
+                // If we have a current solution, use it
+                if (!string.IsNullOrEmpty(_currentSolutionPath) && File.Exists(_currentSolutionPath))
                 {
-                    var slnDir = Path.Combine(location, solutionName);
-                    var slnProcess = new Process
+                    slnFilePath = _currentSolutionPath;
+                    slnDir = Path.GetDirectoryName(_currentSolutionPath) ?? location;
+                }
+                else
+                {
+                    // Check if solution file already exists in the directory (both .sln and .slnx formats)
+                    if (Directory.Exists(slnDir))
                     {
-                        StartInfo = new ProcessStartInfo
+                        var existingSlnFiles = Directory.GetFiles(slnDir, "*.sln");
+                        var existingSlnxFiles = Directory.GetFiles(slnDir, "*.slnx");
+                        
+                        if (existingSlnFiles.Length > 0)
                         {
-                            FileName = "dotnet",
-                            Arguments = $"new sln -n \"{solutionName}\"",
-                            WorkingDirectory = slnDir,
-                            UseShellExecute = false,
-                            CreateNoWindow = true
+                            slnFilePath = existingSlnFiles[0];
                         }
-                    };
-                    slnProcess.Start();
-                    await slnProcess.WaitForExitAsync();
+                        else if (existingSlnxFiles.Length > 0)
+                        {
+                            slnFilePath = existingSlnxFiles[0];
+                        }
+                    }
+                }
 
-                    // Add project to solution
-                    var addProcess = new Process
+                // Use SolutionService for creating/updating solution
+                var solutionService = new SolutionService();
+                
+                if (slnFilePath == null)
+                {
+                    // Create new solution using SolutionService with selected format.
+                    // slnDir is already the correct final directory (not the parent):
+                    //   sameDir==true  => slnDir = location\projectName  (project folder)
+                    //   sameDir==false => slnDir = location\solutionName  (solution folder)
+                    // So always pass slnDir with createDirectory:false to avoid double-nesting.
+                    Debug.WriteLine($"=== Creating new solution ===");
+                    Debug.WriteLine($"slnDir: {slnDir}");
+                    Debug.WriteLine($"solutionName: {solutionName}");
+                    Debug.WriteLine($"useSlnx: {useSlnx}");
+                    
+                    Directory.CreateDirectory(slnDir); // ensure dir exists
+                    var selectedFormat = useSlnx ? SolutionFormat.Slnx : SolutionFormat.Sln;
+                    slnFilePath = await solutionService.CreateSolutionAsync(
+                        slnDir,
+                        solutionName, 
+                        createDirectory: false,  // slnDir is already the target directory
+                        initGit: false, 
+                        format: selectedFormat);
+                    
+                    Debug.WriteLine($"slnFilePath: {slnFilePath}");
+                    Debug.WriteLine($"Created solution file exists: {(slnFilePath != null ? File.Exists(slnFilePath).ToString() : "slnFilePath is null")}");
+                    
+                    if (slnFilePath == null)
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "dotnet",
-                            Arguments = $"sln add \"{projectDir}\"",
-                            WorkingDirectory = slnDir,
-                            UseShellExecute = false,
-                            CreateNoWindow = true
-                        }
-                    };
-                    addProcess.Start();
-                    await addProcess.WaitForExitAsync();
+                        Debug.WriteLine("Failed to create solution file");
+                        return;
+                    }
+                }
+                
+                // Add project to solution using SolutionService
+                if (File.Exists(csprojPath) && File.Exists(slnFilePath))
+                {
+                    Debug.WriteLine($"=== Adding project to solution ===");
+                    Debug.WriteLine($"csprojPath: {csprojPath}");
+                    Debug.WriteLine($"slnFilePath: {slnFilePath}");
+                    
+                    var added = await solutionService.AddProjectToSolutionAsync(slnFilePath, csprojPath);
+                    Debug.WriteLine($"Project added to solution: {added}");
                 }
 
                 // Initialize git if requested
                 if (createGit?.IsChecked == true)
                 {
-                    var gitDir = sameDir?.IsChecked == true ? projectDir : Path.Combine(location, solutionName);
                     var gitProcess = new Process
                     {
                         StartInfo = new ProcessStartInfo
                         {
                             FileName = "git",
                             Arguments = "init",
-                            WorkingDirectory = gitDir,
+                            WorkingDirectory = slnDir,
                             UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
                             CreateNoWindow = true
                         }
                     };
@@ -249,15 +363,22 @@ public partial class NewProjectWindow : Window
                     await gitProcess.WaitForExitAsync();
                 }
 
-                // Set result and close
-                CreatedProjectPath = Path.Combine(projectDir, $"{projectName}.csproj");
-                Close(CreatedProjectPath);
+                // Set result paths and close — pass slnFilePath as the result so MainWindow can open the solution
+                CreatedProjectPath = csprojPath;
+                CreatedSolutionPath = slnFilePath;
+                // Return the solution file path so the IDE loads the solution (shows it in explorer)
+                Close(slnFilePath);
+            }
+            else
+            {
+                Debug.WriteLine($"Failed to create project. Exit code: {process.ExitCode}");
             }
         }
         catch (Exception ex)
         {
             // Show error dialog
             Debug.WriteLine($"Error creating project: {ex.Message}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
         }
     }
 }

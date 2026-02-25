@@ -1,0 +1,453 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="450"
+        x:Class="Insait_Edit_C_Sharp.AddNewItemWindow"
+        Title="Add New Item"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="700"
+        Height="600"
+        CanResize="False"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Window.Resources>
+        <Color x:Key="BgPrimary">#FF1E1E2E</Color>
+        <Color x:Key="BgSecondary">#FF2D2D3D</Color>
+        <Color x:Key="BgTertiary">#FF363647</Color>
+        <Color x:Key="BorderColor">#FF3D3D4D</Color>
+        <Color x:Key="TextPrimary">#FFCDD6F4</Color>
+        <Color x:Key="TextSecondary">#FF9399B2</Color>
+        <Color x:Key="AccentOrange">#FFFAB387</Color>
+
+        <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource BgPrimary}"/>
+        <SolidColorBrush x:Key="BgSecondaryBrush" Color="{StaticResource BgSecondary}"/>
+        <SolidColorBrush x:Key="BgTertiaryBrush" Color="{StaticResource BgTertiary}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrange}"/>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Button.window-control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.window-control:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <Style Selector="Button.window-control.close:pointerover">
+            <Setter Property="Background" Value="#40FFFFFF"/>
+        </Style>
+
+        <Style Selector="Button.item-btn">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+        <Style Selector="Button.item-btn:pointerover">
+            <Setter Property="Background" Value="#FF424258"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+        <Style Selector="Button.item-btn.selected">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+            <Setter Property="Background" Value="#FF424258"/>
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+
+        <Style Selector="Button.primary-btn">
+            <Setter Property="Background" Value="{StaticResource AccentOrangeBrush}"/>
+            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary-btn:pointerover">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+        </Style>
+
+        <Style Selector="Button.secondary-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.secondary-btn:pointerover">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+        </Style>
+        
+        <!-- Emoji icons style - preserve natural colors -->
+        <Style Selector="Button.item-btn TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
+    </Window.Styles>
+
+    <Window.Background>
+        <SolidColorBrush Color="{StaticResource BgPrimary}"/>
+    </Window.Background>
+
+    <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+        <Grid RowDefinitions="40,*,Auto">
+            
+            <!-- Title Bar -->
+            <Grid Grid.Row="0" Background="#FF3C3C3C">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
+                        <StackPanel Orientation="Horizontal" Margin="16,0" VerticalAlignment="Center" Spacing="8">
+                            <TextBlock Text="📄" FontSize="14"/>
+                            <TextBlock Text="Add New Item" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentOrangeBrush}"/>
+                        </StackPanel>
+                    </Panel>
+                    <Button Grid.Column="1" Classes="window-control close" Click="CloseButton_Click">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Grid>
+
+            <!-- Content -->
+            <Grid Grid.Row="1" ColumnDefinitions="220,*" Margin="0">
+                <!-- Item Types -->
+                <Border Grid.Column="0" Background="{StaticResource BgSecondaryBrush}" Padding="8">
+                    <ScrollViewer>
+                        <StackPanel Spacing="4">
+                            <!-- C# Types -->
+                            <TextBlock Text="C# Types" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
+                            <Button Classes="item-btn selected" Name="ClassItem" Tag="class" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📄" FontSize="16"/>
+                                    <TextBlock Text="Class" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="InterfaceItem" Tag="interface" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🔷" FontSize="16"/>
+                                    <TextBlock Text="Interface" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="RecordItem" Tag="record" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📋" FontSize="16"/>
+                                    <TextBlock Text="Record" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="StructItem" Tag="struct" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🔶" FontSize="16"/>
+                                    <TextBlock Text="Struct" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="EnumItem" Tag="enum" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📊" FontSize="16"/>
+                                    <TextBlock Text="Enum" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="DelegateItem" Tag="delegate" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="➡️" FontSize="16"/>
+                                    <TextBlock Text="Delegate" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="ExceptionItem" Tag="exception" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="⚠️" FontSize="16"/>
+                                    <TextBlock Text="Exception" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="GlobalUsingsItem" Tag="globalusings" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🌐" FontSize="16"/>
+                                    <TextBlock Text="Global Usings" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
+                            
+                            <!-- ASP.NET -->
+                            <TextBlock Text="ASP.NET" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
+                            <Button Classes="item-btn" Name="RazorItem" Tag="razor" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="⚡" FontSize="16"/>
+                                    <TextBlock Text="Razor Component" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="RazorPageItem" Tag="razorpage" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📑" FontSize="16"/>
+                                    <TextBlock Text="Razor Page" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="RazorViewItem" Tag="razorview" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="👁️" FontSize="16"/>
+                                    <TextBlock Text="Razor View (MVC)" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="ControllerItem" Tag="controller" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🎮" FontSize="16"/>
+                                    <TextBlock Text="MVC Controller" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="ApiControllerItem" Tag="apicontroller" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🔌" FontSize="16"/>
+                                    <TextBlock Text="API Controller" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="MinimalApiItem" Tag="minimalapi" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="⚙️" FontSize="16"/>
+                                    <TextBlock Text="Minimal API Endpoints" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
+                            
+                            <!-- Avalonia UI -->
+                            <TextBlock Text="Avalonia UI" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
+                            <Button Classes="item-btn" Name="AxamlItem" Tag="axaml" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🖼️" FontSize="16"/>
+                                    <TextBlock Text="Avalonia Window" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="UserControlItem" Tag="usercontrol" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🎨" FontSize="16"/>
+                                    <TextBlock Text="User Control" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="TemplatedControlItem" Tag="templatedcontrol" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🧩" FontSize="16"/>
+                                    <TextBlock Text="Templated Control" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="StylesItem" Tag="avaloniastyles" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🎭" FontSize="16"/>
+                                    <TextBlock Text="Avalonia Styles" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="ResourceDictItem" Tag="resourcedictionary" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📚" FontSize="16"/>
+                                    <TextBlock Text="Resource Dictionary" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
+                            
+                            <!-- Web Files -->
+                            <TextBlock Text="Web Files" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
+                            <Button Classes="item-btn" Name="HtmlItem" Tag="html" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🌐" FontSize="16"/>
+                                    <TextBlock Text="HTML File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="CssItem" Tag="css" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🎨" FontSize="16"/>
+                                    <TextBlock Text="CSS Stylesheet" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="ScssItem" Tag="scss" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="💅" FontSize="16"/>
+                                    <TextBlock Text="SCSS Stylesheet" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="JavaScriptItem" Tag="javascript" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📜" FontSize="16"/>
+                                    <TextBlock Text="JavaScript File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="TypeScriptItem" Tag="typescript" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📘" FontSize="16"/>
+                                    <TextBlock Text="TypeScript File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
+                            
+                            <!-- Config / Data Files -->
+                            <TextBlock Text="Config / Data" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
+                            <Button Classes="item-btn" Name="JsonItem" Tag="json" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📋" FontSize="16"/>
+                                    <TextBlock Text="JSON File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="XmlItem" Tag="xml" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📄" FontSize="16"/>
+                                    <TextBlock Text="XML File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="YamlItem" Tag="yaml" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="⚙️" FontSize="16"/>
+                                    <TextBlock Text="YAML File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="MarkdownItem" Tag="markdown" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📝" FontSize="16"/>
+                                    <TextBlock Text="Markdown File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="TextItem" Tag="text" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📃" FontSize="16"/>
+                                    <TextBlock Text="Text File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
+                            
+                            <!-- .NET Config Files -->
+                            <TextBlock Text=".NET Config" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
+                            <Button Classes="item-btn" Name="EditorConfigItem" Tag="editorconfig" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="⚙️" FontSize="16"/>
+                                    <TextBlock Text=".editorconfig" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="GlobalJsonItem" Tag="globaljson" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🌍" FontSize="16"/>
+                                    <TextBlock Text="global.json" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="NugetConfigItem" Tag="nugetconfig" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📦" FontSize="16"/>
+                                    <TextBlock Text="NuGet.config" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="DirBuildPropsItem" Tag="dirbuildprops" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🔧" FontSize="16"/>
+                                    <TextBlock Text="Directory.Build.props" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="DirBuildTargetsItem" Tag="dirbuildtargets" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🎯" FontSize="16"/>
+                                    <TextBlock Text="Directory.Build.targets" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="AppSettingsItem" Tag="appsettings" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="⚙️" FontSize="16"/>
+                                    <TextBlock Text="appsettings.json" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="LaunchSettingsItem" Tag="launchsettings" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🚀" FontSize="16"/>
+                                    <TextBlock Text="launchSettings.json" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
+                            
+                            <!-- Git Files -->
+                            <TextBlock Text="Git" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
+                            <Button Classes="item-btn" Name="GitIgnoreItem" Tag="gitignore" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🚫" FontSize="16"/>
+                                    <TextBlock Text=".gitignore" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="GitAttributesItem" Tag="gitattributes" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📋" FontSize="16"/>
+                                    <TextBlock Text=".gitattributes" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Settings -->
+                <StackPanel Grid.Column="1" Margin="20" Spacing="16">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Name" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBox Name="ItemNameBox" Text="NewClass" TextChanged="ItemName_Changed"/>
+                    </StackPanel>
+                    
+                    <Border Background="{StaticResource BgTertiaryBrush}" CornerRadius="6" Padding="12">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Preview" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Name="FilePreviewText" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}"
+                                       TextWrapping="Wrap"/>
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>
+                            <TextBlock Text="Location:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Name="LocationPreviewText" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <StackPanel Spacing="8">
+                        <CheckBox Name="AddToProjectCheck" IsChecked="True"
+                                  Foreground="{StaticResource TextPrimaryBrush}">
+                            <TextBlock Text="Add to project file (.csproj)"/>
+                        </CheckBox>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="{StaticResource BgSecondaryBrush}" Padding="24,16">
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <Button Grid.Column="1" Classes="secondary-btn" Content="Cancel" 
+                            Margin="0,0,12,0" Click="Cancel_Click"/>
+                    <Button Grid.Column="2" Classes="primary-btn" Content="Add" 
+                            Name="CreateButton" Click="Create_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

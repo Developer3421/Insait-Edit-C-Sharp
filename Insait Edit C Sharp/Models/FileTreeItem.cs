@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp.Models;
 
@@ -18,11 +20,13 @@ public enum FileTreeItemType
     Solution,
     SolutionFolder,
     Project,
+    EspProject,         // ESP32/nanoFramework project (distinct icon)
     
     // Folders
     Folder,
     SpecialFolder,      // Properties, wwwroot, etc.
     DependenciesFolder, // NuGet/Package references
+    NuGetPackage,       // Individual NuGet package reference
     
     // C# code files
     CSharpFile,
@@ -61,6 +65,7 @@ public enum FileTreeItemType
     
     // Project files
     CsProjFile,
+    NfProjFile,
     NugetConfig,
     DirectoryBuildProps,
     DirectoryBuildTargets,
@@ -133,6 +138,7 @@ public class FileTreeItem : INotifyPropertyChanged
                 OnPropertyChanged(nameof(NameColor));
                 OnPropertyChanged(nameof(FontWeight));
                 OnPropertyChanged(nameof(DisplayName));
+                OnPropertyChanged(nameof(IsTextIcon));
             }
         }
     }
@@ -150,6 +156,7 @@ public class FileTreeItem : INotifyPropertyChanged
                 OnPropertyChanged(nameof(IconBackgroundColor));
                 OnPropertyChanged(nameof(NameColor));
                 OnPropertyChanged(nameof(FontWeight));
+                OnPropertyChanged(nameof(IsTextIcon));
             }
         }
     }
@@ -182,6 +189,16 @@ public class FileTreeItem : INotifyPropertyChanged
         set => SetProperty(ref _children, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether children have been loaded. 
+    /// Set to true to prevent auto-loading when expanding.
+    /// </summary>
+    public bool IsLoaded
+    {
+        get => _isLoaded;
+        set => _isLoaded = value;
+    }
+
     public FileTreeItemType ItemType
     {
         get => _itemType;
@@ -194,6 +211,7 @@ public class FileTreeItem : INotifyPropertyChanged
                 OnPropertyChanged(nameof(IconBackgroundColor));
                 OnPropertyChanged(nameof(NameColor));
                 OnPropertyChanged(nameof(FontWeight));
+                OnPropertyChanged(nameof(IsTextIcon));
             }
         }
     }
@@ -254,6 +272,37 @@ public class FileTreeItem : INotifyPropertyChanged
 
     public bool HasDescription => !string.IsNullOrEmpty(Description);
 
+    /// <summary>
+    /// Human-readable file size string for display in the file explorer (e.g. "12 KB", "1.4 MB").
+    /// Returns empty string for directories and items whose size cannot be determined.
+    /// </summary>
+    public string FileSizeText
+    {
+        get
+        {
+            if (IsDirectory) return string.Empty;
+            try
+            {
+                if (!File.Exists(FullPath)) return string.Empty;
+                var bytes = new FileInfo(FullPath).Length;
+                return bytes switch
+                {
+                    < 1024 => $"{bytes} B",
+                    < 1024 * 1024 => $"{bytes / 1024.0:0.#} KB",
+                    < 1024L * 1024 * 1024 => $"{bytes / (1024.0 * 1024):0.#} MB",
+                    _ => $"{bytes / (1024.0 * 1024 * 1024):0.#} GB"
+                };
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+    }
+
+    /// <summary>Returns true when a file size string is available for display.</summary>
+    public bool HasFileSize => !string.IsNullOrEmpty(FileSizeText);
+
     public string DisplayName
     {
         get
@@ -276,6 +325,57 @@ public class FileTreeItem : INotifyPropertyChanged
     public IBrush NameColor => GetNameColorBrush();
     public FontWeight FontWeight => GetFontWeightValue();
     public string Extension => Path.GetExtension(FullPath).ToLowerInvariant();
+    
+    /// <summary>
+    /// Returns true if the icon is a text-based icon (like C#, JS, TS) that should use IconColor,
+    /// or false if it's an emoji that should display with natural colors
+    /// </summary>
+    public bool IsTextIcon => _itemType switch
+    {
+        FileTreeItemType.CSharpClass => true,
+        FileTreeItemType.CSharpInterface => true,
+        FileTreeItemType.CSharpRecord => true,
+        FileTreeItemType.CSharpStruct => true,
+        FileTreeItemType.CSharpEnum => true,
+        FileTreeItemType.CSharpDelegate => true,
+        FileTreeItemType.CSharpFile => true,
+        FileTreeItemType.CodeBehind => true,
+        FileTreeItemType.JavaScriptFile => true,
+        FileTreeItemType.TypeScriptFile => true,
+        FileTreeItemType.JsonFile => true,
+        _ => false
+    };
+
+    /// <summary>
+    /// Returns true if this item should use a Windows shell icon instead of emoji/text icons.
+    /// Only applies to UnknownFile types where we don't have a custom icon.
+    /// </summary>
+    public bool UseShellIcon => _itemType == FileTreeItemType.UnknownFile && !IsDirectory && ShellIconBitmap != null;
+
+    /// <summary>
+    /// Returns true if this item should display an emoji icon (not a text icon and not a shell icon)
+    /// </summary>
+    public bool UseEmojiIcon => !IsTextIcon && !UseShellIcon;
+
+    private Bitmap? _shellIconBitmap;
+    private bool _shellIconLoaded;
+
+    /// <summary>
+    /// Windows shell icon bitmap for file types without custom icons.
+    /// Lazily loaded and cached by extension via ShellIconService.
+    /// </summary>
+    public Bitmap? ShellIconBitmap
+    {
+        get
+        {
+            if (!_shellIconLoaded && _itemType == FileTreeItemType.UnknownFile && !IsDirectory)
+            {
+                _shellIconLoaded = true;
+                _shellIconBitmap = ShellIconService.GetIconForExtension(Extension);
+            }
+            return _shellIconBitmap;
+        }
+    }
 
     private void UpdateItemType()
     {
@@ -283,6 +383,13 @@ public class FileTreeItem : INotifyPropertyChanged
             _itemType = DetermineDirectoryType();
         else
             _itemType = DetermineFileType();
+
+        // Reset shell icon state when type changes
+        _shellIconLoaded = false;
+        _shellIconBitmap = null;
+        OnPropertyChanged(nameof(ShellIconBitmap));
+        OnPropertyChanged(nameof(UseShellIcon));
+        OnPropertyChanged(nameof(UseEmojiIcon));
     }
 
     private FileTreeItemType DetermineDirectoryType()
@@ -344,6 +451,8 @@ public class FileTreeItem : INotifyPropertyChanged
             return FileTreeItemType.Solution;
         if (ext == ".csproj" || ext == ".fsproj" || ext == ".vbproj")
             return FileTreeItemType.CsProjFile;
+        if (ext == ".nfproj")
+            return FileTreeItemType.NfProjFile;
         if (name == "nuget.config")
             return FileTreeItemType.NugetConfig;
         if (name == "global.json")
@@ -383,7 +492,7 @@ public class FileTreeItem : INotifyPropertyChanged
             ".yaml" or ".yml" => FileTreeItemType.YamlFile,
             ".md" or ".markdown" => FileTreeItemType.MarkdownFile,
             ".txt" => FileTreeItemType.TextFile,
-            ".png" or ".jpg" or ".jpeg" or ".gif" or ".ico" or ".svg" or ".bmp" => FileTreeItemType.ImageFile,
+            ".png" or ".jpg" or ".jpeg" or ".gif" or ".ico" or ".svg" or ".bmp" or ".webp" or ".tiff" or ".tif" => FileTreeItemType.ImageFile,
             ".ttf" or ".otf" or ".woff" or ".woff2" => FileTreeItemType.FontFile,
             ".dll" or ".exe" or ".pdb" => FileTreeItemType.BinaryFile,
             _ => FileTreeItemType.UnknownFile
@@ -453,9 +562,10 @@ public class FileTreeItem : INotifyPropertyChanged
         {
             return _itemType switch
             {
-                FileTreeItemType.Solution => "🗂️",
+                FileTreeItemType.Solution => "🏠",  // House for solution root
                 FileTreeItemType.SolutionFolder => "📁",
                 FileTreeItemType.Project => "📦",
+                FileTreeItemType.EspProject => "🔌",  // nanoFramework project
                 FileTreeItemType.SpecialFolder => IsExpanded ? "📂" : "📁",
                 FileTreeItemType.DependenciesFolder => "📚",
                 _ => IsExpanded ? "📂" : "📁"
@@ -464,9 +574,11 @@ public class FileTreeItem : INotifyPropertyChanged
 
         return _itemType switch
         {
-            FileTreeItemType.Solution => "🗂️",
+            FileTreeItemType.Solution => "💼",  // Briefcase for solution file
             FileTreeItemType.CsProjFile => "📦",
+            FileTreeItemType.NfProjFile => "🔌",
             FileTreeItemType.NugetConfig => "📦",
+            FileTreeItemType.NuGetPackage => "📦",
             FileTreeItemType.GlobalJson => "⚙️",
             FileTreeItemType.DirectoryBuildProps => "🔧",
             FileTreeItemType.DirectoryBuildTargets => "🎯",
@@ -516,7 +628,10 @@ public class FileTreeItem : INotifyPropertyChanged
             FileTreeItemType.Solution => "#FFCBA6F7",
             FileTreeItemType.SolutionFolder => "#FFCBA6F7",
             FileTreeItemType.Project => "#FFCBA6F7",
+            FileTreeItemType.EspProject => "#FF4FC3F7",
             FileTreeItemType.CsProjFile => "#FFCBA6F7",
+            FileTreeItemType.NfProjFile => "#FF4FC3F7",
+            FileTreeItemType.NuGetPackage => "#FF89DCEB",
             FileTreeItemType.CSharpClass => "#FFA6E3A1",
             FileTreeItemType.CSharpInterface => "#FF94E2D5",
             FileTreeItemType.CSharpRecord => "#FFA6E3A1",
@@ -581,7 +696,9 @@ public class FileTreeItem : INotifyPropertyChanged
             FileTreeItemType.JsonFile => "#20F9E2AF",
             FileTreeItemType.Solution => "#20CBA6F7",
             FileTreeItemType.Project => "#20CBA6F7",
+            FileTreeItemType.EspProject => "#204FC3F7",
             FileTreeItemType.CsProjFile => "#20CBA6F7",
+            FileTreeItemType.NfProjFile => "#204FC3F7",
             _ => "#00000000"
         };
         return SolidColorBrush.Parse(colorStr);
@@ -593,7 +710,9 @@ public class FileTreeItem : INotifyPropertyChanged
         {
             FileTreeItemType.Solution => "#FFCBA6F7",
             FileTreeItemType.Project => "#FFCBA6F7",
+            FileTreeItemType.EspProject => "#FF4FC3F7",
             FileTreeItemType.CsProjFile => "#FFCBA6F7",
+            FileTreeItemType.NfProjFile => "#FF4FC3F7",
             FileTreeItemType.Folder => "#FFFAB387",
             FileTreeItemType.SpecialFolder => "#FF89DCEB",
             FileTreeItemType.DependenciesFolder => "#FFCBA6F7",
@@ -611,7 +730,9 @@ public class FileTreeItem : INotifyPropertyChanged
         {
             FileTreeItemType.Solution => FontWeight.Bold,
             FileTreeItemType.Project => FontWeight.SemiBold,
+            FileTreeItemType.EspProject => FontWeight.SemiBold,
             FileTreeItemType.CsProjFile => FontWeight.SemiBold,
+            FileTreeItemType.NfProjFile => FontWeight.SemiBold,
             _ => FontWeight.Normal
         };
     }
@@ -619,7 +740,18 @@ public class FileTreeItem : INotifyPropertyChanged
     public void LoadChildren(bool forceReload = false)
     {
         if (!IsDirectory) return;
+        
+        // Dependencies folder, Projects, and Solutions are populated manually, never load from filesystem
+        if (_itemType == FileTreeItemType.DependenciesFolder || 
+            _itemType == FileTreeItemType.Project ||
+            _itemType == FileTreeItemType.Solution)
+        {
+            _isLoaded = true;
+            return;
+        }
+        
         if (_isLoaded && !forceReload) return;
+        
         if (!Directory.Exists(FullPath))
         {
             _isLoaded = true;

@@ -138,8 +138,9 @@ public partial class WelcomeWindow : Window
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("C# Solution") { Patterns = new[] { "*.sln" } },
+                new FilePickerFileType("C# Solution") { Patterns = new[] { "*.sln", "*.slnx" } },
                 new FilePickerFileType("C# Project") { Patterns = new[] { "*.csproj" } },
+                new FilePickerFileType("nanoFramework Project") { Patterns = new[] { "*.nfproj" } },
                 new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } }
             }
         });
@@ -172,6 +173,7 @@ public partial class WelcomeWindow : Window
         }
     }
 
+
     private string? FindProjectFile(string directory)
     {
         if (!Directory.Exists(directory)) return null;
@@ -183,6 +185,10 @@ public partial class WelcomeWindow : Window
         // Then look for .csproj
         var csprojFiles = Directory.GetFiles(directory, "*.csproj", SearchOption.AllDirectories);
         if (csprojFiles.Length > 0) return csprojFiles[0];
+
+        // Then look for .nfproj (nanoFramework)
+        var nfprojFiles = Directory.GetFiles(directory, "*.nfproj", SearchOption.AllDirectories);
+        if (nfprojFiles.Length > 0) return nfprojFiles[0];
 
         return null;
     }

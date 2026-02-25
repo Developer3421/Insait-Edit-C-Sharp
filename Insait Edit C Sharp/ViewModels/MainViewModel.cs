@@ -5,7 +5,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Timers;
+using Avalonia.Threading;
 using Insait_Edit_C_Sharp.Models;
 
 namespace Insait_Edit_C_Sharp.ViewModels;
@@ -19,6 +21,7 @@ public class SolutionProjectInfo
     public string RelativePath { get; set; } = string.Empty;
     public string Guid { get; set; } = string.Empty;
     public string TypeGuid { get; set; } = string.Empty;
+    public string? SolutionFolder { get; set; }
 }
 
 /// <summary>
@@ -137,9 +140,18 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     #region Methods
 
     /// <summary>
-    /// Load a project folder into the file tree
+    /// Load a project folder into the file tree (fire and forget - for backward compatibility)
     /// </summary>
     public void LoadProjectFolder(string folderPath)
+    {
+        // Fire and forget - call async version
+        _ = LoadProjectFolderAsync(folderPath);
+    }
+
+    /// <summary>
+    /// Load a project folder into the file tree asynchronously
+    /// </summary>
+    public async Task LoadProjectFolderAsync(string folderPath)
     {
         if (!Directory.Exists(folderPath))
         {
@@ -150,44 +162,51 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             }
             else
             {
-                StatusText = $"Directory not found: {folderPath}";
+                await Dispatcher.UIThread.InvokeAsync(() => StatusText = $"Directory not found: {folderPath}");
                 return;
             }
         }
 
-        CurrentProjectPath = folderPath;
-        FileTreeItems.Clear();
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            CurrentProjectPath = folderPath;
+            FileTreeItems.Clear();
+            StatusText = "Loading...";
+        });
 
         // Check if there's a solution file in the folder
-        var solutionFile = FindSolutionFileInDirectory(folderPath);
+        var solutionFile = await Task.Run(() => FindSolutionFileInDirectory(folderPath));
+        
+        System.Diagnostics.Debug.WriteLine($"LoadProjectFolderAsync: folderPath={folderPath}, solutionFile={solutionFile ?? "null"}");
         
         if (!string.IsNullOrEmpty(solutionFile))
         {
+            System.Diagnostics.Debug.WriteLine($"LoadProjectFolderAsync: Loading as solution");
             // Load as solution with projects (Rider-style)
-            LoadSolutionStructure(folderPath, solutionFile);
+            await LoadSolutionStructureAsync(folderPath, solutionFile);
         }
         else
         {
             // Check for project file
-            var projectFile = FindProjectFileInDirectory(folderPath);
+            var projectFile = await Task.Run(() => FindProjectFileInDirectory(folderPath));
             if (!string.IsNullOrEmpty(projectFile))
             {
                 // Load as single project
-                LoadProjectStructure(folderPath, projectFile);
+                await LoadProjectStructureAsync(folderPath, projectFile);
             }
             else
             {
                 // Load as regular folder
-                var rootItem = FileTreeItem.FromDirectory(folderPath, loadChildren: true);
+                var rootItem = await Task.Run(() => FileTreeItem.FromDirectory(folderPath, loadChildren: true));
                 rootItem.IsExpanded = true;
-                FileTreeItems.Add(rootItem);
+                await Dispatcher.UIThread.InvokeAsync(() => FileTreeItems.Add(rootItem));
             }
         }
         
         // Initialize file watcher
         InitializeFileWatcher(folderPath);
 
-        StatusText = $"Opened folder: {Path.GetFileName(folderPath)}";
+        await Dispatcher.UIThread.InvokeAsync(() => StatusText = $"Opened folder: {Path.GetFileName(folderPath)}");
     }
 
     /// <summary>
@@ -197,18 +216,39 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            // First look for .slnx files (new format)
-            var slnxFiles = Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly);
-            if (slnxFiles.Length > 0) return slnxFiles[0];
-
+            System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Searching in '{directory}'");
+            System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Directory.Exists = {Directory.Exists(directory)}");
+            
+            // List all files first for debugging
+            try
+            {
+                var allFiles = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly);
+                System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: All files: {string.Join(", ", allFiles.Select(f => Path.GetFileName(f)))}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Error listing all files: {ex.Message}");
+            }
+            
+            // First look for .slnx files (new format) - use enumeration for better performance
+            foreach (var file in Directory.EnumerateFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly))
+            {
+                System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Found .slnx file: {file}");
+                return file;
+            }
+            
             // Then look for .sln files (legacy format)
-            var slnFiles = Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly);
-            if (slnFiles.Length > 0) return slnFiles[0];
+            foreach (var file in Directory.EnumerateFiles(directory, "*.sln", SearchOption.TopDirectoryOnly))
+            {
+                System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Found .sln file: {file}");
+                return file;
+            }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error finding solution file: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Error: {ex.Message}");
         }
+        System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: No solution file found, returning null");
         return null;
     }
 
@@ -227,12 +267,132 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
             projectFiles = Directory.GetFiles(directory, "*.vbproj", SearchOption.TopDirectoryOnly);
             if (projectFiles.Length > 0) return projectFiles[0];
+
+            projectFiles = Directory.GetFiles(directory, "*.nfproj", SearchOption.TopDirectoryOnly);
+            if (projectFiles.Length > 0) return projectFiles[0];
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error finding project file: {ex.Message}");
         }
         return null;
+    }
+
+    /// <summary>
+    /// Load solution structure with projects (like JetBrains Rider) - async version
+    /// </summary>
+    private async Task LoadSolutionStructureAsync(string folderPath, string solutionFile)
+    {
+        System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: START - folderPath={folderPath}, solutionFile={solutionFile}");
+        
+        // Force re-read the file from disk
+        System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Reading solution file content...");
+        var solutionContent = await File.ReadAllTextAsync(solutionFile);
+        System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Solution file content:\n{solutionContent}");
+        
+        var solutionName = Path.GetFileNameWithoutExtension(solutionFile);
+        
+        // Parse solution file on background thread
+        var projects = await Task.Run(() => ParseSolutionFile(solutionFile));
+        System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Found {projects.Count} projects in solution");
+        
+        foreach (var proj in projects)
+        {
+            System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Project - Name={proj.Name}, Path={proj.RelativePath}");
+        }
+        
+        // Create solution root node
+        var solutionItem = new FileTreeItem
+        {
+            Name = solutionName,
+            FullPath = solutionFile,
+            IsDirectory = false,  // Solution file itself
+            ItemType = FileTreeItemType.Solution,
+            IsSolutionItem = true,
+            IsExpanded = true
+        };
+        
+        System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Created solutionItem - Name={solutionItem.Name}, IsDirectory={solutionItem.IsDirectory}, ItemType={solutionItem.ItemType}, Icon={solutionItem.Icon}");
+        
+        // Load project items on background thread
+        var projectItems = await Task.Run(() =>
+        {
+            var items = new List<FileTreeItem>();
+            
+            foreach (var projectInfo in projects)
+            {
+                var projectPath = Path.GetFullPath(Path.Combine(folderPath, projectInfo.RelativePath));
+                if (!File.Exists(projectPath)) continue;
+
+                var projectDir = Path.GetDirectoryName(projectPath);
+                if (string.IsNullOrEmpty(projectDir) || !Directory.Exists(projectDir)) continue;
+
+                var projectItem = new FileTreeItem
+                {
+                    Name = projectInfo.Name,
+                    FullPath = projectDir,
+                    IsDirectory = true,
+                    ItemType = DetermineProjectItemType(projectPath),
+                    IsSolutionItem = true,
+                    ProjectGuid = projectInfo.Guid,
+                    Description = GetProjectDescription(projectPath),
+                    IsExpanded = false
+                };
+
+                // Load project children (source files)
+                LoadProjectContents(projectItem, projectDir);
+                
+                items.Add(projectItem);
+            }
+            
+            return items;
+        });
+        
+        // Add project items to solution
+        foreach (var projectItem in projectItems)
+        {
+            solutionItem.Children.Add(projectItem);
+        }
+
+        // Add solution-level items on background thread
+        await Task.Run(() => AddSolutionLevelItems(solutionItem, folderPath, projects));
+
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            FileTreeItems.Add(solutionItem);
+            StatusText = $"Loaded solution: {solutionName} ({projects.Count} projects)";
+        });
+    }
+
+    /// <summary>
+    /// Load single project structure - async version
+    /// </summary>
+    private async Task LoadProjectStructureAsync(string folderPath, string projectFile)
+    {
+        var projectName = Path.GetFileNameWithoutExtension(projectFile);
+        
+        var projectItem = await Task.Run(() =>
+        {
+            var item = new FileTreeItem
+            {
+                Name = projectName,
+                FullPath = folderPath,
+                IsDirectory = true,
+                ItemType = DetermineProjectItemType(projectFile),
+                IsSolutionItem = false,
+                Description = GetProjectDescription(projectFile),
+                IsExpanded = true
+            };
+
+            LoadProjectContents(item, folderPath);
+            return item;
+        });
+        
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            FileTreeItems.Add(projectItem);
+            StatusText = $"Loaded project: {projectName}";
+        });
     }
 
     /// <summary>
@@ -270,7 +430,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 Name = projectInfo.Name,
                 FullPath = projectDir,
                 IsDirectory = true,
-                ItemType = FileTreeItemType.Project,
+                ItemType = DetermineProjectItemType(projectPath),
                 IsSolutionItem = true,
                 ProjectGuid = projectInfo.Guid,
                 Description = GetProjectDescription(projectPath),
@@ -302,7 +462,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             Name = projectName,
             FullPath = folderPath,
             IsDirectory = true,
-            ItemType = FileTreeItemType.Project,
+            ItemType = DetermineProjectItemType(projectFile),
             IsSolutionItem = false,
             Description = GetProjectDescription(projectFile),
             IsExpanded = true
@@ -315,9 +475,91 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Parse solution file to extract projects
+    /// Parse solution file to extract projects (supports .sln and .slnx)
     /// </summary>
     private List<SolutionProjectInfo> ParseSolutionFile(string solutionPath)
+    {
+        var ext = Path.GetExtension(solutionPath).ToLowerInvariant();
+        
+        if (ext == ".slnx")
+        {
+            return ParseSlnxFile(solutionPath);
+        }
+        else
+        {
+            return ParseSlnFile(solutionPath);
+        }
+    }
+
+    /// <summary>
+    /// Parse slnx file (XML format)
+    /// </summary>
+    private List<SolutionProjectInfo> ParseSlnxFile(string solutionPath)
+    {
+        var projects = new List<SolutionProjectInfo>();
+        
+        try
+        {
+            var content = File.ReadAllText(solutionPath);
+            var doc = System.Xml.Linq.XDocument.Parse(content);
+            var root = doc.Root;
+            if (root == null) return projects;
+
+            // Parse projects from root level
+            foreach (var projectElement in root.Elements("Project"))
+            {
+                var pathAttr = projectElement.Attribute("Path")?.Value;
+                if (string.IsNullOrEmpty(pathAttr)) continue;
+                
+                // Normalize path separators
+                var normalizedPath = pathAttr.Replace("/", "\\");
+                var projectName = Path.GetFileNameWithoutExtension(normalizedPath);
+                
+                projects.Add(new SolutionProjectInfo
+                {
+                    Name = projectName,
+                    RelativePath = normalizedPath,
+                    Guid = Guid.NewGuid().ToString("B").ToUpperInvariant(),
+                    TypeGuid = "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}" // SDK-style
+                });
+            }
+
+            // Parse projects from folders
+            foreach (var folder in root.Elements("Folder"))
+            {
+                var folderName = folder.Attribute("Name")?.Value ?? "Folder";
+                
+                foreach (var projectElement in folder.Elements("Project"))
+                {
+                    var pathAttr = projectElement.Attribute("Path")?.Value;
+                    if (string.IsNullOrEmpty(pathAttr)) continue;
+                    
+                    var normalizedPath = pathAttr.Replace("/", "\\");
+                    var projectName = Path.GetFileNameWithoutExtension(normalizedPath);
+                    
+                    projects.Add(new SolutionProjectInfo
+                    {
+                        Name = projectName,
+                        RelativePath = normalizedPath,
+                        Guid = Guid.NewGuid().ToString("B").ToUpperInvariant(),
+                        TypeGuid = "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}",
+                        SolutionFolder = folderName
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error parsing slnx file: {ex.Message}");
+        }
+        
+        return projects;
+    }
+
+    /// <summary>
+    /// Parse sln file (legacy format)
+    /// </summary>
+    private List<SolutionProjectInfo> ParseSlnFile(string solutionPath)
     {
         var projects = new List<SolutionProjectInfo>();
         
@@ -331,9 +573,6 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 @"^Project\(""(?<TypeGuid>[^""]+)""\)\s*=\s*""(?<Name>[^""]+)""\s*,\s*""(?<Path>[^""]+)""\s*,\s*""(?<Guid>[^""]+)""",
                 System.Text.RegularExpressions.RegexOptions.Compiled);
             
-            // GUID for C# projects
-            var csharpTypeGuid = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}";
-            var newCsharpTypeGuid = "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"; // SDK-style
             // GUID for solution folders (we skip these)
             var solutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
             
@@ -355,7 +594,8 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     // Only include actual project files
                     if (path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
                         path.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
-                        path.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase))
+                        path.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                        path.EndsWith(".nfproj", StringComparison.OrdinalIgnoreCase))
                     {
                         projects.Add(new SolutionProjectInfo
                         {
@@ -370,20 +610,29 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error parsing solution file: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Error parsing sln file: {ex.Message}");
         }
         
         return projects;
     }
 
     /// <summary>
-    /// Get project description from csproj file
+    /// Get project description from csproj/nfproj file
     /// </summary>
     private string? GetProjectDescription(string projectPath)
     {
         try
         {
             var content = File.ReadAllText(projectPath);
+            
+            // Check if this is a nanoFramework project (.nfproj or .csproj with marker)
+            if (projectPath.EndsWith(".nfproj", StringComparison.OrdinalIgnoreCase) ||
+                content.Contains("<NanoFrameworkProject>true</NanoFrameworkProject>", StringComparison.OrdinalIgnoreCase))
+            {
+                var boardMatch = System.Text.RegularExpressions.Regex.Match(content, @"<TargetBoard>([^<]+)</TargetBoard>");
+                var board = boardMatch.Success ? boardMatch.Groups[1].Value : "ESP32";
+                return $"nanoFramework ({board})";
+            }
             
             // Try to find TargetFramework
             var tfMatch = System.Text.RegularExpressions.Regex.Match(content, @"<TargetFramework>([^<]+)</TargetFramework>");
@@ -412,12 +661,50 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
+    /// Determine whether a project file (.csproj or .nfproj) is an ESP32/nanoFramework project.
+    /// Returns FileTreeItemType.EspProject if yes, FileTreeItemType.Project otherwise.
+    /// </summary>
+    private FileTreeItemType DetermineProjectItemType(string projectFilePath)
+    {
+        try
+        {
+            if (projectFilePath.EndsWith(".nfproj", StringComparison.OrdinalIgnoreCase))
+                return FileTreeItemType.EspProject;
+
+            if (File.Exists(projectFilePath))
+            {
+                var content = File.ReadAllText(projectFilePath);
+                if (content.Contains("<NanoFrameworkProject>true</NanoFrameworkProject>", StringComparison.OrdinalIgnoreCase))
+                    return FileTreeItemType.EspProject;
+            }
+            
+            // Also check if the directory contains .nfproj files
+            var dir = Path.GetDirectoryName(projectFilePath);
+            if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+            {
+                var nfprojFiles = Directory.GetFiles(dir, "*.nfproj", SearchOption.TopDirectoryOnly);
+                if (nfprojFiles.Length > 0)
+                    return FileTreeItemType.EspProject;
+            }
+        }
+        catch { }
+        
+        return FileTreeItemType.Project;
+    }
+
+    /// <summary>
     /// Load contents of a project directory
     /// </summary>
     private void LoadProjectContents(FileTreeItem projectItem, string projectDir)
     {
         try
         {
+            // Clear any existing children first to prevent duplicates
+            projectItem.Children.Clear();
+            
+            // Find the project file to parse NuGet packages
+            var projectFile = FindProjectFileInDirectory(projectDir);
+            
             // First add special folders (Dependencies, Properties, etc.)
             var dependenciesFolder = new FileTreeItem
             {
@@ -425,8 +712,28 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 FullPath = projectDir,  // Virtual folder
                 IsDirectory = true,
                 ItemType = FileTreeItemType.DependenciesFolder,
-                IsSolutionItem = true
+                IsSolutionItem = true,
+                IsLoaded = true  // Mark as loaded to prevent auto-loading files
             };
+            
+            // Populate NuGet packages if project file exists
+            if (!string.IsNullOrEmpty(projectFile))
+            {
+                var packages = ParseNuGetPackages(projectFile);
+                foreach (var package in packages.OrderBy(p => p.Name))
+                {
+                    var packageItem = new FileTreeItem
+                    {
+                        Name = package.Name,
+                        FullPath = projectFile, // Reference to project file
+                        IsDirectory = false,
+                        ItemType = FileTreeItemType.NuGetPackage,
+                        Description = package.Version
+                    };
+                    dependenciesFolder.Children.Add(packageItem);
+                }
+            }
+            
             projectItem.Children.Add(dependenciesFolder);
 
             // Add Properties folder if exists
@@ -469,11 +776,121 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 
                 projectItem.Children.Add(fileItem);
             }
+            
+            // Mark project as loaded to prevent duplicate loading when expanded
+            projectItem.IsLoaded = true;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error loading project contents: {ex.Message}");
         }
+    }
+    
+    /// <summary>
+    /// Represents a NuGet package reference
+    /// </summary>
+    private class NuGetPackageInfo
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Version { get; set; } = string.Empty;
+    }
+    
+    /// <summary>
+    /// Parse NuGet package references from a project file (.csproj or .nfproj)
+    /// </summary>
+    private List<NuGetPackageInfo> ParseNuGetPackages(string projectFile)
+    {
+        var packages = new List<NuGetPackageInfo>();
+        
+        try
+        {
+            // For .nfproj files, parse packages.config instead
+            if (projectFile.EndsWith(".nfproj", StringComparison.OrdinalIgnoreCase))
+            {
+                var projectDir = Path.GetDirectoryName(projectFile);
+                if (!string.IsNullOrEmpty(projectDir))
+                {
+                    var packagesConfigPath = Path.Combine(projectDir, "packages.config");
+                    if (File.Exists(packagesConfigPath))
+                    {
+                        var configContent = File.ReadAllText(packagesConfigPath);
+                        var pkgRegex = new System.Text.RegularExpressions.Regex(
+                            @"<package\s+id=""(?<Name>[^""]+)""\s+version=""(?<Version>[^""]+)""",
+                            System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        
+                        foreach (System.Text.RegularExpressions.Match match in pkgRegex.Matches(configContent))
+                        {
+                            packages.Add(new NuGetPackageInfo
+                            {
+                                Name = match.Groups["Name"].Value,
+                                Version = match.Groups["Version"].Value
+                            });
+                        }
+                    }
+                    
+                    // Also check for Reference hints in nfproj (HintPath references)
+                    var nfContent = File.ReadAllText(projectFile);
+                    var refRegex = new System.Text.RegularExpressions.Regex(
+                        @"<Reference\s+Include=""(?<Name>[^""]+)""",
+                        System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    
+                    foreach (System.Text.RegularExpressions.Match match in refRegex.Matches(nfContent))
+                    {
+                        var name = match.Groups["Name"].Value;
+                        if (!packages.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            packages.Add(new NuGetPackageInfo
+                            {
+                                Name = name,
+                                Version = ""
+                            });
+                        }
+                    }
+                }
+                return packages;
+            }
+            
+            var content = File.ReadAllText(projectFile);
+            
+            // Use regex to find all PackageReference elements
+            var packageRegex = new System.Text.RegularExpressions.Regex(
+                @"<PackageReference\s+Include=""(?<Name>[^""]+)""\s+Version=""(?<Version>[^""]+)""",
+                System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            
+            foreach (System.Text.RegularExpressions.Match match in packageRegex.Matches(content))
+            {
+                packages.Add(new NuGetPackageInfo
+                {
+                    Name = match.Groups["Name"].Value,
+                    Version = match.Groups["Version"].Value
+                });
+            }
+            
+            // Also try format with Version as child element
+            var altPackageRegex = new System.Text.RegularExpressions.Regex(
+                @"<PackageReference\s+Include=""(?<Name>[^""]+)""[^>]*>\s*<Version>(?<Version>[^<]+)</Version>",
+                System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
+            
+            foreach (System.Text.RegularExpressions.Match match in altPackageRegex.Matches(content))
+            {
+                var name = match.Groups["Name"].Value;
+                // Only add if not already in list
+                if (!packages.Any(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    packages.Add(new NuGetPackageInfo
+                    {
+                        Name = name,
+                        Version = match.Groups["Version"].Value
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error parsing NuGet packages: {ex.Message}");
+        }
+        
+        return packages;
     }
 
     /// <summary>
@@ -733,23 +1150,34 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     public void RefreshFileTree()
     {
+        // Fire and forget async version
+        _ = RefreshFileTreeAsync();
+    }
+
+    /// <summary>
+    /// Refresh the file tree asynchronously, preserving expanded state
+    /// </summary>
+    public async Task RefreshFileTreeAsync()
+    {
         if (string.IsNullOrEmpty(CurrentProjectPath) || !Directory.Exists(CurrentProjectPath))
         {
-            StatusText = "No project folder to refresh";
+            await Dispatcher.UIThread.InvokeAsync(() => StatusText = "No project folder to refresh");
             return;
         }
 
         // Save expanded state
         var expandedPaths = new HashSet<string>();
-        CollectExpandedPaths(FileTreeItems, expandedPaths);
+        await Dispatcher.UIThread.InvokeAsync(() => CollectExpandedPaths(FileTreeItems, expandedPaths));
         
         // Reload the tree using solution-aware logic
-        LoadProjectFolder(CurrentProjectPath);
+        await LoadProjectFolderAsync(CurrentProjectPath);
         
         // Restore expanded state
-        RestoreExpandedPaths(FileTreeItems, expandedPaths);
-        
-        StatusText = "File tree refreshed";
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            RestoreExpandedPaths(FileTreeItems, expandedPaths);
+            StatusText = "File tree refreshed";
+        });
     }
     
     private void CollectExpandedPaths(ObservableCollection<FileTreeItem> items, HashSet<string> expandedPaths)
@@ -788,7 +1216,8 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         var directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(directory))
         {
-            LoadProjectFolder(directory);
+            // Fire and forget async version
+            _ = LoadProjectFolderAsync(directory);
         }
 
         StatusText = $"Loaded: {Path.GetFileName(filePath)}";

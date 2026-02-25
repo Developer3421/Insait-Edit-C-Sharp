@@ -64,8 +64,7 @@
             <Setter Property="Background" Value="#30FFFFFF"/>
         </Style>
         <Style Selector="Button.window-control.close:pointerover">
-            <Setter Property="Background" Value="#E81123"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#40FFFFFF"/>
         </Style>
 
         <!-- Action Buttons -->
@@ -129,6 +128,14 @@
         <Style Selector="TextBox.search-box:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
+        
+        <!-- Emoji icons style - preserve natural colors -->
+        <Style Selector="Button.action-btn TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
+        <Style Selector="Button.project-item TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
     </Window.Styles>
 
     <Window.Background>
@@ -143,18 +150,22 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <!-- Draggable Area -->
                     <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
-                        <TextBlock Text="Insait Edit" FontSize="12" FontWeight="SemiBold"
-                                   Foreground="{StaticResource AccentOrangeBrush}"
-                                   VerticalAlignment="Center" Margin="16,0"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0" Spacing="8">
+                            <Image Source="avares://Insait Edit C Sharp/Icons/AppIconIDE.png" Width="18" Height="18"
+                                   VerticalAlignment="Center"/>
+                            <TextBlock Text="Insait Edit" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentOrangeBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Panel>
                     
                     <!-- Window Controls -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Classes="window-control" Click="MinimizeButton_Click">
-                            <TextBlock Text="─" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Image Source="avares://Insait Edit C Sharp/Icons/MinButton.png" Width="26" Height="26" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
                         <Button Classes="window-control close" Click="CloseButton_Click">
-                            <TextBlock Text="✕" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -171,11 +182,8 @@
                         <!-- Logo & Title -->
                         <StackPanel Grid.Row="0" Margin="32,40,32,32" Spacing="16">
                             <!-- Logo -->
-                            <Border Width="72" Height="72" CornerRadius="16" HorizontalAlignment="Left"
-                                    Background="{StaticResource LogoGradient}">
-                                <TextBlock Text="⚡" FontSize="36" 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
+                            <Image Source="avares://Insait Edit C Sharp/Icons/AppIconIDE.png"
+                                   Width="72" Height="72" HorizontalAlignment="Left"/>
                             
                             <!-- Title -->
                             <StackPanel Spacing="4">
@@ -254,6 +262,8 @@
                                     </StackPanel>
                                 </Grid>
                             </Button>
+
+
                         </StackPanel>
 
                         <!-- Spacer -->
@@ -296,7 +306,7 @@
                             <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
                                 <ItemsControl Name="RecentProjectsList">
                                     <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="local:RecentProjectItem">
+                                        <DataTemplate x:DataType="local:RecentProjectItem" x:CompileBindings="False">
                                             <Button Classes="project-item" 
                                                     Click="RecentProject_Click"
                                                     Tag="{Binding Path}">

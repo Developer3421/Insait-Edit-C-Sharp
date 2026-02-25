@@ -52,6 +52,11 @@
         <Style Selector="RadioButton">
             <Setter Property="Foreground" Value="#FFCDD6F4"/>
         </Style>
+        
+        <!-- Emoji icons style - preserve natural colors -->
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
     </Window.Styles>
 
     <Border BorderBrush="#FF3D3D4D" BorderThickness="1" CornerRadius="8">
@@ -64,8 +69,11 @@
                         <TextBlock Text="Publish Project" FontSize="13" FontWeight="SemiBold" 
                                    Foreground="#FFCDD6F4" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <Button Grid.Column="1" Content="✕" Background="Transparent" Foreground="#FF9399B2"
-                            BorderThickness="0" Width="36" Height="36" Name="CloseButton"/>
+                    <Button Grid.Column="1" Background="Transparent" Foreground="#FF9399B2"
+                            BorderThickness="0" Width="36" Height="36" Name="CloseButton">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
                 </Grid>
             </Border>
 
@@ -121,7 +129,7 @@
 
                     <!-- Publish Options -->
                     <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
-                        <StackPanel Spacing="12">
+                        <StackPanel Spacing="12" x:CompileBindings="False">
                             <TextBlock Text="Publish Options" FontWeight="SemiBold" Foreground="#FFFAB387" FontSize="13"/>
                             
                             <CheckBox Content="Produce single file" Name="SingleFileCheck" ToolTip.Tip="Bundles the application into a single executable"/>
@@ -133,10 +141,10 @@
                                       ToolTip.Tip="Removes unused code to reduce size (may affect reflection)"/>
                             
                             <CheckBox Content="Enable compression in single file" Name="CompressionCheck" 
-                                      ToolTip.Tip="Compresses the single file to reduce size" IsEnabled="{Binding #SingleFileCheck.IsChecked}"/>
+                                      ToolTip.Tip="Compresses the single file to reduce size" IsEnabled="{Binding #SingleFileCheck.IsChecked, FallbackValue=False}"/>
                             
                             <CheckBox Content="Include native libraries for self-extract" Name="NativeLibrariesCheck"
-                                      ToolTip.Tip="Bundles native libraries into the single file" IsEnabled="{Binding #SingleFileCheck.IsChecked}"/>
+                                      ToolTip.Tip="Bundles native libraries into the single file" IsEnabled="{Binding #SingleFileCheck.IsChecked, FallbackValue=False}"/>
                         </StackPanel>
                     </Border>
 

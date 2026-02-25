@@ -9,6 +9,9 @@ using Insait_Edit_C_Sharp.ViewModels;
 using Insait_Edit_C_Sharp.Services;
 using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Models;
+using Insait_Edit_C_Sharp.Esp.Windows;
+using Insait_Edit_C_Sharp.Esp.Models;
+using Insait_Edit_C_Sharp.Esp.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 
 namespace Insait_Edit_C_Sharp;
 
@@ -24,20 +28,23 @@ public partial class MainWindow : Window
 {
     private bool _isMaximized;
     private PixelPoint _restorePosition;
+    private EditorTab? _pendingTab; // tab waiting to be shown once editor is ready
     private Size _restoreSize;
     private readonly MainViewModel _viewModel;
     private readonly FileService _fileService;
     private readonly BuildService _buildService;
+    private readonly NanoBuildService _nanoBuildService;
     private readonly CodeAnalysisService _codeAnalysisService;
     private readonly RunConfigurationService _runConfigService;
     private readonly PublishService _publishService;
     private readonly CopilotCliService _copilotCliService;
     private string? _projectPath;
-    private MonacoEditorControl? _monacoEditor;
+    private AvaloniaEditor? _monacoEditor;
     private TerminalControl? _terminalControl;
     private bool _isBuildInProgress;
     private bool _isAnalysisInProgress;
     private readonly StringBuilder _buildOutput = new();
+    private DispatcherTimer? _autoSaveTimer;
 
     public MainWindow() : this(null)
     {
@@ -47,9 +54,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         
+        // Set up column constraints for splitters (JetBrains Rider style)
+        SetupColumnConstraints();
+        
         _viewModel = new MainViewModel();
         _fileService = new FileService();
         _buildService = new BuildService();
+        _nanoBuildService = new NanoBuildService();
         _codeAnalysisService = new CodeAnalysisService();
         _runConfigService = new RunConfigurationService();
         _publishService = new PublishService();
@@ -69,15 +80,18 @@ public partial class MainWindow : Window
         
         // Set initial window position for restore
         _restoreSize = new Size(Width, Height);
-        
-        // Initialize Monaco Editor
+
+        // Wire up the editor that is declared directly in AXAML
         InitializeMonacoEditor();
-        
+
         // Initialize Build Service events
         InitializeBuildService();
         
         // Initialize Code Analysis Service events
         InitializeCodeAnalysisService();
+
+        // Initialize Search panel
+        InitializeSearchPanel();
         
         // Load project if specified, otherwise load current directory
         if (!string.IsNullOrEmpty(projectPath))
@@ -96,10 +110,10 @@ public partial class MainWindow : Window
                 LoadProject(projectDir);
             }
         }
-        
+
         // Initialize Terminal with project directory
         InitializeTerminal();
-        
+
         // Update title
         UpdateTitle();
         
@@ -107,6 +121,28 @@ public partial class MainWindow : Window
         SetupKeyboardShortcuts();
     }
     
+    private void SetupColumnConstraints()
+    {
+        // Col 0: Activity bar - fixed 52px, never resized
+        // Col 1: Side panel - 250px default, min 150, max 550
+        // Col 2: Left splitter - 5px fixed
+        // Col 3: Editor - fills remaining space, min 300px
+        // Col 4: Right splitter - 5px fixed
+        // Col 5: AI panel - 300px default, min 220, max 600
+        var mainGrid = this.FindControl<Grid>("MainContentGrid");
+        if (mainGrid == null || mainGrid.ColumnDefinitions.Count < 6) return;
+
+        var sideCol   = mainGrid.ColumnDefinitions[1];
+        var editorCol = mainGrid.ColumnDefinitions[3];
+        var aiCol     = mainGrid.ColumnDefinitions[5];
+
+        sideCol.MinWidth   = 150;
+        sideCol.MaxWidth   = 550;
+        editorCol.MinWidth = 300;
+        aiCol.MinWidth     = 220;
+        aiCol.MaxWidth     = 600;
+    }
+
     private void SetupKeyboardShortcuts()
     {
         KeyDown += OnWindowKeyDown;
@@ -141,16 +177,49 @@ public partial class MainWindow : Window
             if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
             {
                 // Ctrl+Shift+N - New Project
-                var projectWindow = new NewProjectWindow();
+                var currentSolution = FindSolutionFile();
+                var projectWindow = new NewProjectWindow(currentSolution);
                 var projectResult = await projectWindow.ShowDialog<string?>(this);
                 if (!string.IsNullOrEmpty(projectResult))
                 {
-                    var projectDir = Path.GetDirectoryName(projectResult);
-                    if (!string.IsNullOrEmpty(projectDir))
+                    if (projectResult.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                        projectResult.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
                     {
-                        _projectPath = projectDir;
-                        LoadProject(projectDir);
-                        UpdateTitle();
+                        if (File.Exists(projectResult))
+                        {
+                            var solutionDir = Path.GetDirectoryName(projectResult);
+                            if (!string.IsNullOrEmpty(solutionDir) && Directory.Exists(solutionDir))
+                            {
+                                _projectPath = solutionDir;
+                                _viewModel.CurrentProjectPath = solutionDir;
+                                _viewModel.FileTreeItems.Clear();
+                                await _viewModel.LoadProjectFolderAsync(solutionDir);
+                                UpdateTitle();
+                                _viewModel.StatusText = $"Created solution: {Path.GetFileName(projectResult)}";
+                            }
+                        }
+                    }
+                    else if (projectResult.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var projDir = Path.GetDirectoryName(projectResult) ?? "";
+                        var slnFile = FindSolutionFileFromPath(projDir);
+                        if (!string.IsNullOrEmpty(slnFile) && File.Exists(slnFile))
+                        {
+                            var slnDir = Path.GetDirectoryName(slnFile) ?? projDir;
+                            _projectPath = slnDir;
+                            _viewModel.CurrentProjectPath = slnDir;
+                            _viewModel.FileTreeItems.Clear();
+                            await _viewModel.LoadProjectFolderAsync(slnDir);
+                            UpdateTitle();
+                        }
+                        else if (!string.IsNullOrEmpty(projDir) && Directory.Exists(projDir))
+                        {
+                            _projectPath = projDir;
+                            _viewModel.CurrentProjectPath = projDir;
+                            _viewModel.FileTreeItems.Clear();
+                            await _viewModel.LoadProjectFolderAsync(projDir);
+                            UpdateTitle();
+                        }
                     }
                 }
             }
@@ -192,6 +261,24 @@ public partial class MainWindow : Window
         else if (e.Key == Key.W && e.KeyModifiers.HasFlag(KeyModifiers.Control))
         {
             await CloseCurrentTabAsync();
+            e.Handled = true;
+        }
+        // Ctrl+Shift+F - Find in Files (content search)
+        else if (e.Key == Key.F && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            _searchTabIsFiles = false;
+            SwitchSidePanel("search");
+            UpdateSearchTabUI();
+            this.FindControl<TextBox>("ContentSearchInputBox")?.Focus();
+            e.Handled = true;
+        }
+        // Ctrl+P - Find file by name
+        else if (e.Key == Key.P && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            _searchTabIsFiles = true;
+            SwitchSidePanel("search");
+            UpdateSearchTabUI();
+            this.FindControl<TextBox>("SearchInputBox")?.Focus();
             e.Handled = true;
         }
     }
@@ -302,6 +389,12 @@ public partial class MainWindow : Window
                 return dir.Parent?.FullName ?? dir.FullName;
             }
             
+            var nfprojFiles = dir.GetFiles("*.nfproj");
+            if (nfprojFiles.Length > 0)
+            {
+                return dir.Parent?.FullName ?? dir.FullName;
+            }
+            
             dir = dir.Parent;
         }
         return startPath;
@@ -309,21 +402,41 @@ public partial class MainWindow : Window
 
     private void InitializeMonacoEditor()
     {
-        var container = this.FindControl<Border>("MonacoEditorContainer");
-        if (container != null)
+        // Create the editor in code-behind and place it inside the named Border placeholder.
+        // This guarantees correct layout — no AXAML template/size issues.
+        var container = this.FindControl<Border>("EditorContainer");
+        if (container == null)
         {
-            _monacoEditor = new MonacoEditorControl();
-            _monacoEditor.EditorReady += OnEditorReady;
-            _monacoEditor.ContentChanged += OnEditorContentChanged;
-            _monacoEditor.ContentChangedWithValue += OnEditorContentChangedWithValue;
-            _monacoEditor.CursorPositionChanged += OnCursorPositionChanged;
-            container.Child = _monacoEditor;
+            // Retry after window is loaded
+            this.Loaded += (_, _) => InitializeMonacoEditor();
+            return;
         }
+
+        _monacoEditor = new AvaloniaEditor();
+        container.Child = _monacoEditor;
+
+        WireEditorEvents();
+
+        // Apply any tab that was queued before the editor was ready
+        if (_pendingTab != null)
+        {
+            var tab = _pendingTab;
+            _pendingTab = null;
+            ShowTabInEditor(tab);
+        }
+    }
+
+    private void WireEditorEvents()
+    {
+        _monacoEditor!.EditorReady             += OnEditorReady;
+        _monacoEditor!.ContentChanged          += OnEditorContentChanged;
+        _monacoEditor!.ContentChangedWithValue += OnEditorContentChangedWithValue;
+        _monacoEditor!.CursorPositionChanged   += OnCursorPositionChanged;
     }
 
     private void OnEditorReady(object? sender, EventArgs e)
     {
-        _viewModel.StatusText = "Monaco Editor Ready";
+        _viewModel.StatusText = "Editor Ready";
     }
 
     private void OnEditorContentChanged(object? sender, EventArgs e)
@@ -345,6 +458,41 @@ public partial class MainWindow : Window
             _viewModel.ActiveTab.LastModified = DateTime.Now;
             _viewModel.StatusText = $"Modified: {_viewModel.ActiveTab.FileName}";
         }
+
+        // Debounced auto-save: reset timer on every keystroke, save 2 s after last change
+        if (_autoSaveTimer == null)
+        {
+            _autoSaveTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            _autoSaveTimer.Tick += async (_, _) =>
+            {
+                _autoSaveTimer.Stop();
+                await AutoSaveCurrentFileAsync();
+            };
+        }
+        _autoSaveTimer.Stop();
+        _autoSaveTimer.Start();
+    }
+
+    /// <summary>
+    /// Silently saves the active tab to disk if it has a valid file path.
+    /// Called by the auto-save timer — does not show a Save-As dialog.
+    /// </summary>
+    private async Task AutoSaveCurrentFileAsync()
+    {
+        var tab = _viewModel.ActiveTab;
+        if (tab == null || string.IsNullOrEmpty(tab.FilePath)) return;
+        try
+        {
+            if (_monacoEditor != null) tab.Content = await _monacoEditor.GetContentAsync();
+            await File.WriteAllTextAsync(tab.FilePath, tab.Content);
+            tab.IsDirty = false;
+            _monacoEditor?.MarkAsSaved();
+            _viewModel.StatusText = $"Auto-saved: {tab.FileName}";
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Auto-save failed: {ex.Message}");
+        }
     }
 
     private void UpdateTabTitle(EditorTab tab)
@@ -361,6 +509,12 @@ public partial class MainWindow : Window
 
     private void LoadProject(string projectPath)
     {
+        // Fire and forget async version for backwards compatibility
+        _ = LoadProjectAsync(projectPath);
+    }
+
+    private async Task LoadProjectAsync(string projectPath)
+    {
         if (File.Exists(projectPath))
         {
             var extension = Path.GetExtension(projectPath).ToLowerInvariant();
@@ -371,7 +525,10 @@ public partial class MainWindow : Window
                 var directory = Path.GetDirectoryName(projectPath);
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
-                    _viewModel.LoadProjectFolder(directory);
+                    // Always keep _projectPath as the directory for consistency
+                    _projectPath = directory;
+                    _viewModel.CurrentProjectPath = directory;
+                    await _viewModel.LoadProjectFolderAsync(directory);
                     _viewModel.StatusText = $"Loaded solution: {Path.GetFileName(projectPath)}";
                     
                     // Load run configurations for the solution
@@ -379,19 +536,24 @@ public partial class MainWindow : Window
                     
                     // Update Git panel
                     UpdateGitPanel(directory);
+                    
+                    UpdateTitle();
                 }
                 else
                 {
                     _viewModel.StatusText = $"Solution directory not found: {directory}";
                 }
             }
-            else if (extension == ".csproj" || extension == ".fsproj" || extension == ".vbproj")
+            else if (extension == ".csproj" || extension == ".fsproj" || extension == ".vbproj" || extension == ".nfproj")
             {
                 // Load project - load its directory
                 var directory = Path.GetDirectoryName(projectPath);
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
-                    _viewModel.LoadProjectFolder(directory);
+                    // Always keep _projectPath as the directory for consistency
+                    _projectPath = directory;
+                    _viewModel.CurrentProjectPath = directory;
+                    await _viewModel.LoadProjectFolderAsync(directory);
                     _viewModel.StatusText = $"Loaded project: {Path.GetFileName(projectPath)}";
                     
                     // Load run configurations for the project
@@ -399,6 +561,8 @@ public partial class MainWindow : Window
                     
                     // Update Git panel
                     UpdateGitPanel(directory);
+                    
+                    UpdateTitle();
                 }
                 else
                 {
@@ -415,7 +579,7 @@ public partial class MainWindow : Window
         else if (Directory.Exists(projectPath))
         {
             // Load folder
-            _viewModel.LoadProjectFolder(projectPath);
+            await _viewModel.LoadProjectFolderAsync(projectPath);
             _viewModel.StatusText = $"Loaded folder: {Path.GetFileName(projectPath)}";
             
             // Try to find solution/project and load configurations
@@ -618,21 +782,102 @@ public partial class MainWindow : Window
                 await CreateNewSolutionAsync();
                 break;
             case "NewProject":
-                var projectWindow = new NewProjectWindow();
+                var currentSolutionForProject = FindSolutionFile();
+                System.Diagnostics.Debug.WriteLine($"NewProject: currentSolutionForProject before dialog: '{currentSolutionForProject}'");
+                var projectWindow = new NewProjectWindow(currentSolutionForProject);
                 var projectResult = await projectWindow.ShowDialog<string?>(this);
+                System.Diagnostics.Debug.WriteLine($"NewProject: projectResult: '{projectResult}'");
                 if (!string.IsNullOrEmpty(projectResult))
                 {
-                    var projectDir = Path.GetDirectoryName(projectResult);
-                    if (!string.IsNullOrEmpty(projectDir))
+                    // projectResult is the solution file path (.sln or .slnx) returned by NewProjectWindow
+                    string? solutionFile = null;
+                    if (projectResult.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                        projectResult.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
                     {
-                        _projectPath = projectDir;
-                        LoadProject(projectDir);
-                        UpdateTitle();
+                        solutionFile = File.Exists(projectResult) ? projectResult : null;
+                    }
+                    else if (projectResult.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // .csproj returned — look for solution ONLY in the project's own directory
+                        var projDir = Path.GetDirectoryName(projectResult) ?? "";
+                        solutionFile = FindSolutionFileFromPath(projDir);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"NewProject: solutionFile resolved: '{solutionFile}'");
+
+                    if (!string.IsNullOrEmpty(solutionFile) && File.Exists(solutionFile))
+                    {
+                        // Load the solution directory so the solution file appears in explorer
+                        var solutionDir = Path.GetDirectoryName(solutionFile);
+                        System.Diagnostics.Debug.WriteLine($"NewProject: solutionDir: '{solutionDir}'");
+                        if (!string.IsNullOrEmpty(solutionDir) && Directory.Exists(solutionDir))
+                        {
+                            _projectPath = solutionDir;
+                            _viewModel.CurrentProjectPath = solutionDir;
+                            _viewModel.FileTreeItems.Clear();
+                            await _viewModel.LoadProjectFolderAsync(solutionDir);
+                            UpdateTitle();
+                            _viewModel.StatusText = $"Created solution: {Path.GetFileName(solutionFile)}";
+                        }
+                    }
+                    else
+                    {
+                        // No solution file — load the project directory only (never load parent)
+                        var projPath = projectResult.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+                            ? projectResult
+                            : null;
+                        var projDir = projPath != null
+                            ? Path.GetDirectoryName(projPath) ?? ""
+                            : "";
+                        if (!string.IsNullOrEmpty(projDir) && Directory.Exists(projDir))
+                        {
+                            _projectPath = projDir;
+                            _viewModel.CurrentProjectPath = projDir;
+                            _viewModel.FileTreeItems.Clear();
+                            await _viewModel.LoadProjectFolderAsync(projDir);
+                            UpdateTitle();
+                            _viewModel.StatusText = $"Created project: {Path.GetFileNameWithoutExtension(projectResult)}";
+                        }
                     }
                 }
                 break;
             case "AddProjectToSolution":
                 await AddNewProjectToSolutionAsync();
+                break;
+            case "NewEspProject":
+                var currentSolutionForEsp = FindSolutionFile();
+                var espWindow = new Esp.Windows.NewNanoProjectWindow(currentSolutionForEsp);
+                var espResult = await espWindow.ShowDialog<string?>(this);
+                if (!string.IsNullOrEmpty(espResult))
+                {
+                    // Reload the solution/project tree to show the new nanoFramework project
+                    var solutionFileForEsp = FindSolutionFile();
+                    if (!string.IsNullOrEmpty(solutionFileForEsp))
+                    {
+                        var solutionDirForEsp = Path.GetDirectoryName(solutionFileForEsp);
+                        if (!string.IsNullOrEmpty(solutionDirForEsp))
+                        {
+                            _projectPath = solutionDirForEsp;
+                            _viewModel.CurrentProjectPath = solutionDirForEsp;
+                            _viewModel.FileTreeItems.Clear();
+                            await _viewModel.LoadProjectFolderAsync(solutionDirForEsp);
+                            UpdateTitle();
+                        }
+                    }
+                    else
+                    {
+                        // No solution — load the project directory directly
+                        var espProjectDir = Path.GetDirectoryName(espResult);
+                        if (!string.IsNullOrEmpty(espProjectDir))
+                        {
+                            _projectPath = espProjectDir;
+                            LoadProject(espProjectDir);
+                            UpdateTitle();
+                            RefreshFileTree();
+                        }
+                    }
+                    _viewModel.StatusText = $"Created nanoFramework project: {Path.GetFileNameWithoutExtension(espResult)}";
+                }
                 break;
             case "OpenSolution":
                 await OpenSolutionAsync();
@@ -675,7 +920,10 @@ public partial class MainWindow : Window
                 _monacoEditor?.Replace();
                 break;
             case "FindInFiles":
-                // TODO: Implement find in files
+                _searchTabIsFiles = false;
+                SwitchSidePanel("search");
+                UpdateSearchTabUI();
+                this.FindControl<TextBox>("ContentSearchInputBox")?.Focus();
                 break;
             case "FormatDocument":
                 _monacoEditor?.FormatDocument();
@@ -692,7 +940,10 @@ public partial class MainWindow : Window
                 // Already visible
                 break;
             case "ShowSearch":
-                // TODO: Implement search panel
+                _searchTabIsFiles = true;
+                SwitchSidePanel("search");
+                UpdateSearchTabUI();
+                this.FindControl<TextBox>("SearchInputBox")?.Focus();
                 break;
             case "ShowSourceControl":
                 // TODO: Implement source control panel
@@ -791,8 +1042,8 @@ public partial class MainWindow : Window
             case "OpenKeyboardShortcuts":
                 // TODO: Implement keyboard shortcuts
                 break;
-            case "ManageExtensions":
-                // TODO: Implement extensions
+            case "ManageNuGetPackages":
+                NuGet_Click(null, null!);
                 break;
 
             // Help actions
@@ -851,8 +1102,8 @@ public partial class MainWindow : Window
             }
             else
             {
-                // First time loading, use LoadProjectFolder
-                _viewModel.LoadProjectFolder(_projectPath);
+                // First time loading, use LoadProjectFolderAsync (fire and forget)
+                _ = _viewModel.LoadProjectFolderAsync(_projectPath);
             }
         }
     }
@@ -1032,6 +1283,7 @@ public partial class MainWindow : Window
     #region Sidebar Handlers
 
     private GitPanelControl? _gitPanelControl;
+    private AccountPanelControl? _accountPanelControl;
     private string _currentSidePanel = "explorer";
 
     private void Explorer_Click(object? sender, RoutedEventArgs e)
@@ -1066,9 +1318,51 @@ public partial class MainWindow : Window
         SwitchSidePanel("debug");
     }
 
-    private void Extensions_Click(object? sender, RoutedEventArgs e)
+    private NuGetPanelControl? _nugetPanelControl;
+    
+    private async void NuGet_Click(object? sender, RoutedEventArgs e)
     {
-        SwitchSidePanel("extensions");
+        SwitchSidePanel("nuget");
+        
+        // Initialize NuGet panel if not done yet
+        if (_nugetPanelControl == null)
+        {
+            InitializeNuGetPanel();
+        }
+        
+        // Set project path if available
+        if (_nugetPanelControl != null && !string.IsNullOrEmpty(_projectPath))
+        {
+            await _nugetPanelControl.SetProjectPathAsync(_projectPath);
+        }
+    }
+
+    private void InitializeNuGetPanel()
+    {
+        var nugetPanelContainer = this.FindControl<Border>("NuGetSidePanel");
+        if (nugetPanelContainer == null) return;
+        
+        _nugetPanelControl = new NuGetPanelControl();
+        
+        // Subscribe to events
+        _nugetPanelControl.StatusChanged += (s, status) =>
+        {
+            _viewModel.StatusText = status;
+        };
+        
+        _nugetPanelControl.ErrorOccurred += (s, error) =>
+        {
+            _viewModel.StatusText = $"Error: {error}";
+        };
+        
+        // Add to container
+        nugetPanelContainer.Child = _nugetPanelControl;
+        
+        // Set project path
+        if (!string.IsNullOrEmpty(_projectPath))
+        {
+            _ = _nugetPanelControl.SetProjectPathAsync(_projectPath);
+        }
     }
 
     private async void GitStatus_Click(object? sender, RoutedEventArgs e)
@@ -1631,7 +1925,7 @@ public partial class MainWindow : Window
             Spacing = 12,
             Margin = new Thickness(0, 0, 0, 20)
         };
-
+        
         var reinitButton = new Button 
         { 
             Content = "Так, переініціалізувати", 
@@ -1713,10 +2007,21 @@ public partial class MainWindow : Window
         indicator.Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(color));
     }
 
-    private void Account_Click(object? sender, RoutedEventArgs e)
+    private async void Account_Click(object? sender, RoutedEventArgs e)
     {
-        // TODO: Show account panel/dialog
-        _viewModel.StatusText = "Account settings coming soon...";
+        SwitchSidePanel("account");
+        
+        // Initialize Account panel if not done yet
+        if (_accountPanelControl == null)
+        {
+            InitializeAccountPanel();
+        }
+        
+        // Refresh account data when panel is shown
+        if (_accountPanelControl != null)
+        {
+            await _accountPanelControl.InitializeAsync();
+        }
     }
 
     private void Settings_Click(object? sender, RoutedEventArgs e)
@@ -1734,28 +2039,32 @@ public partial class MainWindow : Window
         var searchPanel = this.FindControl<Grid>("SearchPanel");
         var gitPanel = this.FindControl<Border>("GitSidePanel");
         var debugPanel = this.FindControl<Grid>("DebugSidePanel");
-        var extensionsPanel = this.FindControl<Grid>("ExtensionsPanel");
+        var nugetPanel = this.FindControl<Border>("NuGetSidePanel");
+        var accountPanel = this.FindControl<Border>("AccountSidePanel");
         
         // Get all sidebar buttons
         var explorerButton = this.FindControl<Button>("ExplorerButton");
         var searchButton = this.FindControl<Button>("SearchButton");
         var gitButton = this.FindControl<Button>("GitButton");
         var debugButton = this.FindControl<Button>("DebugButton");
-        var extensionsButton = this.FindControl<Button>("ExtensionsButton");
+        var nugetButton = this.FindControl<Button>("NuGetButton");
+        var accountButton = this.FindControl<Button>("AccountButton");
         
         // Hide all panels
         if (explorerPanel != null) explorerPanel.IsVisible = false;
         if (searchPanel != null) searchPanel.IsVisible = false;
         if (gitPanel != null) gitPanel.IsVisible = false;
         if (debugPanel != null) debugPanel.IsVisible = false;
-        if (extensionsPanel != null) extensionsPanel.IsVisible = false;
+        if (nugetPanel != null) nugetPanel.IsVisible = false;
+        if (accountPanel != null) accountPanel.IsVisible = false;
         
         // Remove active class from all buttons
         explorerButton?.Classes.Remove("active");
         searchButton?.Classes.Remove("active");
         gitButton?.Classes.Remove("active");
         debugButton?.Classes.Remove("active");
-        extensionsButton?.Classes.Remove("active");
+        nugetButton?.Classes.Remove("active");
+        accountButton?.Classes.Remove("active");
         
         // Show selected panel and activate button
         switch (panelName)
@@ -1767,9 +2076,12 @@ public partial class MainWindow : Window
             case "search":
                 if (searchPanel != null) searchPanel.IsVisible = true;
                 searchButton?.Classes.Add("active");
-                // Focus search input
-                var searchInput = this.FindControl<TextBox>("SearchInputBox");
-                searchInput?.Focus();
+                // Refresh scope combo and focus correct input
+                UpdateSearchScopeCombos();
+                if (_searchTabIsFiles)
+                    this.FindControl<TextBox>("SearchInputBox")?.Focus();
+                else
+                    this.FindControl<TextBox>("ContentSearchInputBox")?.Focus();
                 break;
             case "git":
                 if (gitPanel != null) gitPanel.IsVisible = true;
@@ -1779,12 +2091,420 @@ public partial class MainWindow : Window
                 if (debugPanel != null) debugPanel.IsVisible = true;
                 debugButton?.Classes.Add("active");
                 break;
-            case "extensions":
-                if (extensionsPanel != null) extensionsPanel.IsVisible = true;
-                extensionsButton?.Classes.Add("active");
+            case "nuget":
+                if (nugetPanel != null) nugetPanel.IsVisible = true;
+                nugetButton?.Classes.Add("active");
+                break;
+            case "account":
+                if (accountPanel != null) accountPanel.IsVisible = true;
+                accountButton?.Classes.Add("active");
                 break;
         }
     }
+
+    // ─────────────────────────────────────────────────────────────
+    //  Search Panel — Find Files & Find in Files
+    // ─────────────────────────────────────────────────────────────
+
+    private bool _searchTabIsFiles = true; // true = Find Files, false = Find in Files
+
+    private void InitializeSearchPanel()
+    {
+        // Tab toggle buttons
+        var tabFilesBtn   = this.FindControl<Button>("SearchTabFilesBtn");
+        var tabContentBtn = this.FindControl<Button>("SearchTabContentBtn");
+
+        if (tabFilesBtn != null)
+            tabFilesBtn.Click += (_, _) => { _searchTabIsFiles = true;  UpdateSearchTabUI(); };
+        if (tabContentBtn != null)
+            tabContentBtn.Click += (_, _) => { _searchTabIsFiles = false; UpdateSearchTabUI(); };
+
+        // File-name search: press Enter or click button
+        var searchBox = this.FindControl<TextBox>("SearchInputBox");
+        if (searchBox != null)
+            searchBox.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) ExecuteFileNameSearch(); };
+
+        var searchFileBtn = this.FindControl<Button>("SearchFileNamesButton");
+        if (searchFileBtn != null)
+            searchFileBtn.Click += (_, _) => ExecuteFileNameSearch();
+
+        // Content search: press Enter or click button
+        var contentBox = this.FindControl<TextBox>("ContentSearchInputBox");
+        if (contentBox != null)
+            contentBox.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) _ = ExecuteContentSearchAsync(); };
+
+        var searchContentBtn = this.FindControl<Button>("SearchContentButton");
+        if (searchContentBtn != null)
+            searchContentBtn.Click += (_, _) => _ = ExecuteContentSearchAsync();
+
+        // Populate scope combos once
+        UpdateSearchScopeCombos();
+
+        // Show correct tab initially
+        UpdateSearchTabUI();
+    }
+
+    private void UpdateSearchTabUI()
+    {
+        var filesBorder   = this.FindControl<Border>("FindFilesBorder");
+        var contentBorder = this.FindControl<Border>("FindContentBorder");
+        if (filesBorder   != null) filesBorder.IsVisible   = _searchTabIsFiles;
+        if (contentBorder != null) contentBorder.IsVisible  = !_searchTabIsFiles;
+
+        ClearSearchResults();
+        SetSearchStatus("");
+    }
+
+    /// <summary>
+    /// Populate the scope ComboBoxes with "Whole Solution" + one entry per project.
+    /// Called when the search panel is opened for the first time and also on each search
+    /// so the list is always fresh.
+    /// </summary>
+    private void UpdateSearchScopeCombos()
+    {
+        var combos = new[] { "SearchScopeCombo", "ContentSearchScopeCombo" };
+
+        // Collect project directories from the file tree
+        var projects = new List<(string Label, string Directory)>();
+        foreach (var item in _viewModel.FileTreeItems)
+            CollectProjectsFromTree(item, projects);
+
+        foreach (var comboName in combos)
+        {
+            var combo = this.FindControl<ComboBox>(comboName);
+            if (combo == null) continue;
+
+            combo.Items.Clear();
+            combo.Items.Add(new ComboBoxItem { Content = "Whole Solution", Tag = "solution" });
+
+            foreach (var (label, dir) in projects)
+                combo.Items.Add(new ComboBoxItem { Content = label, Tag = dir });
+
+            combo.SelectedIndex = 0;
+        }
+    }
+
+    private static void CollectProjectsFromTree(FileTreeItem item,
+        List<(string Label, string Directory)> projects)
+    {
+        if (item.ItemType == FileTreeItemType.Project ||
+            item.ItemType == FileTreeItemType.EspProject)
+        {
+            var dir = item.IsDirectory ? item.FullPath : Path.GetDirectoryName(item.FullPath) ?? "";
+            if (!string.IsNullOrEmpty(dir))
+                projects.Add((item.Name, dir));
+        }
+        foreach (var child in item.Children)
+            CollectProjectsFromTree(child, projects);
+    }
+
+    /// <summary>
+    /// Returns the root directory to search in, based on the selected scope combo.
+    /// </summary>
+    private string? GetSearchRootFromCombo(string comboName)
+    {
+        var combo = this.FindControl<ComboBox>(comboName);
+        if (combo?.SelectedItem is ComboBoxItem ci)
+        {
+            var tag = ci.Tag?.ToString() ?? "";
+            if (tag == "solution")
+            {
+                // Whole solution: use the solution's root folder
+                var slnFile = FindSolutionFile();
+                if (!string.IsNullOrEmpty(slnFile))
+                    return Path.GetDirectoryName(slnFile);
+                // Fallback to project path
+                return _projectPath ?? _viewModel.CurrentProjectPath;
+            }
+            // tag is a directory path
+            if (Directory.Exists(tag)) return tag;
+        }
+        return _projectPath ?? _viewModel.CurrentProjectPath;
+    }
+
+    // ── Find Files by Name ────────────────────────────────────────
+
+    private void ExecuteFileNameSearch()
+    {
+        UpdateSearchScopeCombos();
+
+        var pattern = this.FindControl<TextBox>("SearchInputBox")?.Text?.Trim() ?? "";
+        if (string.IsNullOrEmpty(pattern))
+        {
+            SetSearchStatus("Enter a file name or pattern.");
+            return;
+        }
+
+        var root = GetSearchRootFromCombo("SearchScopeCombo");
+        if (string.IsNullOrEmpty(root) || !Directory.Exists(root))
+        {
+            SetSearchStatus("No project / solution loaded.");
+            return;
+        }
+
+        SetSearchStatus("Searching…");
+        ClearSearchResults();
+
+        // Build glob-style patterns: if no wildcard, wrap with wildcards
+        var searchPattern = pattern.Contains('*') || pattern.Contains('?')
+            ? pattern
+            : $"*{pattern}*";
+
+        try
+        {
+            var files = Directory.GetFiles(root, searchPattern, SearchOption.AllDirectories)
+                .Where(f => !IsExcluded(f))
+                .OrderBy(f => Path.GetFileName(f))
+                .ToList();
+
+            if (files.Count == 0)
+            {
+                SetSearchStatus($"No files found matching '{pattern}'.");
+                return;
+            }
+
+            SetSearchStatus($"{files.Count} file(s) found.");
+
+            foreach (var file in files)
+                AddFileResult(file, null, -1);
+        }
+        catch (Exception ex)
+        {
+            SetSearchStatus($"Error: {ex.Message}");
+        }
+    }
+
+    // ── Find in Files (content search) ───────────────────────────
+
+    private async Task ExecuteContentSearchAsync()
+    {
+        UpdateSearchScopeCombos();
+
+        var query = this.FindControl<TextBox>("ContentSearchInputBox")?.Text?.Trim() ?? "";
+        if (string.IsNullOrEmpty(query))
+        {
+            SetSearchStatus("Enter search text.");
+            return;
+        }
+
+        var root = GetSearchRootFromCombo("ContentSearchScopeCombo");
+        if (string.IsNullOrEmpty(root) || !Directory.Exists(root))
+        {
+            SetSearchStatus("No project / solution loaded.");
+            return;
+        }
+
+        bool caseSensitive = this.FindControl<CheckBox>("SearchCaseSensitiveCheck")?.IsChecked == true;
+        bool useRegex      = this.FindControl<CheckBox>("SearchRegexCheck")?.IsChecked == true;
+        bool wholeWord     = this.FindControl<CheckBox>("SearchWholeWordCheck")?.IsChecked == true;
+
+        SetSearchStatus("Searching…");
+        ClearSearchResults();
+
+        var comparison = caseSensitive
+            ? StringComparison.Ordinal
+            : StringComparison.OrdinalIgnoreCase;
+
+        System.Text.RegularExpressions.Regex? regex = null;
+        if (useRegex)
+        {
+            try
+            {
+                var opts = caseSensitive
+                    ? System.Text.RegularExpressions.RegexOptions.None
+                    : System.Text.RegularExpressions.RegexOptions.IgnoreCase;
+                var regexPattern = wholeWord ? $@"\b{query}\b" : query;
+                regex = new System.Text.RegularExpressions.Regex(regexPattern, opts);
+            }
+            catch
+            {
+                SetSearchStatus("Invalid regular expression.");
+                return;
+            }
+        }
+
+        int totalMatches = 0;
+        int totalFiles   = 0;
+
+        try
+        {
+            var files = await Task.Run(() =>
+                Directory.GetFiles(root, "*.*", SearchOption.AllDirectories)
+                    .Where(f => IsTextFile(f) && !IsExcluded(f))
+                    .ToList());
+
+            foreach (var file in files)
+            {
+                var lines = await Task.Run(() =>
+                {
+                    try { return File.ReadAllLines(file); }
+                    catch { return Array.Empty<string>(); }
+                });
+
+                bool fileHadMatch = false;
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    bool matched;
+                    if (useRegex && regex != null)
+                        matched = regex.IsMatch(lines[i]);
+                    else if (wholeWord)
+                        matched = ContainsWholeWord(lines[i], query, comparison);
+                    else
+                        matched = lines[i].Contains(query, comparison);
+
+                    if (matched)
+                    {
+                        AddFileResult(file, lines[i].Trim(), i + 1);
+                        totalMatches++;
+                        fileHadMatch = true;
+                    }
+                }
+                if (fileHadMatch) totalFiles++;
+            }
+
+            SetSearchStatus(totalMatches == 0
+                ? $"No matches for '{query}'."
+                : $"{totalMatches} match(es) in {totalFiles} file(s).");
+        }
+        catch (Exception ex)
+        {
+            SetSearchStatus($"Error: {ex.Message}");
+        }
+    }
+
+    private static bool ContainsWholeWord(string line, string word, StringComparison comparison)
+    {
+        int idx = 0;
+        while ((idx = line.IndexOf(word, idx, comparison)) >= 0)
+        {
+            bool leftOk  = idx == 0 || !char.IsLetterOrDigit(line[idx - 1]) && line[idx - 1] != '_';
+            bool rightOk = idx + word.Length >= line.Length ||
+                           !char.IsLetterOrDigit(line[idx + word.Length]) && line[idx + word.Length] != '_';
+            if (leftOk && rightOk) return true;
+            idx++;
+        }
+        return false;
+    }
+
+    // ── Result rendering ─────────────────────────────────────────
+
+    /// <summary>Add one clickable result row to the results panel.</summary>
+    private void AddFileResult(string filePath, string? lineText, int lineNumber)
+    {
+        var panel = this.FindControl<ItemsControl>("SearchResultsPanel");
+        if (panel == null) return;
+
+        var root = _projectPath ?? _viewModel.CurrentProjectPath ?? "";
+        var relPath = filePath.StartsWith(root, StringComparison.OrdinalIgnoreCase)
+            ? filePath[(root.Length > 0 && (root.EndsWith('/') || root.EndsWith('\\')) ? root.Length : root.Length + 1)..]
+                .TrimStart('/', '\\')
+            : Path.GetFileName(filePath);
+
+        var border = new Border
+        {
+            Background = Avalonia.Media.Brushes.Transparent,
+            Padding    = new Thickness(6, 4),
+            Cursor     = new Cursor(StandardCursorType.Hand),
+            Margin     = new Thickness(0, 1)
+        };
+        border.PointerEntered += (_, _) => border.Background =
+            new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#30FFFFFF"));
+        border.PointerExited  += (_, _) => border.Background = Avalonia.Media.Brushes.Transparent;
+        border.PointerPressed += (_, e) =>
+        {
+            if (e.GetCurrentPoint(border).Properties.IsLeftButtonPressed)
+                OpenFileInEditor(filePath);
+        };
+
+        var innerStack = new StackPanel { Spacing = 2 };
+
+        var fileNameLine = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
+        var iconTb = new TextBlock
+        {
+            Text   = GetFileIcon(filePath),
+            Margin = new Thickness(0, 0, 5, 0),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            FontSize = 11
+        };
+        var pathTb = new TextBlock
+        {
+            Text      = relPath,
+            FontSize  = 12,
+            Foreground = new Avalonia.Media.SolidColorBrush(
+                Avalonia.Media.Color.Parse("#FFCDD6F4")),
+            TextWrapping = Avalonia.Media.TextWrapping.NoWrap,
+            TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis
+        };
+        Grid.SetColumn(iconTb, 0);
+        Grid.SetColumn(pathTb, 1);
+        fileNameLine.Children.Add(iconTb);
+        fileNameLine.Children.Add(pathTb);
+        innerStack.Children.Add(fileNameLine);
+
+        if (lineNumber > 0 && !string.IsNullOrEmpty(lineText))
+        {
+            var linePreview = new TextBlock
+            {
+                Text      = $"  line {lineNumber}: {lineText}",
+                FontSize  = 11,
+                Foreground = new Avalonia.Media.SolidColorBrush(
+                    Avalonia.Media.Color.Parse("#FF9399B2")),
+                TextWrapping = Avalonia.Media.TextWrapping.NoWrap,
+                TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis,
+                Margin   = new Thickness(0, 1, 0, 0)
+            };
+            innerStack.Children.Add(linePreview);
+        }
+
+        border.Child = innerStack;
+        panel.Items.Add(border);
+    }
+
+    private void ClearSearchResults()
+    {
+        var panel = this.FindControl<ItemsControl>("SearchResultsPanel");
+        if (panel != null) panel.Items.Clear();
+    }
+
+    private void SetSearchStatus(string text)
+    {
+        var lbl    = this.FindControl<TextBlock>("SearchStatusLabel");
+        var border = this.FindControl<Border>("SearchStatusBorder");
+        if (lbl    != null) lbl.Text       = text;
+        if (border != null) border.IsVisible = !string.IsNullOrEmpty(text);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────
+
+    private static bool IsExcluded(string path)
+    {
+        var parts = path.Replace('\\', '/').Split('/');
+        return parts.Any(p =>
+            p == "bin" || p == "obj" || p == ".git" || p == "node_modules" ||
+            p == ".vs" || p == "packages" || p == "__pycache__");
+    }
+
+    private static bool IsTextFile(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        return ext is ".cs" or ".axaml" or ".xaml" or ".xml" or ".json" or ".yaml" or ".yml"
+                   or ".txt" or ".md" or ".csproj" or ".sln" or ".slnx" or ".props" or ".targets"
+                   or ".razor" or ".html" or ".css" or ".js" or ".ts" or ".config" or ".ini"
+                   or ".sh" or ".bat" or ".cmd" or ".ps1" or ".gitignore" or ".editorconfig";
+    }
+
+    private static string GetFileIcon(string path) =>
+        Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".cs"    => "C#",
+            ".axaml" => "AX",
+            ".xaml"  => "XA",
+            ".json"  => "{}",
+            ".xml"   => "<>",
+            ".md"    => "📄",
+            ".csproj" or ".sln" or ".slnx" => "⚙",
+            _        => "📄"
+        };
 
     private void InitializeGitPanel()
     {
@@ -1837,6 +2557,59 @@ public partial class MainWindow : Window
         }
     }
 
+    private void InitializeAccountPanel()
+    {
+        var accountPanelContainer = this.FindControl<Border>("AccountSidePanel");
+        if (accountPanelContainer == null) return;
+        
+        _accountPanelControl = new AccountPanelControl();
+        
+        // Subscribe to events
+        _accountPanelControl.StatusChanged += (s, status) =>
+        {
+            _viewModel.StatusText = status;
+        };
+        
+        _accountPanelControl.RepositoryCloneRequested += async (s, repo) =>
+        {
+            // Show clone dialog with pre-filled URL
+            var result = await ShowFolderPickerAsync("Select folder to clone repository");
+            if (!string.IsNullOrEmpty(result))
+            {
+                var service = new GitHubAccountService();
+                var clonePath = Path.Combine(result, repo.Name);
+                _viewModel.StatusText = $"Cloning {repo.FullName}...";
+                
+                var success = await service.CloneRepositoryAsync(repo.Url, clonePath);
+                if (success)
+                {
+                    _viewModel.StatusText = $"Successfully cloned {repo.Name}";
+                    // Ask if user wants to open the cloned repository
+                    LoadProject(clonePath);
+                    UpdateTitle();
+                }
+                else
+                {
+                    _viewModel.StatusText = $"Failed to clone {repo.Name}";
+                }
+            }
+        };
+        
+        // Add to container
+        accountPanelContainer.Child = _accountPanelControl;
+    }
+
+    private async Task<string?> ShowFolderPickerAsync(string title)
+    {
+        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false
+        });
+        
+        return folders.Count > 0 ? folders[0].Path.LocalPath : null;
+    }
+
     private void StartDebug_Click(object? sender, RoutedEventArgs e)
     {
         // Start debugging
@@ -1845,95 +2618,7 @@ public partial class MainWindow : Window
 
     #endregion
 
-    #region File Tree
-
-    private void FileTreeView_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        if (e.AddedItems.Count > 0 && e.AddedItems[0] is FileTreeItem item)
-        {
-            if (!item.IsDirectory)
-            {
-                // Open file in editor
-                OpenFileInEditor(item.FullPath);
-            }
-        }
-    }
-
-    private void OpenFileInEditor(string filePath)
-    {
-        if (!File.Exists(filePath)) return;
-
-        try
-        {
-            // Open in view model (manages tabs)
-            _viewModel.OpenFile(filePath);
-
-            // Load content in Monaco editor
-            if (_monacoEditor != null && _viewModel.ActiveTab != null)
-            {
-                var content = _viewModel.ActiveTab.Content;
-                var language = _viewModel.ActiveTab.Language;
-                _monacoEditor.SetContent(content, language);
-                _viewModel.StatusText = $"Opened: {Path.GetFileName(filePath)}";
-            }
-        }
-        catch (Exception ex)
-        {
-            _viewModel.StatusText = $"Error opening file: {ex.Message}";
-        }
-    }
-
-    private FileTreeItem? GetSelectedTreeItem()
-    {
-        var treeView = this.FindControl<TreeView>("FileTreeView");
-        return treeView?.SelectedItem as FileTreeItem;
-    }
-
-    private string GetTargetDirectory()
-    {
-        var selectedItem = GetSelectedTreeItem();
-        if (selectedItem != null)
-        {
-            string targetPath;
-            if (selectedItem.IsDirectory)
-            {
-                targetPath = selectedItem.FullPath;
-            }
-            else
-            {
-                targetPath = Path.GetDirectoryName(selectedItem.FullPath) ?? _projectPath ?? Environment.CurrentDirectory;
-            }
-            
-            // Verify the directory exists
-            if (Directory.Exists(targetPath))
-            {
-                return targetPath;
-            }
-        }
-        
-        // Fallback to _projectPath if it exists
-        if (!string.IsNullOrEmpty(_projectPath) && Directory.Exists(_projectPath))
-        {
-            return _projectPath;
-        }
-        
-        // Final fallback to current directory
-        return Environment.CurrentDirectory;
-    }
-
-    #endregion
-
     #region File Tree Context Menu Handlers
-
-    private void ExplorerNewFile_Click(object? sender, RoutedEventArgs e)
-    {
-        AddNewItem_Click(sender, e);
-    }
-
-    private void ExplorerNewFolder_Click(object? sender, RoutedEventArgs e)
-    {
-        AddNewFolder_Click(sender, e);
-    }
 
     private async void AddNewItem_Click(object? sender, RoutedEventArgs e)
     {
@@ -2141,2294 +2826,173 @@ public partial class MainWindow : Window
         RefreshFileTree();
     }
 
-    private string? FindSolutionFile()
-    {
-        if (string.IsNullOrEmpty(_projectPath)) return null;
-        
-        // Ensure the path exists
-        if (!Directory.Exists(_projectPath))
-        {
-            // Try parent directory if _projectPath is a file
-            if (File.Exists(_projectPath))
-            {
-                var parentDir = Path.GetDirectoryName(_projectPath);
-                if (string.IsNullOrEmpty(parentDir) || !Directory.Exists(parentDir))
-                    return null;
-            }
-            else
-            {
-                return null;
-            }
-        }
+    #endregion
 
+    #region Context Menu — JetBrains Style
+
+    private async void ContextMenu_RunProject_Click(object? sender, RoutedEventArgs e)
+    {
+        var item = GetSelectedTreeItem();
+        if (item == null) return;
+        var projectPath = FindProjectFile(item.FullPath);
+        if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "Could not find project file"; return; }
+        await _runConfigService.LoadConfigurationsAsync(projectPath);
+        var config = _runConfigService.Configurations.FirstOrDefault(c => c.ProjectPath.Equals(projectPath, StringComparison.OrdinalIgnoreCase));
+        if (config != null) { _runConfigService.SetActiveConfiguration(config); await RunWithConfigurationAsync(config); }
+        else { _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("run"); await _buildService.BuildAndRunAsync(projectPath); }
+    }
+
+    private void ContextMenu_DebugProject_Click(object? sender, RoutedEventArgs e) => ContextMenu_RunProject_Click(sender, e);
+
+    private async void ContextMenu_NewClass_Click(object? sender, RoutedEventArgs e)           => await CreateNewCSharpFile("class");
+    private async void ContextMenu_NewInterface_Click(object? sender, RoutedEventArgs e)       => await CreateNewCSharpFile("interface");
+    private async void ContextMenu_NewRecord_Click(object? sender, RoutedEventArgs e)          => await CreateNewCSharpFile("record");
+    private async void ContextMenu_NewEnum_Click(object? sender, RoutedEventArgs e)            => await CreateNewCSharpFile("enum");
+    private async void ContextMenu_NewAvaloniaWindow_Click(object? sender, RoutedEventArgs e)  => await CreateNewAvaloniaFile("window");
+    private async void ContextMenu_NewAvaloniaUserControl_Click(object? sender, RoutedEventArgs e) => await CreateNewAvaloniaFile("usercontrol");
+
+    private async Task CreateNewCSharpFile(string type)
+    {
+        var targetDir  = GetTargetDirectory();
+        var typeName   = await ShowInputDialogAsync($"New {type}", $"Enter {type} name:", $"New{char.ToUpper(type[0])}{type[1..]}");
+        if (string.IsNullOrEmpty(typeName)) return;
+        var ns = DetermineNamespace(targetDir);
+        var template = type.ToLower() switch
+        {
+            "interface" => $"namespace {ns};\n\npublic interface {typeName}\n{{\n}}\n",
+            "record"    => $"namespace {ns};\n\npublic record {typeName};\n",
+            "enum"      => $"namespace {ns};\n\npublic enum {typeName}\n{{\n}}\n",
+            _           => $"namespace {ns};\n\npublic class {typeName}\n{{\n    public {typeName}() {{ }}\n}}\n"
+        };
+        var filePath = Path.Combine(targetDir, $"{typeName}.cs");
+        try { await File.WriteAllTextAsync(filePath, template); RefreshFileTree(); OpenFileInEditor(filePath); _viewModel.StatusText = $"Created {type}: {typeName}.cs"; }
+        catch (Exception ex) { _viewModel.StatusText = $"Error creating {type}: {ex.Message}"; }
+    }
+
+    private async Task CreateNewAvaloniaFile(string type)
+    {
+        var targetDir = GetTargetDirectory();
+        var typeName  = await ShowInputDialogAsync($"New Avalonia {type}", $"Enter {type} name:", $"My{char.ToUpper(type[0])}{type[1..]}");
+        if (string.IsNullOrEmpty(typeName)) return;
+        var ns       = DetermineNamespace(targetDir);
+        var baseType = type.ToLower() == "window" ? "Window" : "UserControl";
+        var axaml = $"<{baseType} xmlns=\"https://github.com/avaloniaui\"\n        xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n        x:Class=\"{ns}.{typeName}\">\n    <Grid/>\n</{baseType}>\n";
+        var cs    = $"using Avalonia.Controls;\nnamespace {ns};\npublic partial class {typeName} : {baseType}\n{{\n    public {typeName}() {{ InitializeComponent(); }}\n}}\n";
         try
         {
-            var dir = new DirectoryInfo(_projectPath);
-            while (dir != null && dir.Exists)
-            {
-                // Look for .slnx files first (new format)
-                var slnxFiles = dir.GetFiles("*.slnx");
-                if (slnxFiles.Length > 0)
-                {
-                    return slnxFiles[0].FullName;
-                }
-                
-                // Then look for .sln files (legacy format)
-                var slnFiles = dir.GetFiles("*.sln");
-                if (slnFiles.Length > 0)
-                {
-                    return slnFiles[0].FullName;
-                }
-                dir = dir.Parent;
-            }
+            await File.WriteAllTextAsync(Path.Combine(targetDir, $"{typeName}.axaml"), axaml);
+            await File.WriteAllTextAsync(Path.Combine(targetDir, $"{typeName}.axaml.cs"), cs);
+            RefreshFileTree(); OpenFileInEditor(Path.Combine(targetDir, $"{typeName}.axaml"));
+            _viewModel.StatusText = $"Created Avalonia {type}: {typeName}";
         }
-        catch (Exception)
+        catch (Exception ex) { _viewModel.StatusText = $"Error: {ex.Message}"; }
+    }
+
+    private string DetermineNamespace(string directory)
+    {
+        var projectPath = FindProjectFileInParents(directory);
+        if (string.IsNullOrEmpty(projectPath)) return Path.GetFileName(directory) ?? "MyNamespace";
+        var projectDir  = Path.GetDirectoryName(projectPath);
+        var projectName = Path.GetFileNameWithoutExtension(projectPath);
+        if (string.IsNullOrEmpty(projectDir)) return projectName ?? "MyNamespace";
+        if (directory.StartsWith(projectDir, StringComparison.OrdinalIgnoreCase))
         {
-            // Ignore any IO errors
+            var rel = directory[projectDir.Length..].TrimStart(Path.DirectorySeparatorChar);
+            return string.IsNullOrEmpty(rel) ? projectName ?? "MyNamespace" : $"{projectName}.{rel.Replace(Path.DirectorySeparatorChar, '.')}";
         }
-        
+        return projectName ?? "MyNamespace";
+    }
+
+    private string? FindProjectFileInParents(string directory)
+    {
+        var dir = new DirectoryInfo(directory);
+        while (dir != null) { var f = dir.GetFiles("*.csproj").FirstOrDefault(); if (f != null) return f.FullName; dir = dir.Parent; }
         return null;
     }
 
-    private async Task<string?> ShowInputDialogAsync(string title, string message, string defaultValue = "")
+    private async void ContextMenu_AddExistingProject_Click(object? sender, RoutedEventArgs e)
     {
-        var dialog = new Window
+        var sln = FindSolutionFile();
+        if (string.IsNullOrEmpty(sln)) { _viewModel.StatusText = "No solution file found"; return; }
+        var dialog = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = title,
-            Width = 400,
-            Height = 170,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            ShowInTaskbar = false,
-            SystemDecorations = SystemDecorations.None,
-            Background = new SolidColorBrush(Color.Parse("#FF1E1E2E"))
-        };
-
-        string? result = null;
-        
-        var rootGrid = new Grid
-        {
-            RowDefinitions = new RowDefinitions("36,*,Auto")
-        };
-
-        // Title bar
-        var titleBar = new Border
-        {
-            Background = new SolidColorBrush(Color.Parse("#FF3C3C3C")),
-            CornerRadius = new CornerRadius(8, 8, 0, 0)
-        };
-        Grid.SetRow(titleBar, 0);
-
-        var titleGrid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
-        var titleText = new TextBlock
-        {
-            Text = $"📝 {title}",
-            FontSize = 13,
-            FontWeight = FontWeight.SemiBold,
-            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Margin = new Thickness(12, 0)
-        };
-        titleGrid.Children.Add(titleText);
-        titleBar.Child = titleGrid;
-        titleBar.PointerPressed += (s, e) => { if (e.GetCurrentPoint(dialog).Properties.IsLeftButtonPressed) dialog.BeginMoveDrag(e); };
-
-        // Content
-        var contentStack = new StackPanel
-        {
-            Margin = new Thickness(20, 16),
-            Spacing = 12
-        };
-        Grid.SetRow(contentStack, 1);
-
-        contentStack.Children.Add(new TextBlock
-        {
-            Text = message,
-            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
-            FontSize = 13
+            Title = "Add Existing Project", AllowMultiple = false,
+            FileTypeFilter = new List<FilePickerFileType> { new("C# Project") { Patterns = new[] { "*.csproj", "*.nfproj" } } }
         });
-
-        var inputBox = new TextBox
-        {
-            Text = defaultValue,
-            Background = new SolidColorBrush(Color.Parse("#FF363647")),
-            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
-            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
-            CornerRadius = new CornerRadius(6),
-            Padding = new Thickness(12, 10)
-        };
-        contentStack.Children.Add(inputBox);
-
-        // Buttons
-        var buttonPanel = new StackPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-            Spacing = 10,
-            Margin = new Thickness(20, 0, 20, 16)
-        };
-        Grid.SetRow(buttonPanel, 2);
-
-        var okButton = new Button
-        {
-            Content = "OK",
-            Width = 80,
-            Background = new SolidColorBrush(Color.Parse("#FFFAB387")),
-            Foreground = new SolidColorBrush(Color.Parse("#FF1E1E2E")),
-            CornerRadius = new CornerRadius(6),
-            Padding = new Thickness(16, 8)
-        };
-        okButton.Click += (s, e) => { result = inputBox.Text; dialog.Close(); };
-
-        var cancelButton = new Button
-        {
-            Content = "Cancel",
-            Width = 80,
-            Background = Brushes.Transparent,
-            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
-            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(6),
-            Padding = new Thickness(16, 8)
-        };
-        cancelButton.Click += (s, e) => dialog.Close();
-
-        buttonPanel.Children.Add(cancelButton);
-        buttonPanel.Children.Add(okButton);
-
-        rootGrid.Children.Add(titleBar);
-        rootGrid.Children.Add(contentStack);
-        rootGrid.Children.Add(buttonPanel);
-
-        var outerBorder = new Border
-        {
-            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(8),
-            Child = rootGrid
-        };
-
-        dialog.Content = outerBorder;
-        
-        // Focus input and select all
-        dialog.Opened += (s, e) =>
-        {
-            inputBox.Focus();
-            inputBox.SelectAll();
-        };
-
-        await dialog.ShowDialog(this);
-        return result;
-    }
-
-    private async Task<bool> ShowConfirmDialogAsync(string title, string message)
-    {
-        var dialog = new Window
-        {
-            Title = title,
-            Width = 400,
-            Height = 180,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            ShowInTaskbar = false,
-            SystemDecorations = SystemDecorations.None,
-            Background = new SolidColorBrush(Color.Parse("#FF1E1E2E"))
-        };
-
-        bool result = false;
-        
-        var rootGrid = new Grid
-        {
-            RowDefinitions = new RowDefinitions("36,*,Auto")
-        };
-
-        // Title bar
-        var titleBar = new Border
-        {
-            Background = new SolidColorBrush(Color.Parse("#FF3C3C3C")),
-            CornerRadius = new CornerRadius(8, 8, 0, 0)
-        };
-        Grid.SetRow(titleBar, 0);
-
-        var titleText = new TextBlock
-        {
-            Text = $"⚠️ {title}",
-            FontSize = 13,
-            FontWeight = FontWeight.SemiBold,
-            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Margin = new Thickness(12, 0)
-        };
-        titleBar.Child = titleText;
-        titleBar.PointerPressed += (s, e) => { if (e.GetCurrentPoint(dialog).Properties.IsLeftButtonPressed) dialog.BeginMoveDrag(e); };
-
-        // Content
-        var messageText = new TextBlock
-        {
-            Text = message,
-            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
-            FontSize = 13,
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-            Margin = new Thickness(20, 20)
-        };
-        Grid.SetRow(messageText, 1);
-
-        // Buttons
-        var buttonPanel = new StackPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-            Spacing = 10,
-            Margin = new Thickness(20, 0, 20, 16)
-        };
-        Grid.SetRow(buttonPanel, 2);
-
-        var yesButton = new Button
-        {
-            Content = "Yes",
-            Width = 80,
-            Background = new SolidColorBrush(Color.Parse("#FFF38BA8")),
-            Foreground = new SolidColorBrush(Color.Parse("#FF1E1E2E")),
-            CornerRadius = new CornerRadius(6),
-            Padding = new Thickness(16, 8)
-        };
-        yesButton.Click += (s, e) => { result = true; dialog.Close(); };
-
-        var noButton = new Button
-        {
-            Content = "No",
-            Width = 80,
-            Background = Brushes.Transparent,
-            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
-            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(6),
-            Padding = new Thickness(16, 8)
-        };
-        noButton.Click += (s, e) => dialog.Close();
-
-        buttonPanel.Children.Add(noButton);
-        buttonPanel.Children.Add(yesButton);
-
-        rootGrid.Children.Add(titleBar);
-        rootGrid.Children.Add(messageText);
-        rootGrid.Children.Add(buttonPanel);
-
-        var outerBorder = new Border
-        {
-            BorderBrush = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(8),
-            Child = rootGrid
-        };
-
-        dialog.Content = outerBorder;
-        await dialog.ShowDialog(this);
-        return result;
-    }
-
-    #endregion
-
-    #region Solution and Project Management
-
-    /// <summary>
-    /// Open an existing solution file
-    /// </summary>
-    public async Task OpenSolutionAsync()
-    {
-        var topLevel = GetTopLevel(this);
-        if (topLevel == null) return;
-
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = "Open Solution",
-            AllowMultiple = false,
-            FileTypeFilter = new List<FilePickerFileType>
-            {
-                new("Solution Files") { Patterns = new[] { "*.slnx", "*.sln" } },
-                new("Project Files") { Patterns = new[] { "*.csproj", "*.fsproj", "*.vbproj" } },
-                new("All Files") { Patterns = new[] { "*.*" } }
-            }
-        });
-
-        if (files.Count > 0)
-        {
-            var file = files[0];
-            var filePath = file.Path.LocalPath;
-            var directory = Path.GetDirectoryName(filePath);
-            
-            if (!string.IsNullOrEmpty(directory))
-            {
-                _projectPath = directory;
-                LoadProject(filePath);
-                UpdateTitle();
-                _viewModel.StatusText = $"Opened: {Path.GetFileName(filePath)}";
-            }
-        }
-    }
-
-    /// <summary>
-    /// Create a new solution
-    /// </summary>
-    public async Task CreateNewSolutionAsync()
-    {
-        var newSolutionWindow = new NewSolutionWindow();
-        var result = await newSolutionWindow.ShowDialog<string?>(this);
-        
-        if (!string.IsNullOrEmpty(result))
-        {
-            var solutionDir = Path.GetDirectoryName(result);
-            if (!string.IsNullOrEmpty(solutionDir))
-            {
-                // Wait a bit for the file system to update
-                await Task.Delay(100);
-                
-                // Verify the solution file was created
-                if (File.Exists(result))
-                {
-                    _projectPath = solutionDir;
-                    _viewModel.LoadProjectFolder(solutionDir);
-                    UpdateTitle();
-                    _viewModel.StatusText = $"Created solution: {Path.GetFileName(result)}";
-                }
-                else
-                {
-                    // Try to load directory anyway
-                    if (Directory.Exists(solutionDir))
-                    {
-                        _projectPath = solutionDir;
-                        _viewModel.LoadProjectFolder(solutionDir);
-                        UpdateTitle();
-                        _viewModel.StatusText = $"Created solution directory: {Path.GetFileName(solutionDir)}";
-                    }
-                    else
-                    {
-                        _viewModel.StatusText = $"Error: Solution file was not created at {result}";
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Add a new project to the current solution
-    /// </summary>
-    public async Task AddNewProjectToSolutionAsync()
-    {
-        var solutionPath = FindSolutionFile();
-        if (string.IsNullOrEmpty(solutionPath))
-        {
-            _viewModel.StatusText = "No solution file found. Create a solution first.";
-            
-            // Offer to create a solution
-            var createSolution = await ShowConfirmDialogAsync(
-                "No Solution Found",
-                "Would you like to create a new solution?");
-            
-            if (createSolution)
-            {
-                await CreateNewSolutionAsync();
-            }
-            return;
-        }
-
-        var addProjectWindow = new AddProjectToSolutionWindow(solutionPath);
-        var result = await addProjectWindow.ShowDialog<string?>(this);
-        
-        if (!string.IsNullOrEmpty(result))
-        {
-            RefreshFileTree();
-            _viewModel.StatusText = $"Added project: {Path.GetFileNameWithoutExtension(result)}";
-        }
-    }
-
-    #endregion
-
-    #region Tabs
-
-    private void TabButton_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.Tag is EditorTab tab)
-        {
-            _viewModel.ActiveTab = tab;
-            
-            // Load content in Monaco editor
-            if (_monacoEditor != null)
-            {
-                _monacoEditor.SetContent(tab.Content, tab.Language);
-                _viewModel.StatusText = $"Switched to: {tab.FileName}";
-            }
-        }
-    }
-
-    private async void CloseTabButton_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is Button button && button.Tag is EditorTab tab)
-        {
-            // Check if the tab has unsaved changes
-            if (tab.IsDirty)
-            {
-                var result = await ShowSaveConfirmationDialogAsync(tab.FileName);
-                
-                if (result == SaveConfirmationResult.Save)
-                {
-                    // Save before closing
-                    if (_viewModel.ActiveTab == tab)
-                    {
-                        await SaveCurrentFileAsync();
-                    }
-                    else
-                    {
-                        // Save this specific tab
-                        if (!string.IsNullOrEmpty(tab.FilePath))
-                        {
-                            try
-                            {
-                                await File.WriteAllTextAsync(tab.FilePath, tab.Content);
-                                tab.IsDirty = false;
-                            }
-                            catch (Exception ex)
-                            {
-                                _viewModel.StatusText = $"Error saving {tab.FileName}: {ex.Message}";
-                                e.Handled = true;
-                                return;
-                            }
-                        }
-                    }
-                }
-                else if (result == SaveConfirmationResult.Cancel)
-                {
-                    // Don't close the tab
-                    e.Handled = true;
-                    return;
-                }
-                // If result is DontSave, continue closing without saving
-            }
-            
-            _viewModel.CloseTab(tab);
-            
-            // Update editor with active tab content
-            if (_monacoEditor != null && _viewModel.ActiveTab != null)
-            {
-                _monacoEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
-            }
-            else if (_monacoEditor != null)
-            {
-                _monacoEditor.SetContent("", "plaintext");
-            }
-        }
-        
-        // Stop event propagation to prevent TabButton_Click from firing
-        e.Handled = true;
-    }
-
-    private enum SaveConfirmationResult
-    {
-        Save,
-        DontSave,
-        Cancel
-    }
-
-    private async Task<SaveConfirmationResult> ShowSaveConfirmationDialogAsync(string fileName)
-    {
-        var dialog = new Window
-        {
-            Title = "Unsaved Changes",
-            Width = 400,
-            Height = 150,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            ShowInTaskbar = false,
-            SystemDecorations = SystemDecorations.BorderOnly
-        };
-
-        var result = SaveConfirmationResult.Cancel;
-
-        var grid = new Grid
-        {
-            RowDefinitions = new RowDefinitions("*,Auto"),
-            Margin = new Thickness(20)
-        };
-
-        var messageText = new TextBlock
-        {
-            Text = $"Do you want to save changes to '{fileName}'?",
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-        };
-        Grid.SetRow(messageText, 0);
-
-        var buttonPanel = new StackPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-            Spacing = 10
-        };
-        Grid.SetRow(buttonPanel, 1);
-
-        var saveButton = new Button { Content = "Save", Width = 80 };
-        saveButton.Click += (s, e) => { result = SaveConfirmationResult.Save; dialog.Close(); };
-
-        var dontSaveButton = new Button { Content = "Don't Save", Width = 100 };
-        dontSaveButton.Click += (s, e) => { result = SaveConfirmationResult.DontSave; dialog.Close(); };
-
-        var cancelButton = new Button { Content = "Cancel", Width = 80 };
-        cancelButton.Click += (s, e) => { result = SaveConfirmationResult.Cancel; dialog.Close(); };
-
-        buttonPanel.Children.Add(saveButton);
-        buttonPanel.Children.Add(dontSaveButton);
-        buttonPanel.Children.Add(cancelButton);
-
-        grid.Children.Add(messageText);
-        grid.Children.Add(buttonPanel);
-
-        dialog.Content = grid;
-
-        await dialog.ShowDialog(this);
-
-        return result;
-    }
-
-    #endregion
-
-    #region Terminal
-
-    private void InitializeTerminal()
-    {
-        var container = this.FindControl<Border>("TerminalContainer");
-        if (container != null)
-        {
-            _terminalControl = new TerminalControl();
-            
-            // Set working directory to project path
-            string? workingDir = null;
-            
-            // First try ViewModel's CurrentProjectPath
-            if (!string.IsNullOrEmpty(_viewModel.CurrentProjectPath) && Directory.Exists(_viewModel.CurrentProjectPath))
-            {
-                workingDir = _viewModel.CurrentProjectPath;
-            }
-            // Then try _projectPath
-            else if (!string.IsNullOrEmpty(_projectPath))
-            {
-                if (File.Exists(_projectPath))
-                {
-                    workingDir = Path.GetDirectoryName(_projectPath);
-                }
-                else if (Directory.Exists(_projectPath))
-                {
-                    workingDir = _projectPath;
-                }
-            }
-            
-            // Set working directory if found
-            if (!string.IsNullOrEmpty(workingDir) && Directory.Exists(workingDir))
-            {
-                _terminalControl.WorkingDirectory = workingDir;
-            }
-            
-            // Subscribe to terminal events
-            _terminalControl.ProcessStarted += OnTerminalProcessStarted;
-            _terminalControl.ProcessExited += OnTerminalProcessExited;
-            _terminalControl.OutputReceived += OnTerminalOutputReceived;
-            
-            container.Child = _terminalControl;
-            
-            // Start interactive shell automatically
-            _ = _terminalControl.StartInteractiveShellAsync();
-        }
-    }
-    
-    private void OnTerminalProcessStarted(object? sender, EventArgs e)
-    {
-        _viewModel.StatusText = "Process running...";
-    }
-    
-    private void OnTerminalProcessExited(object? sender, EventArgs e)
-    {
-        _viewModel.StatusText = "Ready";
-    }
-    
-    private void OnTerminalOutputReceived(object? sender, TerminalOutputEventArgs e)
-    {
-        // Could be used to update status or log output
-    }
-    
-    private void ProblemsTab_Click(object? sender, RoutedEventArgs e)
-    {
-        SwitchToolWindowPanel("problems");
-    }
-    
-    private void BuildTab_Click(object? sender, RoutedEventArgs e)
-    {
-        SwitchToolWindowPanel("build");
-    }
-    
-    private void RunTab_Click(object? sender, RoutedEventArgs e)
-    {
-        SwitchToolWindowPanel("run");
-    }
-    
-    private void OutputTab_Click(object? sender, RoutedEventArgs e)
-    {
-        SwitchToolWindowPanel("build");
-    }
-    
-    private void TerminalTab_Click(object? sender, RoutedEventArgs e)
-    {
-        SwitchToolWindowPanel("terminal");
-        _terminalControl?.FocusInput();
-    }
-    
-    private void GitTab_Click(object? sender, RoutedEventArgs e)
-    {
-        SwitchToolWindowPanel("git");
-    }
-    
-    private void DebugConsoleTab_Click(object? sender, RoutedEventArgs e)
-    {
-        SwitchToolWindowPanel("debug");
-    }
-    
-    private void SwitchToolWindowPanel(string panelName)
-    {
-        // Get all panels
-        var terminalContainer = this.FindControl<Border>("TerminalContainer");
-        var problemsPanel = this.FindControl<Border>("ProblemsPanel");
-        var buildPanel = this.FindControl<Border>("BuildPanel");
-        var runPanel = this.FindControl<Border>("RunPanel");
-        var gitPanel = this.FindControl<Border>("GitPanel");
-        var debugPanel = this.FindControl<Border>("DebugPanel");
-        
-        // Get all tab buttons
-        var problemsTab = this.FindControl<Button>("ProblemsTabButton");
-        var buildTab = this.FindControl<Button>("BuildTabButton");
-        var runTab = this.FindControl<Button>("RunTabButton");
-        var terminalTab = this.FindControl<Button>("TerminalTabButton");
-        var gitTab = this.FindControl<Button>("GitTabButton");
-        var debugTab = this.FindControl<Button>("DebugConsoleTabButton");
-        
-        // Hide all panels
-        if (terminalContainer != null) terminalContainer.IsVisible = false;
-        if (problemsPanel != null) problemsPanel.IsVisible = false;
-        if (buildPanel != null) buildPanel.IsVisible = false;
-        if (runPanel != null) runPanel.IsVisible = false;
-        if (gitPanel != null) gitPanel.IsVisible = false;
-        if (debugPanel != null) debugPanel.IsVisible = false;
-        
-        // Remove active class from all tabs
-        RemoveActiveClass(problemsTab);
-        RemoveActiveClass(buildTab);
-        RemoveActiveClass(runTab);
-        RemoveActiveClass(terminalTab);
-        RemoveActiveClass(gitTab);
-        RemoveActiveClass(debugTab);
-        
-        // Show selected panel and activate tab
-        switch (panelName)
-        {
-            case "problems":
-                if (problemsPanel != null) problemsPanel.IsVisible = true;
-                AddActiveClass(problemsTab);
-                break;
-            case "build":
-                if (buildPanel != null) buildPanel.IsVisible = true;
-                AddActiveClass(buildTab);
-                break;
-            case "run":
-                if (runPanel != null) runPanel.IsVisible = true;
-                AddActiveClass(runTab);
-                break;
-            case "terminal":
-                if (terminalContainer != null) terminalContainer.IsVisible = true;
-                AddActiveClass(terminalTab);
-                break;
-            case "git":
-                if (gitPanel != null) gitPanel.IsVisible = true;
-                AddActiveClass(gitTab);
-                break;
-            case "debug":
-                if (debugPanel != null) debugPanel.IsVisible = true;
-                AddActiveClass(debugTab);
-                break;
-        }
-    }
-    
-    private void AddActiveClass(Button? button)
-    {
-        if (button != null && !button.Classes.Contains("active"))
-        {
-            button.Classes.Add("active");
-        }
-    }
-    
-    private void RemoveActiveClass(Button? button)
-    {
-        if (button != null && button.Classes.Contains("active"))
-        {
-            button.Classes.Remove("active");
-        }
-    }
-    
-    private void NewTerminal_Click(object? sender, RoutedEventArgs e)
-    {
-        // Start a new interactive shell session
-        _ = _terminalControl?.StartInteractiveShellAsync();
-    }
-    
-    private void AdminTerminal_Click(object? sender, RoutedEventArgs e)
-    {
-        // Start administrator shell
-        _terminalControl?.StartAdministratorShell();
-    }
-    
-    private void ClearTerminal_Click(object? sender, RoutedEventArgs e)
-    {
-        // Clear terminal output
-        _terminalControl?.ClearOutput();
-    }
-    
-    private double _previousBottomPanelHeight = 200;
-    private bool _isBottomPanelMaximized = false;
-    
-    private void MinimizePanel_Click(object? sender, RoutedEventArgs e)
-    {
-        // Minimize the bottom panel to just the tab bar
-        var editorGrid = this.FindControl<Grid>("EditorGrid");
-        if (editorGrid == null)
-        {
-            // Try to find it by traversing the visual tree
-            var monacoContainer = this.FindControl<Border>("MonacoEditorContainer");
-            if (monacoContainer?.Parent is Grid grid)
-            {
-                editorGrid = grid;
-            }
-        }
-        
-        if (editorGrid != null && editorGrid.RowDefinitions.Count > 3)
-        {
-            var currentHeight = editorGrid.RowDefinitions[3].Height.Value;
-            if (currentHeight > 32)
-            {
-                _previousBottomPanelHeight = currentHeight;
-                editorGrid.RowDefinitions[3].Height = new GridLength(32);
-            }
-            else
-            {
-                editorGrid.RowDefinitions[3].Height = new GridLength(_previousBottomPanelHeight);
-            }
-            _isBottomPanelMaximized = false;
-        }
-    }
-    
-    private void MaximizePanel_Click(object? sender, RoutedEventArgs e)
-    {
-        // Maximize the bottom panel
-        var editorGrid = this.FindControl<Grid>("EditorGrid");
-        if (editorGrid == null)
-        {
-            var monacoContainer = this.FindControl<Border>("MonacoEditorContainer");
-            if (monacoContainer?.Parent is Grid grid)
-            {
-                editorGrid = grid;
-            }
-        }
-        
-        if (editorGrid != null && editorGrid.RowDefinitions.Count > 3)
-        {
-            if (!_isBottomPanelMaximized)
-            {
-                _previousBottomPanelHeight = editorGrid.RowDefinitions[3].Height.Value;
-                // Make panel take most of the space (leave some for tabs and minimal editor)
-                editorGrid.RowDefinitions[3].Height = new GridLength(1, GridUnitType.Star);
-                editorGrid.RowDefinitions[1].Height = new GridLength(100);
-                _isBottomPanelMaximized = true;
-            }
-            else
-            {
-                editorGrid.RowDefinitions[3].Height = new GridLength(_previousBottomPanelHeight);
-                editorGrid.RowDefinitions[1].Height = new GridLength(1, GridUnitType.Star);
-                _isBottomPanelMaximized = false;
-            }
-        }
-    }
-    
-    private void HidePanel_Click(object? sender, RoutedEventArgs e)
-    {
-        // Hide the bottom panel completely
-        var editorGrid = this.FindControl<Grid>("EditorGrid");
-        if (editorGrid == null)
-        {
-            var monacoContainer = this.FindControl<Border>("MonacoEditorContainer");
-            if (monacoContainer?.Parent is Grid grid)
-            {
-                editorGrid = grid;
-            }
-        }
-        
-        if (editorGrid != null && editorGrid.RowDefinitions.Count > 3)
-        {
-            var currentHeight = editorGrid.RowDefinitions[3].Height.Value;
-            if (currentHeight > 0)
-            {
-                _previousBottomPanelHeight = currentHeight > 32 ? currentHeight : _previousBottomPanelHeight;
-                editorGrid.RowDefinitions[3].Height = new GridLength(0);
-                editorGrid.RowDefinitions[2].Height = new GridLength(0); // Hide splitter too
-            }
-            else
-            {
-                editorGrid.RowDefinitions[3].Height = new GridLength(_previousBottomPanelHeight);
-                editorGrid.RowDefinitions[2].Height = new GridLength(5);
-            }
-            _isBottomPanelMaximized = false;
-        }
-    }
-    
-    private void StatusProblems_Click(object? sender, RoutedEventArgs e)
-    {
-        // Show problems panel when clicking on status bar problems
-        SwitchToolWindowPanel("problems");
-        
-        // Make sure panel is visible
-        var editorGrid = this.FindControl<Border>("MonacoEditorContainer")?.Parent as Grid;
-        if (editorGrid != null && editorGrid.RowDefinitions.Count > 3)
-        {
-            if (editorGrid.RowDefinitions[3].Height.Value < 32)
-            {
-                editorGrid.RowDefinitions[3].Height = new GridLength(_previousBottomPanelHeight > 32 ? _previousBottomPanelHeight : 200);
-                editorGrid.RowDefinitions[2].Height = new GridLength(5);
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Update cursor position display in status bar
-    /// </summary>
-    private void UpdateCursorPositionDisplay(int line, int column)
-    {
-        var cursorText = this.FindControl<TextBlock>("CursorPositionText");
-        if (cursorText != null)
-        {
-            cursorText.Text = $"Ln {line}, Col {column}";
-        }
-    }
-    
-    /// <summary>
-    /// Update language mode display in status bar
-    /// </summary>
-    private void UpdateLanguageModeDisplay(string language)
-    {
-        var langText = this.FindControl<TextBlock>("LanguageModeText");
-        if (langText != null)
-        {
-            langText.Text = language switch
-            {
-                "csharp" => "C#",
-                "javascript" => "JavaScript",
-                "typescript" => "TypeScript",
-                "html" => "HTML",
-                "css" => "CSS",
-                "json" => "JSON",
-                "xml" => "XML",
-                "markdown" => "Markdown",
-                _ => language
-            };
-        }
-    }
-    
-    /// <summary>
-    /// Execute a command in the terminal programmatically
-    /// </summary>
-    public void ExecuteTerminalCommand(string command)
-    {
-        _terminalControl?.ExecuteCommand(command);
-    }
-    
-    /// <summary>
-    /// Run a command with administrator privileges
-    /// </summary>
-    public async Task<bool> RunAsAdministratorAsync(string command)
-    {
-        if (_terminalControl != null)
-        {
-            return await _terminalControl.RunAsAdministratorAsync(command);
-        }
-        return false;
-    }
-
-    #endregion
-
-    #region AI Assistant
-
-    private bool _isAIPanelVisible = true;
-
-    private void CloseAIPanel_Click(object? sender, RoutedEventArgs e)
-    {
-        ToggleAIPanel(false);
-    }
-
-    /// <summary>
-    /// Toggle the AI Assistant panel visibility
-    /// </summary>
-    public void ToggleAIPanel(bool? show = null)
-    {
-        var panel = this.FindControl<Border>("AIPanelBorder");
-        if (panel != null)
-        {
-            _isAIPanelVisible = show ?? !_isAIPanelVisible;
-            panel.IsVisible = _isAIPanelVisible;
-            
-            // Update the column width
-            var mainGrid = panel.Parent as Grid;
-            if (mainGrid != null && mainGrid.ColumnDefinitions.Count > 3)
-            {
-                mainGrid.ColumnDefinitions[3].Width = _isAIPanelVisible 
-                    ? new GridLength(300) 
-                    : new GridLength(0);
-            }
-        }
-    }
-
-    private void SendAI_Click(object? sender, RoutedEventArgs e)
-    {
-        var input = this.FindControl<TextBox>("AIChatInput");
-        if (input != null && !string.IsNullOrWhiteSpace(input.Text))
-        {
-            var message = input.Text;
-            input.Text = string.Empty;
-            
-            // Process AI message
-            ProcessAIMessage(message);
-        }
-    }
-
-    private async void ProcessAIMessage(string message)
-    {
-        // Add user message to chat
-        AddUserMessage(message);
-        
-        // Update working directory for Copilot CLI
-        if (!string.IsNullOrEmpty(_projectPath))
-        {
-            var workingDir = Directory.Exists(_projectPath) ? _projectPath : Path.GetDirectoryName(_projectPath);
-            if (!string.IsNullOrEmpty(workingDir))
-            {
-                _copilotCliService.WorkingDirectory = workingDir;
-            }
-        }
-        
-        // Check if it's a CLI command (starts with / or common commands)
-        var trimmedMessage = message.Trim();
-        var isCliCommand = trimmedMessage.StartsWith("/") || 
-                          IsCliCommandKeyword(trimmedMessage.Split(' ')[0].ToLowerInvariant());
-        
-        if (isCliCommand)
-        {
-            // Remove leading / if present
-            var command = trimmedMessage.StartsWith("/") ? trimmedMessage.Substring(1) : trimmedMessage;
-            
-            // Execute CLI command
-            var result = await _copilotCliService.ExecuteAsync(command);
-            
-            // Add response to chat
-            if (result.Success)
-            {
-                AddAIResponse(result.Output, isSuccess: true);
-                
-                // Refresh file tree if file was created/deleted/renamed
-                var cmdLower = command.Split(' ')[0].ToLowerInvariant();
-                if (cmdLower is "create" or "new" or "delete" or "rm" or "remove" or "mkdir" or "rmdir" 
-                    or "rename" or "mv" or "copy" or "cp" or "touch" or "template")
-                {
-                    RefreshFileTree();
-                }
-            }
-            else
-            {
-                AddAIResponse(result.Output, isSuccess: false);
-            }
-        }
-        else
-        {
-            // Regular AI chat - show hint about CLI commands
-            var response = GetAIResponse(message);
-            AddAIResponse(response, isSuccess: true);
-        }
-    }
-    
-    private bool IsCliCommandKeyword(string word)
-    {
-        var cliCommands = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "create", "new", "delete", "rm", "remove", "mkdir", "rmdir",
-            "rename", "mv", "copy", "cp", "touch", "write", "append",
-            "read", "cat", "ls", "dir", "tree", "pwd", "cd",
-            "find", "search", "template", "help", "info", "exists",
-            // GitHub CLI commands
-            "gh", "gh-install", "gh-auth", "gh-repo", "gh-pr", "gh-issue", "gh-workflow", "gh-status"
-        };
-        return cliCommands.Contains(word);
-    }
-    
-    private void AddUserMessage(string message)
-    {
-        var chatPanel = this.FindControl<StackPanel>("AIChatMessages");
-        if (chatPanel == null) return;
-        
-        var messageBorder = new Border
-        {
-            Background = new SolidColorBrush(Color.Parse("#50569CD6")),
-            CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(12),
-            Margin = new Thickness(0, 4),
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-            MaxWidth = 280
-        };
-        
-        var messageText = new SelectableTextBlock
-        {
-            Text = message,
-            Foreground = new SolidColorBrush(Color.Parse("#FFFFFF")),
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-            FontFamily = new FontFamily("Consolas, Monaco, monospace"),
-            FontSize = 12
-        };
-        
-        messageBorder.Child = messageText;
-        chatPanel.Children.Add(messageBorder);
-        
-        // Scroll to bottom
-        ScrollAIChatToBottom();
-    }
-    
-    private void AddAIResponse(string response, bool isSuccess)
-    {
-        var chatPanel = this.FindControl<StackPanel>("AIChatMessages");
-        if (chatPanel == null) return;
-        
-        var responseBorder = new Border
-        {
-            Background = new SolidColorBrush(Color.Parse(isSuccess ? "#403D3D4D" : "#40F38BA8")),
-            CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(12),
-            Margin = new Thickness(0, 4),
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
-            MaxWidth = 300
-        };
-        
-        var responsePanel = new StackPanel { Spacing = 4 };
-        
-        // Header with icon
-        var headerPanel = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 6 };
-        headerPanel.Children.Add(new TextBlock 
-        { 
-            Text = isSuccess ? "🤖" : "⚠️", 
-            FontSize = 12 
-        });
-        headerPanel.Children.Add(new TextBlock 
-        { 
-            Text = isSuccess ? "Copilot" : "Error", 
-            FontWeight = FontWeight.SemiBold,
-            FontSize = 11,
-            Foreground = new SolidColorBrush(Color.Parse(isSuccess ? "#A6E3A1" : "#F38BA8"))
-        });
-        responsePanel.Children.Add(headerPanel);
-        
-        // Response content - SelectableTextBlock for copying
-        var responseText = new SelectableTextBlock
-        {
-            Text = response,
-            Foreground = new SolidColorBrush(Color.Parse("#FFFFFF")),
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-            FontFamily = new FontFamily("Consolas, Monaco, monospace"),
-            FontSize = 11
-        };
-        responsePanel.Children.Add(responseText);
-        
-        responseBorder.Child = responsePanel;
-        chatPanel.Children.Add(responseBorder);
-        
-        // Scroll to bottom
-        ScrollAIChatToBottom();
-    }
-    
-    private void ScrollAIChatToBottom()
-    {
-        var scrollViewer = this.FindControl<ScrollViewer>("AIChatScrollViewer");
-        scrollViewer?.ScrollToEnd();
-    }
-    
-    private string GetAIResponse(string message)
-    {
-        // Simple responses for common queries - this is a placeholder for real AI integration
-        var lowerMessage = message.ToLowerInvariant();
-        
-        if (lowerMessage.Contains("help") || lowerMessage.Contains("command"))
-        {
-            return "💡 Copilot CLI Commands:\n\n" +
-                   "📁 File Operations:\n" +
-                   "  create <path> - Create file\n" +
-                   "  delete <path> - Delete file\n" +
-                   "  template <type> <path> - Create from template\n\n" +
-                   "📂 Navigation:\n" +
-                   "  ls, dir - List files\n" +
-                   "  tree - Show tree view\n" +
-                   "  cd <path> - Change directory\n\n" +
-                   "🔍 Search:\n" +
-                   "  find <pattern> - Find files\n" +
-                   "  search <text> - Search in files\n\n" +
-                   "Type 'help' for full command list.";
-        }
-        
-        if (lowerMessage.Contains("create") || lowerMessage.Contains("new file"))
-        {
-            return "To create a file, use:\n  create <filename>\n\nExample:\n  create MyClass.cs\n  create src/Utils/Helper.cs";
-        }
-        
-        if (lowerMessage.Contains("delete") || lowerMessage.Contains("remove"))
-        {
-            return "To delete a file, use:\n  delete <filename>\n\nUse --force for directories:\n  delete src/OldFolder --force";
-        }
-        
-        return "I'm your Copilot CLI assistant! 🤖\n\n" +
-               "You can use CLI commands directly:\n" +
-               "  /create MyClass.cs\n" +
-               "  /ls\n" +
-               "  /help\n\n" +
-               "Or type 'help' for all available commands.";
-    }
-    
-    private void ClearAIChat_Click(object? sender, RoutedEventArgs e)
-    {
-        var chatPanel = this.FindControl<StackPanel>("AIChatMessages");
-        if (chatPanel == null) return;
-        
-        chatPanel.Children.Clear();
-        
-        // Add welcome message back
-        var welcomeBorder = new Border
-        {
-            Background = new SolidColorBrush(Color.Parse("#40FAB387")),
-            CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(12)
-        };
-        
-        var welcomePanel = new StackPanel { Spacing = 8 };
-        welcomePanel.Children.Add(new TextBlock 
-        { 
-            Text = "🚀 Copilot CLI Ready!", 
-            FontWeight = FontWeight.SemiBold,
-            Foreground = new SolidColorBrush(Color.Parse("#FFFFFF"))
-        });
-        welcomePanel.Children.Add(new TextBlock 
-        { 
-            Text = "Type 'help' for available commands",
-            Foreground = new SolidColorBrush(Color.Parse("#E0E0E0")),
-            FontSize = 12
-        });
-        
-        welcomeBorder.Child = welcomePanel;
-        chatPanel.Children.Add(welcomeBorder);
-        
-        _viewModel.StatusText = "Chat cleared";
-    }
-    
-    private void AIChatInput_KeyDown(object? sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-        {
-            SendAI_Click(sender, e);
-            e.Handled = true;
-        }
-    }
-
-    #endregion
-
-    #region File Operations
-
-    public async Task<string?> OpenFileAsync()
-    {
-        var topLevel = GetTopLevel(this);
-        if (topLevel == null) return null;
-
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = "Open File",
-            AllowMultiple = false,
-            FileTypeFilter = new List<FilePickerFileType>
-            {
-                new("C# Files") { Patterns = new[] { "*.cs" } },
-                new("XAML Files") { Patterns = new[] { "*.axaml", "*.xaml" } },
-                new("All Files") { Patterns = new[] { "*.*" } }
-            }
-        });
-
-        if (files.Count > 0)
-        {
-            var file = files[0];
-            await using var stream = await file.OpenReadAsync();
-            using var reader = new StreamReader(stream);
-            return await reader.ReadToEndAsync();
-        }
-
-        return null;
-    }
-
-    public async Task SaveFileAsync(string content, string? suggestedFileName = null)
-    {
-        var topLevel = GetTopLevel(this);
-        if (topLevel == null) return;
-
-        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-        {
-            Title = "Save File",
-            SuggestedFileName = suggestedFileName ?? "Untitled.cs",
-            FileTypeChoices = new List<FilePickerFileType>
-            {
-                new("C# Files") { Patterns = new[] { "*.cs" } },
-                new("All Files") { Patterns = new[] { "*.*" } }
-            }
-        });
-
-        if (file != null)
-        {
-            await using var stream = await file.OpenWriteAsync();
-            await using var writer = new StreamWriter(stream);
-            await writer.WriteAsync(content);
-        }
-    }
-
-    /// <summary>
-    /// Save the currently active file
-    /// </summary>
-    public async Task SaveCurrentFileAsync()
-    {
-        if (_viewModel.ActiveTab == null)
-        {
-            _viewModel.StatusText = "No file to save";
-            return;
-        }
-
-        // Sync content from Monaco editor if available
-        if (_monacoEditor != null)
-        {
-            var content = await _monacoEditor.GetContentAsync();
-            if (!string.IsNullOrEmpty(content))
-            {
-                _viewModel.ActiveTab.Content = content;
-            }
-        }
-
-        if (string.IsNullOrEmpty(_viewModel.ActiveTab.FilePath))
-        {
-            // New file - use Save As
-            await SaveCurrentFileAsAsync();
-            return;
-        }
-
-        try
-        {
-            await File.WriteAllTextAsync(_viewModel.ActiveTab.FilePath, _viewModel.ActiveTab.Content);
-            _viewModel.ActiveTab.IsDirty = false;
-            _viewModel.ActiveTab.LastModified = DateTime.Now;
-            _monacoEditor?.MarkAsSaved();
-            _viewModel.StatusText = $"Saved: {_viewModel.ActiveTab.FileName}";
-        }
-        catch (Exception ex)
-        {
-            _viewModel.StatusText = $"Error saving file: {ex.Message}";
-        }
-    }
-
-    /// <summary>
-    /// Save the current file with a new name
-    /// </summary>
-    public async Task SaveCurrentFileAsAsync()
-    {
-        if (_viewModel.ActiveTab == null) return;
-
-        // Sync content from Monaco editor if available
-        if (_monacoEditor != null)
-        {
-            var content = await _monacoEditor.GetContentAsync();
-            if (!string.IsNullOrEmpty(content))
-            {
-                _viewModel.ActiveTab.Content = content;
-            }
-        }
-
-        var topLevel = GetTopLevel(this);
-        if (topLevel == null) return;
-
-        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-        {
-            Title = "Save File As",
-            SuggestedFileName = _viewModel.ActiveTab.FileName,
-            FileTypeChoices = new List<FilePickerFileType>
-            {
-                new("C# Files") { Patterns = new[] { "*.cs" } },
-                new("XAML Files") { Patterns = new[] { "*.axaml", "*.xaml" } },
-                new("JSON Files") { Patterns = new[] { "*.json" } },
-                new("All Files") { Patterns = new[] { "*.*" } }
-            }
-        });
-
-        if (file != null)
-        {
-            try
-            {
-                var filePath = file.Path.LocalPath;
-                await File.WriteAllTextAsync(filePath, _viewModel.ActiveTab.Content);
-                
-                // Update tab info
-                _viewModel.ActiveTab.FilePath = filePath;
-                _viewModel.ActiveTab.FileName = Path.GetFileName(filePath);
-                _viewModel.ActiveTab.Language = EditorTab.GetLanguageFromExtension(filePath);
-                _viewModel.ActiveTab.IsDirty = false;
-                _viewModel.ActiveTab.LastModified = DateTime.Now;
-                _monacoEditor?.MarkAsSaved();
-                _viewModel.StatusText = $"Saved: {_viewModel.ActiveTab.FileName}";
-            }
-            catch (Exception ex)
-            {
-                _viewModel.StatusText = $"Error saving file: {ex.Message}";
-            }
-        }
-    }
-
-    /// <summary>
-    /// Save all open files with changes
-    /// </summary>
-    public async Task SaveAllFilesAsync()
-    {
-        // First sync the active tab's content
-        if (_monacoEditor != null && _viewModel.ActiveTab != null)
-        {
-            var content = await _monacoEditor.GetContentAsync();
-            if (!string.IsNullOrEmpty(content))
-            {
-                _viewModel.ActiveTab.Content = content;
-            }
-        }
-
-        int savedCount = 0;
-        foreach (var tab in _viewModel.Tabs)
-        {
-            if (tab.IsDirty && !string.IsNullOrEmpty(tab.FilePath))
-            {
-                try
-                {
-                    await File.WriteAllTextAsync(tab.FilePath, tab.Content);
-                    tab.IsDirty = false;
-                    tab.LastModified = DateTime.Now;
-                    savedCount++;
-                }
-                catch (Exception ex)
-                {
-                    _viewModel.StatusText = $"Error saving {tab.FileName}: {ex.Message}";
-                }
-            }
-        }
-
-        if (_viewModel.ActiveTab != null)
-        {
-            _monacoEditor?.MarkAsSaved();
-        }
-        
-        _viewModel.StatusText = savedCount > 0 ? $"Saved {savedCount} file(s)" : "No files to save";
-    }
-
-    #endregion
-
-    #region Build Operations
-
-    /// <summary>
-    /// Initialize build service events
-    /// </summary>
-    private void InitializeBuildService()
-    {
-        _buildService.OutputReceived += OnBuildOutputReceived;
-        _buildService.BuildStarted += OnBuildStarted;
-        _buildService.BuildCompleted += OnBuildCompleted;
-    }
-
-    private void OnBuildOutputReceived(object? sender, BuildOutputEventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            _buildOutput.Append(e.Output);
-            UpdateBuildOutput();
-        });
-    }
-
-    private void OnBuildStarted(object? sender, EventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            _isBuildInProgress = true;
-            UpdateBuildButtons();
-            _viewModel.StatusText = "Building...";
-        });
-    }
-
-    private void OnBuildCompleted(object? sender, BuildCompletedEventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            _isBuildInProgress = false;
-            UpdateBuildButtons();
-            
-            // Parse build output for errors and warnings
-            var buildOutput = _buildOutput.ToString();
-            ParseAndShowBuildProblems(buildOutput);
-            
-            if (e.Result.Success)
-            {
-                _viewModel.StatusText = "Build succeeded";
-            }
-            else
-            {
-                _viewModel.StatusText = $"Build failed: {e.Result.ErrorMessage ?? "Unknown error"}";
-                // Switch to problems panel if there are errors
-                if (_viewModel.Problems.Count > 0)
-                {
-                    SwitchToolWindowPanel("problems");
-                }
-            }
-        });
-    }
-
-    private void UpdateBuildOutput()
-    {
-        var buildOutputText = this.FindControl<TextBlock>("BuildOutputText");
-        var scrollViewer = this.FindControl<ScrollViewer>("BuildOutputScrollViewer");
-        
-        if (buildOutputText != null)
-        {
-            buildOutputText.Text = _buildOutput.ToString();
-        }
-        
-        // Auto-scroll to bottom
-        if (scrollViewer != null)
-        {
-            scrollViewer.ScrollToEnd();
-        }
-    }
-
-    private void UpdateBuildButtons()
-    {
-        var buildButton = this.FindControl<Button>("BuildProjectButton");
-        var cancelButton = this.FindControl<Button>("CancelBuildButton");
-        
-        if (buildButton != null)
-        {
-            buildButton.IsEnabled = !_isBuildInProgress;
-        }
-        
-        if (cancelButton != null)
-        {
-            cancelButton.IsVisible = _isBuildInProgress;
-        }
-    }
-
-    /// <summary>
-    /// Build button click handler
-    /// </summary>
-    private async void BuildProject_Click(object? sender, RoutedEventArgs e)
-    {
-        await BuildProjectAsync();
-    }
-
-    /// <summary>
-    /// Run project button click handler
-    /// </summary>
-    private async void RunProject_Click(object? sender, RoutedEventArgs e)
-    {
-        await RunProjectAsync();
-    }
-
-    /// <summary>
-    /// Debug project button click handler
-    /// </summary>
-    private async void DebugProject_Click(object? sender, RoutedEventArgs e)
-    {
-        // For now, just run without actual debugging
-        await RunProjectAsync();
-    }
-
-    /// <summary>
-    /// Cancel build button click handler
-    /// </summary>
-    private void CancelBuild_Click(object? sender, RoutedEventArgs e)
-    {
-        CancelBuild();
-        StopRunningProcess();
-    }
-
-    /// <summary>
-    /// Run configuration dropdown click handler
-    /// </summary>
-    private async void RunConfigDropdown_Click(object? sender, RoutedEventArgs e)
-    {
-        await ShowRunConfigurationMenuAsync();
-    }
-
-    /// <summary>
-    /// Edit configurations button click handler
-    /// </summary>
-    private async void EditConfigurations_Click(object? sender, RoutedEventArgs e)
-    {
-        await ShowRunConfigurationsAsync();
-    }
-
-    /// <summary>
-    /// Publish button click handler
-    /// </summary>
-    private async void Publish_Click(object? sender, RoutedEventArgs e)
-    {
-        await ShowPublishWindowAsync();
-    }
-
-    /// <summary>
-    /// Show run configuration context menu
-    /// </summary>
-    private async Task ShowRunConfigurationMenuAsync()
-    {
-        // Ensure configurations are loaded
-        if (_runConfigService.Configurations.Count == 0)
-        {
-            var projectPath = GetCurrentProjectPath();
-            if (!string.IsNullOrEmpty(projectPath))
-            {
-                await _runConfigService.LoadConfigurationsAsync(projectPath);
-            }
-        }
-
-        // Create context menu
-        var menu = new ContextMenu();
-        
-        foreach (var config in _runConfigService.Configurations)
-        {
-            var menuItem = new MenuItem
-            {
-                Header = config.Name,
-                Icon = new TextBlock { Text = config == _runConfigService.ActiveConfiguration ? "✓" : " ", FontSize = 12 }
-            };
-            
-            var capturedConfig = config;
-            menuItem.Click += async (s, e) =>
-            {
-                _runConfigService.SetActiveConfiguration(capturedConfig);
-                UpdateRunConfigurationDisplay();
-            };
-            
-            menu.Items.Add(menuItem);
-        }
-
-        // Add separator and Edit Configurations
-        menu.Items.Add(new Separator());
-        
-        var editItem = new MenuItem { Header = "Edit Configurations..." };
-        editItem.Click += async (s, e) => await ShowRunConfigurationsAsync();
-        menu.Items.Add(editItem);
-
-        // Show the menu
-        var button = this.FindControl<Button>("RunConfigDropdownButton");
-        if (button != null)
-        {
-            menu.Open(button);
-        }
-    }
-
-    /// <summary>
-    /// Update run configuration display in toolbar
-    /// </summary>
-    private void UpdateRunConfigurationDisplay()
-    {
-        var configNameText = this.FindControl<TextBlock>("RunConfigNameText");
-        if (configNameText != null)
-        {
-            configNameText.Text = _runConfigService.ActiveConfiguration?.Name ?? "Default";
-        }
-    }
-
-    /// <summary>
-    /// Build the current project
-    /// </summary>
-    public async Task BuildProjectAsync()
-    {
-        if (_isBuildInProgress)
-        {
-            _viewModel.StatusText = "Build already in progress";
-            return;
-        }
-
-        // Get project path
-        var projectPath = GetCurrentProjectPath();
-        if (string.IsNullOrEmpty(projectPath))
-        {
-            _viewModel.StatusText = "No project loaded to build";
-            return;
-        }
-
-        // Clear previous build output
-        _buildOutput.Clear();
-        UpdateBuildOutput();
-
-        // Switch to Build tab
-        SwitchToolWindowPanel("build");
-
-        // Start build
-        var result = await _buildService.BuildAsync(projectPath);
-        
-        // Update status
-        if (result.Success)
-        {
-            _viewModel.StatusText = "Build succeeded";
-        }
-        else
-        {
-            _viewModel.StatusText = "Build failed - see Build output for details";
-        }
-    }
-
-    /// <summary>
-    /// Run the current project (build and run with GUI windows appearing)
-    /// </summary>
-    public async Task RunProjectAsync()
-    {
-        if (_isBuildInProgress || _runConfigService.IsRunning)
-        {
-            _viewModel.StatusText = "Build or run already in progress";
-            return;
-        }
-
-        // Get project path
-        var projectPath = GetCurrentProjectPath();
-        if (string.IsNullOrEmpty(projectPath))
-        {
-            _viewModel.StatusText = "No project loaded to run";
-            return;
-        }
-
-        // Check if we have run configurations loaded
-        if (_runConfigService.Configurations.Count == 0)
-        {
-            await _runConfigService.LoadConfigurationsAsync(projectPath);
-        }
-
-        // If we have an active configuration, use it
-        if (_runConfigService.ActiveConfiguration != null)
-        {
-            await RunWithConfigurationAsync(_runConfigService.ActiveConfiguration);
-        }
-        else
-        {
-            // Fall back to simple build and run
-            _buildOutput.Clear();
-            UpdateBuildOutput();
-            SwitchToolWindowPanel("run");
-
-            var result = await _buildService.BuildAndRunAsync(projectPath);
-            
-            if (result.Success)
-            {
-                _viewModel.StatusText = "Project started successfully";
-            }
-            else
-            {
-                _viewModel.StatusText = "Build failed - see Build output for details";
-            }
-        }
-    }
-
-    /// <summary>
-    /// Run with a specific configuration
-    /// </summary>
-    private async Task RunWithConfigurationAsync(RunConfiguration config)
-    {
-        // Clear output
-        _buildOutput.Clear();
-        UpdateBuildOutput();
-        UpdateRunOutput("");
-        
-        // Switch to Run panel
-        SwitchToolWindowPanel("run");
-
-        // Subscribe to output events
-        _runConfigService.OutputReceived += OnRunOutputReceived;
-        _runConfigService.RunCompleted += OnRunCompleted;
-        _runConfigService.RunStarted += OnRunStarted;
-
-        try
-        {
-            _viewModel.StatusText = $"Running: {config.Name}";
-            UpdateRunButtons(true);
-
-            var result = await _runConfigService.RunConfigurationAsync(config, false);
-            
-            if (result.Success)
-            {
-                _viewModel.StatusText = $"Run completed: {config.Name}";
-            }
-            else
-            {
-                _viewModel.StatusText = $"Run failed: {result.ErrorMessage ?? "Unknown error"}";
-            }
-        }
-        finally
-        {
-            _runConfigService.OutputReceived -= OnRunOutputReceived;
-            _runConfigService.RunCompleted -= OnRunCompleted;
-            _runConfigService.RunStarted -= OnRunStarted;
-            UpdateRunButtons(false);
-        }
-    }
-
-    private void OnRunOutputReceived(object? sender, RunOutputEventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            AppendRunOutput(e.Output);
-        });
-    }
-
-    private void OnRunStarted(object? sender, EventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            _viewModel.StatusText = "Running...";
-            UpdateRunButtons(true);
-        });
-    }
-
-    private void OnRunCompleted(object? sender, RunCompletedEventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            UpdateRunButtons(false);
-        });
-    }
-
-    private void UpdateRunOutput(string text)
-    {
-        var runOutputText = this.FindControl<TextBlock>("RunOutputText");
-        if (runOutputText != null)
-        {
-            runOutputText.Text = text;
-        }
-    }
-
-    private void AppendRunOutput(string text)
-    {
-        var runOutputText = this.FindControl<TextBlock>("RunOutputText");
-        if (runOutputText != null)
-        {
-            if (runOutputText.Text == "Run output will appear here...")
-            {
-                runOutputText.Text = text;
-            }
-            else
-            {
-                runOutputText.Text += text;
-            }
-        }
-    }
-
-    private void UpdateRunButtons(bool isRunning)
-    {
-        var runButton = this.FindControl<Button>("RunProjectButton");
-        var cancelButton = this.FindControl<Button>("CancelBuildButton");
-        
-        if (runButton != null)
-        {
-            runButton.IsEnabled = !isRunning;
-        }
-        
-        if (cancelButton != null)
-        {
-            cancelButton.IsVisible = isRunning;
-        }
-    }
-
-    /// <summary>
-    /// Stop the running process
-    /// </summary>
-    public void StopRunningProcess()
-    {
-        if (_runConfigService.IsRunning)
-        {
-            _runConfigService.Stop();
-            _viewModel.StatusText = "Process stopped";
-            UpdateRunButtons(false);
-        }
-    }
-
-    /// <summary>
-    /// Show Run Configurations window
-    /// </summary>
-    public async Task ShowRunConfigurationsAsync()
-    {
-        var projectPath = GetCurrentProjectPath() ?? _projectPath ?? "";
-        var window = new RunConfigurationsWindow(projectPath);
-        var result = await window.ShowDialog<RunConfiguration?>(this);
-        
-        if (result != null)
-        {
-            _runConfigService.SetActiveConfiguration(result);
-            await RunWithConfigurationAsync(result);
-        }
-    }
-
-    /// <summary>
-    /// Show Publish window
-    /// </summary>
-    public async Task ShowPublishWindowAsync()
-    {
-        var projectPath = GetCurrentProjectPath() ?? _projectPath ?? "";
-        var window = new PublishWindow(projectPath);
-        var result = await window.ShowDialog<PublishProfile?>(this);
-        
-        if (result != null)
-        {
-            await PublishProjectAsync(result);
-        }
-    }
-
-    /// <summary>
-    /// Publish the project with specified profile
-    /// </summary>
-    public async Task PublishProjectAsync(PublishProfile profile)
-    {
-        // Clear output and switch to build panel
-        _buildOutput.Clear();
-        UpdateBuildOutput();
-        SwitchToolWindowPanel("build");
-
-        // Subscribe to output events
-        _publishService.OutputReceived += OnPublishOutputReceived;
-        _publishService.PublishCompleted += OnPublishCompleted;
-        _publishService.PublishStarted += OnPublishStarted;
-
-        try
-        {
-            _viewModel.StatusText = $"Publishing: {profile.Name}";
-            
-            var result = await _publishService.PublishAsync(profile);
-            
-            if (result.Success)
-            {
-                _viewModel.StatusText = $"Publish succeeded: {result.OutputPath}";
-                
-                // Offer to open the output folder
-                var openFolder = await ShowConfirmDialogAsync(
-                    "Publish Succeeded",
-                    $"Project published successfully to:\n{result.OutputPath}\n\nWould you like to open the output folder?");
-                
-                if (openFolder && !string.IsNullOrEmpty(result.OutputPath))
-                {
-                    try
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "explorer.exe",
-                            Arguments = $"\"{result.OutputPath}\"",
-                            UseShellExecute = true
-                        });
-                    }
-                    catch
-                    {
-                        // Ignore errors opening explorer
-                    }
-                }
-            }
-            else
-            {
-                _viewModel.StatusText = $"Publish failed: {result.ErrorMessage ?? "Unknown error"}";
-            }
-        }
-        finally
-        {
-            _publishService.OutputReceived -= OnPublishOutputReceived;
-            _publishService.PublishCompleted -= OnPublishCompleted;
-            _publishService.PublishStarted -= OnPublishStarted;
-        }
-    }
-
-    private void OnPublishOutputReceived(object? sender, PublishOutputEventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            _buildOutput.Append(e.Output);
-            UpdateBuildOutput();
-        });
-    }
-
-    private void OnPublishStarted(object? sender, EventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            _viewModel.StatusText = "Publishing...";
-        });
-    }
-
-    private void OnPublishCompleted(object? sender, PublishCompletedEventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            // Status will be updated in the main publish method
-        });
-    }
-
-    /// <summary>
-    /// Clean and rebuild the project
-    /// </summary>
-    public async Task RebuildProjectAsync()
-    {
-        if (_isBuildInProgress)
-        {
-            _viewModel.StatusText = "Build already in progress";
-            return;
-        }
-
-        var projectPath = GetCurrentProjectPath();
-        if (string.IsNullOrEmpty(projectPath))
-        {
-            _viewModel.StatusText = "No project loaded to rebuild";
-            return;
-        }
-
-        _buildOutput.Clear();
-        UpdateBuildOutput();
-        SwitchToolWindowPanel("build");
-
-        // Clean first
-        await _buildService.CleanAsync(projectPath);
-        
-        // Then build
-        await _buildService.BuildAsync(projectPath);
-    }
-
-    /// <summary>
-    /// Clean the project build output
-    /// </summary>
-    public async Task CleanProjectAsync()
-    {
-        if (_isBuildInProgress)
-        {
-            _viewModel.StatusText = "Build already in progress";
-            return;
-        }
-
-        var projectPath = GetCurrentProjectPath();
-        if (string.IsNullOrEmpty(projectPath))
-        {
-            _viewModel.StatusText = "No project loaded to clean";
-            return;
-        }
-
-        _buildOutput.Clear();
-        UpdateBuildOutput();
-        SwitchToolWindowPanel("build");
-
-        await _buildService.CleanAsync(projectPath);
-    }
-
-    /// <summary>
-    /// Restore NuGet packages
-    /// </summary>
-    public async Task RestorePackagesAsync()
-    {
-        if (_isBuildInProgress)
-        {
-            _viewModel.StatusText = "Build already in progress";
-            return;
-        }
-
-        var projectPath = GetCurrentProjectPath();
-        if (string.IsNullOrEmpty(projectPath))
-        {
-            _viewModel.StatusText = "No project loaded to restore";
-            return;
-        }
-
-        _buildOutput.Clear();
-        UpdateBuildOutput();
-        SwitchToolWindowPanel("build");
-
-        await _buildService.RestoreAsync(projectPath);
-    }
-
-    /// <summary>
-    /// Cancel the current build
-    /// </summary>
-    public void CancelBuild()
-    {
-        if (_isBuildInProgress)
+        if (dialog.Count > 0)
         {
-            _buildService.CancelBuild();
-            _isBuildInProgress = false;
-            UpdateBuildButtons();
-            _viewModel.StatusText = "Build cancelled";
+            var projectPath = dialog[0].Path.LocalPath;
+            var svc = new SolutionService();
+            if (await svc.AddProjectToSolutionAsync(sln, projectPath)) { RefreshFileTree(); _viewModel.StatusText = $"Added: {Path.GetFileNameWithoutExtension(projectPath)}"; }
+            else _viewModel.StatusText = "Failed to add project";
         }
     }
 
-    /// <summary>
-    /// Get the current project path
-    /// </summary>
-    private string? GetCurrentProjectPath()
+    private async void ContextMenu_AddExistingItem_Click(object? sender, RoutedEventArgs e)
     {
-        // Try ViewModel's CurrentProjectPath first
-        if (!string.IsNullOrEmpty(_viewModel.CurrentProjectPath))
+        var targetDir = GetTargetDirectory();
+        var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Add Existing Item", AllowMultiple = true });
+        foreach (var file in result)
         {
-            return _viewModel.CurrentProjectPath;
+            var dest = Path.Combine(targetDir, Path.GetFileName(file.Path.LocalPath));
+            try { if (file.Path.LocalPath != dest) File.Copy(file.Path.LocalPath, dest, true); }
+            catch (Exception ex) { _viewModel.StatusText = $"Error: {ex.Message}"; }
         }
-        
-        // Fall back to _projectPath
-        return _projectPath;
+        if (result.Count > 0) { RefreshFileTree(); _viewModel.StatusText = $"Added {result.Count} item(s)"; }
     }
 
-    #endregion
-
-    #region Code Analysis
-
-    /// <summary>
-    /// Initialize code analysis service events
-    /// </summary>
-    private void InitializeCodeAnalysisService()
-    {
-        _codeAnalysisService.AnalysisCompleted += OnAnalysisCompleted;
-        _codeAnalysisService.AnalysisProgress += OnAnalysisProgress;
-    }
-
-    private void OnAnalysisCompleted(object? sender, AnalysisCompletedEventArgs e)
-    {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            _isAnalysisInProgress = false;
-            UpdateAnalyzeButton();
-
-            if (e.Success)
-            {
-                // Clear old problems and add new ones
-                _viewModel.Problems.Clear();
-                foreach (var diagnostic in e.Diagnostics)
-                {
-                    _viewModel.Problems.Add(diagnostic);
-                }
-
-                var errorCount = e.Diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error);
-                var warningCount = e.Diagnostics.Count(d => d.Severity == DiagnosticSeverity.Warning);
-
-                if (e.Diagnostics.Count == 0)
-                {
-                    _viewModel.StatusText = "Analysis complete - No problems found!";
-                }
-                else
-                {
-                    _viewModel.StatusText = $"Analysis complete - {errorCount} error(s), {warningCount} warning(s)";
-                }
-
-                // Switch to problems panel if there are issues
-                if (e.Diagnostics.Count > 0)
-                {
-                    SwitchToolWindowPanel("problems");
-                }
-            }
-            else
-            {
-                _viewModel.StatusText = $"Analysis failed: {e.ErrorMessage ?? "Unknown error"}";
-            }
-        });
-    }
-
-    private void OnAnalysisProgress(object? sender, AnalysisProgressEventArgs e)
+    private async void ContextMenu_BuildProject_Click(object? sender, RoutedEventArgs e)
     {
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            _viewModel.StatusText = e.Message;
-        });
+        var item = GetSelectedTreeItem();
+        var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
+        if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to build"; return; }
+        _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
+        if (IsNanoFrameworkProject(projectPath)) await _nanoBuildService.BuildAsync(projectPath);
+        else await _buildService.BuildAsync(projectPath);
     }
 
-    /// <summary>
-    /// Analyze button click handler
-    /// </summary>
-    private async void AnalyzeProject_Click(object? sender, RoutedEventArgs e)
+    private async void ContextMenu_RebuildProject_Click(object? sender, RoutedEventArgs e)
     {
-        await AnalyzeProjectAsync();
+        var item = GetSelectedTreeItem();
+        var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
+        if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to rebuild"; return; }
+        _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
+        if (IsNanoFrameworkProject(projectPath)) await _nanoBuildService.BuildAsync(projectPath);
+        else { await _buildService.CleanAsync(projectPath); await _buildService.BuildAsync(projectPath); }
     }
 
-    /// <summary>
-    /// Refresh analysis button click handler
-    /// </summary>
-    private async void RefreshAnalysis_Click(object? sender, RoutedEventArgs e)
+    private async void ContextMenu_CleanProject_Click(object? sender, RoutedEventArgs e)
     {
-        await AnalyzeProjectAsync();
+        var item = GetSelectedTreeItem();
+        var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
+        if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to clean"; return; }
+        _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
+        if (!IsNanoFrameworkProject(projectPath)) await _buildService.CleanAsync(projectPath);
+        else _viewModel.StatusText = "Clean not supported for nanoFramework projects";
     }
 
-    /// <summary>
-    /// Clear problems button click handler
-    /// </summary>
-    private void ClearProblems_Click(object? sender, RoutedEventArgs e)
-    {
-        _viewModel.Problems.Clear();
-        _viewModel.StatusText = "Problems cleared";
-    }
+    private void AnalyzeProject_Click(object? sender, RoutedEventArgs e)   => _ = AnalyzeProjectAsync();
+    private void RefreshAnalysis_Click(object? sender, RoutedEventArgs e)  => _ = AnalyzeProjectAsync();
+    private void ClearProblems_Click(object? sender, RoutedEventArgs e)    { _viewModel.Problems.Clear(); _viewModel.StatusText = "Problems cleared"; }
 
-    /// <summary>
-    /// Problems list selection changed - navigate to file location
-    /// </summary>
     private void ProblemsListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (e.AddedItems.Count > 0 && e.AddedItems[0] is DiagnosticItem diagnostic)
         {
-            // Open file and navigate to location
             if (!string.IsNullOrEmpty(diagnostic.FilePath) && File.Exists(diagnostic.FilePath))
             {
                 OpenFileInEditor(diagnostic.FilePath);
-                
-                // Navigate to the specific line in Monaco
                 _monacoEditor?.GoToLine(diagnostic.Line, diagnostic.Column);
-                
                 _viewModel.StatusText = $"{diagnostic.SeverityIcon} {diagnostic.Code}: {diagnostic.Message}";
             }
         }
     }
 
-    /// <summary>
-    /// Analyze the current project with Roslyn
-    /// </summary>
-    public async Task AnalyzeProjectAsync()
-    {
-        if (_isAnalysisInProgress)
-        {
-            _viewModel.StatusText = "Analysis already in progress";
-            return;
-        }
-
-        // Get project path
-        var projectPath = GetCurrentProjectPath();
-        if (string.IsNullOrEmpty(projectPath))
-        {
-            _viewModel.StatusText = "No project loaded to analyze";
-            return;
-        }
-
-        _isAnalysisInProgress = true;
-        UpdateAnalyzeButton();
-
-        // Switch to Problems panel
-        SwitchToolWindowPanel("problems");
-
-        _viewModel.StatusText = "Starting code analysis...";
-
-        try
-        {
-            // Run analysis
-            await _codeAnalysisService.AnalyzeProjectWithCallbackAsync(projectPath);
-        }
-        catch (Exception ex)
-        {
-            _isAnalysisInProgress = false;
-            UpdateAnalyzeButton();
-            _viewModel.StatusText = $"Analysis error: {ex.Message}";
-        }
-    }
-
-    /// <summary>
-    /// Analyze current file only
-    /// </summary>
-    public async Task AnalyzeCurrentFileAsync()
-    {
-        if (_viewModel.ActiveTab == null || string.IsNullOrEmpty(_viewModel.ActiveTab.FilePath))
-        {
-            _viewModel.StatusText = "No file to analyze";
-            return;
-        }
-
-        var filePath = _viewModel.ActiveTab.FilePath;
-        if (!filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
-        {
-            _viewModel.StatusText = "Code analysis is only available for C# files";
-            return;
-        }
-
-        _isAnalysisInProgress = true;
-        UpdateAnalyzeButton();
-        _viewModel.StatusText = "Analyzing current file...";
-
-        try
-        {
-            // Get content from Monaco editor if available
-            string? content = null;
-            if (_monacoEditor != null)
-            {
-                content = await _monacoEditor.GetContentAsync();
-            }
-
-            var diagnostics = await _codeAnalysisService.AnalyzeFileAsync(filePath, content);
-
-            // Update problems
-            _viewModel.Problems.Clear();
-            foreach (var diagnostic in diagnostics)
-            {
-                _viewModel.Problems.Add(diagnostic);
-            }
-
-            var errorCount = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Error);
-            var warningCount = diagnostics.Count(d => d.Severity == DiagnosticSeverity.Warning);
-
-            if (diagnostics.Count == 0)
-            {
-                _viewModel.StatusText = $"No problems in {_viewModel.ActiveTab.FileName}";
-            }
-            else
-            {
-                _viewModel.StatusText = $"{_viewModel.ActiveTab.FileName}: {errorCount} error(s), {warningCount} warning(s)";
-                SwitchToolWindowPanel("problems");
-            }
-        }
-        catch (Exception ex)
-        {
-            _viewModel.StatusText = $"Analysis error: {ex.Message}";
-        }
-        finally
-        {
-            _isAnalysisInProgress = false;
-            UpdateAnalyzeButton();
-        }
-    }
-
-    /// <summary>
-    /// Parse build output and show problems from build
-    /// </summary>
-    private void ParseAndShowBuildProblems(string buildOutput)
-    {
-        var diagnostics = _codeAnalysisService.ParseBuildOutput(buildOutput);
-        
-        if (diagnostics.Count > 0)
-        {
-            _viewModel.Problems.Clear();
-            foreach (var diagnostic in diagnostics)
-            {
-                _viewModel.Problems.Add(diagnostic);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Update analyze button state
-    /// </summary>
-    private void UpdateAnalyzeButton()
-    {
-        var analyzeButton = this.FindControl<Button>("AnalyzeProjectButton");
-        if (analyzeButton != null)
-        {
-            analyzeButton.IsEnabled = !_isAnalysisInProgress;
-        }
-    }
+    private void ExplorerNewFile_Click(object? sender, RoutedEventArgs e)   => AddNewItem_Click(sender, e);
+    private void ExplorerNewFolder_Click(object? sender, RoutedEventArgs e) => AddNewFolder_Click(sender, e);
 
     #endregion
+
 }
 
 /// <summary>

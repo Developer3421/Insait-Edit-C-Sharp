@@ -21,7 +21,7 @@ public class FileService
         ".md", ".txt", ".log",
         ".yaml", ".yml",
         ".sql",
-        ".sln", ".csproj", ".vbproj", ".fsproj"
+        ".sln", ".csproj", ".vbproj", ".fsproj", ".nfproj"
     };
 
     /// <summary>

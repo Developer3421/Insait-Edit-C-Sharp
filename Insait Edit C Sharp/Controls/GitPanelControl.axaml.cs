@@ -352,7 +352,7 @@ public partial class GitPanelControl : UserControl
     private void AppendToConsole(string text)
     {
         _consoleOutput.AppendLine($"[{DateTime.Now:HH:mm:ss}] {text}");
-        var consoleText = this.FindControl<TextBlock>("ConsoleOutputText");
+        var consoleText = this.FindControl<SelectableTextBlock>("ConsoleOutputText");
         if (consoleText != null)
         {
             consoleText.Text = _consoleOutput.ToString();
@@ -366,7 +366,7 @@ public partial class GitPanelControl : UserControl
     private void ClearConsole_Click(object? sender, RoutedEventArgs e)
     {
         _consoleOutput.Clear();
-        var consoleText = this.FindControl<TextBlock>("ConsoleOutputText");
+        var consoleText = this.FindControl<SelectableTextBlock>("ConsoleOutputText");
         if (consoleText != null)
         {
             consoleText.Text = "Git console ready...";

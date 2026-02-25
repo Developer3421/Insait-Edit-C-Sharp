@@ -146,9 +146,11 @@ public class RecentProjectsService
         return extension switch
         {
             ".sln" => "Solution",
+            ".slnx" => "Solution (SLNX)",
             ".csproj" => "C# Project",
             ".fsproj" => "F# Project",
             ".vbproj" => "VB.NET Project",
+            ".nfproj" => "nanoFramework Project",
             _ => Directory.Exists(extension) ? "Folder" : "File"
         };
     }
@@ -158,9 +160,11 @@ public class RecentProjectsService
         return extension switch
         {
             ".sln" => ("🗂️", "#30CBA6F7"),      // Purple tint
+            ".slnx" => ("🗂️", "#30CBA6F7"),     // Purple tint (same as .sln)
             ".csproj" => ("⚡", "#30A6E3A1"),    // Green tint
             ".fsproj" => ("🔷", "#3089B4FA"),    // Blue tint
             ".vbproj" => ("🔶", "#30FAB387"),    // Orange tint
+            ".nfproj" => ("🔌", "#304FC3F7"),    // Cyan tint
             _ => ("📁", "#30CBA6F7")
         };
     }

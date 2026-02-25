@@ -24,11 +24,19 @@ public class RunConfigurationService
     private readonly StringBuilder _outputBuffer = new();
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly List<RunConfiguration> _configurations = new();
+    private readonly List<CompoundRunConfiguration> _compoundConfigurations = new();
     private RunConfiguration? _activeConfiguration;
+    private CompoundRunConfiguration? _activeCompoundConfiguration;
+
+    // Track all processes when running a compound configuration
+    private readonly List<Process> _runningProcesses = new();
 
     public IReadOnlyList<RunConfiguration> Configurations => _configurations.AsReadOnly();
+    public IReadOnlyList<CompoundRunConfiguration> CompoundConfigurations => _compoundConfigurations.AsReadOnly();
     public RunConfiguration? ActiveConfiguration => _activeConfiguration;
-    public bool IsRunning => _runningProcess != null && !_runningProcess.HasExited;
+    public CompoundRunConfiguration? ActiveCompoundConfiguration => _activeCompoundConfiguration;
+    public bool IsRunning => (_runningProcess != null && !_runningProcess.HasExited) ||
+                             _runningProcesses.Any(p => { try { return !p.HasExited; } catch { return false; } });
 
     /// <summary>
     /// Load configurations from project
@@ -394,18 +402,16 @@ public class RunConfigurationService
 
             OnOutput($"\nStarting: {executablePath}\n\n");
 
+            // Determine if this is a GUI application
+            var isGuiApp = config.OutputType == "WinExe" || IsGuiApplication(config);
+            
             // Run the executable
             var startInfo = new ProcessStartInfo
             {
                 FileName = executablePath,
                 Arguments = config.CommandLineArguments,
                 WorkingDirectory = config.WorkingDirectory,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = false,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
+                CreateNoWindow = false
             };
 
             // Add environment variables
@@ -414,12 +420,23 @@ public class RunConfigurationService
                 startInfo.EnvironmentVariables[envVar.Key] = envVar.Value;
             }
 
-            // For GUI apps, use ShellExecute
-            if (config.OutputType == "WinExe" || IsGuiApplication(config))
+            if (isGuiApp)
             {
+                // For GUI apps, use ShellExecute so the window appears properly
                 startInfo.UseShellExecute = true;
                 startInfo.RedirectStandardOutput = false;
                 startInfo.RedirectStandardError = false;
+                
+                OnOutput($"[Info] Running as GUI application (output not captured)\n\n");
+            }
+            else
+            {
+                // For console apps, redirect output so we can capture it
+                startInfo.UseShellExecute = false;
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+                startInfo.StandardOutputEncoding = Encoding.UTF8;
+                startInfo.StandardErrorEncoding = Encoding.UTF8;
             }
 
             _runningProcess = new Process { StartInfo = startInfo };
@@ -644,26 +661,6 @@ public class RunConfigurationService
         }
     }
 
-    /// <summary>
-    /// Stop the running process
-    /// </summary>
-    public void Stop()
-    {
-        try
-        {
-            _cancellationTokenSource?.Cancel();
-            
-            if (_runningProcess != null && !_runningProcess.HasExited)
-            {
-                _runningProcess.Kill(entireProcessTree: true);
-                OnOutput("\n========== Process Stopped ==========\n");
-            }
-        }
-        catch (Exception ex)
-        {
-            OnOutput($"[ERROR] Failed to stop process: {ex.Message}\n");
-        }
-    }
 
     /// <summary>
     /// Add a new configuration
@@ -685,10 +682,370 @@ public class RunConfigurationService
         }
     }
 
+    /// <summary>
+    /// Add a compound run configuration
+    /// </summary>
+    public void AddCompoundConfiguration(CompoundRunConfiguration compound)
+    {
+        _compoundConfigurations.Add(compound);
+    }
+
+    /// <summary>
+    /// Remove a compound run configuration
+    /// </summary>
+    public void RemoveCompoundConfiguration(CompoundRunConfiguration compound)
+    {
+        _compoundConfigurations.Remove(compound);
+        if (_activeCompoundConfiguration == compound)
+            _activeCompoundConfiguration = _compoundConfigurations.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Set active compound configuration
+    /// </summary>
+    public void SetActiveCompoundConfiguration(CompoundRunConfiguration compound)
+    {
+        _activeCompoundConfiguration = compound;
+        _activeConfiguration = null; // clear single
+    }
+
+    /// <summary>
+    /// Run all configurations in a compound configuration simultaneously
+    /// </summary>
+    public async Task<CompoundRunResult> RunCompoundAsync(CompoundRunConfiguration compound)
+    {
+        if (IsRunning)
+        {
+            return new CompoundRunResult
+            {
+                Success = false,
+                ErrorMessage = "A process is already running. Stop it first."
+            };
+        }
+
+        _outputBuffer.Clear();
+        _cancellationTokenSource = new CancellationTokenSource();
+        _runningProcesses.Clear();
+
+        RunStarted?.Invoke(this, EventArgs.Empty);
+        OnOutput($"╔══════════════════════════════════════════════════════════╗\n");
+        OnOutput($"║  🚀 Compound Run: {compound.Name,-41}║\n");
+        OnOutput($"╚══════════════════════════════════════════════════════════╝\n");
+        OnOutput($"Starting {compound.Configurations.Count} project(s) simultaneously...\n\n");
+
+        var results = new List<(string Name, RunResult Result)>();
+        var token = _cancellationTokenSource.Token;
+
+        try
+        {
+            if (compound.StartSequentially)
+            {
+                // Start one by one with optional delay
+                foreach (var configName in compound.Configurations)
+                {
+                    var config = _configurations.FirstOrDefault(c =>
+                        c.Name.Equals(configName, StringComparison.OrdinalIgnoreCase));
+                    if (config == null)
+                    {
+                        OnOutput($"[WARN] Configuration not found: {configName}\n");
+                        continue;
+                    }
+
+                    OnOutput($"▶ Starting: {config.Name}\n");
+                    var r = await StartSingleProcessAsync(config, token);
+                    results.Add((config.Name, r));
+
+                    if (!r.Success && compound.StopOnFailure)
+                    {
+                        OnOutput($"\n[ERROR] Stopping compound run because '{config.Name}' failed.\n");
+                        break;
+                    }
+
+                    if (compound.DelayBetweenStartsMs > 0)
+                        await Task.Delay(compound.DelayBetweenStartsMs, token);
+                }
+            }
+            else
+            {
+                // Start all in parallel
+                var tasks = new List<Task<(string, RunResult)>>();
+
+                foreach (var configName in compound.Configurations)
+                {
+                    var config = _configurations.FirstOrDefault(c =>
+                        c.Name.Equals(configName, StringComparison.OrdinalIgnoreCase));
+                    if (config == null)
+                    {
+                        OnOutput($"[WARN] Configuration not found: {configName}\n");
+                        continue;
+                    }
+
+                    var capturedConfig = config;
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        OnOutput($"▶ Starting: {capturedConfig.Name}\n");
+                        var r = await StartSingleProcessAsync(capturedConfig, token);
+                        return (capturedConfig.Name, r);
+                    }, token));
+                }
+
+                var allResults = await Task.WhenAll(tasks);
+                results.AddRange(allResults);
+            }
+
+            // Wait for all processes to finish (if not GUI)
+            var waitTasks = _runningProcesses
+                .Where(p => { try { return !p.HasExited; } catch { return false; } })
+                .Select(p => p.WaitForExitAsync(token))
+                .ToList();
+
+            if (waitTasks.Count > 0)
+                await Task.WhenAll(waitTasks);
+
+            var allSuccess = results.All(r => r.Result.Success);
+            OnOutput($"\n══════════════════════════════════════════════════════════\n");
+            OnOutput($"  Compound Run {(allSuccess ? "✅ Completed" : "❌ Finished with errors")}\n");
+            foreach (var (name, res) in results)
+            {
+                var icon = res.Success ? "✅" : "❌";
+                OnOutput($"  {icon} {name} (exit code: {res.ExitCode})\n");
+            }
+            OnOutput($"══════════════════════════════════════════════════════════\n");
+
+            var compoundResult = new CompoundRunResult
+            {
+                Success = allSuccess,
+                Results = results.ToDictionary(r => r.Name, r => r.Result)
+            };
+
+            RunCompleted?.Invoke(this, new RunCompletedEventArgs(new RunResult
+            {
+                Success = allSuccess,
+                Output = _outputBuffer.ToString()
+            }));
+
+            return compoundResult;
+        }
+        catch (OperationCanceledException)
+        {
+            OnOutput("\n══════ Compound Run Cancelled ══════\n");
+            return new CompoundRunResult { Success = false, ErrorMessage = "Compound run was cancelled." };
+        }
+        catch (Exception ex)
+        {
+            OnOutput($"\n[ERROR] {ex.Message}\n");
+            return new CompoundRunResult { Success = false, ErrorMessage = ex.Message };
+        }
+        finally
+        {
+            foreach (var p in _runningProcesses)
+            {
+                try { p.Dispose(); } catch { }
+            }
+            _runningProcesses.Clear();
+            _runningProcess = null;
+            RunStopped?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// Start a single process for a run configuration (used inside compound runs)
+    /// </summary>
+    private async Task<RunResult> StartSingleProcessAsync(RunConfiguration config, CancellationToken token)
+    {
+        try
+        {
+            OnOutput($"\n┌─── {config.Name} ───\n");
+
+            // Build
+            var buildService = new BuildService();
+            buildService.OutputReceived += (s, e) => OnOutput($"  [build] {e.Output}");
+            var buildResult = await buildService.BuildAsync(config.ProjectPath, config.Configuration);
+            if (!buildResult.Success)
+            {
+                OnOutput($"└─── ❌ Build failed: {config.Name}\n");
+                return new RunResult { Success = false, ErrorMessage = "Build failed", ExitCode = -1 };
+            }
+
+            // Find executable or use dotnet run
+            var exePath = FindExecutable(config);
+
+            ProcessStartInfo startInfo;
+            if (!string.IsNullOrEmpty(exePath))
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = config.CommandLineArguments,
+                    WorkingDirectory = config.WorkingDirectory,
+                    CreateNoWindow = false,
+                    UseShellExecute = true
+                };
+
+                // For console apps capture output
+                if (config.OutputType != "WinExe" && !IsGuiApplication(config))
+                {
+                    startInfo.UseShellExecute = false;
+                    startInfo.RedirectStandardOutput = true;
+                    startInfo.RedirectStandardError = true;
+                    startInfo.CreateNoWindow = true;
+                    startInfo.StandardOutputEncoding = Encoding.UTF8;
+                    startInfo.StandardErrorEncoding = Encoding.UTF8;
+                }
+            }
+            else
+            {
+                // dotnet run
+                var args = new StringBuilder();
+                args.Append($"run --project \"{config.ProjectPath}\" --configuration {config.Configuration}");
+                if (!string.IsNullOrEmpty(config.Framework))
+                    args.Append($" --framework {config.Framework}");
+                if (!string.IsNullOrEmpty(config.LaunchProfile))
+                    args.Append($" --launch-profile \"{config.LaunchProfile}\"");
+                if (!string.IsNullOrEmpty(config.CommandLineArguments))
+                    args.Append($" -- {config.CommandLineArguments}");
+
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = args.ToString(),
+                    WorkingDirectory = config.WorkingDirectory,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8
+                };
+            }
+
+            foreach (var env in config.EnvironmentVariables)
+                startInfo.EnvironmentVariables[env.Key] = env.Value;
+
+            var process = new Process { StartInfo = startInfo };
+            lock (_runningProcesses) { _runningProcesses.Add(process); }
+
+            if (startInfo.RedirectStandardOutput)
+            {
+                process.OutputDataReceived += (s, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        _outputBuffer.AppendLine(e.Data);
+                        OnOutput($"  [{config.Name}] {e.Data}\n");
+                    }
+                };
+                process.ErrorDataReceived += (s, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                        OnOutput($"  [{config.Name}][err] {e.Data}\n");
+                };
+            }
+
+            process.Start();
+
+            if (startInfo.RedirectStandardOutput)
+            {
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+            }
+
+            OnOutput($"  PID {process.Id} started\n");
+
+            // Wait until done or cancelled
+            await process.WaitForExitAsync(token);
+
+            var exit = process.ExitCode;
+            OnOutput($"└─── {(exit == 0 ? "✅" : "❌")} {config.Name} exited ({exit})\n");
+
+            return new RunResult { Success = exit == 0, ExitCode = exit };
+        }
+        catch (OperationCanceledException)
+        {
+            return new RunResult { Success = false, ErrorMessage = "Cancelled", ExitCode = -1 };
+        }
+        catch (Exception ex)
+        {
+            OnOutput($"  [ERROR] {ex.Message}\n");
+            return new RunResult { Success = false, ErrorMessage = ex.Message, ExitCode = -1 };
+        }
+    }
+
+    /// <summary>
+    /// Stop all running processes (single and compound)
+    /// </summary>
+    public void Stop()
+    {
+        try
+        {
+            _cancellationTokenSource?.Cancel();
+
+            if (_runningProcess != null && !_runningProcess.HasExited)
+            {
+                _runningProcess.Kill(entireProcessTree: true);
+                OnOutput("\n========== Process Stopped ==========\n");
+            }
+
+            lock (_runningProcesses)
+            {
+                foreach (var p in _runningProcesses)
+                {
+                    try
+                    {
+                        if (!p.HasExited)
+                        {
+                            p.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch { }
+                }
+            }
+
+            if (_runningProcesses.Count > 0)
+                OnOutput("\n══════ All processes stopped ══════\n");
+        }
+        catch (Exception ex)
+        {
+            OnOutput($"[ERROR] Failed to stop processes: {ex.Message}\n");
+        }
+    }
+
     private void OnOutput(string message)
     {
         OutputReceived?.Invoke(this, new RunOutputEventArgs(message));
     }
+}
+
+/// <summary>
+/// Compound run configuration — runs multiple RunConfigurations simultaneously (like JetBrains Rider Compound)
+/// </summary>
+public class CompoundRunConfiguration
+{
+    public string Name { get; set; } = "Compound";
+
+    /// <summary>Names of RunConfiguration entries to include</summary>
+    public List<string> Configurations { get; set; } = new();
+
+    /// <summary>Start processes one after another instead of simultaneously</summary>
+    public bool StartSequentially { get; set; } = false;
+
+    /// <summary>Stop the whole compound run if one process fails (only relevant when StartSequentially = true)</summary>
+    public bool StopOnFailure { get; set; } = false;
+
+    /// <summary>Delay in milliseconds between sequential starts (ignored when parallel)</summary>
+    public int DelayBetweenStartsMs { get; set; } = 0;
+
+    public override string ToString() => $"⚡ {Name}";
+}
+
+/// <summary>
+/// Result of a compound run
+/// </summary>
+public class CompoundRunResult
+{
+    public bool Success { get; set; }
+    public string? ErrorMessage { get; set; }
+    public Dictionary<string, RunResult> Results { get; set; } = new();
 }
 
 /// <summary>

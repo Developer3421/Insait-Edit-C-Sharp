@@ -5,7 +5,7 @@
         WindowStartupLocation="CenterOwner"
         SystemDecorations="None"
         Width="550" Height="350" CanResize="False"
-        FontFamily="Segoe UI" Background="#FF1E1E2E">
+        FontFamily="Segoe UI Emoji, Segoe UI" Background="#FF1E1E2E">
     <Border BorderBrush="#FF3D3D4D" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
         <Grid RowDefinitions="40,*,Auto">
             <Grid Grid.Row="0" Background="#FF3C3C3C">
@@ -16,8 +16,8 @@
                     </Panel>
                     <Button Grid.Column="1" Width="46" Height="32" Background="Transparent" 
                             BorderThickness="0" Click="CloseButton_Click">
-                        <TextBlock Text="X" FontSize="12" Foreground="#FF9399B2"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                 </Grid>
             </Grid>

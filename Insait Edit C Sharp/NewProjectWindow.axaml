@@ -49,8 +49,7 @@
             <Setter Property="Background" Value="#30FFFFFF"/>
         </Style>
         <Style Selector="Button.window-control.close:pointerover">
-            <Setter Property="Background" Value="#E81123"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#40FFFFFF"/>
         </Style>
 
         <Style Selector="Button.template-btn">
@@ -112,6 +111,11 @@
         <Style Selector="Button.secondary-btn:pointerover">
             <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
         </Style>
+        
+        <!-- Emoji icons style - preserve natural colors -->
+        <Style Selector="Button.template-btn TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
     </Window.Styles>
 
     <Window.Background>
@@ -130,7 +134,7 @@
                                    VerticalAlignment="Center" Margin="16,0"/>
                     </Panel>
                     <Button Grid.Column="1" Classes="window-control close" Click="CloseButton_Click">
-                        <TextBlock Text="✕" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                 </Grid>
             </Grid>
@@ -192,6 +196,19 @@
                                                TextWrapping="Wrap" TextAlignment="Center"/>
                                 </StackPanel>
                             </Button>
+                            
+                            <Button Classes="template-btn" Name="NanoTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="nano">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="🔌" FontSize="32" HorizontalAlignment="Center"
+                                               FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Text="nanoFramework" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text=".NET nanoFramework for ESP32 / IoT"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </WrapPanel>
                     </StackPanel>
 
@@ -221,8 +238,40 @@
                             <TextBox Grid.Row="2" Grid.Column="1" Name="SolutionNameBox" Text="MyProject"/>
                         </Grid>
                         
+                        <!-- Solution Format -->
+                        <StackPanel Spacing="6" Margin="0,8,0,0">
+                            <TextBlock Text="Solution file format" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <RadioButton Name="SlnxFormat" IsChecked="True"
+                                             Foreground="{StaticResource TextPrimaryBrush}"
+                                             IsCheckedChanged="SolutionFormat_Changed">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="📄" FontFamily="Segoe UI Emoji, Segoe UI, Arial"/>
+                                        <StackPanel>
+                                            <TextBlock Text=".slnx" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Modern XML format (.NET 10+)" FontSize="10"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </RadioButton>
+                                <RadioButton Name="SlnFormat"
+                                             Foreground="{StaticResource TextPrimaryBrush}"
+                                             IsCheckedChanged="SolutionFormat_Changed">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="📋" FontFamily="Segoe UI Emoji, Segoe UI, Arial"/>
+                                        <StackPanel>
+                                            <TextBlock Text=".sln" FontWeight="SemiBold"/>
+                                            <TextBlock Text="Legacy Visual Studio format" FontSize="10"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </RadioButton>
+                            </StackPanel>
+                        </StackPanel>
+
                         <!-- Options -->
-                        <StackPanel Spacing="8" Margin="0,8,0,0">
+                        <StackPanel Spacing="8" Margin="0,4,0,0">
                             <CheckBox Name="CreateSolutionDir" IsChecked="True"
                                       Foreground="{StaticResource TextPrimaryBrush}">
                                 <TextBlock Text="Place solution and project in the same directory"/>

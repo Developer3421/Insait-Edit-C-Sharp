@@ -17,10 +17,13 @@ public partial class RunConfigurationsWindow : Window
     private readonly RunConfigurationService _runConfigService;
     private readonly string _projectPath;
     private readonly ObservableCollection<RunConfiguration> _configurations = new();
+    private readonly ObservableCollection<CompoundRunConfiguration> _compoundConfigurations = new();
     private RunConfiguration? _selectedConfiguration;
+    private CompoundRunConfiguration? _selectedCompound;
     private bool _isDirty;
 
     public RunConfiguration? SelectedConfiguration => _selectedConfiguration;
+    public CompoundRunConfiguration? SelectedCompound => _selectedCompound;
 
     public RunConfigurationsWindow() : this(string.Empty)
     {
@@ -116,6 +119,13 @@ public partial class RunConfigurationsWindow : Window
             okButton.Click += Ok_Click;
         }
 
+        // Compound configs
+        var manageCompoundButton = this.FindControl<Button>("ManageCompoundButton");
+        if (manageCompoundButton != null)
+        {
+            manageCompoundButton.Click += ManageCompound_Click;
+        }
+
         // Track changes
         SetupChangeTracking();
     }
@@ -152,8 +162,59 @@ public partial class RunConfigurationsWindow : Window
             }
         }
 
+        // Bind compound configurations
+        _compoundConfigurations.Clear();
+        foreach (var c in _runConfigService.CompoundConfigurations)
+            _compoundConfigurations.Add(c);
+
+        var compoundList = this.FindControl<ListBox>("CompoundConfigsList");
+        if (compoundList != null)
+            compoundList.ItemsSource = _compoundConfigurations;
+
         // Also load projects into combo box
         await LoadProjectsComboBox();
+    }
+
+    /// <summary>
+    /// Compound list selection — deselect single list and update footer buttons label
+    /// </summary>
+    private void CompoundConfigsList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (e.AddedItems.Count > 0 && e.AddedItems[0] is CompoundRunConfiguration compound)
+        {
+            _selectedCompound = compound;
+
+            // Deselect single list
+            var singleList = this.FindControl<ListBox>("ConfigurationsList");
+            if (singleList != null) singleList.SelectedItem = null;
+
+            _selectedConfiguration = null;
+
+            // Update Run button label
+            var runBtn = this.FindControl<Button>("RunButton");
+            if (runBtn != null) runBtn.Content = "▶▶ Run Compound";
+        }
+    }
+
+    /// <summary>
+    /// Open the Compound Run Configuration window
+    /// </summary>
+    private async void ManageCompound_Click(object? sender, RoutedEventArgs e)
+    {
+        var window = new CompoundRunWindow(_runConfigService);
+        var result = await window.ShowDialog<CompoundRunConfiguration?>(this);
+
+        // Refresh compound list
+        _compoundConfigurations.Clear();
+        foreach (var c in _runConfigService.CompoundConfigurations)
+            _compoundConfigurations.Add(c);
+
+        // If user clicked "Run All", close this window and signal caller
+        if (result != null && window.SelectedToRun != null)
+        {
+            _selectedCompound = window.SelectedToRun;
+            Close(window.SelectedToRun);  // pass compound back to MainWindow
+        }
     }
 
     private async Task LoadProjectsComboBox()
@@ -197,6 +258,15 @@ public partial class RunConfigurationsWindow : Window
     {
         if (e.AddedItems.Count > 0 && e.AddedItems[0] is RunConfiguration config)
         {
+            // Deselect compound list
+            var compoundList = this.FindControl<ListBox>("CompoundConfigsList");
+            if (compoundList != null) compoundList.SelectedItem = null;
+            _selectedCompound = null;
+
+            // Reset Run button label
+            var runBtn = this.FindControl<Button>("RunButton");
+            if (runBtn != null) runBtn.Content = "▶ Run";
+
             // Save current changes first
             if (_isDirty && _selectedConfiguration != null)
             {
@@ -425,6 +495,13 @@ public partial class RunConfigurationsWindow : Window
 
     private async void Run_Click(object? sender, RoutedEventArgs e)
     {
+        // If a compound is selected, close and signal compound run
+        if (_selectedCompound != null)
+        {
+            Close(_selectedCompound);
+            return;
+        }
+
         SaveCurrentConfiguration();
 
         if (_selectedConfiguration != null)
