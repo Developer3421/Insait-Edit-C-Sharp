@@ -7,23 +7,23 @@
         WindowStartupLocation="CenterOwner"
         CanResize="True"
         SystemDecorations="None"
-        Background="#FF1E1E2E">
+        Background="#FF1F1A24">
     
     <Window.Styles>
         <Style Selector="Button.action-button">
-            <Setter Property="Background" Value="#FF3D3D4D"/>
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.action-button:pointerover">
-            <Setter Property="Background" Value="#FF4D4D5D"/>
+            <Setter Property="Background" Value="#FF4A3D58"/>
         </Style>
         <Style Selector="Button.primary-button">
-            <Setter Property="Background" Value="#FFFAB387"/>
-            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="16,8"/>
@@ -31,26 +31,26 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.primary-button:pointerover">
-            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Background" Value="#FFFFD4B8"/>
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF363647"/>
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
-            <Setter Property="BorderBrush" Value="#FF3D3D4D"/>
+            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,10"/>
         </Style>
         <Style Selector="ComboBox">
-            <Setter Property="Background" Value="#FF363647"/>
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
-            <Setter Property="BorderBrush" Value="#FF3D3D4D"/>
+            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
             <Setter Property="CornerRadius" Value="6"/>
         </Style>
         <Style Selector="CheckBox">
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
         </Style>
         <Style Selector="RadioButton">
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
         </Style>
         
         <!-- Emoji icons style - preserve natural colors -->
@@ -59,7 +59,7 @@
         </Style>
     </Window.Styles>
 
-    <Border BorderBrush="#FF3D3D4D" BorderThickness="1" CornerRadius="8">
+    <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8">
         <Grid RowDefinitions="36,*,Auto">
             <!-- Title Bar -->
             <Border Grid.Row="0" Background="#FF3C3C3C" CornerRadius="8,8,0,0" Name="TitleBar">
@@ -67,9 +67,9 @@
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
                         <TextBlock Text="📦" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Publish Project" FontSize="13" FontWeight="SemiBold" 
-                                   Foreground="#FFCDD6F4" VerticalAlignment="Center"/>
+                                   Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <Button Grid.Column="1" Background="Transparent" Foreground="#FF9399B2"
+                    <Button Grid.Column="1" Background="Transparent" Foreground="#FF9E90B0"
                             BorderThickness="0" Width="36" Height="36" Name="CloseButton">
                         <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -82,14 +82,14 @@
                 <StackPanel Margin="20" Spacing="20">
                     <!-- Project Selection -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                        <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                         <ComboBox Name="ProjectComboBox" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
                     <!-- Deployment Mode -->
-                    <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
+                    <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Deployment Mode" FontWeight="SemiBold" Foreground="#FFFAB387" FontSize="13"/>
+                            <TextBlock Text="Deployment Mode" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
                             <RadioButton Content="Framework-dependent (requires .NET runtime on target)" 
                                          Name="FrameworkDependentRadio" IsChecked="True" GroupName="DeploymentMode"/>
                             <RadioButton Content="Self-contained (includes .NET runtime)" 
@@ -100,27 +100,27 @@
                     <!-- Target Runtime -->
                     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto">
                         <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,8,0">
-                            <TextBlock Text="Configuration" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                            <TextBlock Text="Configuration" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                             <ComboBox Name="ConfigurationComboBox" HorizontalAlignment="Stretch">
                                 <ComboBoxItem Content="Release" IsSelected="True"/>
                                 <ComboBoxItem Content="Debug"/>
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0">
-                            <TextBlock Text="Target Runtime" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                            <TextBlock Text="Target Runtime" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                             <ComboBox Name="RuntimeComboBox" HorizontalAlignment="Stretch"/>
                         </StackPanel>
                     </Grid>
 
                     <!-- Target Framework -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                        <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                         <ComboBox Name="FrameworkComboBox" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
                     <!-- Output Path -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Output Folder" FontWeight="SemiBold" Foreground="#FFCDD6F4" FontSize="13"/>
+                        <TextBlock Text="Output Folder" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBox Grid.Column="0" Name="OutputPathBox" Watermark="bin\publish"/>
                             <Button Grid.Column="1" Content="📁" Classes="action-button" Margin="8,0,0,0" Width="40" Name="BrowseOutputButton"/>
@@ -128,9 +128,9 @@
                     </StackPanel>
 
                     <!-- Publish Options -->
-                    <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
+                    <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12" x:CompileBindings="False">
-                            <TextBlock Text="Publish Options" FontWeight="SemiBold" Foreground="#FFFAB387" FontSize="13"/>
+                            <TextBlock Text="Publish Options" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
                             
                             <CheckBox Content="Produce single file" Name="SingleFileCheck" ToolTip.Tip="Bundles the application into a single executable"/>
                             
@@ -149,7 +149,7 @@
                     </Border>
 
                     <!-- Publish Profiles -->
-                    <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
+                    <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBlock Text="Publish Profile (Optional)" FontWeight="SemiBold" Foreground="#FF89B4FA" FontSize="13"/>
@@ -157,12 +157,12 @@
                             </Grid>
                             <ComboBox Name="PublishProfileComboBox" HorizontalAlignment="Stretch"/>
                             <TextBlock Text="Use existing publish profiles from Properties/PublishProfiles folder" 
-                                       FontSize="11" Foreground="#FF9399B2" FontStyle="Italic"/>
+                                       FontSize="11" Foreground="#FF9E90B0" FontStyle="Italic"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Quick Presets -->
-                    <Border Background="#FF2D2D3D" CornerRadius="8" Padding="16">
+                    <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12">
                             <TextBlock Text="Quick Presets" FontWeight="SemiBold" Foreground="#FFA6E3A1" FontSize="13"/>
                             <WrapPanel Orientation="Horizontal">
@@ -179,12 +179,12 @@
             </ScrollViewer>
 
             <!-- Footer -->
-            <Border Grid.Row="2" Background="#FF2D2D3D" Padding="16,12">
+            <Border Grid.Row="2" Background="#FF2A2230" Padding="16,12">
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="📊" FontSize="14" VerticalAlignment="Center"/>
                         <TextBlock Text="Estimated output size will appear after publish" FontSize="11" 
-                                   Foreground="#FF9399B2" VerticalAlignment="Center" Name="EstimatedSizeText"/>
+                                   Foreground="#FF9E90B0" VerticalAlignment="Center" Name="EstimatedSizeText"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                         <Button Content="Cancel" Classes="action-button" Name="CancelButton"/>

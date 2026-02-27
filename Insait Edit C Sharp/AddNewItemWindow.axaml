@@ -13,13 +13,13 @@
         FontFamily="Segoe UI, Arial, Tahoma">
 
     <Window.Resources>
-        <Color x:Key="BgPrimary">#FF1E1E2E</Color>
-        <Color x:Key="BgSecondary">#FF2D2D3D</Color>
-        <Color x:Key="BgTertiary">#FF363647</Color>
-        <Color x:Key="BorderColor">#FF3D3D4D</Color>
-        <Color x:Key="TextPrimary">#FFCDD6F4</Color>
-        <Color x:Key="TextSecondary">#FF9399B2</Color>
-        <Color x:Key="AccentOrange">#FFFAB387</Color>
+        <Color x:Key="BgPrimary">#FF1F1A24</Color>
+        <Color x:Key="BgSecondary">#FF2A2230</Color>
+        <Color x:Key="BgTertiary">#FF352840</Color>
+        <Color x:Key="BorderColor">#FF3E3050</Color>
+        <Color x:Key="TextPrimary">#FFF0E8F4</Color>
+        <Color x:Key="TextSecondary">#FF9E90B0</Color>
+        <Color x:Key="AccentOrange">#FFFFC09F</Color>
 
         <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource BgPrimary}"/>
         <SolidColorBrush x:Key="BgSecondaryBrush" Color="{StaticResource BgSecondary}"/>
@@ -58,12 +58,12 @@
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
         </Style>
         <Style Selector="Button.item-btn:pointerover">
-            <Setter Property="Background" Value="#FF424258"/>
+            <Setter Property="Background" Value="#FF3E3050"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
         <Style Selector="Button.item-btn.selected">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
-            <Setter Property="Background" Value="#FF424258"/>
+            <Setter Property="Background" Value="#FF3E3050"/>
         </Style>
 
         <Style Selector="TextBox">
@@ -80,7 +80,7 @@
 
         <Style Selector="Button.primary-btn">
             <Setter Property="Background" Value="{StaticResource AccentOrangeBrush}"/>
-            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="20,10"/>
@@ -88,7 +88,7 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.primary-btn:pointerover">
-            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Background" Value="#FFFFD4B8"/>
         </Style>
 
         <Style Selector="Button.secondary-btn">

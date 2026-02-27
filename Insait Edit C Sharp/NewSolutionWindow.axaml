@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,13 +13,13 @@
         FontFamily="Segoe UI, Arial, Tahoma">
 
     <Window.Resources>
-        <Color x:Key="BgPrimary">#FF1E1E2E</Color>
-        <Color x:Key="BgSecondary">#FF2D2D3D</Color>
-        <Color x:Key="BgTertiary">#FF363647</Color>
-        <Color x:Key="BorderColor">#FF3D3D4D</Color>
-        <Color x:Key="TextPrimary">#FFCDD6F4</Color>
-        <Color x:Key="TextSecondary">#FF9399B2</Color>
-        <Color x:Key="AccentOrange">#FFFAB387</Color>
+        <Color x:Key="BgPrimary">#FF1F1A24</Color>
+        <Color x:Key="BgSecondary">#FF2A2230</Color>
+        <Color x:Key="BgTertiary">#FF352840</Color>
+        <Color x:Key="BorderColor">#FF3E3050</Color>
+        <Color x:Key="TextPrimary">#FFF0E8F4</Color>
+        <Color x:Key="TextSecondary">#FF9E90B0</Color>
+        <Color x:Key="AccentOrange">#FFFFC09F</Color>
 
         <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource BgPrimary}"/>
         <SolidColorBrush x:Key="BgSecondaryBrush" Color="{StaticResource BgSecondary}"/>
@@ -60,7 +60,7 @@
 
         <Style Selector="Button.primary-btn">
             <Setter Property="Background" Value="{StaticResource AccentOrangeBrush}"/>
-            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="20,10"/>

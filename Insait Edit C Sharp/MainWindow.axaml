@@ -22,18 +22,18 @@
 
     <!-- LOCAL RESOURCES -->
     <Window.Resources>
-        <!-- Color palette - IDE Dark Theme -->
-        <Color x:Key="AppBgColor">#FF1E1E2E</Color>
-        <Color x:Key="AppSurfaceColor">#FF2D2D3D</Color>
-        <Color x:Key="AppBorderColor">#FF3D3D4D</Color>
-        <Color x:Key="AppTextColor">#FFCDD6F4</Color>
-        <Color x:Key="AppTextMutedColor">#FF9399B2</Color>
+        <!-- Color palette - Fluent Orange-Purple Theme -->
+        <Color x:Key="AppBgColor">#FF1F1A24</Color>
+        <Color x:Key="AppSurfaceColor">#FF2A2230</Color>
+        <Color x:Key="AppBorderColor">#FF3E3050</Color>
+        <Color x:Key="AppTextColor">#FFF0E8F4</Color>
+        <Color x:Key="AppTextMutedColor">#FF9E90B0</Color>
 
-        <!-- Orange is now PRIMARY accent -->
-        <Color x:Key="AccentOrangeColor">#FFFAB387</Color>
-        <Color x:Key="AccentOrangeHoverColor">#FFFFC09F</Color>
-        <Color x:Key="AccentPurpleColor">#FFCBA6F7</Color>
-        <Color x:Key="AccentPurpleHoverColor">#FFE0C0FF</Color>
+        <!-- Orange is PRIMARY accent - light peach tones -->
+        <Color x:Key="AccentOrangeColor">#FFFFC09F</Color>
+        <Color x:Key="AccentOrangeHoverColor">#FFFFD4B8</Color>
+        <Color x:Key="AccentPurpleColor">#FFDCC4FF</Color>
+        <Color x:Key="AccentPurpleHoverColor">#FFECD8FF</Color>
         <Color x:Key="AccentGreenColor">#FFA6E3A1</Color>
         <Color x:Key="AccentBlueColor">#FF89B4FA</Color>
         <Color x:Key="AccentRedColor">#FFF38BA8</Color>
@@ -57,8 +57,8 @@
         
         <!-- Sidebar Gradient -->
         <LinearGradientBrush x:Key="SidebarGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#FF232334" Offset="0"/>
-            <GradientStop Color="#FF1E1E2E" Offset="1"/>
+            <GradientStop Color="#FF241E2C" Offset="0"/>
+            <GradientStop Color="#FF1F1A24" Offset="1"/>
         </LinearGradientBrush>
     </Window.Resources>
 
@@ -75,10 +75,10 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.window-control:pointerover">
-            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="Background" Value="#20FFDAB0"/>
         </Style>
         <Style Selector="Button.window-control.close:pointerover">
-            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="Background" Value="#20FFDAB0"/>
         </Style>
 
         <!-- Toolbar button style -->
@@ -95,18 +95,18 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.toolbar-button:pointerover">
-            <Setter Property="Background" Value="#30FFFFFF"/>
+            <Setter Property="Background" Value="#20FFDAB0"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
         <Style Selector="Button.toolbar-button:pressed">
-            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="Background" Value="#30FFC09F"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
 
         <!-- Primary button style -->
         <Style Selector="Button.primary-button">
             <Setter Property="Background" Value="{StaticResource AccentOrangeBrush}"/>
-            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="16,10"/>
             <Setter Property="CornerRadius" Value="6"/>
@@ -133,10 +133,10 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.icon-button:pointerover">
-            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="Background" Value="#20FFDAB0"/>
         </Style>
         <Style Selector="Button.icon-button:pressed">
-            <Setter Property="Background" Value="#60FFFFFF"/>
+            <Setter Property="Background" Value="#30FFC09F"/>
         </Style>
         
         <!-- Sidebar button style -->
@@ -154,7 +154,7 @@
             <Setter Property="Background" Value="#30FFFFFF"/>
         </Style>
         <Style Selector="Button.sidebar-button.active">
-            <Setter Property="Background" Value="#30FAB387"/>
+            <Setter Property="Background" Value="#30FFC09F"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
             <Setter Property="BorderThickness" Value="0,0,2,0"/>
         </Style>
@@ -180,7 +180,7 @@
         </Style>
         <Style Selector="Button.tab-button:pointerover">
             <Setter Property="Background" Value="#20FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#50FAB387"/>
+            <Setter Property="BorderBrush" Value="#50FFC09F"/>
         </Style>
         <Style Selector="Button.tab-button.active">
             <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
@@ -277,6 +277,21 @@
         <Style Selector="MenuItem">
             <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
         </Style>
+        
+        <!-- TextBox high-contrast for dark backgrounds: visible caret + selection -->
+        <Style Selector="TextBox">
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource AppTextBrush}"/>
+            <Setter Property="SelectionBrush" Value="{StaticResource AccentOrangeBrush}"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+        <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="{StaticResource AppTextMutedBrush}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
     </Window.Styles>
 
     <!-- Window Background -->
@@ -306,7 +321,7 @@
                     <!-- Main Menu Button -->
                     <Button Name="MainMenuButton" ToolTip.Tip="Menu"
                             Click="MainMenu_Click"
-                            Background="#FF3D3D4D" 
+                            Background="#FF3E3050" 
                             Foreground="White"
                             CornerRadius="4"
                             Padding="12,4"
@@ -319,12 +334,12 @@
                     </Button>
                     
                     <!-- Separator -->
-                    <Border Width="1" Height="20" Background="#FF505053" Margin="8,0"/>
+                    <Border Width="1" Height="20" Background="#FF3E3050" Margin="8,0"/>
                     
                     <!-- Build Button -->
                     <Button Name="BuildProjectButton" ToolTip.Tip="Build Project (Ctrl+Shift+B)"
                             Click="BuildProject_Click"
-                            Background="#FF4CAF50" 
+                            Background="#FF6AAB73" 
                             Foreground="White"
                             CornerRadius="4"
                             Width="34"
@@ -340,7 +355,7 @@
                     <!-- Analyze Button -->
                     <Button Name="AnalyzeProjectButton" ToolTip.Tip="Analyze Code (Ctrl+Shift+A)"
                             Click="AnalyzeProject_Click"
-                            Background="#FF9C27B0" 
+                            Background="#FF9B7DCF" 
                             Foreground="White"
                             CornerRadius="4"
                             Width="34"
@@ -355,7 +370,7 @@
                     </Button>
                     
                     <!-- Run Configuration Selector (JetBrains Rider Style) -->
-                    <Border Background="#FF3D3D4D" CornerRadius="4" Height="28" Margin="4,0,0,0" Padding="4,0">
+                    <Border Background="#FF3E3050" CornerRadius="4" Height="28" Margin="4,0,0,0" Padding="4,0">
                         <Grid ColumnDefinitions="Auto,Auto,Auto">
                             <!-- Configuration Name -->
                             <Button Name="RunConfigDropdownButton" ToolTip.Tip="Select Run Configuration (Shift+Alt+F10)"
@@ -369,18 +384,18 @@
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <TextBlock Text="▶" FontSize="10" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
                                     <TextBlock Text="Default" FontSize="11" Name="RunConfigNameText" VerticalAlignment="Center" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="▼" FontSize="8" Foreground="#FF9399B2" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBlock Text="▼" FontSize="8" Foreground="#FF9E90B0" VerticalAlignment="Center" Margin="4,0,0,0"/>
                                 </StackPanel>
                             </Button>
                             
                             <!-- Separator -->
-                            <Border Grid.Column="1" Width="1" Height="16" Background="#FF505053" Margin="2,0"/>
+                            <Border Grid.Column="1" Width="1" Height="16" Background="#FF3E3050" Margin="2,0"/>
                             
                             <!-- Edit Configurations Button -->
                             <Button Grid.Column="2" Name="EditConfigurationsButton" ToolTip.Tip="Edit Configurations..."
                                     Click="EditConfigurations_Click"
                                     Background="Transparent" 
-                                    Foreground="#FF9399B2"
+                                    Foreground="#FF9E90B0"
                                     BorderThickness="0"
                                     Padding="6,0"
                                     Height="26"
@@ -393,7 +408,7 @@
                     <!-- Run Button -->
                     <Button Name="RunProjectButton" ToolTip.Tip="Run Project (F5)"
                             Click="RunProject_Click"
-                            Background="#FF4CAF50" 
+                            Background="#FF6AAB73" 
                             Foreground="White"
                             CornerRadius="4"
                             Width="34"
@@ -410,7 +425,7 @@
                     <!-- Debug Run Button -->
                     <Button Name="DebugProjectButton" ToolTip.Tip="Run in Debug Mode"
                             Click="DebugProject_Click"
-                            Background="#FF9C27B0"
+                            Background="#FF9B7DCF"
                             Foreground="White"
                             CornerRadius="4"
                             Width="34"
@@ -443,12 +458,12 @@
                     </Button>
                     
                     <!-- Separator -->
-                    <Border Width="1" Height="20" Background="#FF505053" Margin="8,0"/>
+                    <Border Width="1" Height="20" Background="#FF3E3050" Margin="8,0"/>
                     
                     <!-- Publish Button -->
                     <Button Name="PublishButton" ToolTip.Tip="Publish Project..."
                             Click="Publish_Click"
-                            Background="#FF2196F3" 
+                            Background="#FF7B8DCF" 
                             Foreground="White"
                             CornerRadius="4"
                             Width="34"
@@ -751,9 +766,13 @@
                         <StackPanel Spacing="6">
                             <!-- File name pattern -->
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Grid.Column="0" Name="SearchInputBox" Watermark="File name (e.g. *.cs, Program)"
-                                         Background="#FF1E1E2E" BorderBrush="{StaticResource AppBorderBrush}"
-                                         Foreground="{StaticResource AppTextBrush}" CornerRadius="4" Padding="8,6"/>
+                                 <TextBox Grid.Column="0" Name="SearchInputBox" Watermark="File name (e.g. *.cs, Program)"
+                                          Background="#FF252030" BorderBrush="{StaticResource AppBorderBrush}"
+                                          Foreground="{StaticResource AppTextBrush}"
+                                          CaretBrush="{StaticResource AppTextBrush}"
+                                          SelectionBrush="{StaticResource AccentOrangeBrush}"
+                                          SelectionForegroundBrush="#FF1F1A24"
+                                          CornerRadius="4" Padding="8,6"/>
                                 <Button Grid.Column="1" Classes="icon-button" Width="28" Height="28"
                                         Margin="4,0,0,0" ToolTip.Tip="Search" Name="SearchFileNamesButton">
                                     <TextBlock Text="↵" FontSize="14"/>
@@ -765,7 +784,7 @@
                                            Foreground="{StaticResource AppTextMutedBrush}"
                                            VerticalAlignment="Center" Margin="0,0,6,0"/>
                                 <ComboBox Grid.Column="1" Name="SearchScopeCombo"
-                                          Background="#FF1E1E2E" Foreground="{StaticResource AppTextBrush}"
+                                          Background="#FF1F1A24" Foreground="{StaticResource AppTextBrush}"
                                           BorderBrush="{StaticResource AppBorderBrush}"
                                           FontSize="12" HorizontalAlignment="Stretch">
                                     <ComboBoxItem Content="Whole Solution" Tag="solution"/>
@@ -780,8 +799,12 @@
                         <StackPanel Spacing="6">
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBox Grid.Column="0" Name="ContentSearchInputBox" Watermark="Search text..."
-                                         Background="#FF1E1E2E" BorderBrush="{StaticResource AppBorderBrush}"
-                                         Foreground="{StaticResource AppTextBrush}" CornerRadius="4" Padding="8,6"/>
+                                         Background="#FF252030" BorderBrush="{StaticResource AppBorderBrush}"
+                                         Foreground="{StaticResource AppTextBrush}"
+                                         CaretBrush="{StaticResource AppTextBrush}"
+                                         SelectionBrush="{StaticResource AccentOrangeBrush}"
+                                         SelectionForegroundBrush="#FF1F1A24"
+                                         CornerRadius="4" Padding="8,6"/>
                                 <Button Grid.Column="1" Classes="icon-button" Width="28" Height="28"
                                         Margin="4,0,0,0" ToolTip.Tip="Search in Files" Name="SearchContentButton">
                                     <TextBlock Text="↵" FontSize="14"/>
@@ -789,8 +812,12 @@
                             </Grid>
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBox Grid.Column="0" Name="ReplaceInputBox" Watermark="Replace..."
-                                         Background="#FF1E1E2E" BorderBrush="{StaticResource AppBorderBrush}"
-                                         Foreground="{StaticResource AppTextBrush}" CornerRadius="4" Padding="8,6"/>
+                                         Background="#FF252030" BorderBrush="{StaticResource AppBorderBrush}"
+                                         Foreground="{StaticResource AppTextBrush}"
+                                         CaretBrush="{StaticResource AppTextBrush}"
+                                         SelectionBrush="{StaticResource AccentOrangeBrush}"
+                                         SelectionForegroundBrush="#FF1F1A24"
+                                         CornerRadius="4" Padding="8,6"/>
                                 <Button Grid.Column="1" Classes="icon-button" Margin="4,0,0,0" Width="28" Height="28"
                                         ToolTip.Tip="Replace All" Name="ReplaceAllButton">
                                     <TextBlock Text="↻" FontSize="14"/>
@@ -802,7 +829,7 @@
                                            Foreground="{StaticResource AppTextMutedBrush}"
                                            VerticalAlignment="Center" Margin="0,0,6,0"/>
                                 <ComboBox Grid.Column="1" Name="ContentSearchScopeCombo"
-                                          Background="#FF1E1E2E" Foreground="{StaticResource AppTextBrush}"
+                                          Background="#FF1F1A24" Foreground="{StaticResource AppTextBrush}"
                                           BorderBrush="{StaticResource AppBorderBrush}"
                                           FontSize="12" HorizontalAlignment="Stretch">
                                     <ComboBoxItem Content="Whole Solution" Tag="solution"/>
@@ -862,7 +889,7 @@
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"
                           Width="5"
-                          Background="#FF3C3F41"
+                          Background="#FF3E3050"
                           Cursor="SizeWestEast" 
                           Name="LeftPanelSplitter">
                 <GridSplitter.Styles>
@@ -916,7 +943,7 @@
                 <!-- Editor container — filled by AvaloniaEditControl from code-behind -->
                 <Border Grid.Row="1"
                         x:Name="EditorContainer"
-                        Background="#FF1E1E1E"
+                        Background="#FF1F1A24"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"/>
                 
@@ -925,10 +952,10 @@
                               ResizeDirection="Rows" HorizontalAlignment="Stretch"/>
                 
                 <!-- Terminal / Output Panel (JetBrains Rider Style) -->
-                <Border Grid.Row="3" Background="#FF252529" BorderBrush="#FF3C3F41" BorderThickness="0,1,0,0">
+                <Border Grid.Row="3" Background="#FF221C2C" BorderBrush="#FF3E3050" BorderThickness="0,1,0,0">
                     <Grid RowDefinitions="32,*">
                         <!-- Tool Window Header Bar (Rider-style) -->
-                        <Border Grid.Row="0" Background="#FF3C3F41">
+                        <Border Grid.Row="0" Background="#FF2D2438">
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <!-- Left: Tabs -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Stretch">
@@ -988,14 +1015,14 @@
                                     <Button Classes="tool-action-button" ToolTip.Tip="Split Terminal" Name="SplitTerminalButton">
                                         <TextBlock Text="⫿" FontSize="12"/>
                                     </Button>
-                                    <Border Width="1" Height="16" Background="#FF505053" Margin="4,0"/>
+                                    <Border Width="1" Height="16" Background="#FF3E3050" Margin="4,0"/>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Clear All" Name="ClearTerminalButton" Click="ClearTerminal_Click">
                                         <TextBlock Text="🗑" FontSize="11"/>
                                     </Button>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Scroll to End">
                                         <TextBlock Text="↓" FontSize="12"/>
                                     </Button>
-                                    <Border Width="1" Height="16" Background="#FF505053" Margin="4,0"/>
+                                    <Border Width="1" Height="16" Background="#FF3E3050" Margin="4,0"/>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Minimize" Name="MinimizePanelButton" Click="MinimizePanel_Click">
                                         <TextBlock Text="▁" FontSize="10"/>
                                     </Button>
@@ -1013,12 +1040,12 @@
                         <Grid Grid.Row="1">
                             <!-- Left side: Terminal sessions list (optional, collapsed by default) -->
                             <!-- Main Terminal Content -->
-                            <Border Name="TerminalContainer" Background="#FF1E1E1E"/>
+                            <Border Name="TerminalContainer" Background="#FF1F1A24"/>
                             
                             <!-- Problems Panel (hidden by default) -->
-                            <Border Name="ProblemsPanel" Background="#FF252529" IsVisible="False">
+                            <Border Name="ProblemsPanel" Background="#FF221C2C" IsVisible="False">
                                 <Grid RowDefinitions="Auto,*">
-                                    <Border Grid.Row="0" Background="#FF2D2D30" Padding="8,4">
+                                    <Border Grid.Row="0" Background="#FF2A2230" Padding="8,4">
                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
@@ -1079,10 +1106,10 @@
                                                 <Setter Property="Background" Value="Transparent"/>
                                             </Style>
                                             <Style Selector="ListBoxItem:pointerover">
-                                                <Setter Property="Background" Value="#20FFFFFF"/>
+                                                <Setter Property="Background" Value="#15FFDAB0"/>
                                             </Style>
                                             <Style Selector="ListBoxItem:selected">
-                                                <Setter Property="Background" Value="#30FAB387"/>
+                                                <Setter Property="Background" Value="#30FFC09F"/>
                                             </Style>
                                         </ListBox.Styles>
                                     </ListBox>
@@ -1097,7 +1124,7 @@
                             </Border>
                             
                             <!-- Build Output Panel (hidden by default) -->
-                            <Border Name="BuildPanel" Background="#FF1E1E1E" IsVisible="False">
+                            <Border Name="BuildPanel" Background="#FF1F1A24" IsVisible="False">
                                 <ScrollViewer Name="BuildOutputScrollViewer" 
                                               HorizontalScrollBarVisibility="Auto" 
                                               VerticalScrollBarVisibility="Auto">
@@ -1113,7 +1140,7 @@
                             </Border>
                             
                             <!-- Run Output Panel (hidden by default) -->
-                            <Border Name="RunPanel" Background="#FF1E1E1E" IsVisible="False">
+                            <Border Name="RunPanel" Background="#FF1F1A24" IsVisible="False">
                                 <ScrollViewer>
                                     <SelectableTextBlock Name="RunOutputText" Text="Run output will appear here..." 
                                                FontFamily="Consolas, Monaco, monospace" FontSize="12"
@@ -1124,7 +1151,7 @@
                             </Border>
                             
                             <!-- Git Panel (hidden by default) -->
-                            <Border Name="GitPanel" Background="#FF252529" IsVisible="False">
+                            <Border Name="GitPanel" Background="#FF221C2C" IsVisible="False">
                                 <StackPanel Margin="12,8" Spacing="8">
                                     <TextBlock Text="Git Log" FontWeight="SemiBold" Foreground="{StaticResource AppTextBrush}"/>
                                     <TextBlock Text="No repository opened" FontSize="12" Foreground="{StaticResource AppTextMutedBrush}" FontStyle="Italic"/>
@@ -1143,7 +1170,7 @@
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"
                           Width="5"
-                          Background="#FF3C3F41"
+                          Background="#FF3E3050"
                           Cursor="SizeWestEast" 
                           Name="RightPanelSplitter">
                 <GridSplitter.Styles>
@@ -1190,7 +1217,7 @@
                     <ScrollViewer Grid.Row="1" Margin="12,8" Name="AIChatScrollViewer">
                         <StackPanel Spacing="12" Name="AIChatMessages">
                             <!-- AI Welcome message -->
-                            <Border Background="#40FAB387" CornerRadius="8" Padding="12">
+                            <Border Background="#40FFC09F" CornerRadius="8" Padding="12">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="🚀 Copilot CLI Ready!" FontWeight="SemiBold" Foreground="#FFFFFF" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     <TextBlock Text="Manage your project files with commands:" 
@@ -1223,7 +1250,7 @@
                             <TextBox Name="AIChatInput" 
                                      Watermark="Enter command (create, ls, help...)"
                                      Background="#FF0A0A0A"
-                                     BorderBrush="#FF3D3D4D"
+                                     BorderBrush="#FF3E3050"
                                      BorderThickness="1"
                                      Foreground="BlueViolet"
                                      CornerRadius="8"
@@ -1236,7 +1263,7 @@
                             <Button Grid.Column="1" Classes="icon-button" Margin="8,0,0,0" 
                                     Background="{StaticResource AccentOrangeBrush}"
                                     ToolTip.Tip="Execute command" Name="SendAIButton" Click="SendAI_Click">
-                                <TextBlock Text="➤" FontSize="16" Foreground="#FF1E1E2E"/>
+                                <TextBlock Text="➤" FontSize="16" Foreground="#FF1F1A24"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -1245,7 +1272,7 @@
         </Grid>
         
         <!-- ROW 2: STATUS BAR (JetBrains Rider Style) -->
-        <Border Grid.Row="2" Background="#FF3C3F41" BorderBrush="#FF505053" BorderThickness="0,1,0,0">
+        <Border Grid.Row="2" Background="#FF3C3C3C" BorderBrush="#FF3E3050" BorderThickness="0,1,0,0">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <!-- Left: Branch info and status -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
@@ -1253,10 +1280,10 @@
                     <Button Classes="status-bar-button" ToolTip.Tip="Git Branch">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBlock Text="⎇" FontSize="11" Foreground="#FFA6E3A1"/>
-                            <TextBlock Text="main" FontSize="11" Foreground="#FFB0B0B0" Name="GitBranchText"/>
+                            <TextBlock Text="main" FontSize="11" Foreground="#FF9E90B0" Name="GitBranchText"/>
                         </StackPanel>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Sync status -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Synchronize Changes">
                         <StackPanel Orientation="Horizontal" Spacing="3">
@@ -1264,7 +1291,7 @@
                             <TextBlock Text="↑0" FontSize="10" Foreground="#FFA6E3A1"/>
                         </StackPanel>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Errors/Warnings -->
                     <Button Classes="status-bar-button" ToolTip.Tip="View Problems" Name="StatusProblemsButton" Click="StatusProblems_Click">
                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -1282,39 +1309,39 @@
                 
                 <!-- Center: Status message -->
                 <TextBlock Grid.Column="1" x:CompileBindings="False" Text="{Binding StatusText}" FontSize="11" 
-                           Foreground="#FF9399B2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Foreground="#FF9E90B0" VerticalAlignment="Center" HorizontalAlignment="Center"
                            Name="StatusMessageText"/>
                 
                 <!-- Right: Editor info -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
                     <!-- Encoding -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Select Encoding">
-                        <TextBlock Text="UTF-8" FontSize="11" Foreground="#FFB0B0B0"/>
+                        <TextBlock Text="UTF-8" FontSize="11" Foreground="#FF9E90B0"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Line Endings -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Select End of Line Sequence">
-                        <TextBlock Text="CRLF" FontSize="11" Foreground="#FFB0B0B0" Name="LineEndingsText"/>
+                        <TextBlock Text="CRLF" FontSize="11" Foreground="#FF9E90B0" Name="LineEndingsText"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Language -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Select Language Mode">
-                        <TextBlock Text="C#" FontSize="11" Foreground="#FFB0B0B0" Name="LanguageModeText"/>
+                        <TextBlock Text="C#" FontSize="11" Foreground="#FF9E90B0" Name="LanguageModeText"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Cursor Position -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Go to Line">
-                        <TextBlock Text="Ln 1, Col 1" FontSize="11" Foreground="#FFB0B0B0" Name="CursorPositionText"/>
+                        <TextBlock Text="Ln 1, Col 1" FontSize="11" Foreground="#FF9E90B0" Name="CursorPositionText"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Spaces/Tabs -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Select Indentation">
-                        <TextBlock Text="Spaces: 4" FontSize="11" Foreground="#FFB0B0B0"/>
+                        <TextBlock Text="Spaces: 4" FontSize="11" Foreground="#FF9E90B0"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF505053" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Notifications -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Notifications" Name="NotificationsButton">
-                        <TextBlock Text="🔔" FontSize="11" Foreground="#FFB0B0B0" FontFamily="Segoe UI Emoji"/>
+                        <TextBlock Text="🔔" FontSize="11" Foreground="#FF9E90B0" FontFamily="Segoe UI Emoji"/>
                     </Button>
                 </StackPanel>
             </Grid>

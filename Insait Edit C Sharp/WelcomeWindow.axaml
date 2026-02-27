@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,17 +15,17 @@
         FontFamily="Segoe UI, Arial, Tahoma">
 
     <Window.Resources>
-        <!-- Dark Theme Colors -->
-        <Color x:Key="BgPrimary">#FF1E1E2E</Color>
-        <Color x:Key="BgSecondary">#FF2D2D3D</Color>
-        <Color x:Key="BgTertiary">#FF363647</Color>
-        <Color x:Key="BorderColor">#FF3D3D4D</Color>
-        <Color x:Key="TextPrimary">#FFCDD6F4</Color>
-        <Color x:Key="TextSecondary">#FF9399B2</Color>
-        <Color x:Key="TextMuted">#FF6C7086</Color>
-        <!-- Orange is now PRIMARY accent -->
-        <Color x:Key="AccentOrange">#FFFAB387</Color>
-        <Color x:Key="AccentPurple">#FFCBA6F7</Color>
+        <!-- Fluent Orange-Purple Theme -->
+        <Color x:Key="BgPrimary">#FF1F1A24</Color>
+        <Color x:Key="BgSecondary">#FF2A2230</Color>
+        <Color x:Key="BgTertiary">#FF352840</Color>
+        <Color x:Key="BorderColor">#FF3E3050</Color>
+        <Color x:Key="TextPrimary">#FFF0E8F4</Color>
+        <Color x:Key="TextSecondary">#FF9E90B0</Color>
+        <Color x:Key="TextMuted">#FF736886</Color>
+        <!-- Light peach-orange accent -->
+        <Color x:Key="AccentOrange">#FFFFC09F</Color>
+        <Color x:Key="AccentPurple">#FFDCC4FF</Color>
         <Color x:Key="AccentBlue">#FF89B4FA</Color>
         <Color x:Key="AccentGreen">#FFA6E3A1</Color>
         <Color x:Key="AccentRed">#FFF38BA8</Color>
@@ -44,8 +44,8 @@
         
         <!-- Gradients - Orange first as primary -->
         <LinearGradientBrush x:Key="LogoGradient" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#FFFAB387" Offset="0"/>
-            <GradientStop Color="#FFCBA6F7" Offset="0.5"/>
+            <GradientStop Color="#FFFFC09F" Offset="0"/>
+            <GradientStop Color="#FFDCC4FF" Offset="0.5"/>
             <GradientStop Color="#FF89B4FA" Offset="1"/>
         </LinearGradientBrush>
     </Window.Resources>
@@ -79,11 +79,11 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.action-btn:pointerover">
-            <Setter Property="Background" Value="#FF424258"/>
+            <Setter Property="Background" Value="#FF3E3050"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
         <Style Selector="Button.action-btn:pressed">
-            <Setter Property="Background" Value="#FF4A4A60"/>
+            <Setter Property="Background" Value="#FF4A3D58"/>
         </Style>
 
         <!-- Project Item Button -->
@@ -100,7 +100,7 @@
             <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
         </Style>
         <Style Selector="Button.project-item:pressed">
-            <Setter Property="Background" Value="#FF424258"/>
+            <Setter Property="Background" Value="#FF3E3050"/>
         </Style>
 
         <!-- Link Buttons -->

@@ -8,23 +8,23 @@
         WindowStartupLocation="CenterOwner"
         CanResize="True"
         SystemDecorations="None"
-        Background="#FF1E1E2E">
+        Background="#FF1F1A24">
     
     <Window.Styles>
         <Style Selector="Button.action-button">
-            <Setter Property="Background" Value="#FF3D3D4D"/>
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.action-button:pointerover">
-            <Setter Property="Background" Value="#FF4D4D5D"/>
+            <Setter Property="Background" Value="#FF4A3D58"/>
         </Style>
         <Style Selector="Button.primary-button">
-            <Setter Property="Background" Value="#FFFAB387"/>
-            <Setter Property="Foreground" Value="#FF1E1E2E"/>
+            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="16,8"/>
@@ -32,33 +32,33 @@
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.primary-button:pointerover">
-            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Background" Value="#FFFFD4B8"/>
         </Style>
         <Style Selector="ListBoxItem">
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="Background" Value="Transparent"/>
         </Style>
         <Style Selector="ListBoxItem:pointerover">
-            <Setter Property="Background" Value="#30FFFFFF"/>
+            <Setter Property="Background" Value="#20FFDAB0"/>
         </Style>
         <Style Selector="ListBoxItem:selected">
-            <Setter Property="Background" Value="#50FAB387"/>
+            <Setter Property="Background" Value="#50FFC09F"/>
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF363647"/>
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
-            <Setter Property="BorderBrush" Value="#FF3D3D4D"/>
+            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,10"/>
         </Style>
         <Style Selector="ComboBox">
-            <Setter Property="Background" Value="#FF363647"/>
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
-            <Setter Property="BorderBrush" Value="#FF3D3D4D"/>
+            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
             <Setter Property="CornerRadius" Value="6"/>
         </Style>
         <Style Selector="CheckBox">
-            <Setter Property="Foreground" Value="#FFCDD6F4"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
         </Style>
         
         <!-- Emoji icons style - preserve natural colors -->
@@ -67,7 +67,7 @@
         </Style>
     </Window.Styles>
 
-    <Border BorderBrush="#FF3D3D4D" BorderThickness="1" CornerRadius="8">
+    <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8">
         <Grid RowDefinitions="36,*,Auto">
             <!-- Title Bar -->
             <Border Grid.Row="0" Background="#FF3C3C3C" CornerRadius="8,8,0,0" Name="TitleBar">
@@ -75,9 +75,9 @@
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
                         <TextBlock Text="⚡" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Run/Debug Configurations" FontSize="13" FontWeight="SemiBold" 
-                                   Foreground="#FFCDD6F4" VerticalAlignment="Center"/>
+                                   Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
                     </StackPanel>
-                    <Button Grid.Column="1" Background="Transparent" Foreground="#FF9399B2"
+                    <Button Grid.Column="1" Background="Transparent" Foreground="#FF9E90B0"
                             BorderThickness="0" Width="36" Height="36" Name="CloseButton">
                         <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -88,7 +88,7 @@
             <!-- Main Content -->
             <Grid Grid.Row="1" ColumnDefinitions="250,*">
                 <!-- Left Panel: Configuration List -->
-                <Border Grid.Column="0" Background="#FF252529" BorderBrush="#FF3D3D4D" BorderThickness="0,0,1,0">
+                <Border Grid.Column="0" Background="#FF221C2C" BorderBrush="#FF3E3050" BorderThickness="0,0,1,0">
                     <Grid RowDefinitions="Auto,*,Auto">
                         <!-- Search -->
                         <TextBox Grid.Row="0" Watermark="🔍 Search configurations..." Margin="8" Name="SearchBox"/>
@@ -99,7 +99,7 @@
                                 <!-- Single section header -->
                                 <Border Padding="8,6,8,2">
                                     <TextBlock Text="SINGLE" FontSize="10" FontWeight="SemiBold"
-                                               Foreground="#FF6C7086" LetterSpacing="2"/>
+                                               Foreground="#FF736886" LetterSpacing="2"/>
                                 </Border>
                                 <ListBox Name="ConfigurationsList" Background="Transparent"
                                          SelectionChanged="ConfigurationsList_SelectionChanged">
@@ -107,7 +107,7 @@
                                         <DataTemplate x:DataType="services:RunConfiguration" x:CompileBindings="False">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
                                                 <TextBlock Text="▶" FontSize="12" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#FFCDD6F4" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
@@ -117,7 +117,7 @@
                                 <Border Padding="8,10,8,2">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <TextBlock Grid.Column="0" Text="COMPOUND" FontSize="10" FontWeight="SemiBold"
-                                                   Foreground="#FF6C7086" LetterSpacing="2" VerticalAlignment="Center"/>
+                                                   Foreground="#FF736886" LetterSpacing="2" VerticalAlignment="Center"/>
                                         <Button Grid.Column="1" Content="⚡ Manage" Classes="action-button"
                                                 FontSize="10" Padding="6,2" Name="ManageCompoundButton"
                                                 ToolTip.Tip="Open Compound Run Configuration editor"/>
@@ -128,10 +128,10 @@
                                     <ListBox.ItemTemplate>
                                         <DataTemplate x:DataType="services:CompoundRunConfiguration" x:CompileBindings="False">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <TextBlock Text="⚡" FontSize="12" Foreground="#FFFAB387" VerticalAlignment="Center"/>
+                                                <TextBlock Text="⚡" FontSize="12" Foreground="#FFFFC09F" VerticalAlignment="Center"/>
                                                 <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#FFCDD6F4"/>
-                                                    <TextBlock FontSize="10" Foreground="#FF9399B2">
+                                                    <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#FFF0E8F4"/>
+                                                    <TextBlock FontSize="10" Foreground="#FF9E90B0">
                                                         <Run Text="{Binding Configurations.Count}"/>
                                                         <Run Text=" projects"/>
                                                     </TextBlock>
@@ -157,40 +157,40 @@
                     <StackPanel Margin="16" Spacing="16" Name="ConfigDetailsPanel">
                         <!-- Name -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Name" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <TextBlock Text="Name" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                             <TextBox Name="ConfigNameBox" Watermark="Configuration name"/>
                         </StackPanel>
 
                         <!-- Project -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                             <ComboBox Name="ProjectComboBox" HorizontalAlignment="Stretch"/>
                         </StackPanel>
 
                         <!-- Configuration (Debug/Release) -->
                         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
                             <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,8,0">
-                                <TextBlock Text="Build Configuration" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                                <TextBlock Text="Build Configuration" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                                 <ComboBox Name="BuildConfigComboBox" HorizontalAlignment="Stretch">
                                     <ComboBoxItem Content="Debug"/>
                                     <ComboBoxItem Content="Release"/>
                                 </ComboBox>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0">
-                                <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                                <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                                 <ComboBox Name="FrameworkComboBox" HorizontalAlignment="Stretch"/>
                             </StackPanel>
                         </Grid>
 
                         <!-- Launch Profile -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Launch Profile (Optional)" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <TextBlock Text="Launch Profile (Optional)" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                             <ComboBox Name="LaunchProfileComboBox" HorizontalAlignment="Stretch"/>
                         </StackPanel>
 
                         <!-- Working Directory -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Working Directory" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <TextBlock Text="Working Directory" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBox Grid.Column="0" Name="WorkingDirBox" Watermark="Working directory path"/>
                                 <Button Grid.Column="1" Content="📁" Classes="action-button" Margin="8,0,0,0" Width="40" Name="BrowseWorkingDirButton"/>
@@ -199,27 +199,27 @@
 
                         <!-- Command Line Arguments -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Program Arguments" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                            <TextBlock Text="Program Arguments" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                             <TextBox Name="ArgumentsBox" Watermark="--arg1 value1 --arg2 value2" Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
                         </StackPanel>
 
                         <!-- Environment Variables -->
                         <StackPanel Spacing="6">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Text="Environment Variables" FontWeight="SemiBold" Foreground="#FFCDD6F4"/>
+                                <TextBlock Text="Environment Variables" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                                 <Button Grid.Column="1" Content="+ Add" Classes="action-button" FontSize="11" Name="AddEnvVarButton"/>
                             </Grid>
-                            <Border Background="#FF2D2D3D" CornerRadius="6" Padding="8" MinHeight="60">
+                            <Border Background="#FF2A2230" CornerRadius="6" Padding="8" MinHeight="60">
                                 <StackPanel Name="EnvVarsPanel" Spacing="4">
-                                    <TextBlock Text="No environment variables defined" FontSize="11" Foreground="#FF9399B2" FontStyle="Italic"/>
+                                    <TextBlock Text="No environment variables defined" FontSize="11" Foreground="#FF9E90B0" FontStyle="Italic"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
                         <!-- Options -->
-                        <Border Background="#FF2D2D3D" CornerRadius="6" Padding="12">
+                        <Border Background="#FF2A2230" CornerRadius="6" Padding="12">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Run Options" FontWeight="SemiBold" Foreground="#FFFAB387" Margin="0,0,0,4"/>
+                                <TextBlock Text="Run Options" FontWeight="SemiBold" Foreground="#FFFFC09F" Margin="0,0,0,4"/>
                                 <CheckBox Content="Allow parallel run" Name="AllowParallelRunCheck"/>
                                 <CheckBox Content="Build before run" IsChecked="True" Name="BuildBeforeRunCheck"/>
                                 <CheckBox Content="Activate tool window on output" IsChecked="True" Name="ActivateToolWindowCheck"/>
@@ -230,7 +230,7 @@
             </Grid>
 
             <!-- Footer -->
-            <Border Grid.Row="2" Background="#FF2D2D3D" Padding="16,12">
+            <Border Grid.Row="2" Background="#FF2A2230" Padding="16,12">
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                         <Button Content="▶ Run" Classes="primary-button" Name="RunButton"/>

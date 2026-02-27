@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,20 +7,20 @@
              x:Class="Insait_Edit_C_Sharp.Controls.GitPanelControl">
     
     <UserControl.Resources>
-        <!-- Colors - JetBrains Dark Theme -->
-        <SolidColorBrush x:Key="GitBgBrush" Color="#FF2B2D30"/>
-        <SolidColorBrush x:Key="GitSurfaceBrush" Color="#FF1E1F22"/>
-        <SolidColorBrush x:Key="GitBorderBrush" Color="#FF393B40"/>
-        <SolidColorBrush x:Key="GitTextBrush" Color="#FFBCBEC4"/>
-        <SolidColorBrush x:Key="GitTextMutedBrush" Color="#FF6F737A"/>
-        <SolidColorBrush x:Key="GitAccentBrush" Color="#FF548AF7"/>
+        <!-- Colors - Fluent Orange-Purple Theme -->
+        <SolidColorBrush x:Key="GitBgBrush" Color="#FF2A2230"/>
+        <SolidColorBrush x:Key="GitSurfaceBrush" Color="#FF1F1A24"/>
+        <SolidColorBrush x:Key="GitBorderBrush" Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="GitTextBrush" Color="#FFF0E8F4"/>
+        <SolidColorBrush x:Key="GitTextMutedBrush" Color="#FF9E90B0"/>
+        <SolidColorBrush x:Key="GitAccentBrush" Color="#FF9B7DCF"/>
         <SolidColorBrush x:Key="GitGreenBrush" Color="#FF6AAB73"/>
         <SolidColorBrush x:Key="GitRedBrush" Color="#FFEF5350"/>
         <SolidColorBrush x:Key="GitBlueBrush" Color="#FF6897BB"/>
         <SolidColorBrush x:Key="GitYellowBrush" Color="#FFBB9A6F"/>
-        <SolidColorBrush x:Key="GitTabActiveBrush" Color="#FF4A82C7"/>
-        <SolidColorBrush x:Key="GitHoverBrush" Color="#FF393B40"/>
-        <SolidColorBrush x:Key="GitSelectedBrush" Color="#FF2E436E"/>
+        <SolidColorBrush x:Key="GitTabActiveBrush" Color="#FF9B7DCF"/>
+        <SolidColorBrush x:Key="GitHoverBrush" Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="GitSelectedBrush" Color="#FF352840"/>
     </UserControl.Resources>
     
     <UserControl.Styles>
