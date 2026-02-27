@@ -960,9 +960,6 @@ public partial class MainWindow : Window
             case "ShowRunOutput":
                 SwitchToolWindowPanel("run");
                 break;
-            case "ShowDebugConsole":
-                SwitchToolWindowPanel("debug");
-                break;
             case "Minimize":
                 WindowState = WindowState.Minimized;
                 break;
@@ -998,32 +995,6 @@ public partial class MainWindow : Window
                 break;
             case "Publish":
                 await ShowPublishWindowAsync();
-                break;
-
-            // Debug actions
-            case "StartDebugging":
-                await RunProjectAsync();
-                break;
-            case "StartWithoutDebugging":
-                await RunProjectAsync();
-                break;
-            case "StopDebugging":
-                CancelBuild();
-                break;
-            case "ToggleBreakpoint":
-                // TODO: Implement breakpoint toggle
-                break;
-            case "DeleteAllBreakpoints":
-                // TODO: Implement delete all breakpoints
-                break;
-            case "StepOver":
-                // TODO: Implement step over
-                break;
-            case "StepInto":
-                // TODO: Implement step into
-                break;
-            case "StepOut":
-                // TODO: Implement step out
                 break;
 
             // Tools actions
@@ -1315,7 +1286,7 @@ public partial class MainWindow : Window
 
     private void Debug_Click(object? sender, RoutedEventArgs e)
     {
-        SwitchSidePanel("debug");
+        // Debug panel removed
     }
 
     private NuGetPanelControl? _nugetPanelControl;
@@ -2038,7 +2009,6 @@ public partial class MainWindow : Window
         var explorerPanel = this.FindControl<Grid>("ExplorerPanel");
         var searchPanel = this.FindControl<Grid>("SearchPanel");
         var gitPanel = this.FindControl<Border>("GitSidePanel");
-        var debugPanel = this.FindControl<Grid>("DebugSidePanel");
         var nugetPanel = this.FindControl<Border>("NuGetSidePanel");
         var accountPanel = this.FindControl<Border>("AccountSidePanel");
         
@@ -2046,7 +2016,6 @@ public partial class MainWindow : Window
         var explorerButton = this.FindControl<Button>("ExplorerButton");
         var searchButton = this.FindControl<Button>("SearchButton");
         var gitButton = this.FindControl<Button>("GitButton");
-        var debugButton = this.FindControl<Button>("DebugButton");
         var nugetButton = this.FindControl<Button>("NuGetButton");
         var accountButton = this.FindControl<Button>("AccountButton");
         
@@ -2054,7 +2023,6 @@ public partial class MainWindow : Window
         if (explorerPanel != null) explorerPanel.IsVisible = false;
         if (searchPanel != null) searchPanel.IsVisible = false;
         if (gitPanel != null) gitPanel.IsVisible = false;
-        if (debugPanel != null) debugPanel.IsVisible = false;
         if (nugetPanel != null) nugetPanel.IsVisible = false;
         if (accountPanel != null) accountPanel.IsVisible = false;
         
@@ -2062,7 +2030,6 @@ public partial class MainWindow : Window
         explorerButton?.Classes.Remove("active");
         searchButton?.Classes.Remove("active");
         gitButton?.Classes.Remove("active");
-        debugButton?.Classes.Remove("active");
         nugetButton?.Classes.Remove("active");
         accountButton?.Classes.Remove("active");
         
@@ -2086,10 +2053,6 @@ public partial class MainWindow : Window
             case "git":
                 if (gitPanel != null) gitPanel.IsVisible = true;
                 gitButton?.Classes.Add("active");
-                break;
-            case "debug":
-                if (debugPanel != null) debugPanel.IsVisible = true;
-                debugButton?.Classes.Add("active");
                 break;
             case "nuget":
                 if (nugetPanel != null) nugetPanel.IsVisible = true;

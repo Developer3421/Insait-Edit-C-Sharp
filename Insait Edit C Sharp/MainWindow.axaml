@@ -327,13 +327,14 @@
                             Background="#FF4CAF50" 
                             Foreground="White"
                             CornerRadius="4"
-                            Padding="12,4"
+                            Width="34"
                             Height="28"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Cursor="Hand">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="🔨" FontSize="12" FontFamily="Segoe UI Emoji"/>
-                            <TextBlock Text="Build" FontSize="12" FontWeight="SemiBold"/>
-                        </StackPanel>
+                        <TextBlock Text="🔨" FontSize="14" FontFamily="Segoe UI Emoji"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
                     <!-- Analyze Button -->
@@ -342,14 +343,15 @@
                             Background="#FF9C27B0" 
                             Foreground="White"
                             CornerRadius="4"
-                            Padding="12,4"
+                            Width="34"
                             Height="28"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="🔍" FontSize="12" FontFamily="Segoe UI Emoji"/>
-                            <TextBlock Text="Analyze" FontSize="12" FontWeight="SemiBold"/>
-                        </StackPanel>
+                        <TextBlock Text="🔍" FontSize="14" FontFamily="Segoe UI Emoji"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
                     <!-- Run Configuration Selector (JetBrains Rider Style) -->
@@ -394,28 +396,34 @@
                             Background="#FF4CAF50" 
                             Foreground="White"
                             CornerRadius="4"
-                            Padding="10,4"
+                            Width="34"
                             Height="28"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="▶" FontSize="12"/>
-                            <TextBlock Text="Run" FontSize="12" FontWeight="SemiBold"/>
-                        </StackPanel>
+                        <TextBlock Text="▶" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
-                    <!-- Debug Button -->
-                    <Button Name="DebugProjectButton" ToolTip.Tip="Debug Project (F5 with debugger)"
+                    <!-- Debug Run Button -->
+                    <Button Name="DebugProjectButton" ToolTip.Tip="Run in Debug Mode"
                             Click="DebugProject_Click"
-                            Background="#FF9C27B0" 
+                            Background="#FF9C27B0"
                             Foreground="White"
                             CornerRadius="4"
-                            Padding="8,4"
+                            Width="34"
                             Height="28"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="2,0,0,0">
-                        <TextBlock Text="🐛" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                        <TextBlock Text="🐛" FontSize="14" FontFamily="Segoe UI Emoji"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
+                    
                     
                     <!-- Stop Button (hidden by default) -->
                     <Button Name="CancelBuildButton" ToolTip.Tip="Stop (Shift+F5)"
@@ -443,13 +451,14 @@
                             Background="#FF2196F3" 
                             Foreground="White"
                             CornerRadius="4"
-                            Padding="10,4"
+                            Width="34"
                             Height="28"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Cursor="Hand">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="📦" FontSize="11" FontFamily="Segoe UI Emoji"/>
-                            <TextBlock Text="Publish" FontSize="12" FontWeight="SemiBold"/>
-                        </StackPanel>
+                        <TextBlock Text="📦" FontSize="14" FontFamily="Segoe UI Emoji"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
 
@@ -485,9 +494,6 @@
                     </Button>
                     <Button Classes="sidebar-button" Name="GitButton" ToolTip.Tip="Source Control (Ctrl+Shift+G)" Click="Git_Click">
                         <TextBlock Text="🔀" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Button>
-                    <Button Classes="sidebar-button" Name="DebugButton" ToolTip.Tip="Run and Debug (Ctrl+Shift+D)" Click="Debug_Click">
-                        <TextBlock Text="🐛" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     <Button Classes="sidebar-button" Name="NuGetButton" ToolTip.Tip="NuGet Packages (Ctrl+Shift+N)" Click="NuGet_Click">
                         <TextBlock Text="📦" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -549,11 +555,6 @@
                                     <MenuItem Header="▶ Run" Name="ContextMenuRun" Click="ContextMenu_RunProject_Click">
                                         <MenuItem.Icon>
                                             <TextBlock Text="▶" FontSize="10" Foreground="#4CAF50"/>
-                                        </MenuItem.Icon>
-                                    </MenuItem>
-                                    <MenuItem Header="🐞 Debug" Name="ContextMenuDebug" Click="ContextMenu_DebugProject_Click">
-                                        <MenuItem.Icon>
-                                            <TextBlock Text="🐞" FontSize="10"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
                                     <Separator Name="ContextMenuRunSeparator"/>
@@ -842,37 +843,6 @@
                     <!-- GitPanelControl will be added programmatically -->
                 </Border>
                 
-                <!-- Debug Panel (hidden by default) -->
-                <Grid RowDefinitions="Auto,*" Name="DebugSidePanel" IsVisible="False">
-                    <Border Grid.Row="0" Padding="12,10" Background="#20000000">
-                        <TextBlock Text="RUN AND DEBUG" FontSize="11" FontWeight="SemiBold" 
-                                   Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
-                                   LetterSpacing="1"/>
-                    </Border>
-                    <ScrollViewer Grid.Row="1" Margin="8">
-                        <StackPanel Spacing="12">
-                            <Button Classes="primary-button" Content="▶ Start Debugging" 
-                                    HorizontalAlignment="Stretch" Name="StartDebugButton" Click="StartDebug_Click"/>
-                            <Expander Header="Variables" IsExpanded="True">
-                                <TextBlock Text="No debugging session" FontSize="12" 
-                                           Foreground="{StaticResource AppTextMutedBrush}" Margin="8"/>
-                            </Expander>
-                            <Expander Header="Watch">
-                                <TextBlock Text="Add expressions to watch" FontSize="12" 
-                                           Foreground="{StaticResource AppTextMutedBrush}" Margin="8"/>
-                            </Expander>
-                            <Expander Header="Call Stack">
-                                <TextBlock Text="No call stack" FontSize="12" 
-                                           Foreground="{StaticResource AppTextMutedBrush}" Margin="8"/>
-                            </Expander>
-                            <Expander Header="Breakpoints" IsExpanded="True">
-                                <TextBlock Text="No breakpoints set" FontSize="12" 
-                                           Foreground="{StaticResource AppTextMutedBrush}" Margin="8"/>
-                            </Expander>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-                
                 <!-- NuGet Panel (hidden by default) -->
                 <Border Name="NuGetSidePanel" IsVisible="False">
                     <!-- NuGetPanelControl will be added programmatically -->
@@ -1005,13 +975,6 @@
                                         </StackPanel>
                                     </Button>
                                     
-                                    <!-- Debug Tab -->
-                                    <Button Classes="tool-window-tab" Name="DebugConsoleTabButton" Click="DebugConsoleTab_Click">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="🐛" FontSize="11"/>
-                                            <TextBlock Text="Debug" FontSize="12"/>
-                                        </StackPanel>
-                                    </Button>
                                 </StackPanel>
                                 
                                 <!-- Center: Empty space / Additional info -->
@@ -1019,14 +982,6 @@
                                 
                                 <!-- Right: Tool Actions -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,4,0" VerticalAlignment="Center">
-                                    <!-- Terminal dropdown -->
-                                    <Button Classes="tool-action-button" ToolTip.Tip="Terminal: PowerShell" Name="TerminalDropdown">
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <TextBlock Text="PowerShell" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}"/>
-                                            <TextBlock Text="▾" FontSize="9" Foreground="{StaticResource AppTextMutedBrush}"/>
-                                        </StackPanel>
-                                    </Button>
-                                    <Border Width="1" Height="16" Background="#FF505053" Margin="4,0"/>
                                     <Button Classes="tool-action-button" ToolTip.Tip="New Terminal (Ctrl+Shift+`)" Name="NewTerminalButton" Click="NewTerminal_Click">
                                         <TextBlock Text="+" FontSize="14" FontWeight="Bold"/>
                                     </Button>
@@ -1176,16 +1131,6 @@
                                 </StackPanel>
                             </Border>
                             
-                            <!-- Debug Panel (hidden by default) -->
-                            <Border Name="DebugPanel" Background="#FF1E1E1E" IsVisible="False">
-                                <ScrollViewer>
-                                    <SelectableTextBlock Name="DebugOutputText" Text="Debug console ready..." 
-                                               FontFamily="Consolas, Monaco, monospace" FontSize="12"
-                                               Foreground="{StaticResource AppTextMutedBrush}" Margin="12,8"
-                                               TextWrapping="Wrap"
-                                               SelectionBrush="#664FC3F7"/>
-                                </ScrollViewer>
-                            </Border>
                         </Grid>
                     </Grid>
                 </Border>
