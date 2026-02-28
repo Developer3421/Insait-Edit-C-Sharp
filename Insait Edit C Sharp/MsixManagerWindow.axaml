@@ -1,0 +1,561 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.MsixManagerWindow"
+        Title="MSIX Package Manager"
+        Width="1000" Height="780"
+        MinWidth="840" MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="None"
+        Background="#FF1F1A24"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Window.Styles>
+        <Style Selector="Button.action-btn">
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.action-btn:pointerover"><Setter Property="Background" Value="#FF4A3D58"/></Style>
+        <Style Selector="Button.action-btn:disabled"><Setter Property="Opacity" Value="0.45"/></Style>
+        <Style Selector="Button.primary-btn">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.primary-btn:pointerover"><Setter Property="Background" Value="#FFFFD4B8"/></Style>
+        <Style Selector="Button.primary-btn:disabled"><Setter Property="Opacity" Value="0.45"/></Style>
+        <Style Selector="Button.danger-btn">
+            <Setter Property="Background" Value="#FF8B3A3A"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.danger-btn:pointerover"><Setter Property="Background" Value="#FFA04040"/></Style>
+        <Style Selector="Button.nav-tab">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FF9E90B0"/>
+            <Setter Property="BorderThickness" Value="2,0,0,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="Button.nav-tab:pointerover">
+            <Setter Property="Background" Value="#20FFFFFF"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+        </Style>
+        <Style Selector="Button.nav-tab.active">
+            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="Foreground" Value="#FFFFC09F"/>
+            <Setter Property="BorderBrush" Value="#FFFFC09F"/>
+        </Style>
+        <Style Selector="TextBlock.fl">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="#FF9E90B0"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="TextBlock.sh">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#FFFFC09F"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="CaretBrush" Value="#FFF0E8F4"/>
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="TextBox:focus"><Setter Property="BorderBrush" Value="#FFFFC09F"/></Style>
+        <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="#FF6A6080"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="TextBox.log-out">
+            <Setter Property="Background" Value="#FF0E0C14"/>
+            <Setter Property="Foreground" Value="#FFA6E3A1"/>
+            <Setter Property="BorderBrush" Value="#FF2A2230"/>
+            <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="10">
+        <Grid RowDefinitions="40,*,50">
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0" Background="#FF3C3C3C" CornerRadius="10,10,0,0" Name="TitleBar">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" Margin="14,0">
+                        <TextBlock Text="📦" FontSize="18" VerticalAlignment="Center"/>
+                        <TextBlock Text="MSIX Package Manager" FontSize="14" FontWeight="Bold"
+                                   Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
+                        <Border Background="#FF3E3050" CornerRadius="4" Padding="6,2" Margin="6,0">
+                            <TextBlock Text="Professional" FontSize="10" Foreground="#FFFFC09F" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                    <Button Grid.Column="1" Name="CloseBtn" Background="Transparent" Foreground="#FF9E90B0"
+                            BorderThickness="0" Width="40" Height="40" Margin="0,0,4,0">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="24" Height="24"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Body -->
+            <Grid Grid.Row="1" ColumnDefinitions="180,*">
+
+                <!-- Left Nav -->
+                <Border Grid.Column="0" Background="#FF241E2C" BorderBrush="#FF3E3050" BorderThickness="0,0,1,0">
+                    <StackPanel Margin="0,12" Spacing="2">
+                        <TextBlock Text="ACTIONS" FontSize="10" Foreground="#FF6A6080" FontWeight="Bold" Margin="16,4,0,8"/>
+                        <Button Name="NavBuildBtn" Classes="nav-tab active" Click="NavBuild_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="🔨" FontSize="14"/>
+                                <TextBlock Text="Build MSIX" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Name="NavOpenBtn" Classes="nav-tab" Click="NavOpen_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="📂" FontSize="14"/>
+                                <TextBlock Text="Open MSIX" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Border Height="1" Background="#FF3E3050" Margin="16,6"/>
+                        <TextBlock Text="PACKAGE" FontSize="10" Foreground="#FF6A6080" FontWeight="Bold" Margin="16,4,0,8"/>
+                        <Button Name="NavIdentityBtn" Classes="nav-tab" Click="NavIdentity_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="🪪" FontSize="14"/>
+                                <TextBlock Text="Identity" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Name="NavEntryBtn" Classes="nav-tab" Click="NavEntry_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="▶" FontSize="12" Foreground="#FFA6E3A1"/>
+                                <TextBlock Text="Entry Point" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Name="NavManifestBtn" Classes="nav-tab" Click="NavManifest_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="📄" FontSize="14"/>
+                                <TextBlock Text="Manifest XML" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Border Height="1" Background="#FF3E3050" Margin="16,6"/>
+                        <TextBlock Text="OUTPUT" FontSize="10" Foreground="#FF6A6080" FontWeight="Bold" Margin="16,4,0,8"/>
+                        <Button Name="NavOutputBtn" Classes="nav-tab" Click="NavOutput_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="📋" FontSize="14"/>
+                                <TextBlock Text="Build Log" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right Content -->
+                <Grid Grid.Column="1">
+
+                    <!-- PAGE: BUILD MSIX -->
+                    <ScrollViewer Name="PageBuild" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="24,20" Spacing="0">
+                            <TextBlock Text="Build MSIX Package" FontSize="18" FontWeight="Bold"
+                                       Foreground="#FFF0E8F4" Margin="0,0,0,4"/>
+                            <TextBlock Text="Publish your .NET project and wrap it in a professional MSIX installer"
+                                       FontSize="12" Foreground="#FF9E90B0" Margin="0,0,0,20"/>
+
+                            <!-- Project section -->
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="📁  Project" Classes="sh"/>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Project File (.csproj / .fsproj)" Classes="fl"/>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBox Grid.Column="0" Name="BuildProjectPathBox" Watermark="Select a project file…"/>
+                                            <Button Grid.Column="1" Content="Browse…" Classes="action-btn" Margin="8,0,0,0" Name="BrowseProjectBtn"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="Configuration" Classes="fl"/>
+                                            <ComboBox Name="BuildConfigCombo" HorizontalAlignment="Stretch">
+                                                <ComboBoxItem Content="Release" IsSelected="True"/>
+                                                <ComboBoxItem Content="Debug"/>
+                                            </ComboBox>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5">
+                                            <TextBlock Text="Target Runtime" Classes="fl"/>
+                                            <ComboBox Name="BuildRuntimeCombo" HorizontalAlignment="Stretch">
+                                                <ComboBoxItem Content="win-x64" IsSelected="True"/>
+                                                <ComboBoxItem Content="win-x86"/>
+                                                <ComboBoxItem Content="win-arm64"/>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Grid>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Target Framework (auto-detected if blank)" Classes="fl"/>
+                                        <ComboBox Name="BuildFrameworkCombo" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Identity section -->
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="🪪  Package Identity" Classes="sh"/>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="Package Identity Name" Classes="fl"/>
+                                            <TextBox Name="BuildIdentityNameBox" Watermark="com.company.app"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5">
+                                            <TextBlock Text="Version (Major.Minor.Build.Rev)" Classes="fl"/>
+                                            <TextBox Name="BuildVersionBox" Watermark="1.0.0.0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="Display Name" Classes="fl"/>
+                                            <TextBox Name="BuildDisplayNameBox" Watermark="My Application"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5">
+                                            <TextBlock Text="Publisher (DN format)" Classes="fl"/>
+                                            <TextBox Name="BuildPublisherBox" Watermark="CN=YourName, O=Company"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="Publisher Display Name" Classes="fl"/>
+                                            <TextBox Name="BuildPublisherDisplayNameBox" Watermark="My Company"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5">
+                                            <TextBlock Text="Description" Classes="fl"/>
+                                            <TextBox Name="BuildDescriptionBox" Watermark="Short description"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Logo (relative path inside package)" Classes="fl"/>
+                                        <TextBox Name="BuildLogoBox" Watermark="Assets\Square150x150Logo.png"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Entry Point section -->
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="▶  Entry Point" Classes="sh"/>
+                                        <Button Grid.Column="1" Name="DetectExeBtn" Content="🔍 Auto-detect"
+                                                Classes="action-btn" FontSize="11"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="Executable (.exe)" Classes="fl"/>
+                                            <ComboBox Name="BuildExeCombo" HorizontalAlignment="Stretch" IsEditable="True"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5">
+                                            <TextBlock Text="Entry Point Class" Classes="fl"/>
+                                            <ComboBox Name="BuildEntryPointCombo" HorizontalAlignment="Stretch" IsEditable="True">
+                                                <ComboBoxItem Content="Windows.FullTrustApplication" IsSelected="True"/>
+                                                <ComboBoxItem Content="Microsoft.UI.Xaml.Application"/>
+                                                <ComboBoxItem Content="App"/>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBlock Text="💡 Use 'Windows.FullTrustApplication' for standard .NET apps (WinForms, WPF, Avalonia, Console)."
+                                               FontSize="11" Foreground="#FF9E90B0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Publish Options -->
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="⚙  Publish Options" Classes="sh"/>
+                                    <WrapPanel Orientation="Horizontal">
+                                        <CheckBox Name="BuildSingleFileCheck" Content="Single file"
+                                                  Margin="0,0,20,8" ToolTip.Tip="Bundle into a single .exe"/>
+                                        <CheckBox Name="BuildReadyToRunCheck" IsChecked="True"
+                                                  Content="ReadyToRun" Margin="0,0,20,8"
+                                                  ToolTip.Tip="Pre-compile for faster startup"/>
+                                        <CheckBox Name="BuildTrimCheck" Content="Trim assemblies"
+                                                  Margin="0,0,20,8" ToolTip.Tip="Remove unused code"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Output -->
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="📂  Output" Classes="sh"/>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="MSIX Output Path (.msix)" Classes="fl"/>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBox Grid.Column="0" Name="BuildOutputPathBox" Watermark="bin\msix\MyApp.msix"/>
+                                            <Button Grid.Column="1" Content="Browse…" Classes="action-btn" Margin="8,0,0,0" Name="BrowseMsixOutputBtn"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Intermediate publish folder (blank = auto-temp)" Classes="fl"/>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBox Grid.Column="0" Name="BuildPublishDirBox" Watermark="(auto)"/>
+                                            <Button Grid.Column="1" Content="Browse…" Classes="action-btn" Margin="8,0,0,0" Name="BrowsePublishDirBtn"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- PAGE: OPEN MSIX -->
+                    <ScrollViewer Name="PageOpen" IsVisible="False"
+                                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="24,20" Spacing="0">
+                            <TextBlock Text="Open MSIX Package" FontSize="18" FontWeight="Bold"
+                                       Foreground="#FFF0E8F4" Margin="0,0,0,4"/>
+                            <TextBlock Text="Load an existing .msix / .appx to inspect or edit its metadata"
+                                       FontSize="12" Foreground="#FF9E90B0" Margin="0,0,0,20"/>
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="📂  Package File" Classes="sh"/>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Name="OpenMsixPathBox" Watermark="Path to .msix / .appx file…"/>
+                                        <Button Grid.Column="1" Content="Browse…" Classes="action-btn" Margin="8,0,0,0" Name="BrowseOpenMsixBtn"/>
+                                    </Grid>
+                                    <Button Content="📂  Open Package" Classes="primary-btn" Name="OpenMsixBtn" HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Name="OpenedPackagePanel" IsVisible="False"
+                                    Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="📦  Loaded Package" Classes="sh"/>
+                                    <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" Foreground="#FF9E90B0" FontSize="12"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Name="OpenedNameText" Foreground="#FFF0E8F4" FontSize="12"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Version:" Foreground="#FF9E90B0" FontSize="12"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Name="OpenedVersionText" Foreground="#FFF0E8F4" FontSize="12"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Publisher:" Foreground="#FF9E90B0" FontSize="12"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Name="OpenedPublisherText" Foreground="#FFF0E8F4" FontSize="12"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Executable:" Foreground="#FF9E90B0" FontSize="12"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Name="OpenedExeText" Foreground="#FFF0E8F4" FontSize="12"/>
+                                    </Grid>
+                                    <Border Height="1" Background="#FF3E3050" Margin="0,4"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="✏️ Edit Identity" Classes="action-btn" Name="EditOpenedIdentityBtn"/>
+                                        <Button Content="▶ Edit Entry Point" Classes="action-btn" Name="EditOpenedEntryBtn"/>
+                                        <Button Content="📄 View Manifest" Classes="action-btn" Name="ViewOpenedManifestBtn"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- PAGE: IDENTITY EDITOR -->
+                    <ScrollViewer Name="PageIdentity" IsVisible="False"
+                                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="24,20" Spacing="0">
+                            <TextBlock Text="Package Identity" FontSize="18" FontWeight="Bold"
+                                       Foreground="#FFF0E8F4" Margin="0,0,0,4"/>
+                            <TextBlock Text="Edit AppxManifest.xml identity fields for a loaded MSIX"
+                                       FontSize="12" Foreground="#FF9E90B0" Margin="0,0,0,20"/>
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="Package Name" Classes="fl"/>
+                                            <TextBox Name="IdNameBox" Watermark="com.company.app"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5">
+                                            <TextBlock Text="Version" Classes="fl"/>
+                                            <TextBox Name="IdVersionBox" Watermark="1.0.0.0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="Publisher (DN)" Classes="fl"/>
+                                            <TextBox Name="IdPublisherBox" Watermark="CN=YourName"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5">
+                                            <TextBlock Text="Architecture" Classes="fl"/>
+                                            <ComboBox Name="IdArchCombo" HorizontalAlignment="Stretch">
+                                                <ComboBoxItem Content="x64" IsSelected="True"/>
+                                                <ComboBoxItem Content="x86"/>
+                                                <ComboBoxItem Content="arm64"/>
+                                                <ComboBoxItem Content="neutral"/>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0" Spacing="5">
+                                            <TextBlock Text="Display Name" Classes="fl"/>
+                                            <TextBox Name="IdDisplayNameBox"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="5">
+                                            <TextBlock Text="Publisher Display Name" Classes="fl"/>
+                                            <TextBox Name="IdPublisherDisplayBox"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Description" Classes="fl"/>
+                                        <TextBox Name="IdDescriptionBox" MinHeight="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Logo (relative path)" Classes="fl"/>
+                                        <TextBox Name="IdLogoBox"/>
+                                    </StackPanel>
+                                    <Button Content="💾 Save Changes to MSIX" Classes="primary-btn" Name="SaveIdentityBtn" HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- PAGE: ENTRY POINT EDITOR -->
+                    <ScrollViewer Name="PageEntry" IsVisible="False"
+                                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="24,20" Spacing="0">
+                            <TextBlock Text="Entry Point" FontSize="18" FontWeight="Bold"
+                                       Foreground="#FFF0E8F4" Margin="0,0,0,4"/>
+                            <TextBlock Text="Select the first executable and entry point class for the package"
+                                       FontSize="12" Foreground="#FF9E90B0" Margin="0,0,0,20"/>
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Text="Executables found inside package:" Classes="fl" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="🔍 Scan" Classes="action-btn" Name="ScanExeBtn" FontSize="11"/>
+                                    </Grid>
+                                    <ListBox Name="ExeListBox" Background="#FF1A1520"
+                                             BorderBrush="#FF3E3050" BorderThickness="1"
+                                             CornerRadius="5" Padding="4" MinHeight="120"
+                                             SelectionMode="Single">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,2">
+                                                    <TextBlock Text="▶" FontSize="10" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding}" Foreground="#FFF0E8F4" FontSize="12" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <Button Content="✅ Use Selected as Entry Executable" Classes="action-btn" Name="UseSelectedExeBtn"/>
+                                    <Border Height="1" Background="#FF3E3050" Margin="0,4"/>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Selected Executable" Classes="fl"/>
+                                        <TextBox Name="EntryExeBox" Watermark="App.exe"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="Entry Point Class" Classes="fl"/>
+                                        <ComboBox Name="EntryPointClassCombo" HorizontalAlignment="Stretch" IsEditable="True">
+                                            <ComboBoxItem Content="Windows.FullTrustApplication" IsSelected="True"/>
+                                            <ComboBoxItem Content="Microsoft.UI.Xaml.Application"/>
+                                            <ComboBoxItem Content="App"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <Button Content="💾 Save Entry Point to MSIX" Classes="primary-btn" Name="SaveEntryBtn" HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#FF1A3020" CornerRadius="8" Padding="14" Margin="0,0,0,14"
+                                    BorderBrush="#FF2A5040" BorderThickness="1">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="ℹ️  Entry Point Reference" FontSize="12" Foreground="#FFA6E3A1" FontWeight="SemiBold"/>
+                                    <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#FF9E90B0"
+                                               Text="Windows.FullTrustApplication — standard .NET apps (WPF, WinForms, Avalonia, Console)."/>
+                                    <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#FF9E90B0"
+                                               Text="Microsoft.UI.Xaml.Application — WinUI 3 apps packaged with Windows App SDK."/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- PAGE: MANIFEST XML -->
+                    <Grid Name="PageManifest" IsVisible="False" RowDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Row="0" Margin="24,20,24,12" Spacing="4">
+                            <TextBlock Text="AppxManifest.xml" FontSize="18" FontWeight="Bold" Foreground="#FFF0E8F4"/>
+                            <TextBlock Text="View and directly edit the raw manifest XML" FontSize="12" Foreground="#FF9E90B0"/>
+                        </StackPanel>
+                        <ScrollViewer Grid.Row="1" Margin="16,0"
+                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                            <TextBox Name="ManifestXmlBox" Classes="log-out"
+                                     AcceptsReturn="True" TextWrapping="NoWrap"/>
+                        </ScrollViewer>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="16,10">
+                            <Button Content="💾 Save Manifest" Classes="primary-btn" Name="SaveManifestBtn"/>
+                            <Button Content="📋 Copy" Classes="action-btn" Name="CopyManifestBtn"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- PAGE: BUILD LOG -->
+                    <Grid Name="PageOutput" IsVisible="False" RowDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Row="0" Margin="24,20,24,12" Spacing="4">
+                            <TextBlock Text="Build Log" FontSize="18" FontWeight="Bold" Foreground="#FFF0E8F4"/>
+                            <TextBlock Text="Real-time output from dotnet publish and MakeAppx" FontSize="12" Foreground="#FF9E90B0"/>
+                        </StackPanel>
+                        <ScrollViewer Grid.Row="1" Name="LogScrollViewer" Margin="16,0"
+                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                            <TextBox Name="BuildLogBox" Classes="log-out"
+                                     AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap"/>
+                        </ScrollViewer>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="16,10">
+                            <Button Content="🗑 Clear" Classes="action-btn" Name="ClearLogBtn"/>
+                            <Button Content="📋 Copy" Classes="action-btn" Name="CopyLogBtn"/>
+                            <Button Content="📂 Open Output Folder" Classes="action-btn" Name="OpenOutputFolderBtn"/>
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+            </Grid>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#FF241E2C" Padding="16,0"
+                    BorderBrush="#FF3E3050" BorderThickness="0,1,0,0" CornerRadius="0,0,10,10">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Ellipse Name="StatusIndicator" Width="10" Height="10" Fill="#FF4A4060"/>
+                        <TextBlock Name="StatusText" Text="Ready" FontSize="12" Foreground="#FF9E90B0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ProgressBar Grid.Column="1" Name="BuildProgress" IsIndeterminate="True" IsVisible="False"
+                                 Margin="16,0" Height="4" Foreground="#FFFFC09F" Background="#FF3E3050"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Content="⏹ Cancel" Classes="danger-btn" Name="CancelBuildBtn" IsVisible="False"/>
+                        <Button Content="Close" Classes="action-btn" Name="CloseWindowBtn"/>
+                        <Button Content="🔨 Build MSIX" Classes="primary-btn" Name="StartBuildBtn"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>
+

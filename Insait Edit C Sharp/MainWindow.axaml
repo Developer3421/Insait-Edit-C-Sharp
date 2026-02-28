@@ -339,38 +339,44 @@
                     <!-- Build Button -->
                     <Button Name="BuildProjectButton" ToolTip.Tip="Build Project (Ctrl+Shift+B)"
                             Click="BuildProject_Click"
-                            Background="#FF6AAB73" 
+                            Background="#FF4A8055"
                             Foreground="White"
-                            CornerRadius="4"
-                            Width="34"
+                            CornerRadius="5"
                             Height="28"
-                            Padding="0"
+                            Padding="10,0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand">
-                        <TextBlock Text="🔨" FontSize="14" FontFamily="Segoe UI Emoji"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="🔨" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="Build" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Button>
                     
                     <!-- Analyze Button -->
                     <Button Name="AnalyzeProjectButton" ToolTip.Tip="Analyze Code (Ctrl+Shift+A)"
                             Click="AnalyzeProject_Click"
-                            Background="#FF9B7DCF" 
+                            Background="#FF6B5A9A"
                             Foreground="White"
-                            CornerRadius="4"
-                            Width="34"
+                            CornerRadius="5"
                             Height="28"
-                            Padding="0"
+                            Padding="10,0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <TextBlock Text="🔍" FontSize="14" FontFamily="Segoe UI Emoji"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="🔍" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="Analyze" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Button>
                     
+                    <!-- Separator -->
+                    <Border Width="1" Height="20" Background="#FF3E3050" Margin="6,0"/>
+                    
                     <!-- Run Configuration Selector (JetBrains Rider Style) -->
-                    <Border Background="#FF3E3050" CornerRadius="4" Height="28" Margin="4,0,0,0" Padding="4,0">
+                    <Border Background="#FF2E2840" CornerRadius="5" Height="28" Padding="4,0"
+                            BorderBrush="#FF4A4060" BorderThickness="1">
                         <Grid ColumnDefinitions="Auto,Auto,Auto">
                             <!-- Configuration Name -->
                             <Button Name="RunConfigDropdownButton" ToolTip.Tip="Select Run Configuration (Shift+Alt+F10)"
@@ -382,20 +388,20 @@
                                     Height="26"
                                     Cursor="Hand">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <TextBlock Text="▶" FontSize="10" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Default" FontSize="11" Name="RunConfigNameText" VerticalAlignment="Center" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="▼" FontSize="8" Foreground="#FF9E90B0" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                    <TextBlock Text="▶" FontSize="9" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Default" FontSize="11" Name="RunConfigNameText" VerticalAlignment="Center" MaxWidth="130" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="▾" FontSize="11" Foreground="#FFFFC09F" VerticalAlignment="Center" Margin="2,0,0,0"/>
                                 </StackPanel>
                             </Button>
                             
                             <!-- Separator -->
-                            <Border Grid.Column="1" Width="1" Height="16" Background="#FF3E3050" Margin="2,0"/>
+                            <Border Grid.Column="1" Width="1" Height="16" Background="#FF4A4060" Margin="2,0"/>
                             
                             <!-- Edit Configurations Button -->
                             <Button Grid.Column="2" Name="EditConfigurationsButton" ToolTip.Tip="Edit Configurations..."
                                     Click="EditConfigurations_Click"
                                     Background="Transparent" 
-                                    Foreground="#FF9E90B0"
+                                    Foreground="#FFFFC09F"
                                     BorderThickness="0"
                                     Padding="6,0"
                                     Height="26"
@@ -408,52 +414,53 @@
                     <!-- Run Button -->
                     <Button Name="RunProjectButton" ToolTip.Tip="Run Project (F5)"
                             Click="RunProject_Click"
-                            Background="#FF6AAB73" 
+                            Background="#FF3A8050"
                             Foreground="White"
-                            CornerRadius="4"
-                            Width="34"
+                            CornerRadius="5"
                             Height="28"
-                            Padding="0"
+                            Padding="10,0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <TextBlock Text="▶" FontSize="13"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="▶" FontSize="12" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
+                            <TextBlock Text="Run" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Button>
                     
                     <!-- Debug Run Button -->
-                    <Button Name="DebugProjectButton" ToolTip.Tip="Run in Debug Mode"
+                    <Button Name="DebugProjectButton" ToolTip.Tip="Run in Debug Mode (F5 with debugger)"
                             Click="DebugProject_Click"
-                            Background="#FF9B7DCF"
+                            Background="#FF6B4A9A"
                             Foreground="White"
-                            CornerRadius="4"
-                            Width="34"
+                            CornerRadius="5"
                             Height="28"
-                            Padding="0"
+                            Padding="10,0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="2,0,0,0">
-                        <TextBlock Text="🐛" FontSize="14" FontFamily="Segoe UI Emoji"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="🐛" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="Debug" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Button>
-                    
                     
                     <!-- Stop Button (hidden by default) -->
                     <Button Name="CancelBuildButton" ToolTip.Tip="Stop (Shift+F5)"
                             Click="CancelBuild_Click"
-                            Background="#FFF44336" 
+                            Background="#FFC0392B"
                             Foreground="White"
-                            CornerRadius="4"
-                            Padding="8,4"
+                            CornerRadius="5"
+                            Padding="10,0"
                             Height="28"
                             Cursor="Hand"
                             IsVisible="False"
                             Margin="2,0,0,0">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="⏹" FontSize="11" FontFamily="Segoe UI Emoji"/>
-                            <TextBlock Text="Stop" FontSize="12" FontWeight="SemiBold"/>
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="⏹" FontSize="12" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="Stop" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     
@@ -475,6 +482,64 @@
                         <TextBlock Text="📦" FontSize="14" FontFamily="Segoe UI Emoji"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
+                    
+                    <!-- MSIX Manager Button -->
+                    <Button Name="MsixManagerButton" ToolTip.Tip="MSIX Package Manager..."
+                            Click="MsixManager_Click"
+                            Background="#FF5A4A8A"
+                            Foreground="White"
+                            CornerRadius="5"
+                            Height="28"
+                            Padding="10,0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            Margin="2,0,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="📦" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="MSIX" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Separator -->
+                    <Border Width="1" Height="20" Background="#FF3E3050" Margin="8,0"/>
+                    
+                    <!-- Undo Button -->
+                    <Button Name="UndoButton" ToolTip.Tip="Undo (Ctrl+Z)"
+                            Click="UndoButton_Click"
+                            Background="#FF3E3050"
+                            Foreground="White"
+                            CornerRadius="4"
+                            Width="34"
+                            Height="28"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            IsEnabled="False"
+                            Opacity="0.5">
+                        <TextBlock Text="↩" FontSize="16"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Redo Button -->
+                    <Button Name="RedoButton" ToolTip.Tip="Redo (Ctrl+Y)"
+                            Click="RedoButton_Click"
+                            Background="#FF3E3050"
+                            Foreground="White"
+                            CornerRadius="4"
+                            Width="34"
+                            Height="28"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            IsEnabled="False"
+                            Opacity="0.5"
+                            Margin="2,0,0,0">
+                        <TextBlock Text="↪" FontSize="16"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
                 </StackPanel>
 
                 <!-- Middle: draggable area -->
@@ -482,6 +547,26 @@
 
                 <!-- Right: window controls -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+
+                    <!-- New Window -->
+                    <Button Name="NewWindowButton" Classes="window-control"
+                            Padding="0" Click="NewWindowButton_Click"
+                            ToolTip.Tip="New Window">
+                        <TextBlock Text="🗗" FontSize="14" FontFamily="Segoe UI Emoji"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+
+                    <!-- Restart -->
+                    <Button Name="RestartButton" Classes="window-control"
+                            Padding="0" Click="RestartButton_Click"
+                            ToolTip.Tip="Restart Application">
+                        <TextBlock Text="↺" FontSize="16"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+
+                    <!-- Separator -->
+                    <Border Width="1" Height="16" Background="#FF4A4060" Margin="2,0" VerticalAlignment="Center"/>
+
                     <Button Name="MinimizeButton" Classes="window-control" Padding="0" Click="MinimizeButton_Click">
                         <Image Source="avares://Insait Edit C Sharp/Icons/MinButton.png" Width="26" Height="26" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
@@ -558,14 +643,29 @@
                         </Grid>
                     </Border>
                     
-                    <!-- File Tree -->
-                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Name="ExplorerScrollViewer">
+                    <!-- File Tree with rubber-band selection -->
+                    <Panel Grid.Row="1"
+                           Name="FileTreePanel"
+                           PointerPressed="FileTreePanel_PointerPressed"
+                           PointerMoved="FileTreePanel_PointerMoved"
+                           PointerReleased="FileTreePanel_PointerReleased">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Name="ExplorerScrollViewer">
                         <TreeView Name="FileTreeView" Margin="8,4"
                                   ItemsSource="{Binding FileTreeItems}"
+                                  SelectionMode="Multiple"
                                   SelectionChanged="FileTreeView_SelectionChanged"
                                   DoubleTapped="FileTreeView_DoubleTapped">
                             <TreeView.ContextMenu>
                                 <ContextMenu Name="FileTreeContextMenu" Opening="FileTreeContextMenu_Opening">
+                                    <!-- Multi-selection info (shown when >1 item selected) -->
+                                    <MenuItem Name="ContextMenuMultiInfo" IsEnabled="False" IsVisible="False">
+                                        <MenuItem.Header>
+                                            <TextBlock Name="ContextMenuMultiInfoText" Text="2 items selected" 
+                                                       Foreground="#FF9E90B0" FontStyle="Italic" FontSize="11"/>
+                                        </MenuItem.Header>
+                                    </MenuItem>
+                                    <Separator Name="ContextMenuMultiInfoSeparator" IsVisible="False"/>
+
                                     <!-- Run/Debug group (for projects) -->
                                     <MenuItem Header="▶ Run" Name="ContextMenuRun" Click="ContextMenu_RunProject_Click">
                                         <MenuItem.Icon>
@@ -626,20 +726,20 @@
                                     <Separator/>
                                     
                                     <!-- Rename/Delete -->
-                                    <MenuItem Header="✏️ Rename" Click="RenameItem_Click" InputGesture="F2"/>
-                                    <MenuItem Header="🗑️ Safe Delete..." Click="DeleteItem_Click" InputGesture="Delete"/>
+                                    <MenuItem Header="✏️ Rename" Name="ContextMenuRename" Click="RenameItem_Click" InputGesture="F2"/>
+                                    <MenuItem Header="🗑️ Safe Delete..." Name="ContextMenuDelete" Click="DeleteItem_Click" InputGesture="Delete"/>
                                     <Separator/>
                                     
                                     <!-- Copy Path submenu -->
-                                    <MenuItem Header="Copy Path">
+                                    <MenuItem Header="Copy Path" Name="ContextMenuCopyPath">
                                         <MenuItem Header="📋 Absolute Path" Click="CopyPath_Click"/>
                                         <MenuItem Header="📋 Relative Path" Click="ContextMenu_CopyRelativePath_Click"/>
                                         <MenuItem Header="📋 File Name" Click="ContextMenu_CopyFileName_Click"/>
                                     </MenuItem>
                                     
                                     <!-- Open/Show -->
-                                    <MenuItem Header="📂 Open in Explorer" Click="OpenInExplorer_Click"/>
-                                    <MenuItem Header="💻 Open in Terminal" Click="OpenInTerminal_Click"/>
+                                    <MenuItem Header="📂 Open in Explorer" Name="ContextMenuOpenExplorer" Click="OpenInExplorer_Click"/>
+                                    <MenuItem Header="💻 Open in Terminal" Name="ContextMenuOpenTerminal" Click="OpenInTerminal_Click"/>
                                     <Separator/>
                                     
                                     <!-- Remove from solution (for projects) -->
@@ -736,7 +836,18 @@
                                 </Style>
                             </TreeView.Styles>
                         </TreeView>
-                    </ScrollViewer>
+                        </ScrollViewer>
+
+                        <!-- Rubber-band selection rectangle overlay -->
+                        <Canvas Name="SelectionRectCanvas" IsHitTestVisible="False" IsVisible="False">
+                            <Border Name="SelectionRectBorder"
+                                    Background="#304FC3F7"
+                                    BorderBrush="#884FC3F7"
+                                    BorderThickness="1"
+                                    CornerRadius="1"
+                                    IsHitTestVisible="False"/>
+                        </Canvas>
+                    </Panel>
                 </Grid>
                 
                 <!-- Search Panel (hidden by default) -->
@@ -865,10 +976,6 @@
                     </ScrollViewer>
                 </Grid>
                 
-                <!-- Git Panel (hidden by default) - placeholder container -->
-                <Border Name="GitSidePanel" IsVisible="False">
-                    <!-- GitPanelControl will be added programmatically -->
-                </Border>
                 
                 <!-- NuGet Panel (hidden by default) -->
                 <Border Name="NuGetSidePanel" IsVisible="False">
@@ -906,6 +1013,7 @@
             <Grid Grid.Column="3" RowDefinitions="Auto,*,Auto,200" Name="EditorGrid">
                 <!-- Tab Bar -->
                 <Border Grid.Row="0" Background="#20000000" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="*,Auto">
                     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding Tabs}" Height="36">
                             <ItemsControl.ItemsPanel>
@@ -938,6 +1046,28 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
+
+                    <!-- AXAML Preview Button (right of tabs, visible only for .axaml files) -->
+                    <Button Grid.Column="1"
+                            Name="AxamlPreviewButton"
+                            ToolTip.Tip="Preview AXAML Design (Ctrl+Shift+P)"
+                            Click="AxamlPreview_Click"
+                            IsVisible="False"
+                            Background="#FF3A5080"
+                            Foreground="White"
+                            CornerRadius="4"
+                            Height="26"
+                            Margin="4,5,6,5"
+                            Padding="8,0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="🎨" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="Preview" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    </Grid>
                 </Border>
                 
                 <!-- Editor container — filled by AvaloniaEditControl from code-behind -->
@@ -994,13 +1124,6 @@
                                         </StackPanel>
                                     </Button>
                                     
-                                    <!-- Git Tab -->
-                                    <Button Classes="tool-window-tab" Name="GitTabButton" Click="GitTab_Click">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="🔀" FontSize="11"/>
-                                            <TextBlock Text="Git" FontSize="12"/>
-                                        </StackPanel>
-                                    </Button>
                                     
                                 </StackPanel>
                                 
@@ -1150,13 +1273,6 @@
                                 </ScrollViewer>
                             </Border>
                             
-                            <!-- Git Panel (hidden by default) -->
-                            <Border Name="GitPanel" Background="#FF221C2C" IsVisible="False">
-                                <StackPanel Margin="12,8" Spacing="8">
-                                    <TextBlock Text="Git Log" FontWeight="SemiBold" Foreground="{StaticResource AppTextBrush}"/>
-                                    <TextBlock Text="No repository opened" FontSize="12" Foreground="{StaticResource AppTextMutedBrush}" FontStyle="Italic"/>
-                                </StackPanel>
-                            </Border>
                             
                         </Grid>
                     </Grid>

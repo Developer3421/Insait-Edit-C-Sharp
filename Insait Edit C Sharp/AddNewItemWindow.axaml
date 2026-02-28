@@ -193,6 +193,54 @@
                             
                             <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
                             
+                            <!-- F# Types -->
+                            <TextBlock Text="F# Types" FontSize="11" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
+                            <Button Classes="item-btn" Name="FsModuleItem" Tag="fsmodule" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📦" FontSize="16"/>
+                                    <TextBlock Text="F# Module" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="FsClassItem" Tag="fsclass" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📄" FontSize="16"/>
+                                    <TextBlock Text="F# Class" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="FsRecordItem" Tag="fsrecord" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📋" FontSize="16"/>
+                                    <TextBlock Text="F# Record" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="FsUnionItem" Tag="fsunion" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🔀" FontSize="16"/>
+                                    <TextBlock Text="Discriminated Union" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="FsInterfaceItem" Tag="fsinterface" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🔷" FontSize="16"/>
+                                    <TextBlock Text="F# Interface" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="FsScriptItem" Tag="fsscript" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="📜" FontSize="16"/>
+                                    <TextBlock Text="F# Script (.fsx)" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="item-btn" Name="FsSignatureItem" Tag="fssignature" Click="ItemType_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="🔏" FontSize="16"/>
+                                    <TextBlock Text="F# Signature (.fsi)" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
+                            
                             <!-- ASP.NET -->
                             <TextBlock Text="ASP.NET" FontSize="11" FontWeight="SemiBold" 
                                        Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
@@ -433,7 +481,7 @@
                     <StackPanel Spacing="8">
                         <CheckBox Name="AddToProjectCheck" IsChecked="True"
                                   Foreground="{StaticResource TextPrimaryBrush}">
-                            <TextBlock Text="Add to project file (.csproj)"/>
+                            <TextBlock Text="Add to project file (.csproj / .fsproj)"/>
                         </CheckBox>
                     </StackPanel>
                 </StackPanel>

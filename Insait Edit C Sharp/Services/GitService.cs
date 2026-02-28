@@ -757,6 +757,53 @@ public class GitService
 
     #endregion
 
+    #region Reset
+
+    /// <summary>
+    /// Hard reset to a specific commit — discards ALL local changes and moves HEAD to that commit.
+    /// USE WITH CAUTION: this rewrites history on the local branch.
+    /// </summary>
+    public async Task<GitResult> ResetHardAsync(string commitHash)
+    {
+        return await RunGitCommandAsync($"reset --hard \"{commitHash}\"");
+    }
+
+    /// <summary>
+    /// Checks whether the given commit is the root commit (has no parents).
+    /// </summary>
+    public async Task<bool> IsRootCommitAsync(string commitHash)
+    {
+        var result = await RunGitCommandAsync($"rev-list --parents -n 1 {commitHash}");
+        if (!result.Success) return false;
+        // root commit line: "<hash>" (only one token — no parent hash)
+        var tokens = result.Output.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return tokens.Length == 1;
+    }
+
+    /// <summary>
+    /// Creates an initial commit with all files in the working directory.
+    /// Should be called right after <see cref="InitAsync"/> before any other commits.
+    /// </summary>
+    public async Task<GitResult> MakeInitialCommitAsync(string message = "Initial commit")
+    {
+        // Stage everything
+        var stageResult = await RunGitCommandAsync("add -A");
+        if (!stageResult.Success) return stageResult;
+
+        // Set a default identity if git config is empty (needed on fresh systems)
+        var userName  = await GetConfigAsync("user.name",  global: true);
+        var userEmail = await GetConfigAsync("user.email", global: true);
+        if (string.IsNullOrWhiteSpace(userName))
+            await SetConfigAsync("user.name",  "Developer", global: true);
+        if (string.IsNullOrWhiteSpace(userEmail))
+            await SetConfigAsync("user.email", "dev@localhost", global: true);
+
+        var escapedMsg = message.Replace("\"", "\\\"");
+        return await RunGitCommandAsync($"commit -m \"{escapedMsg}\"");
+    }
+
+    #endregion
+
     #region Internal Methods
 
     /// <summary>

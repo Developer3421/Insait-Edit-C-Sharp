@@ -1,0 +1,94 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.PreviewErrorWindow"
+        Title="Preview Error"
+        Width="640" Height="380"
+        MinWidth="360" MinHeight="200"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        CanResize="True"
+        Background="#FF1A1624"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Window.Styles>
+        <Style Selector="Button.win-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.win-btn:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <Style Selector="Button.copy-btn">
+            <Setter Property="Background" Value="#20CBA6F7"/>
+            <Setter Property="BorderBrush" Value="#40CBA6F7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.copy-btn:pointerover">
+            <Setter Property="Background" Value="#35CBA6F7"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="32,*,Auto">
+
+        <!-- Title bar -->
+        <Border Grid.Row="0" Background="#FF2D2438"
+                PointerPressed="TitleBar_PointerPressed">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6"
+                            VerticalAlignment="Center" Margin="10,0,0,0">
+                    <TextBlock Text="⚠" FontSize="13" FontFamily="Segoe UI Emoji"
+                               Foreground="#FFF38BA8" VerticalAlignment="Center"/>
+                    <TextBlock Text="Preview Error Details"
+                               FontSize="12" FontWeight="SemiBold"
+                               Foreground="#FFF38BA8" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Grid.Column="2" Classes="win-btn"
+                        Width="32" Height="32" Click="Close_Click">
+                    <TextBlock Text="✕" FontSize="11" Foreground="#FF9E90B0"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Error text -->
+        <Border Grid.Row="1" Background="#FF1A1624"
+                BorderBrush="#40F38BA8" BorderThickness="0,1,0,0">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="0">
+                <SelectableTextBlock Name="ErrorText"
+                               FontFamily="Cascadia Code, Consolas, Courier New, monospace"
+                               FontSize="12"
+                               Foreground="#FFF38BA8"
+                               TextWrapping="Wrap"
+                               Margin="14,12"/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="#FF221C2C"
+                BorderBrush="#FF3E3050" BorderThickness="0,1,0,0"
+                Padding="10,6">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="Text is selectable — Ctrl+A to select all"
+                           FontSize="10" Foreground="#FF585B70"
+                           VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Classes="copy-btn"
+                        Click="Copy_Click" Padding="10,4">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="📋" FontSize="11" FontFamily="Segoe UI Emoji"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="Copy" FontSize="11" Foreground="#FFCBA6F7"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>
+

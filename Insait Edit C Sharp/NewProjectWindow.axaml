@@ -3,13 +3,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Insait_Edit_C_Sharp"
-        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="550"
+        d:DesignWidth="740" d:DesignHeight="700"
         x:Class="Insait_Edit_C_Sharp.NewProjectWindow"
         Title="New Project"
         WindowStartupLocation="CenterOwner"
         SystemDecorations="None"
-        Width="700"
-        Height="550"
+        Width="740"
+        Height="700"
         CanResize="False"
         FontFamily="Segoe UI, Arial, Tahoma">
 
@@ -205,6 +205,71 @@
                                     <TextBlock Text="nanoFramework" FontSize="13" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" Margin="0,8,0,4"/>
                                     <TextBlock Text=".NET nanoFramework for ESP32 / IoT"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="template-btn" Name="FSharpConsoleTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="fsharp-console">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="🔷" FontSize="32" HorizontalAlignment="Center"
+                                               FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Text="F# Console App" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="Standard F# console application"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="template-btn" Name="FSharpEmptyTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="fsharp-empty">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="🔹" FontSize="32" HorizontalAlignment="Center"
+                                               FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Text="F# Empty Project" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="Minimal F# class library (empty)"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="template-btn" Name="WinFormsTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="winforms">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="🪟" FontSize="32" HorizontalAlignment="Center"
+                                               FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Text="Windows Forms" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="Windows Forms desktop app (WinForms)"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="template-btn" Name="CSharpEmptyTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="csharp-empty">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="📄" FontSize="32" HorizontalAlignment="Center"
+                                               FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Text="C# Empty Project" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="Minimal C# project with no files"
+                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                               TextWrapping="Wrap" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Classes="template-btn" Name="FSharpSafeStackTemplate" Margin="0,0,12,12"
+                                    Click="Template_Click" Tag="fsharp-safestack">
+                                <StackPanel Width="140">
+                                    <TextBlock Text="🔷🌐" FontSize="32" HorizontalAlignment="Center"
+                                               FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Text="F# SAFE Stack" FontSize="13" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
+                                    <TextBlock Text="Full-stack F# web app (Saturn + Fable + Elmish)"
                                                FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
                                                TextWrapping="Wrap" TextAlignment="Center"/>
                                 </StackPanel>

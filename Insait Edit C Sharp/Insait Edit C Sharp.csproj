@@ -6,12 +6,14 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <ApplicationIcon>Icons\AppIconIDE.ico</ApplicationIcon>
+
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.3.12" />
         <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
         <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+        <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="11.3.12" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12" />
         <PackageReference Include="AvaloniaEdit.TextMate" Version="11.4.1" />
@@ -20,35 +22,31 @@
         <PackageReference Include="Microsoft.Build" Version="18.3.3" />
         <PackageReference Include="Microsoft.Build.Framework" Version="18.3.3" />
         <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.3.3" />
-        <PackageReference Include="Microsoft.CodeAnalysis" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0-2.final">
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="5.3.0-2.final">
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="5.0.0-2.final">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.Copilot" Version="5.0.0-1.25277.114">
-          <NoWarn>NU1608</NoWarn>
-        </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="11.0.100-preview.1.26104.118">
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="6.0.36" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.3.0-2.final" />
-        <PackageReference Include="Microsoft.TemplateEngine.Abstractions" Version="11.0.100-preview.1.26104.118" />
-        <PackageReference Include="Microsoft.TemplateEngine.Edge" Version="11.0.100-preview.1.26104.118" />
-        <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="11.0.100-preview.1.26104.118" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.0.0-2.final" />
+        <PackageReference Include="Microsoft.TemplateEngine.Abstractions" Version="8.0.403" />
+        <PackageReference Include="Microsoft.TemplateEngine.Edge" Version="8.0.403" />
+        <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="8.0.403" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Include="Avalonia.Diagnostics" Version="11.3.12">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">none</IncludeAssets>
@@ -62,12 +60,9 @@
              The host app invokes nanoff/msbuild as external processes for ESP32 builds. -->
         <PackageReference Include="NuGet.Protocol" Version="7.3.0" />
         <PackageReference Include="Octokit" Version="14.0.0" />
-        <PackageReference Include="Semi.Avalonia.AvaloniaEdit" Version="11.2.0.1" />
-        <PackageReference Include="System.Drawing.Common" Version="11.0.0-preview.1.26104.118" />
+        <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
         <PackageReference Include="System.IO.Ports" Version="10.0.3" />
         <PackageReference Include="TextMateSharp.Grammars" Version="2.0.2" />
-        <!-- F# compiler service for F# autocompletion -->
-        <PackageReference Include="FSharp.Compiler.Service" Version="43.9.300" />
     </ItemGroup>
 
     <ItemGroup>
@@ -103,6 +98,12 @@
     <ItemGroup>
       <Compile Update="MainWindow.Methods.cs">
         <DependentUpon>MenuWindow.axaml</DependentUpon>
+      </Compile>
+      <Compile Update="PreviewErrorWindow.axaml.cs">
+        <DependentUpon>PreviewErrorWindow.axaml</DependentUpon>
+      </Compile>
+      <Compile Update="AxamlLiveHost.axaml.cs">
+        <DependentUpon>AxamlLiveHost.axaml</DependentUpon>
       </Compile>
     </ItemGroup>
 </Project>

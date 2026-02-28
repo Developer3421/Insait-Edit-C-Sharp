@@ -52,7 +52,9 @@ public partial class AddProjectToSolutionWindow : Window
             _selectedTemplate = template;
             
             var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate", 
-                                   "WebApiTemplate", "XUnitTemplate", "WpfTemplate" };
+                                   "WebApiTemplate", "XUnitTemplate", "WpfTemplate",
+                                   "FSharpConsoleTemplate", "FSharpEmptyTemplate",
+                                   "WinFormsTemplate", "CSharpEmptyTemplate" };
             foreach (var name in templates)
             {
                 var btn = this.FindControl<Button>(name);
@@ -108,14 +110,22 @@ public partial class AddProjectToSolutionWindow : Window
             // Determine template name
             var templateName = _selectedTemplate switch
             {
-                "console" => "console",
-                "classlib" => "classlib",
-                "avalonia" => "avalonia.app",
-                "webapi" => "webapi",
-                "xunit" => "xunit",
-                "wpf" => "wpf",
-                _ => "console"
+                "console"        => "console",
+                "classlib"       => "classlib",
+                "avalonia"       => "avalonia.app",
+                "webapi"         => "webapi",
+                "xunit"          => "xunit",
+                "wpf"            => "wpf",
+                "fsharp-console" => "console",
+                "fsharp-empty"   => "classlib",
+                "winforms"       => "winforms",
+                "csharp-empty"   => "classlib",
+                _                => "console"
             };
+
+            // F# templates need the --language flag
+            var isFSharp = _selectedTemplate is "fsharp-console" or "fsharp-empty";
+            var langArg  = isFSharp ? " --language F#" : string.Empty;
 
             // Create project
             var createProcess = new Process
@@ -123,7 +133,7 @@ public partial class AddProjectToSolutionWindow : Window
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "dotnet",
-                    Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"",
+                    Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"{langArg}",
                     WorkingDirectory = _solutionDir,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -137,7 +147,9 @@ public partial class AddProjectToSolutionWindow : Window
 
             if (createProcess.ExitCode == 0)
             {
-                var projectPath = Path.Combine(projectDir, $"{projectName}.csproj");
+                // F# projects use .fsproj; all others use .csproj
+                var projExt = isFSharp ? ".fsproj" : ".csproj";
+                var projectPath = Path.Combine(projectDir, $"{projectName}{projExt}");
                 
                 // Add project to solution using SolutionService (supports both sln and slnx)
                 var solutionService = new SolutionService();

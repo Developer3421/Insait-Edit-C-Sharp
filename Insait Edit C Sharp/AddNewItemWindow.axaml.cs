@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -47,7 +48,7 @@ public partial class AddNewItemWindow : Window
             }
         }
         
-        // Try to find the .csproj file and use its name as base namespace
+        // Try to find the .csproj or .fsproj file and use its name as base namespace
         try
         {
             var dir = new DirectoryInfo(path);
@@ -60,9 +61,11 @@ public partial class AddNewItemWindow : Window
                 }
                 
                 var csprojFiles = dir.GetFiles("*.csproj");
-                if (csprojFiles.Length > 0)
+                var fsprojFiles = dir.GetFiles("*.fsproj");
+                var projectFiles = csprojFiles.Concat(fsprojFiles).ToArray();
+                if (projectFiles.Length > 0)
                 {
-                    var baseName = Path.GetFileNameWithoutExtension(csprojFiles[0].Name);
+                    var baseName = Path.GetFileNameWithoutExtension(projectFiles[0].Name);
                     
                     // Calculate relative path from project root
                     var relativePath = Path.GetRelativePath(dir.FullName, path);
@@ -107,6 +110,9 @@ public partial class AddNewItemWindow : Window
                 // C# Types
                 "ClassItem", "InterfaceItem", "RecordItem", "StructItem", "EnumItem", 
                 "DelegateItem", "ExceptionItem", "GlobalUsingsItem",
+                // F# Types
+                "FsModuleItem", "FsClassItem", "FsRecordItem", "FsUnionItem",
+                "FsInterfaceItem", "FsScriptItem", "FsSignatureItem",
                 // ASP.NET
                 "RazorItem", "RazorPageItem", "RazorViewItem", "ControllerItem", "ApiControllerItem", "MinimalApiItem",
                 // Avalonia
@@ -152,6 +158,14 @@ public partial class AddNewItemWindow : Window
             "delegate" => "NewDelegate",
             "exception" => "NewException",
             "globalusings" => "GlobalUsings",
+            // F# Types
+            "fsmodule" => "MyModule",
+            "fsclass" => "MyClass",
+            "fsrecord" => "MyRecord",
+            "fsunion" => "MyUnion",
+            "fsinterface" => "IMyInterface",
+            "fsscript" => "Script",
+            "fssignature" => "Module",
             // ASP.NET
             "razor" => "NewComponent",
             "razorpage" => "NewPage",
@@ -226,6 +240,14 @@ public partial class AddNewItemWindow : Window
             "delegate" => ".cs",
             "exception" => ".cs",
             "globalusings" => ".cs",
+            // F# Types
+            "fsmodule" => ".fs",
+            "fsclass" => ".fs",
+            "fsrecord" => ".fs",
+            "fsunion" => ".fs",
+            "fsinterface" => ".fs",
+            "fsscript" => ".fsx",
+            "fssignature" => ".fsi",
             // ASP.NET
             "razor" => ".razor",
             "razorpage" => ".cshtml",
@@ -342,6 +364,14 @@ public partial class AddNewItemWindow : Window
             "delegate" => GenerateDelegate(name, ns),
             "exception" => GenerateException(name, ns),
             "globalusings" => GenerateGlobalUsings(),
+            // F# Types
+            "fsmodule" => GenerateFsModule(name),
+            "fsclass" => GenerateFsClass(name),
+            "fsrecord" => GenerateFsRecord(name),
+            "fsunion" => GenerateFsUnion(name),
+            "fsinterface" => GenerateFsInterface(name),
+            "fsscript" => GenerateFsScript(name),
+            "fssignature" => GenerateFsSignature(name),
             // ASP.NET
             "razor" => GenerateRazorComponent(name),
             "razorpage" => GenerateRazorPage(name),
@@ -1020,6 +1050,104 @@ Thumbs.db
 
 # Documents
 *.pdf binary
+";
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  F# Templates
+    // ═══════════════════════════════════════════════════════════
+
+    private string GenerateFsModule(string name)
+    {
+        return $@"module {name}
+
+// Add your functions here
+
+let greet (name: string) =
+    printfn ""Hello, %s!"" name
+";
+    }
+
+    private string GenerateFsClass(string name)
+    {
+        return $@"namespace MyNamespace
+
+type {name}() =
+    let mutable _value = 0
+
+    member this.Value
+        with get() = _value
+        and set(v) = _value <- v
+
+    member this.DoSomething() =
+        printfn ""Doing something with value: %d"" _value
+";
+    }
+
+    private string GenerateFsRecord(string name)
+    {
+        return $@"namespace MyNamespace
+
+type {name} =
+    {{
+        Id: int
+        Name: string
+        Description: string option
+    }}
+
+module {name}Module =
+    let create id name =
+        {{ Id = id; Name = name; Description = None }}
+";
+    }
+
+    private string GenerateFsUnion(string name)
+    {
+        return $@"namespace MyNamespace
+
+type {name} =
+    | Case1
+    | Case2 of string
+    | Case3 of int * string
+
+module {name}Module =
+    let describe (value: {name}) =
+        match value with
+        | Case1 -> ""Case1""
+        | Case2 s -> sprintf ""Case2: %s"" s
+        | Case3 (i, s) -> sprintf ""Case3: %d, %s"" i s
+";
+    }
+
+    private string GenerateFsInterface(string name)
+    {
+        return $@"namespace MyNamespace
+
+type {name} =
+    abstract member DoSomething: unit -> unit
+    abstract member GetValue: unit -> int
+";
+    }
+
+    private string GenerateFsScript(string name)
+    {
+        return $@"// {name}.fsx — F# Script file
+
+printfn ""Hello from {name}!""
+
+let add x y = x + y
+
+let result = add 3 4
+printfn ""3 + 4 = %d"" result
+";
+    }
+
+    private string GenerateFsSignature(string name)
+    {
+        return $@"module {name}
+
+/// <summary>Greets a person.</summary>
+val greet: name: string -> unit
 ";
     }
 }

@@ -102,7 +102,9 @@ public partial class NewProjectWindow : Window
             _selectedTemplate = template;
             
             // Update visual selection
-            var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate", "WebApiTemplate", "NanoTemplate" };
+            var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate", "WebApiTemplate",
+                                    "NanoTemplate", "FSharpConsoleTemplate", "FSharpEmptyTemplate",
+                                    "WinFormsTemplate", "CSharpEmptyTemplate", "FSharpSafeStackTemplate" };
             foreach (var name in templates)
             {
                 var btn = this.FindControl<Button>(name);
@@ -238,19 +240,28 @@ public partial class NewProjectWindow : Window
             // Run dotnet new
             var templateName = _selectedTemplate switch
             {
-                "console" => "console",
-                "classlib" => "classlib",
-                "avalonia" => "avalonia.app",
-                "webapi" => "webapi",
-                _ => "console"
+                "console"        => "console",
+                "classlib"       => "classlib",
+                "avalonia"       => "avalonia.app",
+                "webapi"         => "webapi",
+                "fsharp-console" => "console",
+                "fsharp-empty"   => "classlib",
+                "fsharp-safestack"=> "SAFE",
+                "winforms"       => "winforms",
+                "csharp-empty"   => "classlib",
+                _                => "console"
             };
+
+            // F# templates need the --language flag (SAFE Stack is already F# only)
+            var isFSharp = _selectedTemplate is "fsharp-console" or "fsharp-empty";
+            var langArg  = isFSharp ? " --language F#" : string.Empty;
 
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "dotnet",
-                    Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"",
+                    Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"{langArg}",
                     WorkingDirectory = location,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -270,7 +281,30 @@ public partial class NewProjectWindow : Window
 
             if (process.ExitCode == 0)
             {
-                var csprojPath = Path.Combine(projectDir, $"{projectName}.csproj");
+                // F# projects use .fsproj; everything else uses .csproj.
+                // SAFE Stack creates: projectDir\src\<Name>.Server.fsproj (server-side entry point)
+                string csprojPath;
+                if (_selectedTemplate == "fsharp-safestack")
+                {
+                    var srcDir = Path.Combine(projectDir, "src");
+                    var serverProj = Path.Combine(srcDir, $"{projectName}.Server.fsproj");
+                    var clientProj = Path.Combine(srcDir, $"{projectName}.Client.fsproj");
+                    // prefer Server project; fall back to any .fsproj found
+                    if (File.Exists(serverProj))
+                        csprojPath = serverProj;
+                    else if (File.Exists(clientProj))
+                        csprojPath = clientProj;
+                    else
+                    {
+                        var found = Directory.GetFiles(projectDir, "*.fsproj", SearchOption.AllDirectories);
+                        csprojPath = found.Length > 0 ? found[0] : Path.Combine(projectDir, $"{projectName}.fsproj");
+                    }
+                }
+                else
+                {
+                    var projExt = _selectedTemplate is "fsharp-console" or "fsharp-empty" ? ".fsproj" : ".csproj";
+                    csprojPath = Path.Combine(projectDir, $"{projectName}{projExt}");
+                }
                 string? slnFilePath = null;
                 
                 // If we have a current solution, use it
@@ -346,21 +380,14 @@ public partial class NewProjectWindow : Window
                 // Initialize git if requested
                 if (createGit?.IsChecked == true)
                 {
-                    var gitProcess = new Process
+                    var gitService = new GitService();
+                    var initResult = await gitService.InitAsync(slnDir);
+                    if (initResult.Success)
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "git",
-                            Arguments = "init",
-                            WorkingDirectory = slnDir,
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true,
-                            CreateNoWindow = true
-                        }
-                    };
-                    gitProcess.Start();
-                    await gitProcess.WaitForExitAsync();
+                        // Make a full initial commit with every generated file so that
+                        // "Revert Commit" in GitWindow has a valid parent state to return to.
+                        await gitService.MakeInitialCommitAsync("Initial commit");
+                    }
                 }
 
                 // Set result paths and close — pass slnFilePath as the result so MainWindow can open the solution

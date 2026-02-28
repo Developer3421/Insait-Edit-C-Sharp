@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Insait_Edit_C_Sharp.AxamlLiveHost"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+    <!--
+        This compiled UserControl is the host container for runtime AXAML previews.
+        The actual previewed content is injected into PreviewHost at runtime.
+        An invisible InputBlocker overlay sits on top to consume all pointer events.
+    -->
+    <Grid>
+        <!-- The previewed content lands here -->
+        <ContentControl x:Name="PreviewHost"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"/>
+
+        <!-- Transparent overlay — blocks ALL pointer/keyboard interaction -->
+        <Border x:Name="InputBlocker"
+                Background="Transparent"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="True"
+                Cursor="Arrow"
+                PointerPressed="InputBlocker_PointerPressed"
+                PointerReleased="InputBlocker_PointerReleased"
+                PointerMoved="InputBlocker_PointerMoved"
+                Tapped="InputBlocker_Tapped"
+                DoubleTapped="InputBlocker_DoubleTapped"/>
+    </Grid>
+</UserControl>
+

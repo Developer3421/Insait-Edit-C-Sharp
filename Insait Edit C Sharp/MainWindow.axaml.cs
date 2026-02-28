@@ -199,7 +199,9 @@ public partial class MainWindow : Window
                             }
                         }
                     }
-                    else if (projectResult.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+                    else if (projectResult.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+                             || projectResult.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)
+                             || projectResult.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase))
                     {
                         var projDir = Path.GetDirectoryName(projectResult) ?? "";
                         var slnFile = FindSolutionFileFromPath(projDir);
@@ -273,7 +275,7 @@ public partial class MainWindow : Window
             e.Handled = true;
         }
         // Ctrl+P - Find file by name
-        else if (e.Key == Key.P && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        else if (e.Key == Key.P && e.KeyModifiers.HasFlag(KeyModifiers.Control) && !e.KeyModifiers.HasFlag(KeyModifiers.Shift))
         {
             _searchTabIsFiles = true;
             SwitchSidePanel("search");
@@ -281,8 +283,14 @@ public partial class MainWindow : Window
             this.FindControl<TextBox>("SearchInputBox")?.Focus();
             e.Handled = true;
         }
+        // Ctrl+Shift+P - AXAML Preview
+        else if (e.Key == Key.P && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            await OpenAxamlPreviewAsync();
+            e.Handled = true;
+        }
     }
-    
+
     private async Task OpenNewFileAsync()
     {
         var topLevel = GetTopLevel(this);
@@ -432,6 +440,7 @@ public partial class MainWindow : Window
         _monacoEditor!.ContentChanged          += OnEditorContentChanged;
         _monacoEditor!.ContentChangedWithValue += OnEditorContentChangedWithValue;
         _monacoEditor!.CursorPositionChanged   += OnCursorPositionChanged;
+        _monacoEditor!.UndoRedoManager.StateChanged += OnUndoRedoStateChanged;
     }
 
     private void OnEditorReady(object? sender, EventArgs e)
@@ -600,15 +609,10 @@ public partial class MainWindow : Window
 
     private void UpdateGitPanel(string path)
     {
-        if (_gitPanelControl != null)
+        // Git is now a separate window — refresh it if open
+        if (_gitWindow != null && _gitWindow.IsVisible)
         {
-            // Ensure we pass a directory path, not a file path
-            string dirPath = path;
-            if (File.Exists(path))
-            {
-                dirPath = Path.GetDirectoryName(path) ?? path;
-            }
-            _ = _gitPanelControl.SetRepositoryPathAsync(dirPath);
+            _ = _gitWindow.RefreshAsync();
         }
     }
 
@@ -623,6 +627,39 @@ public partial class MainWindow : Window
             Title = "Insait Edit";
         }
     }
+
+    #region Undo / Redo
+
+    private void UndoButton_Click(object? sender, RoutedEventArgs e)
+    {
+        _monacoEditor?.Undo();
+    }
+
+    private void RedoButton_Click(object? sender, RoutedEventArgs e)
+    {
+        _monacoEditor?.Redo();
+    }
+
+    private void OnUndoRedoStateChanged(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var undoBtn = this.FindControl<Button>("UndoButton");
+            var redoBtn = this.FindControl<Button>("RedoButton");
+            if (undoBtn != null && _monacoEditor != null)
+            {
+                undoBtn.IsEnabled = _monacoEditor.CanUndo;
+                undoBtn.Opacity = _monacoEditor.CanUndo ? 1.0 : 0.5;
+            }
+            if (redoBtn != null && _monacoEditor != null)
+            {
+                redoBtn.IsEnabled = _monacoEditor.CanRedo;
+                redoBtn.Opacity = _monacoEditor.CanRedo ? 1.0 : 0.5;
+            }
+        });
+    }
+
+    #endregion
 
     #region Window Controls
 
@@ -644,6 +681,27 @@ public partial class MainWindow : Window
     private void MinimizeButton_Click(object? sender, RoutedEventArgs e)
     {
         WindowState = WindowState.Minimized;
+    }
+
+    private void NewWindowButton_Click(object? sender, RoutedEventArgs e)
+    {
+        // Open a fresh instance of the IDE in a new window
+        var newWindow = new MainWindow();
+        newWindow.Show();
+    }
+
+    private void RestartButton_Click(object? sender, RoutedEventArgs e)
+    {
+        // Restart: launch a new process then close this one
+        var exe = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+        if (!string.IsNullOrEmpty(exe))
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe)
+            {
+                UseShellExecute = true
+            });
+        }
+        Close();
     }
 
     private void MaximizeButton_Click(object? sender, RoutedEventArgs e)
@@ -931,6 +989,9 @@ public partial class MainWindow : Window
             case "ToggleComment":
                 // TODO: Implement toggle comment
                 break;
+            case "PreviewAxaml":
+                await OpenAxamlPreviewAsync();
+                break;
 
             // View actions
             case "ToggleAI":
@@ -1076,6 +1137,55 @@ public partial class MainWindow : Window
                 // First time loading, use LoadProjectFolderAsync (fire and forget)
                 _ = _viewModel.LoadProjectFolderAsync(_projectPath);
             }
+        }
+
+        // Reload all open editor tabs whose files changed on disk
+        ReloadOpenTabsFromDisk();
+    }
+
+    /// <summary>
+    /// Reloads all open editor tabs from disk.
+    /// Tabs that are not dirty are silently reloaded if their on-disk content differs.
+    /// The active tab's content is also pushed to the Monaco editor when updated.
+    /// </summary>
+    private void ReloadOpenTabsFromDisk()
+    {
+        bool activeTabReloaded = false;
+
+        foreach (var tab in _viewModel.Tabs)
+        {
+            if (string.IsNullOrEmpty(tab.FilePath) || !File.Exists(tab.FilePath))
+                continue;
+
+            // Skip dirty tabs — the user has unsaved changes we must not overwrite
+            if (tab.IsDirty)
+                continue;
+
+            try
+            {
+                var newContent = File.ReadAllText(tab.FilePath);
+
+                // Only update if content actually changed (avoid unnecessary editor flicker)
+                if (tab.Content == newContent)
+                    continue;
+
+                tab.Content = newContent;
+                tab.IsDirty = false;
+
+                if (tab == _viewModel.ActiveTab)
+                    activeTabReloaded = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ReloadOpenTabsFromDisk: could not read {tab.FilePath}: {ex.Message}");
+            }
+        }
+
+        // Push the reloaded content into Monaco if the active tab was updated
+        if (activeTabReloaded && _viewModel.ActiveTab != null && _monacoEditor != null)
+        {
+            _monacoEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
+            _viewModel.StatusText = $"Reloaded from disk: {_viewModel.ActiveTab.FileName}";
         }
     }
 
@@ -1253,9 +1363,9 @@ public partial class MainWindow : Window
 
     #region Sidebar Handlers
 
-    private GitPanelControl? _gitPanelControl;
     private AccountPanelControl? _accountPanelControl;
     private string _currentSidePanel = "explorer";
+    private GitWindow? _gitWindow;
 
     private void Explorer_Click(object? sender, RoutedEventArgs e)
     {
@@ -1269,19 +1379,42 @@ public partial class MainWindow : Window
 
     private async void Git_Click(object? sender, RoutedEventArgs e)
     {
-        SwitchSidePanel("git");
-        
-        // Initialize Git panel if not done yet
-        if (_gitPanelControl == null)
+        await OpenGitWindowAsync();
+    }
+
+    private async Task OpenGitWindowAsync()
+    {
+        // Collect all project paths from the solution
+        var allProjects = CollectAllProjectPaths();
+
+        if (_gitWindow == null || !_gitWindow.IsVisible)
         {
-            InitializeGitPanel();
+            _gitWindow = new GitWindow();
+            _gitWindow.FileOpenRequested += (_, filePath) => OpenFileInEditor(filePath);
+            await _gitWindow.InitializeAsync(_projectPath, allProjects);
+            _gitWindow.Show();
         }
-        
-        // Refresh Git status when panel is shown
-        if (_gitPanelControl != null)
+        else
         {
-            await _gitPanelControl.RefreshAsync();
+            _gitWindow.Activate();
+            await _gitWindow.RefreshAsync();
         }
+    }
+
+    private List<string> CollectAllProjectPaths()
+    {
+        var paths = new List<string>();
+        foreach (var item in _viewModel.FileTreeItems)
+            CollectProjects(item, paths);
+        return paths;
+    }
+
+    private static void CollectProjects(Models.FileTreeItem item, List<string> paths)
+    {
+        if (item.ItemType is Models.FileTreeItemType.Project or Models.FileTreeItemType.EspProject)
+            paths.Add(item.FullPath);
+        foreach (var child in item.Children)
+            CollectProjects(child, paths);
     }
 
     private void Debug_Click(object? sender, RoutedEventArgs e)
@@ -1805,10 +1938,10 @@ public partial class MainWindow : Window
             _viewModel.StatusText = "✅ Git репозиторій успішно ініціалізовано!";
             UpdateGitStatusIndicator(GitRepoStatus.Healthy);
             
-            // Оновлюємо Git панель якщо вона відкрита
-            if (_gitPanelControl != null)
+            // Оновлюємо Git вікно якщо воно відкрите
+            if (_gitWindow != null && _gitWindow.IsVisible)
             {
-                await _gitPanelControl.SetRepositoryPathAsync(path);
+                await _gitWindow.InitializeAsync(path);
             }
         }
         else
@@ -2008,7 +2141,6 @@ public partial class MainWindow : Window
         // Get all panels
         var explorerPanel = this.FindControl<Grid>("ExplorerPanel");
         var searchPanel = this.FindControl<Grid>("SearchPanel");
-        var gitPanel = this.FindControl<Border>("GitSidePanel");
         var nugetPanel = this.FindControl<Border>("NuGetSidePanel");
         var accountPanel = this.FindControl<Border>("AccountSidePanel");
         
@@ -2022,7 +2154,6 @@ public partial class MainWindow : Window
         // Hide all panels
         if (explorerPanel != null) explorerPanel.IsVisible = false;
         if (searchPanel != null) searchPanel.IsVisible = false;
-        if (gitPanel != null) gitPanel.IsVisible = false;
         if (nugetPanel != null) nugetPanel.IsVisible = false;
         if (accountPanel != null) accountPanel.IsVisible = false;
         
@@ -2049,10 +2180,6 @@ public partial class MainWindow : Window
                     this.FindControl<TextBox>("SearchInputBox")?.Focus();
                 else
                     this.FindControl<TextBox>("ContentSearchInputBox")?.Focus();
-                break;
-            case "git":
-                if (gitPanel != null) gitPanel.IsVisible = true;
-                gitButton?.Classes.Add("active");
                 break;
             case "nuget":
                 if (nugetPanel != null) nugetPanel.IsVisible = true;
@@ -2469,56 +2596,6 @@ public partial class MainWindow : Window
             _        => "📄"
         };
 
-    private void InitializeGitPanel()
-    {
-        var gitPanelContainer = this.FindControl<Border>("GitSidePanel");
-        if (gitPanelContainer == null) return;
-        
-        _gitPanelControl = new GitPanelControl();
-        
-        // Subscribe to events
-        _gitPanelControl.FileOpenRequested += (s, filePath) =>
-        {
-            OpenFileInEditor(filePath);
-        };
-        
-        _gitPanelControl.FileDiffRequested += (s, filePath) =>
-        {
-            // TODO: Show diff view
-            OpenFileInEditor(filePath);
-        };
-        
-        _gitPanelControl.CloneRepositoryRequested += async (s, e) =>
-        {
-            var cloneWindow = new CloneRepositoryWindow();
-            var result = await cloneWindow.ShowDialog<string?>(this);
-            if (!string.IsNullOrEmpty(result))
-            {
-                _projectPath = result;
-                LoadProject(result);
-                UpdateTitle();
-                // Ensure we pass directory path
-                string dirPath = File.Exists(result) ? Path.GetDirectoryName(result) ?? result : result;
-                await _gitPanelControl.SetRepositoryPathAsync(dirPath);
-            }
-        };
-        
-        _gitPanelControl.StatusChanged += (s, status) =>
-        {
-            _viewModel.StatusText = status;
-        };
-        
-        // Add to container
-        gitPanelContainer.Child = _gitPanelControl;
-        
-        // Set repository path
-        if (!string.IsNullOrEmpty(_projectPath))
-        {
-            // Ensure we pass directory path
-            string dirPath = File.Exists(_projectPath) ? Path.GetDirectoryName(_projectPath) ?? _projectPath : _projectPath;
-            _ = _gitPanelControl.SetRepositoryPathAsync(dirPath);
-        }
-    }
 
     private void InitializeAccountPanel()
     {
@@ -2690,42 +2767,64 @@ public partial class MainWindow : Window
 
     private async void DeleteItem_Click(object? sender, RoutedEventArgs e)
     {
-        var selectedItem = GetSelectedTreeItem();
-        if (selectedItem == null) return;
+        var selectedItems = GetSelectedTreeItems()
+            .Where(x => x.ItemType is not FileTreeItemType.Solution
+                                   and not FileTreeItemType.SolutionFolder
+                                   and not FileTreeItemType.Project
+                                   and not FileTreeItemType.EspProject)
+            .ToList();
 
-        var confirmDelete = await ShowConfirmDialogAsync(
-            "Confirm Delete",
-            $"Are you sure you want to delete '{selectedItem.Name}'?" + 
-            (selectedItem.IsDirectory ? "\n\nThis will delete all contents." : ""));
+        if (selectedItems.Count == 0) return;
 
-        if (confirmDelete)
+        string confirmMsg;
+        if (selectedItems.Count == 1)
+        {
+            var single = selectedItems[0];
+            confirmMsg = "Are you sure you want to delete '" + single.Name + "'?" +
+                         (single.IsDirectory ? "\n\nThis will delete all contents." : "");
+        }
+        else
+        {
+            var dirCount  = selectedItems.Count(x => x.IsDirectory);
+            var fileCount = selectedItems.Count(x => !x.IsDirectory);
+            var parts     = new List<string>();
+            if (fileCount > 0) parts.Add(fileCount + " file" + (fileCount > 1 ? "s" : ""));
+            if (dirCount  > 0) parts.Add(dirCount  + " folder" + (dirCount > 1 ? "s" : ""));
+            confirmMsg = "Are you sure you want to delete " + selectedItems.Count + " items (" + string.Join(", ", parts) + ")?";
+            if (dirCount > 0) confirmMsg += "\n\nAll folder contents will be deleted.";
+        }
+
+        var confirmDelete = await ShowConfirmDialogAsync("Confirm Delete", confirmMsg);
+        if (!confirmDelete) return;
+
+        int deleted = 0, errors = 0;
+        foreach (var item in selectedItems)
         {
             try
             {
-                if (selectedItem.IsDirectory)
+                if (item.IsDirectory)
                 {
-                    Directory.Delete(selectedItem.FullPath, true);
+                    Directory.Delete(item.FullPath, true);
                 }
                 else
                 {
-                    File.Delete(selectedItem.FullPath);
-                    
-                    // Close tab if file is open
-                    var tab = _viewModel.FindTabByPath(selectedItem.FullPath);
-                    if (tab != null)
-                    {
-                        _viewModel.CloseTab(tab);
-                    }
+                    File.Delete(item.FullPath);
+                    var tab = _viewModel.FindTabByPath(item.FullPath);
+                    if (tab != null) _viewModel.CloseTab(tab);
                 }
-                
-                RefreshFileTree();
-                _viewModel.StatusText = $"Deleted: {selectedItem.Name}";
+                deleted++;
             }
             catch (Exception ex)
             {
-                _viewModel.StatusText = $"Error deleting: {ex.Message}";
+                errors++;
+                _viewModel.StatusText = "Error deleting '" + item.Name + "': " + ex.Message;
             }
         }
+
+        RefreshFileTree();
+        _viewModel.StatusText = errors == 0
+            ? "Deleted " + deleted + " item" + (deleted > 1 ? "s" : "")
+            : "Deleted " + deleted + ", failed " + errors;
     }
 
     private void CopyPath_Click(object? sender, RoutedEventArgs e)

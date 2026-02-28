@@ -1,0 +1,777 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="using:Insait_Edit_C_Sharp.Models"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
+        x:Class="Insait_Edit_C_Sharp.GitWindow"
+        Title="Git — Insait Edit"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="1100" Height="720"
+        MinWidth="820" MinHeight="500"
+        CanResize="True"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <!-- ══ SAME PALETTE AS MAINWINDOW ══════════════════════════ -->
+    <Window.Resources>
+        <Color x:Key="Bg">#FF1F1A24</Color>
+        <Color x:Key="Surface">#FF2A2230</Color>
+        <Color x:Key="Border">#FF3E3050</Color>
+        <Color x:Key="Text">#FFF0E8F4</Color>
+        <Color x:Key="Muted">#FF9E90B0</Color>
+        <Color x:Key="Orange">#FFFFC09F</Color>
+        <Color x:Key="OrangeHover">#FFFFD4B8</Color>
+        <Color x:Key="Green">#FFA6E3A1</Color>
+        <Color x:Key="Blue">#FF89B4FA</Color>
+        <Color x:Key="Red">#FFF38BA8</Color>
+        <Color x:Key="Yellow">#FFF9E2AF</Color>
+
+        <SolidColorBrush x:Key="BgBrush"      Color="{StaticResource Bg}"/>
+        <SolidColorBrush x:Key="SurfBrush"    Color="{StaticResource Surface}"/>
+        <SolidColorBrush x:Key="BorderBrush"  Color="{StaticResource Border}"/>
+        <SolidColorBrush x:Key="TextBrush"    Color="{StaticResource Text}"/>
+        <SolidColorBrush x:Key="MutedBrush"   Color="{StaticResource Muted}"/>
+        <SolidColorBrush x:Key="OrangeBrush"  Color="{StaticResource Orange}"/>
+        <SolidColorBrush x:Key="GreenBrush"   Color="{StaticResource Green}"/>
+        <SolidColorBrush x:Key="BlueBrush"    Color="{StaticResource Blue}"/>
+        <SolidColorBrush x:Key="RedBrush"     Color="{StaticResource Red}"/>
+    </Window.Resources>
+
+    <Window.Styles>
+        <!-- Title bar btn -->
+        <Style Selector="Button.wb">
+            <Setter Property="Background"  Value="Transparent"/>
+            <Setter Property="Foreground"  Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width"  Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment"   Value="Center"/>
+        </Style>
+        <Style Selector="Button.wb:pointerover">
+            <Setter Property="Background" Value="#20FFDAB0"/>
+        </Style>
+        <Style Selector="Button.wb.close:pointerover">
+            <Setter Property="Background" Value="#CCE81123"/>
+        </Style>
+
+        <!-- Toolbar icon btn -->
+        <Style Selector="Button.tb">
+            <Setter Property="Background"  Value="Transparent"/>
+            <Setter Property="Foreground"  Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width"  Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding"  Value="0"/>
+            <Setter Property="Cursor"   Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment"   Value="Center"/>
+        </Style>
+        <Style Selector="Button.tb:pointerover">
+            <Setter Property="Background" Value="#20FFDAB0"/>
+        </Style>
+        <Style Selector="Button.tb:pressed">
+            <Setter Property="Background" Value="#40FFDAB0"/>
+        </Style>
+        <Style Selector="Button.tb:disabled">
+            <Setter Property="Opacity" Value="0.35"/>
+        </Style>
+
+        <!-- Primary orange btn -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background"  Value="{StaticResource OrangeBrush}"/>
+            <Setter Property="Foreground"  Value="#FF1F1A24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding"  Value="14,7"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor"   Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="{StaticResource OrangeHover}"/>
+        </Style>
+        <Style Selector="Button.primary:disabled">
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+        </Style>
+
+        <!-- Secondary btn -->
+        <Style Selector="Button.sec">
+            <Setter Property="Background"  Value="#FF3E3050"/>
+            <Setter Property="Foreground"  Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding"  Value="14,7"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor"   Value="Hand"/>
+        </Style>
+        <Style Selector="Button.sec:pointerover">
+            <Setter Property="Background" Value="#FF4E4060"/>
+        </Style>
+
+        <!-- Right-panel tab -->
+        <Style Selector="Button.rtab">
+            <Setter Property="Background"  Value="Transparent"/>
+            <Setter Property="Foreground"  Value="{StaticResource MutedBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding"  Value="16,0"/>
+            <Setter Property="Height"   Value="36"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor"   Value="Hand"/>
+            <Setter Property="CornerRadius" Value="0"/>
+        </Style>
+        <Style Selector="Button.rtab:pointerover">
+            <Setter Property="Background" Value="#20FFDAB0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        </Style>
+        <Style Selector="Button.rtab.active">
+            <Setter Property="Foreground"  Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
+        </Style>
+
+        <!-- File row -->
+        <Style Selector="Border.frow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding"    Value="6,3"/>
+            <Setter Property="CornerRadius" Value="3"/>
+        </Style>
+        <Style Selector="Border.frow:pointerover">
+            <Setter Property="Background" Value="#18FFDAB0"/>
+        </Style>
+
+        <!-- Commit row -->
+        <Style Selector="Border.crow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding"    Value="8,6"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="Border.crow:pointerover">
+            <Setter Property="Background" Value="#18FFDAB0"/>
+        </Style>
+        <Style Selector="Border.crow.sel">
+            <Setter Property="Background" Value="#28FFDAB0"/>
+        </Style>
+
+        <!-- TextBox -->
+        <Style Selector="TextBox">
+            <Setter Property="Foreground"               Value="{StaticResource TextBrush}"/>
+            <Setter Property="CaretBrush"               Value="{StaticResource TextBrush}"/>
+            <Setter Property="SelectionBrush"           Value="{StaticResource OrangeBrush}"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
+        </Style>
+        <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="Opacity"    Value="1"/>
+        </Style>
+
+        <!-- Expander -->
+        <Style Selector="Expander.sec > ToggleButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding"    Value="6,4"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        </Style>
+        <Style Selector="Expander.sec > ToggleButton:pointerover">
+            <Setter Property="Background" Value="#18FFDAB0"/>
+        </Style>
+
+        <!-- CheckBox tint -->
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <Window.Background>
+        <SolidColorBrush Color="{StaticResource Bg}"/>
+    </Window.Background>
+
+    <Panel>
+    <Grid RowDefinitions="32,*">
+
+        <!-- ═══ TITLE BAR ══════════════════════════════════════ -->
+        <Grid Grid.Row="0" Background="{StaticResource SurfBrush}"
+              PointerPressed="TitleBar_PointerPressed">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" Margin="12,0">
+                    <TextBlock Text="🔀" FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="Git" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{StaticResource OrangeBrush}" VerticalAlignment="Center"/>
+                    <Border Background="#FF3E3050" CornerRadius="4" Padding="8,2" Margin="4,0">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⎇" FontSize="11" Foreground="{StaticResource GreenBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Name="TitleBranchText" Text="main" FontSize="11"
+                                       Foreground="{StaticResource TextBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Name="TitleRepoText" Text="" FontSize="11"
+                               Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"
+                               MaxWidth="350" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Classes="wb" Click="Minimize_Click">
+                        <TextBlock Text="─" FontSize="11"/>
+                    </Button>
+                    <Button Classes="wb close" Click="Close_Click">
+                        <TextBlock Text="✕" FontSize="12"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <!-- ═══ MAIN CONTENT ═══════════════════════════════════ -->
+        <Grid Grid.Row="1" ColumnDefinitions="320,5,*">
+
+            <!-- ─── LEFT: changes + commit ──────────────────── -->
+            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto"
+                  Background="{StaticResource SurfBrush}">
+
+                <!-- Scope + refresh -->
+                <Border Grid.Row="0" Background="{StaticResource BgBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,6">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock Grid.Column="0" Text="Scope:" FontSize="11"
+                                   Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox Grid.Column="1" Name="ScopeCombo"
+                                  Background="#FF252030" Foreground="{StaticResource TextBrush}"
+                                  BorderBrush="{StaticResource BorderBrush}"
+                                  FontSize="11" HorizontalAlignment="Stretch"
+                                  SelectionChanged="ScopeCombo_SelectionChanged">
+                            <ComboBoxItem Content="📁 Solution (all projects)" Tag="solution"/>
+                        </ComboBox>
+                        <Button Grid.Column="2" Classes="tb" Width="26" Height="26" Margin="4,0,0,0"
+                                ToolTip.Tip="Refresh" Click="Refresh_Click">
+                            <TextBlock Text="🔄" FontSize="12"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Toolbar -->
+                <Border Grid.Row="1" Background="{StaticResource BgBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                            <Button Classes="tb" ToolTip.Tip="Focus commit message" Click="CommitToolbar_Click">
+                                <TextBlock Text="✓" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
+                            </Button>
+                            <Button Classes="tb" ToolTip.Tip="Pull / Update" Click="Pull_Click">
+                                <TextBlock Text="↓" FontSize="15" FontWeight="Bold" Foreground="{StaticResource BlueBrush}"/>
+                            </Button>
+                            <Button Classes="tb" ToolTip.Tip="Push" Click="Push_Click">
+                                <TextBlock Text="↑" FontSize="15" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
+                            </Button>
+                            <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,6"/>
+                            <Button Classes="tb" ToolTip.Tip="Fetch" Click="Fetch_Click">
+                                <TextBlock Text="⟳" FontSize="14"/>
+                            </Button>
+                            <Button Classes="tb" ToolTip.Tip="Stash" Click="Stash_Click">
+                                <TextBlock Text="📦" FontSize="12"/>
+                            </Button>
+                            <Button Classes="tb" ToolTip.Tip="Pop stash" Click="PopStash_Click">
+                                <TextBlock Text="📤" FontSize="12"/>
+                            </Button>
+                            <Button Classes="tb" ToolTip.Tip="Rollback all" Click="Rollback_Click">
+                                <TextBlock Text="↺" FontSize="13"/>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+                            <!-- Create GitHub repo using GitHubAccountService -->
+                            <Button Classes="tb" ToolTip.Tip="Create GitHub repository" Name="CreateRepoBtn" Click="CreateRepo_Click">
+                                <TextBlock Text="🐙" FontSize="14"/>
+                            </Button>
+                            <Button Classes="tb" ToolTip.Tip="Git console" Click="ConsoleTabFromToolbar_Click">
+                                <TextBlock Text="⌨" FontSize="13"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Branch bar + file checklist -->
+                <Grid Grid.Row="2" RowDefinitions="Auto,*">
+                    <!-- Branch -->
+                    <Border Grid.Row="0" Background="{StaticResource BgBrush}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <TextBlock Grid.Column="0" Text="⎇" FontSize="13"
+                                       Foreground="{StaticResource GreenBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <Button Grid.Column="1" Background="Transparent" BorderThickness="0" Padding="0"
+                                    Name="BranchBtn" Click="Branch_Click" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Name="BranchNameText" Text="main" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="▼" FontSize="8" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <!-- Ahead/Behind -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6"
+                                        Name="AheadBehindPanel" IsVisible="False">
+                                <StackPanel Orientation="Horizontal" Spacing="2" Name="BehindStack">
+                                    <TextBlock Text="↓" FontSize="11" Foreground="{StaticResource BlueBrush}"/>
+                                    <TextBlock Name="BehindText" Text="0" FontSize="11" Foreground="{StaticResource BlueBrush}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="2" Name="AheadStack">
+                                    <TextBlock Text="↑" FontSize="11" Foreground="{StaticResource GreenBrush}"/>
+                                    <TextBlock Name="AheadText" Text="0" FontSize="11" Foreground="{StaticResource GreenBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- File checklist -->
+                    <Grid Grid.Row="1" RowDefinitions="Auto,*">
+                        <!-- Checklist header -->
+                        <Border Grid.Row="0" Padding="8,5"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                <CheckBox Grid.Column="0" Name="SelectAllCheck"
+                                          IsChecked="True" Click="SelectAll_Click"
+                                          ToolTip.Tip="Select / deselect all"/>
+                                <TextBlock Grid.Column="1" Text="Files to commit" FontSize="11"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                <TextBlock Grid.Column="2" Name="SelectedCountLbl"
+                                           Text="0/0" FontSize="11"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <Button Grid.Column="3" Classes="tb" Width="22" Height="22"
+                                        ToolTip.Tip="Stage selected" Click="StageSelected_Click">
+                                    <TextBlock Text="+" FontSize="14" FontWeight="Bold"
+                                               Foreground="{StaticResource GreenBrush}"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- No repo / clean / file list -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Margin="0,4">
+
+                                <!-- No repo -->
+                                <StackPanel Name="NoRepoPanel" Spacing="12" Margin="16,28"
+                                            HorizontalAlignment="Center" IsVisible="True">
+                                    <TextBlock Text="🔀" FontSize="40" HorizontalAlignment="Center" Opacity="0.3"/>
+                                    <TextBlock Text="No Git repository" FontSize="14" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Foreground="{StaticResource TextBrush}"/>
+                                    <TextBlock Text="Open a project with a Git repository&#10;or initialize a new one."
+                                               FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
+                                               Foreground="{StaticResource MutedBrush}" MaxWidth="220"/>
+                                    <StackPanel Spacing="6" Margin="0,8,0,0">
+                                        <Button Classes="primary" Content="Initialize Repository"
+                                                HorizontalAlignment="Stretch" Click="InitRepo_Click"/>
+                                        <Button Classes="sec" Content="Clone Repository…"
+                                                HorizontalAlignment="Stretch" Click="Clone_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Clean -->
+                                <StackPanel Name="CleanPanel" IsVisible="False"
+                                            Margin="16,28" HorizontalAlignment="Center">
+                                    <TextBlock Text="✓" FontSize="32" HorizontalAlignment="Center"
+                                               Foreground="{StaticResource GreenBrush}" Opacity="0.6"/>
+                                    <TextBlock Text="Nothing to commit" FontSize="13" HorizontalAlignment="Center"
+                                               Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
+                                    <TextBlock Text="Working tree is clean" FontSize="11" HorizontalAlignment="Center"
+                                               Foreground="{StaticResource MutedBrush}"/>
+                                </StackPanel>
+
+                                <!-- File list with checkboxes -->
+                                <ItemsControl Name="FileCheckList" Margin="4,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:GitFileChange" x:CompileBindings="False">
+                                            <Border Classes="frow">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Show Diff"  Click="CtxViewDiff_Click"/>
+                                                        <MenuItem Header="Discard"    Click="CtxDiscard_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem Header="Open File"  Click="CtxOpenFile_Click"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
+                                                <Grid ColumnDefinitions="Auto,18,*,Auto">
+                                                    <!-- Checkbox -->
+                                                    <CheckBox Grid.Column="0"
+                                                              IsChecked="{Binding IsSelected}"
+                                                              Click="FileCheck_Click"
+                                                              VerticalAlignment="Center"/>
+                                                    <!-- Status icon -->
+                                                    <TextBlock Grid.Column="1" Text="{Binding StatusIcon}"
+                                                               FontSize="11" FontWeight="Bold"
+                                                               Foreground="{Binding StatusColor}"
+                                                               VerticalAlignment="Center" TextAlignment="Center"/>
+                                                    <!-- Name + path -->
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                                                Spacing="6" Margin="4,0"
+                                                                PointerPressed="File_PointerPressed">
+                                                        <TextBlock Text="{Binding FileName}" FontSize="12"
+                                                                   Foreground="{StaticResource TextBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding Directory}" FontSize="10"
+                                                                   Foreground="{StaticResource MutedBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <!-- Discard btn -->
+                                                    <Button Grid.Column="3" Classes="tb" Width="18" Height="18"
+                                                            Tag="{Binding}" ToolTip.Tip="Discard"
+                                                            Click="DiscardFileBtn_Click">
+                                                        <TextBlock Text="↺" FontSize="10"
+                                                                   Foreground="{StaticResource MutedBrush}"/>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+
+                <!-- Commit area -->
+                <Border Grid.Row="3" Background="{StaticResource BgBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0"
+                        Padding="8" Name="CommitAreaBorder" IsVisible="False">
+                    <StackPanel Spacing="6">
+                        <TextBox Name="CommitMsgBox"
+                                 TextChanged="CommitMsgBox_TextChanged"
+                                 Watermark="Commit message (Ctrl+Enter to commit)"
+                                 AcceptsReturn="True" TextWrapping="Wrap"
+                                 MinHeight="56" MaxHeight="110"
+                                 Background="#FF252030"
+                                 BorderBrush="{StaticResource BorderBrush}"
+                                 FontSize="12" CornerRadius="4" Padding="8,6"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Button Grid.Column="0" Classes="primary" Content="Commit"
+                                    Name="CommitBtn" Click="Commit_Click"
+                                    IsEnabled="False" HorizontalAlignment="Stretch"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="6,0,0,0">
+                                <Button Classes="tb" Width="30" Height="30"
+                                        ToolTip.Tip="Commit and Push"
+                                        Click="CommitPush_Click">
+                                    <TextBlock Text="↑" FontSize="14" FontWeight="Bold"
+                                               Foreground="{StaticResource GreenBrush}"/>
+                                </Button>
+                                <Button Classes="tb" Width="30" Height="30"
+                                        ToolTip.Tip="Amend last commit"
+                                        Click="Amend_Click">
+                                    <TextBlock Text="✎" FontSize="12"
+                                               Foreground="{StaticResource Yellow}"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" ResizeDirection="Columns"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          Background="{StaticResource BorderBrush}" Cursor="SizeWestEast">
+                <GridSplitter.Styles>
+                    <Style Selector="GridSplitter:pointerover">
+                        <Setter Property="Background" Value="{StaticResource OrangeBrush}"/>
+                    </Style>
+                </GridSplitter.Styles>
+            </GridSplitter>
+
+            <!-- ─── RIGHT: Log / Diff / Console ─────────────── -->
+            <Grid Grid.Column="2" RowDefinitions="Auto,*" Background="{StaticResource BgBrush}">
+
+                <!-- Tab bar -->
+                <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Classes="rtab active" Name="LogTabBtn" Click="LogTab_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🕒" FontSize="11"/>
+                                    <TextBlock Text="Log" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="rtab" Name="DiffTabBtn" Click="DiffTab_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="⟺" FontSize="11"/>
+                                    <TextBlock Text="Changes" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="rtab" Name="ConsoleTabBtn" Click="ConsoleTab_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="⌨" FontSize="11"/>
+                                    <TextBlock Text="Console" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
+                                    Margin="0,0,8,0" VerticalAlignment="Center">
+                            <Button Classes="tb" Width="24" Height="24"
+                                    Name="AllBranchesBtn" ToolTip.Tip="All branches"
+                                    Click="AllBranches_Click">
+                                <TextBlock Text="⎇" FontSize="11"/>
+                            </Button>
+                            <TextBox Name="LogFilterBox" Watermark="Filter commits…"
+                                     Width="180" Height="24"
+                                     Background="#FF252030"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     FontSize="11" CornerRadius="4" Padding="6,2"
+                                     TextChanged="LogFilter_TextChanged"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- LOG panel -->
+                <Grid Grid.Row="1" Name="LogPanel">
+                    <Grid RowDefinitions="*,5,180">
+
+                        <!-- Two commit trees -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,5,*">
+
+                            <!-- Local -->
+                            <Grid Grid.Column="0" RowDefinitions="Auto,*">
+                                <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0,0,0,1" Padding="10,5">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="💻" FontSize="12"/>
+                                        <TextBlock Text="Local" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextBrush}"/>
+                                        <TextBlock Name="LocalBranchLabel" Text="(main)" FontSize="11"
+                                                   Foreground="{StaticResource GreenBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsControl Name="LocalCommitsList" Margin="0,4">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:GitCommit" x:CompileBindings="False">
+                                                <Border Classes="crow" PointerPressed="LocalCommit_PointerPressed">
+                                                    <Border.ContextMenu>
+                                                        <ContextMenu>
+                                                            <MenuItem Header="Checkout this revision" Click="CtxCheckoutRevision_Click"/>
+                                                            <MenuItem Header="New Branch from here…" Click="CtxNewBranchFromHere_Click"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="Cherry-Pick"  Click="CtxCherryPick_Click"/>
+                                                            <MenuItem Header="Revert Commit" Click="CtxRevertCommit_Click"/>
+                                                            <Separator/>
+                                                            <MenuItem Header="Copy Hash"    Click="CtxCopyHash_Click"/>
+                                                        </ContextMenu>
+                                                    </Border.ContextMenu>
+                                                    <Grid ColumnDefinitions="20,*">
+                                                        <Canvas Grid.Column="0" Width="20">
+                                                            <Ellipse Width="8" Height="8"
+                                                                     Fill="{StaticResource OrangeBrush}"
+                                                                     Canvas.Left="6" Canvas.Top="8"/>
+                                                            <Line StartPoint="10,0" EndPoint="10,8"
+                                                                  Stroke="{StaticResource BorderBrush}" StrokeThickness="1.5"/>
+                                                            <Line StartPoint="10,16" EndPoint="10,34"
+                                                                  Stroke="{StaticResource BorderBrush}" StrokeThickness="1.5"/>
+                                                        </Canvas>
+                                                        <StackPanel Grid.Column="1" Spacing="1" Margin="4,0,4,0">
+                                                            <TextBlock Text="{Binding Message}" FontSize="12"
+                                                                       Foreground="{StaticResource TextBrush}"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                <TextBlock Text="{Binding ShortHash}" FontSize="10"
+                                                                           Foreground="{StaticResource BlueBrush}"
+                                                                           FontFamily="Consolas, monospace"/>
+                                                                <TextBlock Text="{Binding AuthorName}" FontSize="10"
+                                                                           Foreground="{StaticResource MutedBrush}"/>
+                                                                <TextBlock Text="{Binding RelativeDate}" FontSize="10"
+                                                                           Foreground="{StaticResource MutedBrush}"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Grid>
+
+                            <!-- Splitter -->
+                            <GridSplitter Grid.Column="1" ResizeDirection="Columns"
+                                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                          Background="{StaticResource BorderBrush}" Cursor="SizeWestEast"/>
+
+                            <!-- Remote -->
+                            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                                <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0,0,0,1" Padding="10,5">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="☁" FontSize="12" Foreground="{StaticResource BlueBrush}"/>
+                                        <TextBlock Text="Remote" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextBrush}"/>
+                                        <TextBlock Name="RemoteBranchLabel" Text="(origin/main)" FontSize="11"
+                                                   Foreground="{StaticResource BlueBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsControl Name="RemoteCommitsList" Margin="0,4">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:GitCommit" x:CompileBindings="False">
+                                                <Border Classes="crow" PointerPressed="RemoteCommit_PointerPressed">
+                                                    <Grid ColumnDefinitions="20,*">
+                                                        <Canvas Grid.Column="0" Width="20">
+                                                            <Ellipse Width="8" Height="8"
+                                                                     Fill="{StaticResource BlueBrush}"
+                                                                     Canvas.Left="6" Canvas.Top="8"/>
+                                                            <Line StartPoint="10,0" EndPoint="10,8"
+                                                                  Stroke="{StaticResource BorderBrush}" StrokeThickness="1.5"/>
+                                                            <Line StartPoint="10,16" EndPoint="10,34"
+                                                                  Stroke="{StaticResource BorderBrush}" StrokeThickness="1.5"/>
+                                                        </Canvas>
+                                                        <StackPanel Grid.Column="1" Spacing="1" Margin="4,0,4,0">
+                                                            <TextBlock Text="{Binding Message}" FontSize="12"
+                                                                       Foreground="{StaticResource TextBrush}"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                <TextBlock Text="{Binding ShortHash}" FontSize="10"
+                                                                           Foreground="{StaticResource BlueBrush}"
+                                                                           FontFamily="Consolas, monospace"/>
+                                                                <TextBlock Text="{Binding AuthorName}" FontSize="10"
+                                                                           Foreground="{StaticResource MutedBrush}"/>
+                                                                <TextBlock Text="{Binding RelativeDate}" FontSize="10"
+                                                                           Foreground="{StaticResource MutedBrush}"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Splitter -->
+                        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch"
+                                      Background="{StaticResource BorderBrush}" Cursor="SizeNorthSouth"
+                                      ResizeDirection="Rows"/>
+
+                        <!-- Commit detail -->
+                        <Grid Grid.Row="2" RowDefinitions="Auto,*" Background="{StaticResource SurfBrush}">
+                            <Border Grid.Row="0" Background="{StaticResource BgBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="0,0,0,1" Padding="10,6">
+                                <Panel>
+                                    <StackPanel Name="CommitDetailHeader" Spacing="2" IsVisible="False">
+                                        <TextBlock Name="CommitDetailMsg" Text="" FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextBrush}"
+                                                   TextWrapping="Wrap"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Name="CommitDetailHash" Text="" FontSize="11"
+                                                       Foreground="{StaticResource BlueBrush}"
+                                                       FontFamily="Consolas, monospace"/>
+                                            <TextBlock Name="CommitDetailAuthor" Text="" FontSize="11"
+                                                       Foreground="{StaticResource MutedBrush}"/>
+                                            <TextBlock Name="CommitDetailDate" Text="" FontSize="11"
+                                                       Foreground="{StaticResource MutedBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <TextBlock Name="CommitDetailPlaceholder"
+                                               Text="Select a commit to see details"
+                                               FontSize="11" FontStyle="Italic"
+                                               Foreground="{StaticResource MutedBrush}"/>
+                                </Panel>
+                            </Border>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl Name="CommitFilesList" Margin="8,4">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:GitFileChange" x:CompileBindings="False">
+                                            <Border Classes="frow">
+                                                <Grid ColumnDefinitions="18,*">
+                                                    <TextBlock Grid.Column="0" Text="{Binding StatusIcon}"
+                                                               FontSize="11" FontWeight="Bold"
+                                                               Foreground="{Binding StatusColor}"
+                                                               VerticalAlignment="Center" TextAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                                Spacing="6" Margin="4,0">
+                                                        <TextBlock Text="{Binding FileName}" FontSize="12"
+                                                                   Foreground="{StaticResource TextBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding Directory}" FontSize="10"
+                                                                   Foreground="{StaticResource MutedBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <!-- DIFF panel -->
+                <Grid Grid.Row="1" Name="DiffPanel" IsVisible="False">
+                    <Grid RowDefinitions="Auto,*">
+                        <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="0,0,0,1" Padding="10,5">
+                            <TextBlock Name="DiffFileLabel" Text="Select a file to view diff"
+                                       FontSize="11" FontStyle="Italic"
+                                       Foreground="{StaticResource MutedBrush}"/>
+                        </Border>
+                        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto">
+                            <SelectableTextBlock Name="DiffOutputText" Text=""
+                                       Margin="8,4" FontFamily="Consolas, monospace"
+                                       FontSize="12" Foreground="{StaticResource TextBrush}"
+                                       TextWrapping="NoWrap"
+                                       SelectionBrush="#664FC3F7"/>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+
+                <!-- CONSOLE panel -->
+                <Grid Grid.Row="1" Name="ConsolePanel" IsVisible="False">
+                    <Grid RowDefinitions="Auto,*">
+                        <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="0,0,0,1" Padding="4,2">
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                <Button Classes="tb" Width="24" Height="24"
+                                        ToolTip.Tip="Clear" Click="ClearConsole_Click">
+                                    <TextBlock Text="🗑" FontSize="11"/>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto" Name="ConsoleSV">
+                            <SelectableTextBlock Name="ConsoleText"
+                                       Text="Git console ready…" Margin="8,4"
+                                       FontFamily="Consolas, monospace" FontSize="12"
+                                       Foreground="{StaticResource GreenBrush}"
+                                       TextWrapping="NoWrap"
+                                       SelectionBrush="#664FC3F7"/>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+
+            </Grid>
+        </Grid>
+    </Grid>
+
+    <!-- Loading overlay -->
+    <Border Name="LoadingOverlay" Background="#CC1F1A24" IsVisible="False">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+            <TextBlock Text="⏳" FontSize="28" HorizontalAlignment="Center"/>
+            <TextBlock Name="LoadingText" Text="Loading…" FontSize="12"
+                       Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Border>
+    </Panel>
+
+</Window>
+

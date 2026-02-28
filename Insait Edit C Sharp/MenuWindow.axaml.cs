@@ -196,6 +196,10 @@ public partial class MenuWindow : Window
         AddMenuItem(panel, "🔀 Source Control", "Ctrl+Shift+G", () => _mainWindow.ExecuteMenuAction("ShowSourceControl"));
         
         AddSeparator(panel);
+        AddHeader(panel, "🎨 Preview");
+        AddMenuItem(panel, "🎨 Preview AXAML Design", "Ctrl+Shift+P", () => _mainWindow.ExecuteMenuAction("PreviewAxaml"));
+        
+        AddSeparator(panel);
         AddHeader(panel, "⬇️ Bottom Panel");
         AddMenuItem(panel, "💻 Terminal", "Ctrl+`", () => _mainWindow.ExecuteMenuAction("ShowTerminal"));
         AddMenuItem(panel, "⚠️ Problems", "", () => _mainWindow.ExecuteMenuAction("ShowProblems"));
