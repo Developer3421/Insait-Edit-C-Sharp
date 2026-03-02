@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.GeminiModelWindow" Title="Custom Translation Step 2"
+        WindowStartupLocation="CenterOwner" SystemDecorations="None"
+        Width="540" Height="420" CanResize="False" ShowInTaskbar="False" Background="#FF1F1A24">
+    <Window.Styles>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF2A2230"/>
+        </Style>
+    </Window.Styles>
+    <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8">
+        <Grid RowDefinitions="36,*">
+            <Border Grid.Row="0" Background="#FF2D2438" CornerRadius="8,8,0,0" Name="TitleBar" PointerPressed="TitleBar_PointerPressed">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="Step 2 - Choose Gemini Model" FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4" VerticalAlignment="Center" Margin="12,0"/>
+                    <Button Grid.Column="1" Name="CloseButton" Click="CloseButton_Click" Background="Transparent" BorderThickness="0" Width="36" Height="36" Padding="0" Cursor="Hand">
+                        <TextBlock Text="X" Foreground="#FFF0E8F4" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Border>
+            <StackPanel Grid.Row="1" Margin="24,16,24,16" Spacing="12">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Target language:" FontSize="12" Foreground="#FF9E90B0"/>
+                    <TextBlock x:Name="LanguageLabel" FontSize="15" FontWeight="Bold" Foreground="#FFFFC09F"/>
+                </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Gemini Model" FontSize="12" FontWeight="SemiBold" Foreground="#FFFFC09F"/>
+                    <TextBox x:Name="ModelBox" Watermark="e.g. gemini-1.5-pro or gemini-2.0-flash"
+                             FontSize="14" Background="#FF2A2230" Foreground="#FFF0E8F4"
+                             BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="4" Padding="8,6"/>
+                </StackPanel>
+                <Border Background="#FF2A2230" CornerRadius="6" Padding="12,10">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Available model types:" FontSize="12" FontWeight="SemiBold" Foreground="#FFFFC09F"/>
+                        <TextBlock FontSize="12" Foreground="#FF9E90B0" TextWrapping="Wrap"
+                                   Text="Pro models: gemini-1.5-pro, gemini-2.0-pro-exp (higher quality, slower, more expensive)"/>
+                        <TextBlock FontSize="12" Foreground="#FF9E90B0" TextWrapping="Wrap"
+                                   Text="Flash models: gemini-1.5-flash, gemini-2.0-flash (faster, cheaper, great for translation)"/>
+                        <TextBlock FontSize="12" Foreground="#FF89B4FA" TextWrapping="Wrap"
+                                   Text="Tip: gemini-2.0-flash is recommended for translation tasks."/>
+                    </StackPanel>
+                </Border>
+                <TextBlock x:Name="ProgressLabel" FontSize="12" Foreground="#FF89B4FA" IsVisible="False" TextWrapping="Wrap"/>
+                <Grid ColumnDefinitions="*,12,*">
+                    <Button Grid.Column="0" Click="CancelButton_Click" Background="#FF3D3050" Foreground="#FFF0E8F4" BorderThickness="0" CornerRadius="6" Padding="16,8" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                        <TextBlock Text="Cancel" FontSize="13"/>
+                    </Button>
+                    <Button Grid.Column="2" x:Name="GenerateButton" Click="GenerateButton_Click" Background="#FF7C3AED" Foreground="#FFF0E8F4" BorderThickness="0" CornerRadius="6" Padding="16,8" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                        <TextBlock Text="Generate Translation" FontSize="13"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
+

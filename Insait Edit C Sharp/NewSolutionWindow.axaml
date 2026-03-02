@@ -54,6 +54,9 @@
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,10"/>
         </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+        </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
@@ -103,7 +106,7 @@
                     <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
                         <StackPanel Orientation="Horizontal" Margin="16,0" VerticalAlignment="Center" Spacing="8">
                             <TextBlock Text="📦" FontSize="14"/>
-                            <TextBlock Text="New Solution" FontSize="12" FontWeight="SemiBold"
+                            <TextBlock Name="TitleBarText" Text="New Solution" FontSize="12" FontWeight="SemiBold"
                                        Foreground="{StaticResource AccentOrangeBrush}"/>
                         </StackPanel>
                     </Panel>
@@ -119,18 +122,18 @@
                     
                     <!-- Solution Name -->
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Solution name" FontSize="13" FontWeight="SemiBold"
+                        <TextBlock Name="SolutionNameLabel" Text="Solution name" FontSize="13" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Name="SolutionNameBox" Text="MySolution" TextChanged="SolutionName_Changed"/>
                     </StackPanel>
 
                     <!-- Location -->
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Location" FontSize="13" FontWeight="SemiBold"
+                        <TextBlock Name="LocationLabel" Text="Location" FontSize="13" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBox Name="LocationBox" Text="" Margin="0,0,8,0"/>
-                            <Button Grid.Column="1" Classes="secondary-btn" Content="Browse..." 
+                            <Button Grid.Column="1" Name="BrowseButton" Classes="secondary-btn" Content="Browse..." 
                                     Click="BrowseLocation_Click"/>
                         </Grid>
                     </StackPanel>
@@ -139,17 +142,17 @@
                     <StackPanel Spacing="8">
                         <CheckBox Name="CreateSolutionDir" IsChecked="True"
                                   Foreground="{StaticResource TextPrimaryBrush}">
-                            <TextBlock Text="Create solution directory"/>
+                            <TextBlock Name="CreateSolutionDirText" Text="Create solution directory"/>
                         </CheckBox>
                         <CheckBox Name="CreateGitRepo" IsChecked="True"
                                   Foreground="{StaticResource TextPrimaryBrush}">
-                            <TextBlock Text="Initialize Git repository"/>
+                            <TextBlock Name="InitGitRepoText" Text="Initialize Git repository"/>
                         </CheckBox>
                     </StackPanel>
 
                     <!-- Solution Format -->
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Solution format" FontSize="13" FontWeight="SemiBold"
+                        <TextBlock Name="SolutionFormatLabel" Text="Solution format" FontSize="13" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Spacing="16">
                             <RadioButton Name="SlnxFormat" GroupName="SolutionFormat" IsChecked="True"
@@ -174,7 +177,7 @@
                     <!-- Preview -->
                     <Border Background="{StaticResource BgTertiaryBrush}" CornerRadius="6" Padding="12">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Solution will be created at:" FontSize="11"
+                            <TextBlock Name="CreatedAtLabel" Text="Solution will be created at:" FontSize="11"
                                        Foreground="{StaticResource TextSecondaryBrush}"/>
                             <TextBlock Name="SolutionPathPreview" FontSize="12"
                                        Foreground="{StaticResource TextPrimaryBrush}"
@@ -187,10 +190,10 @@
             <!-- Footer -->
             <Border Grid.Row="2" Background="{StaticResource BgSecondaryBrush}" Padding="24,16">
                 <Grid ColumnDefinitions="*,Auto,Auto">
-                    <Button Grid.Column="1" Classes="secondary-btn" Content="Cancel" 
+                    <Button Grid.Column="1" Name="CancelButton" Classes="secondary-btn" Content="Cancel" 
                             Margin="0,0,12,0" Click="Cancel_Click"/>
-                    <Button Grid.Column="2" Classes="primary-btn" Content="Create" 
-                            Name="CreateButton" Click="Create_Click"/>
+                    <Button Grid.Column="2" Name="CreateButton" Classes="primary-btn" Content="Create" 
+                            Click="Create_Click"/>
                 </Grid>
             </Border>
         </Grid>

@@ -1,0 +1,780 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         РУССКАЯ ЛОКАЛИЗАЦИЯ — Все 21 окно и попапы
+         ══════════════════════════════════════════════════════════════ -->
+
+    <x:String x:Key="App.Title">Insait Edit - C# IDE</x:String>
+    <x:String x:Key="TitleBar.Menu">Меню</x:String>
+    <x:String x:Key="TitleBar.Build">Сборка</x:String>
+    <x:String x:Key="TitleBar.Analyze">Анализ</x:String>
+    <x:String x:Key="TitleBar.Run">Запуск</x:String>
+    <x:String x:Key="TitleBar.Debug">Отладка</x:String>
+    <x:String x:Key="TitleBar.Stop">Стоп</x:String>
+    <x:String x:Key="TitleBar.Preview">Предпросмотр</x:String>
+    <x:String x:Key="TitleBar.MSIX">MSIX</x:String>
+    <x:String x:Key="Tooltip.Menu">Меню</x:String>
+    <x:String x:Key="Tooltip.Build">Собрать проект (Ctrl+Shift+B)</x:String>
+    <x:String x:Key="Tooltip.Analyze">Анализ кода (Ctrl+Shift+A)</x:String>
+    <x:String x:Key="Tooltip.RunConfig">Выбрать конфигурацию запуска (Shift+Alt+F10)</x:String>
+    <x:String x:Key="Tooltip.EditConfig">Изменить конфигурации...</x:String>
+    <x:String x:Key="Tooltip.Run">Запустить проект (F5)</x:String>
+    <x:String x:Key="Tooltip.Debug">Запуск в режиме отладки (F5)</x:String>
+    <x:String x:Key="Tooltip.Stop">Остановить (Shift+F5)</x:String>
+    <x:String x:Key="Tooltip.Publish">Публикация проекта...</x:String>
+    <x:String x:Key="Tooltip.MsixManager">Менеджер пакетов MSIX...</x:String>
+    <x:String x:Key="Tooltip.Undo">Отменить (Ctrl+Z)</x:String>
+    <x:String x:Key="Tooltip.Redo">Повторить (Ctrl+Y)</x:String>
+    <x:String x:Key="Tooltip.NewWindow">Новое окно</x:String>
+    <x:String x:Key="Tooltip.Restart">Перезапустить приложение</x:String>
+    <x:String x:Key="Tooltip.PreviewAxaml">Предпросмотр AXAML (Ctrl+Shift+P)</x:String>
+    <x:String x:Key="Sidebar.Explorer">Проводник (Ctrl+Shift+E)</x:String>
+    <x:String x:Key="Sidebar.Search">Поиск (Ctrl+Shift+F)</x:String>
+    <x:String x:Key="Sidebar.Git">Управление версиями (Ctrl+Shift+G)</x:String>
+    <x:String x:Key="Sidebar.NuGet">Пакеты NuGet (Ctrl+Shift+N)</x:String>
+    <x:String x:Key="Sidebar.LedPanel">LED-панель</x:String>
+    <x:String x:Key="Sidebar.Account">Аккаунт</x:String>
+    <x:String x:Key="Sidebar.Settings">Настройки (Ctrl+,)</x:String>
+    <x:String x:Key="Panel.Explorer">ПРОВОДНИК</x:String>
+    <x:String x:Key="Panel.Search">ПОИСК</x:String>
+    <x:String x:Key="Panel.CopilotCli">COPILOT CLI</x:String>
+    <x:String x:Key="Explorer.NewFile">Новый файл</x:String>
+    <x:String x:Key="Explorer.NewFolder">Новая папка</x:String>
+    <x:String x:Key="Explorer.Refresh">Обновить</x:String>
+    <x:String x:Key="Tab.Problems">Проблемы</x:String>
+    <x:String x:Key="Tab.Build">Сборка</x:String>
+    <x:String x:Key="Tab.Run">Запуск</x:String>
+    <x:String x:Key="Tab.Terminal">Терминал</x:String>
+    <x:String x:Key="Tooltip.NewTerminal">Новый терминал (Ctrl+Shift+`)</x:String>
+    <x:String x:Key="Tooltip.SplitTerminal">Разделить терминал</x:String>
+    <x:String x:Key="Tooltip.ClearAll">Очистить всё</x:String>
+    <x:String x:Key="Tooltip.ScrollToEnd">Прокрутить вниз</x:String>
+    <x:String x:Key="Tooltip.Minimize">Свернуть</x:String>
+    <x:String x:Key="Tooltip.Maximize">Развернуть</x:String>
+    <x:String x:Key="Tooltip.HidePanel">Скрыть (Esc)</x:String>
+    <x:String x:Key="Tooltip.RefreshAnalysis">Обновить анализ</x:String>
+    <x:String x:Key="Tooltip.ClearProblems">Очистить проблемы</x:String>
+    <x:String x:Key="Problems.NoProblems">Проблем не обнаружено. Нажмите «Анализ» для проверки.</x:String>
+    <x:String x:Key="Problems.Errors">{0} ошибок</x:String>
+    <x:String x:Key="Problems.Warnings">{0} предупреждений</x:String>
+    <x:String x:Key="Problems.Messages">0 сообщений</x:String>
+    <x:String x:Key="Output.BuildPlaceholder">Результат сборки появится здесь...</x:String>
+    <x:String x:Key="Output.RunPlaceholder">Результат запуска появится здесь...</x:String>
+    <x:String x:Key="Status.GitBranch">Ветка Git</x:String>
+    <x:String x:Key="Status.Sync">Синхронизировать изменения</x:String>
+    <x:String x:Key="Status.ViewProblems">Просмотреть проблемы</x:String>
+    <x:String x:Key="Status.Encoding">Выбрать кодировку</x:String>
+    <x:String x:Key="Status.LineEnding">Выбрать конец строки</x:String>
+    <x:String x:Key="Status.Language">Выбрать языковой режим</x:String>
+    <x:String x:Key="Status.GoToLine">Перейти к строке</x:String>
+    <x:String x:Key="Status.Indent">Выбрать отступ</x:String>
+    <x:String x:Key="Status.Notifications">Уведомления</x:String>
+    <x:String x:Key="Context.Run">▶ Запустить</x:String>
+    <x:String x:Key="Context.New">Создать</x:String>
+    <x:String x:Key="Context.Add">Добавить</x:String>
+    <x:String x:Key="Context.NewClass">📄 Класс...</x:String>
+    <x:String x:Key="Context.NewInterface">📄 Интерфейс...</x:String>
+    <x:String x:Key="Context.NewRecord">📄 Запись...</x:String>
+    <x:String x:Key="Context.NewEnum">📄 Перечисление...</x:String>
+    <x:String x:Key="Context.NewAvaloniaWindow">🪟 Окно Avalonia...</x:String>
+    <x:String x:Key="Context.NewAvaloniaControl">🎛️ UserControl Avalonia...</x:String>
+    <x:String x:Key="Context.NewFile">📄 Файл...</x:String>
+    <x:String x:Key="Context.NewDirectory">📁 Каталог</x:String>
+    <x:String x:Key="Context.AddNewProject">📦 Новый проект...</x:String>
+    <x:String x:Key="Context.AddExistingProject">📦 Существующий проект...</x:String>
+    <x:String x:Key="Context.AddNewItem">📄 Новый элемент...</x:String>
+    <x:String x:Key="Context.AddExistingItem">📄 Существующий элемент...</x:String>
+    <x:String x:Key="Context.Build">🔨 Собрать</x:String>
+    <x:String x:Key="Context.Rebuild">🔄 Пересобрать</x:String>
+    <x:String x:Key="Context.Clean">🧹 Очистить</x:String>
+    <x:String x:Key="Context.ManageNuGet">📦 Управление пакетами NuGet...</x:String>
+    <x:String x:Key="Context.AddReference">🔗 Добавить ссылку...</x:String>
+    <x:String x:Key="Context.Cut">✂️ Вырезать</x:String>
+    <x:String x:Key="Context.Copy">📋 Копировать</x:String>
+    <x:String x:Key="Context.Paste">📄 Вставить</x:String>
+    <x:String x:Key="Context.Rename">✏️ Переименовать</x:String>
+    <x:String x:Key="Context.Delete">🗑️ Безопасное удаление...</x:String>
+    <x:String x:Key="Context.CopyPath">Копировать путь</x:String>
+    <x:String x:Key="Context.AbsolutePath">📋 Абсолютный путь</x:String>
+    <x:String x:Key="Context.RelativePath">📋 Относительный путь</x:String>
+    <x:String x:Key="Context.FileName">📋 Имя файла</x:String>
+    <x:String x:Key="Context.OpenExplorer">📂 Открыть в проводнике</x:String>
+    <x:String x:Key="Context.OpenTerminal">💻 Открыть в терминале</x:String>
+    <x:String x:Key="Context.RemoveFromSolution">🗑️ Удалить из решения</x:String>
+    <x:String x:Key="Context.UnloadProject">⬇️ Выгрузить проект</x:String>
+    <x:String x:Key="Context.Git">Git</x:String>
+    <x:String x:Key="Context.GitCommit">📝 Коммит...</x:String>
+    <x:String x:Key="Context.GitHistory">📜 Показать историю</x:String>
+    <x:String x:Key="Context.GitRevert">↩️ Откатить...</x:String>
+    <x:String x:Key="Context.ReloadFromDisk">🔄 Перезагрузить с диска</x:String>
+    <x:String x:Key="Context.Properties">⚙️ Свойства</x:String>
+    <x:String x:Key="AI.Ready">🚀 Copilot CLI готов!</x:String>
+    <x:String x:Key="AI.ManageFiles">Управляйте файлами проекта с помощью команд:</x:String>
+    <x:String x:Key="AI.GitHubCommands">Команды GitHub CLI:</x:String>
+    <x:String x:Key="AI.TypeHelp">Введите 'help' для полного списка команд</x:String>
+    <x:String x:Key="AI.InputPlaceholder">Введите команду (create, ls, help...)</x:String>
+    <x:String x:Key="AI.Tooltip.OpenTUI">Открыть GitHub Copilot TUI в терминале</x:String>
+    <x:String x:Key="AI.Tooltip.Execute">Выполнить команду</x:String>
+    <x:String x:Key="AI.Tooltip.NewChat">Новый чат</x:String>
+    <x:String x:Key="AI.Tooltip.ClosePanel">Закрыть панель</x:String>
+
+    <!-- ── CLI Terminal Messages ─────────────────────────────────── -->
+    <x:String x:Key="Cli.NoCommand">Команда не указана</x:String>
+    <x:String x:Key="Cli.InvalidCommand">Некорректная команда</x:String>
+    <x:String x:Key="Cli.UnknownCommand">Неизвестная команда: {0}. Введите 'help' для просмотра доступных команд.</x:String>
+    <x:String x:Key="Cli.ErrorExecuting">Ошибка выполнения '{0}': {1}</x:String>
+    <x:String x:Key="Cli.FileAlreadyExists">Файл уже существует: {0}</x:String>
+    <x:String x:Key="Cli.CreatedFile">Создан файл: {0}</x:String>
+    <x:String x:Key="Cli.UpdatedTimestamp">Обновлена метка времени: {0}</x:String>
+    <x:String x:Key="Cli.CreatedDirectory">Создана папка: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryAlreadyExists">Папка уже существует: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryNotEmpty">Папка не пустая: {0}. Используйте --force для удаления.</x:String>
+    <x:String x:Key="Cli.DeletedDirectory">Папка удалена: {0}</x:String>
+    <x:String x:Key="Cli.DeletedFile">Файл удалён: {0}</x:String>
+    <x:String x:Key="Cli.PathNotFound">Путь не найден: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryNotFound">Папка не найдена: {0}</x:String>
+    <x:String x:Key="Cli.FileNotFound">Файл не найден: {0}</x:String>
+    <x:String x:Key="Cli.SourceNotFound">Источник не найден: {0}</x:String>
+    <x:String x:Key="Cli.DestinationExists">Назначение уже существует: {0}</x:String>
+    <x:String x:Key="Cli.Renamed">Переименовано: {0} → {1}</x:String>
+    <x:String x:Key="Cli.Moved">Перемещено: {0} → {1}</x:String>
+    <x:String x:Key="Cli.Copied">Скопировано: {0} → {1}</x:String>
+    <x:String x:Key="Cli.WrittenTo">Записано в: {0}</x:String>
+    <x:String x:Key="Cli.AppendedTo">Добавлено в: {0}</x:String>
+    <x:String x:Key="Cli.CreatedFromTemplate">Создано из шаблона '{0}': {1}</x:String>
+    <x:String x:Key="Cli.UnknownTemplate">Неизвестный шаблон: {0}</x:String>
+    <x:String x:Key="Cli.Directory">Папка: {0}</x:String>
+    <x:String x:Key="Cli.DirsAndFiles">{0} папок, {1} файлов</x:String>
+    <x:String x:Key="Cli.NoFilesFound">Файлов, соответствующих '{0}', не найдено</x:String>
+    <x:String x:Key="Cli.FoundFiles">Найдено {0} файл(ов):</x:String>
+    <x:String x:Key="Cli.NoMatchesFound">Совпадений для '{0}' не найдено</x:String>
+    <x:String x:Key="Cli.FoundMatches">Найдено {0} совпадение(ий):</x:String>
+    <x:String x:Key="Cli.ChangedDirectory">Перешли в папку: {0}</x:String>
+    <x:String x:Key="Cli.ExistsYes">Да ({0}): {1}</x:String>
+    <x:String x:Key="Cli.ExistsNo">Нет: {0}</x:String>
+    <x:String x:Key="Cli.GhNotFound">GitHub CLI (gh) не найден. Выполните 'gh-install' для установки.</x:String>
+    <x:String x:Key="Cli.GhAlreadyInstalled">✅ GitHub CLI уже установлен</x:String>
+    <x:String x:Key="Cli.GhInstallSuccess">✅ GitHub CLI успешно установлен!</x:String>
+    <x:String x:Key="Cli.GhInstallFailed">❌ Установка не удалась</x:String>
+    <x:String x:Key="Cli.GhInstallManual">Установите вручную: winget install GitHub.cli</x:String>
+    <x:String x:Key="Cli.GhInstallRestart">⚠️ Возможно, потребуется перезапуск. Выполните 'gh-auth login' для авторизации.</x:String>
+    <x:String x:Key="Cli.GhAuthAlreadyLoggedIn">✅ Уже вошли как: {0}</x:String>
+    <x:String x:Key="Cli.GhAuthStarted">🔐 Авторизация GitHub запущена!</x:String>
+    <x:String x:Key="Cli.GhAuthStartedHint">Открылось окно терминала. Следуйте инструкциям для завершения авторизации.</x:String>
+    <x:String x:Key="Cli.GhAuthVerifyHint">После завершения выполните 'gh-auth status' для проверки.</x:String>
+    <x:String x:Key="Cli.GhAuthFailed">❌ Не удалось запустить авторизацию: {0}</x:String>
+    <x:String x:Key="Cli.GhAuthFailedHint">Попробуйте вручную в терминале: gh auth login</x:String>
+    <x:String x:Key="Cli.GhLoggedOut">✅ Выход из GitHub выполнен</x:String>
+    <x:String x:Key="Cli.GhLogoutFailed">❌ Выход не удался: {0}</x:String>
+    <x:String x:Key="Cli.GhRefreshed">✅ Авторизация обновлена</x:String>
+    <x:String x:Key="Cli.GhRefreshFailed">❌ Обновление не удалось: {0}</x:String>
+    <x:String x:Key="Cli.GhSetupGit">✅ Git настроен использовать GitHub CLI как помощник учётных данных</x:String>
+    <x:String x:Key="Cli.GhSetupGitFailed">❌ Настройка не удалась: {0}</x:String>
+    <x:String x:Key="Cli.GhToken">🔑 GitHub токен:</x:String>
+    <x:String x:Key="Cli.GhTokenFailed">❌ Не удалось получить токен: {0}</x:String>
+    <x:String x:Key="Cli.GhLoggedInAs">✅ Вошли в GitHub как: {0}</x:String>
+    <x:String x:Key="Cli.GhNotLoggedIn">❌ Не вошли в GitHub. Выполните 'gh-auth login'.</x:String>
+    <x:String x:Key="Cli.GhStatusTitle">📊 Статус GitHub CLI</x:String>
+    <x:String x:Key="Cli.GhStatusInstalled">✅ Установлен: {0}</x:String>
+    <x:String x:Key="Cli.GhStatusAuthAs">✅ Авторизован как: {0}</x:String>
+    <x:String x:Key="Cli.GhStatusNotAuth">❌ Не авторизован. Выполните 'gh-auth login'</x:String>
+    <x:String x:Key="Cli.GhStatusWorkDir">📁 Рабочая папка:</x:String>
+    <x:String x:Key="Cli.GhStatusRepo">📦 Репозиторий: {0}</x:String>
+    <x:String x:Key="Cli.GhNotInstalled">❌ GitHub CLI не установлен. Выполните: gh-install</x:String>
+    <x:String x:Key="Cli.GhCopilotSuggestion">🤖 Предложение Copilot:</x:String>
+    <x:String x:Key="Cli.GhCopilotFailed">❌ Задача Copilot не выполнена: {0}</x:String>
+    <x:String x:Key="Cli.GhModelUpdated">✅ Модель Copilot обновлена.</x:String>
+    <x:String x:Key="Cli.GhModelFailed">❌ Не удалось сменить модель: {0}</x:String>
+    <x:String x:Key="Cli.GhExtensionNotInstalled">❌ Расширение GitHub Copilot не установлено.</x:String>
+    <x:String x:Key="Cli.GhExtensionInstallHint">Выполните: gh-extension install github/gh-copilot</x:String>
+    <x:String x:Key="Cli.GhCopilotLaunching">🚀 Запуск GitHub Copilot CLI во внешнем терминале...</x:String>
+    <x:String x:Key="Cli.GhCopilotOpened">✅ GitHub Copilot CLI открыт в {0}.</x:String>
+    <x:String x:Key="Cli.GhCopilotTip">💡 Совет: скопируйте предложенную команду и вставьте сюда.</x:String>
+    <x:String x:Key="Cli.GhCopilotError">❌ Ошибка запуска GitHub Copilot: {0}</x:String>
+    <x:String x:Key="Cli.GhConfigList">⚙️ Конфигурация:</x:String>
+    <x:String x:Key="Cli.GhConfigDone">✅ Конфигурация обновлена:</x:String>
+    <x:String x:Key="Cli.GhConfigFailed">❌ Не удалось: {0}</x:String>
+    <x:String x:Key="Cli.GhExtensionList">🔌 Расширения:</x:String>
+    <x:String x:Key="Cli.GhExtensionDone">✅ Операция с расширением выполнена:</x:String>
+    <x:String x:Key="Cli.GhExtensionFailed">❌ Не удалось: {0}</x:String>
+    <x:String x:Key="Cli.TerminalOpened">✅ Открыт {0}</x:String>
+    <x:String x:Key="Cli.TerminalWorkDir">📁 Рабочая папка: {0}</x:String>
+    <x:String x:Key="Cli.TerminalCommand">🔧 Команда: {0}</x:String>
+    <x:String x:Key="Cli.TerminalError">❌ Ошибка открытия терминала: {0}</x:String>
+    <x:String x:Key="Cli.PowerShellOpened">✅ PowerShell открыт</x:String>
+    <x:String x:Key="Cli.PowerShellError">❌ Ошибка открытия PowerShell: {0}</x:String>
+
+    <!-- ── CLI Usage strings ─────────────────────────────────────── -->
+    <x:String x:Key="Cli.Usage.Create">Использование: create &lt;путь&gt; [--content &lt;содержимое&gt;] [--dir]</x:String>
+    <x:String x:Key="Cli.Usage.Touch">Использование: touch &lt;путь&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Mkdir">Использование: mkdir &lt;путь&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Template">Использование: template &lt;имя-шаблона&gt; &lt;путь&gt;&#10;&#10;Доступные шаблоны:&#10;  class - C# класс&#10;  interface - C# интерфейс&#10;  record - C# запись&#10;  enum - C# перечисление&#10;  service - C# сервис&#10;  viewmodel - MVVM ViewModel&#10;  html - HTML файл&#10;  json - JSON файл&#10;  xml - XML файл</x:String>
+    <x:String x:Key="Cli.Usage.Delete">Использование: delete &lt;путь&gt; [--force]</x:String>
+    <x:String x:Key="Cli.Usage.Rmdir">Использование: rmdir &lt;путь&gt; [--force]</x:String>
+    <x:String x:Key="Cli.Usage.Rename">Использование: rename &lt;старый-путь&gt; &lt;новое-имя&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Mv">Использование: mv &lt;источник&gt; &lt;назначение&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Copy">Использование: copy &lt;источник&gt; &lt;назначение&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Write">Использование: write &lt;путь&gt; &lt;содержимое&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Append">Использование: append &lt;путь&gt; &lt;содержимое&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Read">Использование: read &lt;путь&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Cd">Использование: cd &lt;путь&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Find">Использование: find &lt;шаблон&gt; [--path &lt;папка&gt;]</x:String>
+    <x:String x:Key="Cli.Usage.Search">Использование: search &lt;текст&gt; [--path &lt;папка&gt;] [--ext &lt;расширение&gt;]</x:String>
+    <x:String x:Key="Cli.Usage.Info">Использование: info &lt;путь&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Exists">Использование: exists &lt;путь&gt;</x:String>
+    <x:String x:Key="Cli.Usage.GhTask">Использование: gh-t "&lt;описание задачи&gt;"</x:String>
+    <x:String x:Key="Cli.Usage.GhModel">Использование: gh-m &lt;название модели&gt;&#10;&#10;Пример:&#10;  gh-m gpt-4o</x:String>
+
+    <!-- ── CLI Info output labels ─────────────────────────────────── -->
+    <x:String x:Key="Cli.Info.Directory">Папка: {0}</x:String>
+    <x:String x:Key="Cli.Info.File">Файл: {0}</x:String>
+    <x:String x:Key="Cli.Info.Size">Размер: {0}</x:String>
+    <x:String x:Key="Cli.Info.Created">Создан: {0}</x:String>
+    <x:String x:Key="Cli.Info.Modified">Изменён: {0}</x:String>
+    <x:String x:Key="Cli.Info.Contains">Содержит: {0} файлов, {1} подпапок</x:String>
+    <x:String x:Key="Cli.Info.Extension">Расширение: {0}</x:String>
+
+    <!-- ── CLI Exists type labels ─────────────────────────────────── -->
+    <x:String x:Key="Cli.Exists.TypeDir">папка</x:String>
+    <x:String x:Key="Cli.Exists.TypeFile">файл</x:String>
+    <x:String x:Key="Cli.Exists.TypeNone">ничего</x:String>
+
+    <!-- ── CLI Help strings ───────────────────────────────────────── -->
+    <x:String x:Key="Cli.Help.Command">Команда: {0}</x:String>
+    <x:String x:Key="Cli.Help.Description">Описание: {0}</x:String>
+    <x:String x:Key="Cli.Help.Usage">Использование: {0} {1}</x:String>
+    <x:String x:Key="Cli.Help.Title">Команды Copilot CLI:</x:String>
+    <x:String x:Key="Cli.Help.FileOps">Операции с файлами:</x:String>
+    <x:String x:Key="Cli.Help.Create">  create, new     - Создать новый файл или папку</x:String>
+    <x:String x:Key="Cli.Help.Delete">  delete, rm      - Удалить файл или папку</x:String>
+    <x:String x:Key="Cli.Help.Touch">  touch           - Создать пустой файл или обновить метку времени</x:String>
+    <x:String x:Key="Cli.Help.Template">  template        - Создать файл из шаблона</x:String>
+    <x:String x:Key="Cli.Help.DirOps">Операции с папками:</x:String>
+    <x:String x:Key="Cli.Help.Mkdir">  mkdir           - Создать новую папку</x:String>
+    <x:String x:Key="Cli.Help.Rmdir">  rmdir           - Удалить папку</x:String>
+    <x:String x:Key="Cli.Help.FileManip">Работа с файлами:</x:String>
+    <x:String x:Key="Cli.Help.Rename">  rename          - Переименовать файл или папку</x:String>
+    <x:String x:Key="Cli.Help.Mv">  mv              - Переместить файл или папку</x:String>
+    <x:String x:Key="Cli.Help.Copy">  copy, cp        - Копировать файл или папку</x:String>
+    <x:String x:Key="Cli.Help.FileContent">Содержимое файлов:</x:String>
+    <x:String x:Key="Cli.Help.Write">  write           - Записать содержимое в файл</x:String>
+    <x:String x:Key="Cli.Help.Append">  append          - Добавить содержимое в конец файла</x:String>
+    <x:String x:Key="Cli.Help.Read">  read, cat       - Показать содержимое файла</x:String>
+    <x:String x:Key="Cli.Help.NavList">Навигация &amp; просмотр:</x:String>
+    <x:String x:Key="Cli.Help.Ls">  ls, dir         - Список содержимого папки</x:String>
+    <x:String x:Key="Cli.Help.Tree">  tree            - Показать дерево папок</x:String>
+    <x:String x:Key="Cli.Help.Pwd">  pwd             - Текущая рабочая папка</x:String>
+    <x:String x:Key="Cli.Help.Cd">  cd              - Сменить рабочую папку</x:String>
+    <x:String x:Key="Cli.Help.SearchSec">Поиск:</x:String>
+    <x:String x:Key="Cli.Help.Find">  find            - Найти файлы по шаблону имени</x:String>
+    <x:String x:Key="Cli.Help.Search">  search          - Поиск текста в файлах</x:String>
+    <x:String x:Key="Cli.Help.InfoSec">Информация:</x:String>
+    <x:String x:Key="Cli.Help.Info">  info            - Показать информацию о файле/папке</x:String>
+    <x:String x:Key="Cli.Help.Exists">  exists          - Проверить существование пути</x:String>
+    <x:String x:Key="Cli.Help.Help">  help            - Показать эту справку или детали команды</x:String>
+    <x:String x:Key="Cli.Help.GhSec">GitHub CLI — Настройка &amp; Статус:</x:String>
+    <x:String x:Key="Cli.Help.GhInstall">  gh-install      - Установить GitHub CLI через winget</x:String>
+    <x:String x:Key="Cli.Help.GhAuth">  gh-auth         - Авторизация GitHub (login/logout/status/token)</x:String>
+    <x:String x:Key="Cli.Help.GhStatus">  gh-status       - Статус установки и авторизации GitHub CLI</x:String>
+    <x:String x:Key="Cli.Help.GhConfig">  gh-config       - Управление конфигурацией gh</x:String>
+    <x:String x:Key="Cli.Help.GhExtension">  gh-extension    - Управление расширениями gh (напр. Copilot)</x:String>
+    <x:String x:Key="Cli.Help.TermSec">🖥️ Команды внешнего терминала:</x:String>
+    <x:String x:Key="Cli.Help.Terminal">  terminal [cmd]       - Открыть Windows Terminal или CMD</x:String>
+    <x:String x:Key="Cli.Help.CmdExt">  cmd-ext [cmd]        - Открыть внешнее окно CMD</x:String>
+    <x:String x:Key="Cli.Help.Wt">  wt [cmd]             - Открыть Windows Terminal</x:String>
+    <x:String x:Key="Cli.Help.PsExt">  powershell-ext [cmd] - Открыть внешний PowerShell</x:String>
+    <x:String x:Key="Cli.Help.Footer">Введите 'help &lt;команда&gt;' для подробной справки.</x:String>
+    <x:String x:Key="Search.FileNamePlaceholder">Имя файла (например *.cs, Program)</x:String>
+    <x:String x:Key="Search.ContentPlaceholder">Текст поиска...</x:String>
+    <x:String x:Key="Search.ReplacePlaceholder">Заменить...</x:String>
+    <x:String x:Key="Search.Scope">Область:</x:String>
+    <x:String x:Key="Search.WholeSolution">Всё решение</x:String>
+    <x:String x:Key="Search.FindFiles">Найти файлы по имени</x:String>
+    <x:String x:Key="Search.FindInFiles">Найти в файлах (по содержимому)</x:String>
+    <x:String x:Key="Search.ReplaceAll">Заменить всё</x:String>
+    <x:String x:Key="Search.Case">Регистр</x:String>
+    <x:String x:Key="Search.Regex">Regex</x:String>
+    <x:String x:Key="Search.Word">Слово</x:String>
+
+    <!-- WelcomeWindow -->
+    <x:String x:Key="Welcome.Title">Добро пожаловать в Insait Edit</x:String>
+    <x:String x:Key="Welcome.Subtitle">C# IDE на базе Insait Code Editor</x:String>
+    <x:String x:Key="Welcome.Version">Версия 1.0.0 Предпросмотр</x:String>
+    <x:String x:Key="Welcome.NewSolution">Новое решение</x:String>
+    <x:String x:Key="Welcome.NewSolutionDesc">Создать новое .sln решение</x:String>
+    <x:String x:Key="Welcome.NewProject">Новый проект</x:String>
+    <x:String x:Key="Welcome.NewProjectDesc">Создать новый проект C#</x:String>
+    <x:String x:Key="Welcome.Open">Открыть</x:String>
+    <x:String x:Key="Welcome.OpenDesc">Открыть проект или решение</x:String>
+    <x:String x:Key="Welcome.CloneRepository">Клонировать репозиторий</x:String>
+    <x:String x:Key="Welcome.CloneRepositoryDesc">Получить код из Git-репозитория</x:String>
+    <x:String x:Key="Welcome.Documentation">Документация</x:String>
+    <x:String x:Key="Welcome.GitHub">GitHub</x:String>
+    <x:String x:Key="Welcome.Settings">Настройки</x:String>
+    <x:String x:Key="Welcome.SearchRecent">🔍  Поиск последних проектов...</x:String>
+    <x:String x:Key="Welcome.ClearAll">Очистить всё</x:String>
+    <x:String x:Key="Welcome.RecentProjects">Последние проекты</x:String>
+
+    <!-- MenuWindow -->
+    <x:String x:Key="Menu.Title">Меню</x:String>
+    <x:String x:Key="Menu.File">Файл</x:String>
+    <x:String x:Key="Menu.Edit">Редактирование</x:String>
+    <x:String x:Key="Menu.View">Вид</x:String>
+    <x:String x:Key="Menu.Build">Сборка</x:String>
+    <x:String x:Key="Menu.Debug">Отладка</x:String>
+    <x:String x:Key="Menu.Tools">Инструменты</x:String>
+    <x:String x:Key="Menu.Help">Справка</x:String>
+    <x:String x:Key="Menu.Language">🌐 Язык</x:String>
+    <!-- File menu -->
+    <x:String x:Key="Menu.SolutionProject">📦 Решение и проект</x:String>
+    <x:String x:Key="Menu.NewSolution">📦 Новое решение...</x:String>
+    <x:String x:Key="Menu.NewProject">📁 Новый проект...</x:String>
+    <x:String x:Key="Menu.NewNanoProject">🔌 Новый nanoFramework проект...</x:String>
+    <x:String x:Key="Menu.AddProjectToSolution">➕ Добавить проект в решение...</x:String>
+    <x:String x:Key="Menu.FileOperations">📁 Операции с файлами</x:String>
+    <x:String x:Key="Menu.NewFile">📄 Новый файл</x:String>
+    <x:String x:Key="Menu.OpenFile">📂 Открыть файл...</x:String>
+    <x:String x:Key="Menu.OpenFolder">📁 Открыть папку...</x:String>
+    <x:String x:Key="Menu.OpenSolution">📦 Открыть решение...</x:String>
+    <x:String x:Key="Menu.Save">💾 Сохранить</x:String>
+    <x:String x:Key="Menu.SaveAs">💾 Сохранить как...</x:String>
+    <x:String x:Key="Menu.SaveAll">💾 Сохранить всё</x:String>
+    <x:String x:Key="Menu.Exit">🚪 Выход</x:String>
+    <!-- Edit menu -->
+    <x:String x:Key="Menu.UndoRedo">↩️ Отменить/Повторить</x:String>
+    <x:String x:Key="Menu.Undo">↩️ Отменить</x:String>
+    <x:String x:Key="Menu.Redo">↪️ Повторить</x:String>
+    <x:String x:Key="Menu.FindReplace">🔍 Найти и заменить</x:String>
+    <x:String x:Key="Menu.Find">🔍 Найти</x:String>
+    <x:String x:Key="Menu.Replace">🔄 Заменить</x:String>
+    <x:String x:Key="Menu.FindInFiles">🔍 Найти в файлах</x:String>
+    <x:String x:Key="Menu.Code">📝 Код</x:String>
+    <x:String x:Key="Menu.FormatDocument">📋 Форматировать документ</x:String>
+    <x:String x:Key="Menu.ToggleComment">💬 Переключить комментарий</x:String>
+    <!-- View menu -->
+    <x:String x:Key="Menu.Panels">📊 Панели</x:String>
+    <x:String x:Key="Menu.AIAssistant">🤖 ИИ-ассистент</x:String>
+    <x:String x:Key="Menu.Explorer">📁 Проводник</x:String>
+    <x:String x:Key="Menu.Search">🔍 Поиск</x:String>
+    <x:String x:Key="Menu.SourceControl">🔀 Управление версиями</x:String>
+    <x:String x:Key="Menu.FocusLayout">🎯 Режим фокуса</x:String>
+    <x:String x:Key="Menu.ToggleLeftPanel">📁 Левая панель (Проводник)</x:String>
+    <x:String x:Key="Menu.ToggleBottomPanel">💻 Нижняя панель (Терминал)</x:String>
+    <x:String x:Key="Menu.ToggleAIPanel">🤖 AI-панель (Copilot)</x:String>
+    <x:String x:Key="Menu.ZenMode">🧘 Дзен-режим (только редактор)</x:String>
+    <x:String x:Key="Menu.Preview">🎨 Предпросмотр</x:String>
+    <x:String x:Key="Menu.PreviewAxaml">🎨 Предпросмотр AXAML</x:String>
+    <x:String x:Key="Menu.BottomPanel">⬇️ Нижняя панель</x:String>
+    <x:String x:Key="Menu.Terminal">💻 Терминал</x:String>
+    <x:String x:Key="Menu.NewTerminal">➕ Новый терминал</x:String>
+    <x:String x:Key="Menu.Problems">⚠️ Проблемы</x:String>
+    <x:String x:Key="Menu.BuildOutput">📋 Вывод сборки</x:String>
+    <x:String x:Key="Menu.RunOutput">▶️ Вывод запуска</x:String>
+    <x:String x:Key="Menu.DebugConsole">🐛 Консоль отладки</x:String>
+    <x:String x:Key="Menu.Window">🖥️ Окно</x:String>
+    <x:String x:Key="Menu.Minimize">➖ Свернуть</x:String>
+    <x:String x:Key="Menu.MaximizeRestore">🔲 Развернуть/Восстановить</x:String>
+    <!-- Build menu -->
+    <x:String x:Key="Menu.BuildHeader">🔨 Сборка</x:String>
+    <x:String x:Key="Menu.BuildProject">🔨 Собрать проект</x:String>
+    <x:String x:Key="Menu.RebuildProject">🔄 Пересобрать проект</x:String>
+    <x:String x:Key="Menu.CleanProject">🧹 Очистить проект</x:String>
+    <x:String x:Key="Menu.Analysis">🔍 Анализ</x:String>
+    <x:String x:Key="Menu.AnalyzeCode">🔍 Анализировать код</x:String>
+    <x:String x:Key="Menu.RunHeader">▶️ Запуск</x:String>
+    <x:String x:Key="Menu.RunProject">▶️ Запустить проект</x:String>
+    <x:String x:Key="Menu.StopProject">⏹️ Остановить</x:String>
+    <x:String x:Key="Menu.RunConfigurations">⚙️ Конфигурации запуска...</x:String>
+    <x:String x:Key="Menu.PackagesDeploy">📦 Пакеты и развёртывание</x:String>
+    <x:String x:Key="Menu.RestoreNuGet">📦 Восстановить пакеты NuGet</x:String>
+    <x:String x:Key="Menu.Publish">📤 Публикация...</x:String>
+    <!-- Debug menu -->
+    <x:String x:Key="Menu.DebugHeader">🐛 Отладка</x:String>
+    <x:String x:Key="Menu.StartDebugging">▶️ Начать отладку</x:String>
+    <x:String x:Key="Menu.StartWithout">⏸️ Запуск без отладки</x:String>
+    <x:String x:Key="Menu.StopDebugging">⏹️ Остановить отладку</x:String>
+    <x:String x:Key="Menu.Breakpoints">🔴 Точки останова</x:String>
+    <x:String x:Key="Menu.ToggleBreakpoint">🔴 Переключить точку останова</x:String>
+    <x:String x:Key="Menu.DeleteAllBreakpoints">❌ Удалить все точки останова</x:String>
+    <x:String x:Key="Menu.Step">👣 Шаг</x:String>
+    <x:String x:Key="Menu.StepOver">➡️ Шаг с обходом</x:String>
+    <x:String x:Key="Menu.StepInto">⬇️ Шаг с заходом</x:String>
+    <x:String x:Key="Menu.StepOut">⬆️ Шаг с выходом</x:String>
+    <!-- Tools menu -->
+    <x:String x:Key="Menu.ToolsHeader">🔧 Инструменты</x:String>
+    <x:String x:Key="Menu.OpenTerminal">💻 Открыть терминал</x:String>
+    <x:String x:Key="Menu.RefreshFileTree">🔄 Обновить дерево файлов</x:String>
+    <x:String x:Key="Menu.SettingsHeader">⚙️ Настройки</x:String>
+    <x:String x:Key="Menu.Settings">⚙️ Настройки</x:String>
+    <x:String x:Key="Menu.Theme">🎨 Тема</x:String>
+    <x:String x:Key="Menu.KeyboardShortcuts">⌨️ Сочетания клавиш</x:String>
+    <x:String x:Key="Menu.NuGetHeader">📦 NuGet</x:String>
+    <x:String x:Key="Menu.ManageNuGet">📦 Управление пакетами NuGet</x:String>
+    <!-- Help menu -->
+    <x:String x:Key="Menu.HelpHeader">❓ Справка</x:String>
+    <x:String x:Key="Menu.Documentation">📖 Документация</x:String>
+    <x:String x:Key="Menu.GettingStarted">🎓 Начало работы</x:String>
+    <x:String x:Key="Menu.KeyboardShortcutsHelp">⌨️ Сочетания клавиш</x:String>
+    <x:String x:Key="Menu.Feedback">📣 Обратная связь</x:String>
+    <x:String x:Key="Menu.ReportIssue">🐛 Сообщить об ошибке</x:String>
+    <x:String x:Key="Menu.FeatureRequest">💡 Запрос функции</x:String>
+    <x:String x:Key="Menu.About">ℹ️ О программе</x:String>
+    <x:String x:Key="Menu.AboutInsait">ℹ️ О Insait Edit</x:String>
+    <x:String x:Key="Menu.CheckUpdates">📋 Проверить обновления</x:String>
+
+    <!-- NewProjectWindow -->
+    <x:String x:Key="NewProject.Title">Новый проект</x:String>
+    <x:String x:Key="NewProject.SelectTemplate">Выберите шаблон</x:String>
+    <x:String x:Key="NewProject.Configure">Настройте ваш проект</x:String>
+    <x:String x:Key="NewProject.ProjectName">Имя проекта</x:String>
+    <x:String x:Key="NewProject.Location">Расположение</x:String>
+    <x:String x:Key="NewProject.SolutionName">Имя решения</x:String>
+    <x:String x:Key="NewProject.SolutionFormat">Формат файла решения</x:String>
+    <x:String x:Key="NewProject.PlaceSameDir">Разместить решение и проект в одной папке</x:String>
+    <x:String x:Key="NewProject.CreateGitRepo">Создать репозиторий Git</x:String>
+    <x:String x:Key="NewProject.Cancel">Отмена</x:String>
+    <x:String x:Key="NewProject.Create">Создать</x:String>
+
+    <!-- NewSolutionWindow -->
+    <x:String x:Key="NewSolution.Title">Новое решение</x:String>
+    <x:String x:Key="NewSolution.SolutionName">Имя решения</x:String>
+    <x:String x:Key="NewSolution.Location">Расположение</x:String>
+    <x:String x:Key="NewSolution.CreateSolutionDir">Создать каталог решения</x:String>
+    <x:String x:Key="NewSolution.InitGitRepo">Инициализировать репозиторий Git</x:String>
+    <x:String x:Key="NewSolution.SolutionFormat">Формат решения</x:String>
+    <x:String x:Key="NewSolution.CreatedAt">Решение будет создано по адресу:</x:String>
+    <x:String x:Key="NewSolution.Cancel">Отмена</x:String>
+    <x:String x:Key="NewSolution.Create">Создать</x:String>
+
+    <!-- AddNewItemWindow -->
+    <x:String x:Key="AddItem.Title">Добавить новый элемент</x:String>
+    <x:String x:Key="AddItem.CSharpTypes">Типы C#</x:String>
+    <x:String x:Key="AddItem.Class">Класс</x:String>
+    <x:String x:Key="AddItem.Interface">Интерфейс</x:String>
+    <x:String x:Key="AddItem.Record">Запись</x:String>
+    <x:String x:Key="AddItem.Struct">Структура</x:String>
+    <x:String x:Key="AddItem.Enum">Перечисление</x:String>
+    <x:String x:Key="AddItem.Delegate">Делегат</x:String>
+    <x:String x:Key="AddItem.Exception">Исключение</x:String>
+    <x:String x:Key="AddItem.GlobalUsings">Глобальные using</x:String>
+    <x:String x:Key="AddItem.FSharpTypes">Типы F#</x:String>
+    <x:String x:Key="AddItem.AspNet">ASP.NET</x:String>
+    <x:String x:Key="AddItem.AvaloniaUI">Avalonia UI</x:String>
+    <x:String x:Key="AddItem.WebFiles">Веб-файлы</x:String>
+    <x:String x:Key="AddItem.ConfigData">Конфигурация / Данные</x:String>
+    <x:String x:Key="AddItem.DotNetConfig">Конфигурация .NET</x:String>
+    <x:String x:Key="AddItem.Git">Git</x:String>
+    <x:String x:Key="AddItem.Name">Имя</x:String>
+    <x:String x:Key="AddItem.Preview">Предпросмотр</x:String>
+    <x:String x:Key="AddItem.Location">Расположение:</x:String>
+    <x:String x:Key="AddItem.AddToProject">Добавить в файл проекта (.csproj / .fsproj)</x:String>
+    <x:String x:Key="AddItem.Cancel">Отмена</x:String>
+    <x:String x:Key="AddItem.Add">Добавить</x:String>
+
+    <!-- AddProjectToSolutionWindow -->
+    <x:String x:Key="AddProject.Title">Добавить новый проект в решение</x:String>
+    <x:String x:Key="AddProject.Solution">Решение:</x:String>
+    <x:String x:Key="AddProject.Template">Шаблон проекта</x:String>
+    <x:String x:Key="AddProject.ProjectName">Имя проекта</x:String>
+    <x:String x:Key="AddProject.CreatedAt">Проект будет создан по адресу:</x:String>
+    <x:String x:Key="AddProject.Cancel">Отмена</x:String>
+    <x:String x:Key="AddProject.Add">Добавить проект</x:String>
+
+    <!-- CloneRepositoryWindow -->
+    <x:String x:Key="Clone.Title">Клонировать репозиторий</x:String>
+    <x:String x:Key="Clone.RepoUrl">URL репозитория</x:String>
+    <x:String x:Key="Clone.LocalPath">Локальный путь</x:String>
+    <x:String x:Key="Clone.Browse">Обзор...</x:String>
+    <x:String x:Key="Clone.Cloning">Клонирование...</x:String>
+    <x:String x:Key="Clone.Cancel">Отмена</x:String>
+    <x:String x:Key="Clone.Clone">Клонировать</x:String>
+
+    <!-- GitWindow -->
+    <x:String x:Key="Git.Title">Git — Insait Edit</x:String>
+    <x:String x:Key="Git.Scope">Область:</x:String>
+    <x:String x:Key="Git.SolutionAll">📁 Решение (все проекты)</x:String>
+    <x:String x:Key="Git.Refresh">Обновить</x:String>
+    <x:String x:Key="Git.Pull">Загрузить / Обновить</x:String>
+    <x:String x:Key="Git.Push">Отправить</x:String>
+    <x:String x:Key="Git.Fetch">Получить</x:String>
+    <x:String x:Key="Git.Stash">Спрятать</x:String>
+    <x:String x:Key="Git.PopStash">Восстановить спрятанное</x:String>
+    <x:String x:Key="Git.Rollback">Откатить всё</x:String>
+    <x:String x:Key="Git.CreateRepo">Создать GitHub-репозиторий</x:String>
+    <x:String x:Key="Git.Console">Git-консоль</x:String>
+
+    <!-- ImageViewerWindow -->
+    <x:String x:Key="ImageViewer.Title">Просмотр изображений</x:String>
+    <x:String x:Key="ImageViewer.ZoomIn">Увеличить (Ctrl++)</x:String>
+    <x:String x:Key="ImageViewer.ZoomOut">Уменьшить (Ctrl+-)</x:String>
+    <x:String x:Key="ImageViewer.FitToWindow">Вписать в окно</x:String>
+    <x:String x:Key="ImageViewer.ActualSize">Фактический размер (1:1)</x:String>
+    <x:String x:Key="ImageViewer.OpenExternal">Открыть в системном просмотрщике</x:String>
+
+    <!-- AxamlPreviewWindow -->
+    <x:String x:Key="AxamlPreview.Title">Предпросмотр AXAML</x:String>
+    <x:String x:Key="AxamlPreview.Refresh">Обновить</x:String>
+    <x:String x:Key="AxamlPreview.Size">Размер:</x:String>
+    <x:String x:Key="AxamlPreview.Free">Свободный</x:String>
+    <x:String x:Key="AxamlPreview.ToggleBg">Переключить фон</x:String>
+    <x:String x:Key="AxamlPreview.Ready">Готово</x:String>
+    <x:String x:Key="AxamlPreview.Error">Ошибка</x:String>
+    <x:String x:Key="AxamlPreview.ShowError">Показать детали ошибки</x:String>
+
+    <!-- PreviewErrorWindow -->
+    <x:String x:Key="PreviewError.Title">Детали ошибки предпросмотра</x:String>
+    <x:String x:Key="PreviewError.Hint">Текст можно выделить — Ctrl+A для выделения всего</x:String>
+    <x:String x:Key="PreviewError.Copy">Копировать</x:String>
+
+    <!-- CompoundRunWindow -->
+    <x:String x:Key="Compound.Title">Комплексные конфигурации запуска</x:String>
+    <x:String x:Key="Compound.Subtitle">Запуск нескольких проектов одновременно</x:String>
+    <x:String x:Key="Compound.Configurations">Комплексные конфигурации</x:String>
+    <x:String x:Key="Compound.ConfigName">Имя конфигурации</x:String>
+    <x:String x:Key="Compound.ProjectsToLaunch">Проекты для запуска</x:String>
+    <x:String x:Key="Compound.ExecutionOptions">Параметры выполнения</x:String>
+    <x:String x:Key="Compound.Sequential">Запускать проекты последовательно (один за другим)</x:String>
+    <x:String x:Key="Compound.StopOnFailure">Остановить при первой ошибке</x:String>
+    <x:String x:Key="Compound.Delay">Задержка между запусками (мс)</x:String>
+    <x:String x:Key="Compound.LaunchPreview">Предпросмотр запуска</x:String>
+    <x:String x:Key="Compound.RunAll">▶▶ Запустить все</x:String>
+    <x:String x:Key="Compound.StopAll">■ Остановить все</x:String>
+    <x:String x:Key="Compound.Apply">Применить</x:String>
+    <x:String x:Key="Compound.Cancel">Отмена</x:String>
+    <x:String x:Key="Compound.OK">OK</x:String>
+
+    <!-- RunConfigurationsWindow -->
+    <x:String x:Key="RunConfig.Title">Конфигурации запуска/отладки</x:String>
+    <x:String x:Key="RunConfig.Name">Имя</x:String>
+    <x:String x:Key="RunConfig.Project">Проект</x:String>
+    <x:String x:Key="RunConfig.BuildConfig">Конфигурация сборки</x:String>
+    <x:String x:Key="RunConfig.TargetFramework">Целевой фреймворк</x:String>
+    <x:String x:Key="RunConfig.LaunchProfile">Профиль запуска (необязательно)</x:String>
+    <x:String x:Key="RunConfig.WorkingDir">Рабочая папка</x:String>
+    <x:String x:Key="RunConfig.Arguments">Аргументы программы</x:String>
+    <x:String x:Key="RunConfig.EnvVars">Переменные окружения</x:String>
+    <x:String x:Key="RunConfig.RunOptions">Параметры запуска</x:String>
+    <x:String x:Key="RunConfig.AllowParallel">Разрешить параллельный запуск</x:String>
+    <x:String x:Key="RunConfig.BuildBeforeRun">Сборка перед запуском</x:String>
+    <x:String x:Key="RunConfig.ActivateToolWindow">Активировать окно инструментов при выводе</x:String>
+    <x:String x:Key="RunConfig.Run">▶ Запуск</x:String>
+    <x:String x:Key="RunConfig.Debug">🐛 Отладка</x:String>
+    <x:String x:Key="RunConfig.Apply">Применить</x:String>
+    <x:String x:Key="RunConfig.Cancel">Отмена</x:String>
+    <x:String x:Key="RunConfig.OK">OK</x:String>
+
+    <!-- PublishWindow -->
+    <x:String x:Key="Publish.Title">Публикация проекта</x:String>
+    <x:String x:Key="Publish.Project">Проект</x:String>
+    <x:String x:Key="Publish.DeploymentMode">Режим развёртывания</x:String>
+    <x:String x:Key="Publish.FrameworkDependent">Зависимый от фреймворка (требуется .NET на целевой машине)</x:String>
+    <x:String x:Key="Publish.SelfContained">Автономный (включает среду .NET)</x:String>
+    <x:String x:Key="Publish.Configuration">Конфигурация</x:String>
+    <x:String x:Key="Publish.TargetRuntime">Целевая платформа</x:String>
+    <x:String x:Key="Publish.TargetFramework">Целевой фреймворк</x:String>
+    <x:String x:Key="Publish.OutputFolder">Папка вывода</x:String>
+    <x:String x:Key="Publish.Options">Параметры публикации</x:String>
+    <x:String x:Key="Publish.SingleFile">Один файл</x:String>
+    <x:String x:Key="Publish.ReadyToRun">Включить компиляцию ReadyToRun</x:String>
+    <x:String x:Key="Publish.Trim">Обрезать неиспользуемые сборки</x:String>
+    <x:String x:Key="Publish.Compression">Сжатие в одном файле</x:String>
+    <x:String x:Key="Publish.NativeLibs">Включить нативные библиотеки</x:String>
+    <x:String x:Key="Publish.QuickPresets">Быстрые настройки</x:String>
+    <x:String x:Key="Publish.EstimatedSize">Ожидаемый размер появится после публикации</x:String>
+    <x:String x:Key="Publish.Cancel">Отмена</x:String>
+    <x:String x:Key="Publish.Publish">📦 Опубликовать</x:String>
+
+    <!-- ProjectPropertiesWindow -->
+    <x:String x:Key="ProjectProps.Title">Свойства проекта</x:String>
+    <x:String x:Key="ProjectProps.General">⚙️  Общие</x:String>
+    <x:String x:Key="ProjectProps.Build">🔨  Сборка</x:String>
+    <x:String x:Key="ProjectProps.Package">📦  Пакет / NuGet</x:String>
+    <x:String x:Key="ProjectProps.Signing">🔏  Подпись</x:String>
+    <x:String x:Key="ProjectProps.Debug">🐛  Отладка</x:String>
+    <x:String x:Key="ProjectProps.AssemblyName">Имя сборки</x:String>
+    <x:String x:Key="ProjectProps.DefaultNamespace">Пространство имён по умолчанию</x:String>
+    <x:String x:Key="ProjectProps.TargetFramework">Целевой фреймворк</x:String>
+    <x:String x:Key="ProjectProps.OutputType">Тип вывода</x:String>
+    <x:String x:Key="ProjectProps.LangVersion">Версия языка C#</x:String>
+    <x:String x:Key="ProjectProps.Nullable">Nullable-ссылочные типы</x:String>
+    <x:String x:Key="ProjectProps.ImplicitUsings">Включить неявные using</x:String>
+    <x:String x:Key="ProjectProps.AllowUnsafe">Разрешить unsafe-код</x:String>
+    <x:String x:Key="ProjectProps.Apply">Применить</x:String>
+    <x:String x:Key="ProjectProps.OK">OK</x:String>
+    <x:String x:Key="ProjectProps.Cancel">Отмена</x:String>
+
+    <!-- MsixManagerWindow -->
+    <x:String x:Key="Msix.Title">Менеджер пакетов MSIX</x:String>
+    <x:String x:Key="Msix.BuildMsix">Сборка MSIX</x:String>
+    <x:String x:Key="Msix.OpenMsix">Открыть MSIX</x:String>
+    <x:String x:Key="Msix.Identity">Идентификация</x:String>
+    <x:String x:Key="Msix.EntryPoint">Точка входа</x:String>
+    <x:String x:Key="Msix.ManifestXml">Манифест XML</x:String>
+    <x:String x:Key="Msix.BuildLog">Журнал сборки</x:String>
+    <x:String x:Key="Msix.Ready">Готово</x:String>
+    <x:String x:Key="Msix.Close">Закрыть</x:String>
+    <x:String x:Key="Msix.StartBuild">🔨 Собрать MSIX</x:String>
+
+    <!-- NuGetPanelControl -->
+    <x:String x:Key="NuGet.Title">ПАКЕТЫ NUGET</x:String>
+    <x:String x:Key="NuGet.Browse">Обзор</x:String>
+    <x:String x:Key="NuGet.Installed">Установленные</x:String>
+    <x:String x:Key="NuGet.Updates">Обновления</x:String>
+    <x:String x:Key="NuGet.SearchPlaceholder">Поиск пакетов NuGet...</x:String>
+    <x:String x:Key="NuGet.NoProject">Проект не загружен</x:String>
+    <x:String x:Key="NuGet.NoPackages">Пакеты не установлены</x:String>
+    <x:String x:Key="NuGet.AllUpToDate">Все пакеты обновлены</x:String>
+    <x:String x:Key="NuGet.UpdateAll">Обновить все</x:String>
+
+    <!-- AccountPanelControl -->
+    <x:String x:Key="Account.Title">АККАУНТ</x:String>
+    <x:String x:Key="Account.SignInTitle">Войти через GitHub</x:String>
+    <x:String x:Key="Account.SignInDesc">Подключите аккаунт GitHub для доступа к репозиториям.</x:String>
+    <x:String x:Key="Account.SignInBtn">Войти через GitHub</x:String>
+    <x:String x:Key="Account.PublicRepos">Публичные репозитории</x:String>
+    <x:String x:Key="Account.Followers">Подписчики</x:String>
+    <x:String x:Key="Account.Following">Подписки</x:String>
+    <x:String x:Key="Account.YourRepos">ВАШИ РЕПОЗИТОРИИ</x:String>
+    <x:String x:Key="Account.SearchRepos">Поиск репозиториев...</x:String>
+    <x:String x:Key="Account.LoadMore">Загрузить ещё</x:String>
+    <x:String x:Key="Account.SignOut">Выйти</x:String>
+
+    <!-- GitPanelControl -->
+    <x:String x:Key="GitPanel.LocalChanges">Локальные изменения</x:String>
+    <x:String x:Key="GitPanel.Log">Журнал</x:String>
+    <x:String x:Key="GitPanel.Console">Консоль</x:String>
+    <x:String x:Key="GitPanel.NoRepo">Нет Git-репозитория</x:String>
+    <x:String x:Key="GitPanel.NoRepoHint">Откройте папку с Git-репозиторием или инициализируйте новый.</x:String>
+    <x:String x:Key="GitPanel.InitRepo">Инициализировать репозиторий</x:String>
+    <x:String x:Key="GitPanel.CloneRepo">Клонировать репозиторий...</x:String>
+    <x:String x:Key="GitPanel.DefaultChangelist">Список изменений по умолчанию</x:String>
+    <x:String x:Key="GitPanel.CommitPlaceholder">Сообщение коммита (Ctrl+Enter для коммита)</x:String>
+
+    <!-- Diagnostic / Editor -->
+    <x:String x:Key="Diag.QuickFixes">Быстрые исправления:</x:String>
+    <x:String x:Key="Diag.LineCol">Строка {0}, Столбец {1}</x:String>
+    <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn готов</x:String>
+
+    <!-- LED Panel Designer -->
+    <x:String x:Key="Led.Title">Дизайнер LED-панели</x:String>
+    <x:String x:Key="Led.PanelSize">РАЗМЕР ПАНЕЛИ</x:String>
+    <x:String x:Key="Led.Rows">Строки</x:String>
+    <x:String x:Key="Led.Columns">Столбцы</x:String>
+    <x:String x:Key="Led.TotalLeds">Всего LED</x:String>
+    <x:String x:Key="Led.Hardware">АППАРАТНОЕ ОБЕСПЕЧЕНИЕ</x:String>
+    <x:String x:Key="Led.GpioPin">Пин GPIO</x:String>
+    <x:String x:Key="Led.StripType">Тип ленты</x:String>
+    <x:String x:Key="Led.Brightness">Яркость</x:String>
+    <x:String x:Key="Led.PaintColor">ЦВЕТ РИСОВАНИЯ</x:String>
+    <x:String x:Key="Led.DrawMode">РЕЖИМ РИСОВАНИЯ</x:String>
+    <x:String x:Key="Led.DrawSingle">🖌️ Один LED</x:String>
+    <x:String x:Key="Led.DrawRow">↔️ Вся строка</x:String>
+    <x:String x:Key="Led.DrawColumn">↕️ Весь столбец</x:String>
+    <x:String x:Key="Led.DrawErase">🧹 Ластик</x:String>
+    <x:String x:Key="Led.DrawFill">🪣 Заполнить всё</x:String>
+    <x:String x:Key="Led.Actions">ДЕЙСТВИЯ</x:String>
+    <x:String x:Key="Led.ClearAll">🗑️ Очистить всё</x:String>
+    <x:String x:Key="Led.InvertColors">🔄 Инвертировать цвета</x:String>
+    <x:String x:Key="Led.RandomPattern">🎲 Случайный шаблон</x:String>
+    <x:String x:Key="Led.Animation">АНИМАЦИЯ</x:String>
+    <x:String x:Key="Led.CaptureFrame">📸 Захватить кадр</x:String>
+    <x:String x:Key="Led.FrameDelay">Задержка кадра (мс)</x:String>
+    <x:String x:Key="Led.InfiniteLoop">♾️ Бесконечный цикл</x:String>
+    <x:String x:Key="Led.LoopCount">Количество циклов</x:String>
+    <x:String x:Key="Led.ClearFrames">🗑️ Удалить кадры</x:String>
+    <x:String x:Key="Led.LedDisplay">LED-дисплей</x:String>
+    <x:String x:Key="Led.HoverLeds">Наведите на LED</x:String>
+    <x:String x:Key="Led.GridLines">Линии сетки</x:String>
+    <x:String x:Key="Led.Coordinates">Координаты</x:String>
+    <x:String x:Key="Led.PreviewPattern">Предпросмотр шаблона</x:String>
+    <x:String x:Key="Led.Playing">Воспроизведение...</x:String>
+    <x:String x:Key="Led.PreviewComplete">Предпросмотр завершён</x:String>
+    <x:String x:Key="Led.Stop">⏹ Стоп</x:String>
+    <x:String x:Key="Led.SaveConfig">💾 Сохранить конфиг</x:String>
+    <x:String x:Key="Led.LoadConfig">📂 Загрузить конфиг</x:String>
+    <x:String x:Key="Led.StatusReady">Готово — Создайте LED-шаблон</x:String>
+    <x:String x:Key="Led.GenerateCode">Сгенерировать код nanoFramework</x:String>
+    <x:String x:Key="Led.Cancel">Отмена</x:String>
+    <x:String x:Key="Led.Frames">Кадры: {0}</x:String>
+    <x:String x:Key="Led.FrameStatus">Кадр {0}/{1} (Цикл {2}/5)</x:String>
+    <x:String x:Key="Led.SaveDialogTitle">Сохранить конфигурацию LED-панели</x:String>
+    <x:String x:Key="Led.LoadDialogTitle">Загрузить конфигурацию LED-панели</x:String>
+
+    <!-- nanoFramework Project -->
+    <x:String x:Key="Nano.Title">Новый nanoFramework проект</x:String>
+    <x:String x:Key="Nano.Subtitle">Создать C# проект для ESP32 / nanoFramework</x:String>
+    <x:String x:Key="Nano.SelectTemplate">Выберите шаблон</x:String>
+    <x:String x:Key="Nano.Configure">Настройте проект</x:String>
+    <x:String x:Key="Nano.ProjectName">Имя проекта</x:String>
+    <x:String x:Key="Nano.Location">Расположение</x:String>
+    <x:String x:Key="Nano.TargetBoard">Целевая плата</x:String>
+    <x:String x:Key="Nano.Solution">Решение</x:String>
+    <x:String x:Key="Nano.AddToSolution">Добавить в существующее решение</x:String>
+    <x:String x:Key="Nano.CreateNewSolution">Создать новое решение</x:String>
+    <x:String x:Key="Nano.Requirements">ℹ️ Требования</x:String>
+    <x:String x:Key="Nano.Req1">• nanoff CLI (устанавливается автоматически)</x:String>
+    <x:String x:Key="Nano.Req2">• ESP32, подключённый через USB</x:String>
+    <x:String x:Key="Nano.Req3">• Драйвер USB-Serial (CP210x или CH340)</x:String>
+    <x:String x:Key="Nano.Browse">Обзор...</x:String>
+    <x:String x:Key="Nano.Cancel">Отмена</x:String>
+    <x:String x:Key="Nano.Create">Создать nanoFramework проект</x:String>
+    <x:String x:Key="Nano.TplBlankName">Пустое приложение</x:String>
+    <x:String x:Key="Nano.TplBlankDesc">Пустое nanoFramework приложение</x:String>
+    <x:String x:Key="Nano.TplClassLibName">Библиотека классов</x:String>
+    <x:String x:Key="Nano.TplClassLibDesc">Многоразовая библиотека</x:String>
+    <x:String x:Key="Nano.TplGpioName">GPIO Blink</x:String>
+    <x:String x:Key="Nano.TplGpioDesc">Пример мигания LED</x:String>
+    <x:String x:Key="Nano.TplWifiName">Wi-Fi</x:String>
+    <x:String x:Key="Nano.TplWifiDesc">Подключение Wi-Fi</x:String>
+    <x:String x:Key="Nano.TplHttpName">HTTP-клиент</x:String>
+    <x:String x:Key="Nano.TplHttpDesc">HTTP-запросы</x:String>
+    <x:String x:Key="Nano.TplI2CName">I2C-датчик</x:String>
+    <x:String x:Key="Nano.TplI2CDesc">Чтение датчика</x:String>
+
+    <!-- AxamlPreview extra -->
+    <x:String x:Key="AxamlPreview.LivePreview">✔ Живой просмотр</x:String>
+    <x:String x:Key="AxamlPreview.FallbackView">⚠ Резервный вид</x:String>
+    <x:String x:Key="AxamlPreview.TitleFormat">Предпросмотр AXAML — {0}</x:String>
+    <x:String x:Key="AxamlPreview.UnknownError">Неизвестная ошибка</x:String>
+
+    <!-- RunConfig extra -->
+    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Поиск конфигураций...</x:String>
+    <x:String x:Key="RunConfig.Single">ОДИНОЧНЫЙ</x:String>
+    <x:String x:Key="RunConfig.Compound">СОСТАВНОЙ</x:String>
+    <x:String x:Key="RunConfig.ManageCompound">⚡ Управление</x:String>
+    <x:String x:Key="RunConfig.Add">Добавить конфигурацию</x:String>
+    <x:String x:Key="RunConfig.Remove">Удалить конфигурацию</x:String>
+    <x:String x:Key="RunConfig.Duplicate">Дублировать конфигурацию</x:String>
+    <x:String x:Key="RunConfig.NoEnvVars">Переменные среды не определены</x:String>
+    <x:String x:Key="RunConfig.AddEnvVar">+ Добавить</x:String>
+    <x:String x:Key="RunConfig.Projects">проектов</x:String>
+
+    <!-- NuGet extra -->
+    <x:String x:Key="NuGet.NanoFramework">🔌 Популярные пакеты nanoFramework</x:String>
+    <x:String x:Key="NuGet.NanoFrameworkDesc">Популярные пакеты для nanoFramework. Используйте поиск для любого NuGet-пакета.</x:String>
+    <x:String x:Key="NuGet.NoPackagesFound">Пакеты не найдены</x:String>
+    <x:String x:Key="NuGet.Install">Установить</x:String>
+    <x:String x:Key="NuGet.Update">Обновить</x:String>
+    <x:String x:Key="NuGet.Uninstall">Удалить</x:String>
+    <x:String x:Key="NuGet.AllUpToDateCheck">✅ Все пакеты обновлены</x:String>
+
+    <!-- Common -->
+    <x:String x:Key="Common.OK">OK</x:String>
+    <x:String x:Key="Common.Cancel">Отмена</x:String>
+    <x:String x:Key="Common.Apply">Применить</x:String>
+    <x:String x:Key="Common.Close">Закрыть</x:String>
+    <x:String x:Key="Common.Browse">Обзор...</x:String>
+    <x:String x:Key="Common.Save">Сохранить</x:String>
+    <x:String x:Key="Common.Refresh">Обновить</x:String>
+
+    <!-- Language Switcher -->
+    <x:String x:Key="Lang.Language">🌐 Язык</x:String>
+    <x:String x:Key="Lang.English">English</x:String>
+    <x:String x:Key="Lang.Ukrainian">Українська</x:String>
+    <x:String x:Key="Lang.German">Deutsch</x:String>
+    <x:String x:Key="Lang.Russian">Русский</x:String>
+    <x:String x:Key="Lang.Turkish">Türkçe</x:String>
+
+</ResourceDictionary>

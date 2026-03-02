@@ -30,6 +30,27 @@ public partial class AddProjectToSolutionWindow : Window
         }
         
         UpdateProjectPathPreview();
+        ApplyLocalization();
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("AddProject.Title");
+        var titleBar = this.FindControl<TextBlock>("TitleBarText");
+        if (titleBar != null) titleBar.Text = L("AddProject.Title");
+        var slnLabel = this.FindControl<TextBlock>("SolutionLabel");
+        if (slnLabel != null) slnLabel.Text = L("AddProject.Solution");
+        var tplLabel = this.FindControl<TextBlock>("TemplateLabel");
+        if (tplLabel != null) tplLabel.Text = L("AddProject.Template");
+        var projLabel = this.FindControl<TextBlock>("ProjectNameLabel");
+        if (projLabel != null) projLabel.Text = L("AddProject.ProjectName");
+        var createdAt = this.FindControl<TextBlock>("CreatedAtLabel");
+        if (createdAt != null) createdAt.Text = L("AddProject.CreatedAt");
+        var cancelBtn = this.FindControl<Button>("CancelButton");
+        if (cancelBtn != null) cancelBtn.Content = L("AddProject.Cancel");
+        var createBtn = this.FindControl<Button>("CreateButton");
+        if (createBtn != null) createBtn.Content = L("AddProject.Add");
     }
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)

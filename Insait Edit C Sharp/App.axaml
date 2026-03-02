@@ -7,7 +7,7 @@
         <FluentTheme/>
         <!-- AvaloniaEdit Semi theme — styles only TextEditor parts,
              does NOT replace FluentTheme for the rest of the application -->
-        <semi:AvaloniaEditSemiTheme />
+  
 
         <!-- Global style for emoji icons - ensures color emoji rendering -->
         <Style Selector="TextBlock.emoji">

@@ -78,6 +78,9 @@
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,10"/>
         </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+        </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
@@ -129,7 +132,7 @@
             <Grid Grid.Row="0" Background="#FF3C3C3C">
                 <Grid ColumnDefinitions="*,Auto">
                     <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
-                        <TextBlock Text="New Project" FontSize="12" FontWeight="SemiBold"
+                        <TextBlock Name="TitleBarText" Text="New Project" FontSize="12" FontWeight="SemiBold"
                                    Foreground="{StaticResource AccentOrangeBrush}"
                                    VerticalAlignment="Center" Margin="16,0"/>
                     </Panel>
@@ -145,7 +148,7 @@
                     
                     <!-- Template Selection -->
                     <StackPanel Spacing="12">
-                        <TextBlock Text="Select a template" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock Name="SelectTemplateText" Text="Select a template" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                         
                         <WrapPanel Orientation="Horizontal">
@@ -279,33 +282,33 @@
 
                     <!-- Project Settings -->
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Configure your project" FontSize="14" FontWeight="SemiBold"
+                        <TextBlock Name="ConfigureText" Text="Configure your project" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                         
                         <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" 
                               RowSpacing="12" ColumnSpacing="16">
                             
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Project name"
+                            <TextBlock Grid.Row="0" Grid.Column="0" Name="ProjectNameLabel" Text="Project name"
                                        VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"/>
                             <TextBox Grid.Row="0" Grid.Column="1" Name="ProjectNameBox" 
                                      Text="MyProject" TextChanged="ProjectName_Changed"/>
                             
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Location"
+                            <TextBlock Grid.Row="1" Grid.Column="0" Name="LocationLabel" Text="Location"
                                        VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"/>
                             <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto">
                                 <TextBox Name="LocationBox" Text="" Margin="0,0,8,0"/>
-                                <Button Grid.Column="1" Classes="secondary-btn" Content="Browse..." 
+                                <Button Grid.Column="1" Name="BrowseButton" Classes="secondary-btn" Content="Browse..." 
                                         Click="BrowseLocation_Click"/>
                             </Grid>
                             
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Solution name"
+                            <TextBlock Grid.Row="2" Grid.Column="0" Name="SolutionNameLabel" Text="Solution name"
                                        VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"/>
                             <TextBox Grid.Row="2" Grid.Column="1" Name="SolutionNameBox" Text="MyProject"/>
                         </Grid>
                         
                         <!-- Solution Format -->
                         <StackPanel Spacing="6" Margin="0,8,0,0">
-                            <TextBlock Text="Solution file format" FontSize="12" FontWeight="SemiBold"
+                            <TextBlock Name="SolutionFormatLabel" Text="Solution file format" FontSize="12" FontWeight="SemiBold"
                                        Foreground="{StaticResource TextSecondaryBrush}"/>
                             <StackPanel Orientation="Horizontal" Spacing="16">
                                 <RadioButton Name="SlnxFormat" IsChecked="True"
@@ -339,11 +342,11 @@
                         <StackPanel Spacing="8" Margin="0,4,0,0">
                             <CheckBox Name="CreateSolutionDir" IsChecked="True"
                                       Foreground="{StaticResource TextPrimaryBrush}">
-                                <TextBlock Text="Place solution and project in the same directory"/>
+                                <TextBlock Name="PlaceSameDirText" Text="Place solution and project in the same directory"/>
                             </CheckBox>
                             <CheckBox Name="CreateGitRepo" IsChecked="True"
                                       Foreground="{StaticResource TextPrimaryBrush}">
-                                <TextBlock Text="Create Git repository"/>
+                                <TextBlock Name="CreateGitRepoText" Text="Create Git repository"/>
                             </CheckBox>
                         </StackPanel>
                     </StackPanel>
@@ -356,10 +359,10 @@
                     <TextBlock Grid.Column="0" Name="ProjectPathPreview" FontSize="11"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                    <Button Grid.Column="1" Classes="secondary-btn" Content="Cancel" 
+                    <Button Grid.Column="1" Name="CancelButton" Classes="secondary-btn" Content="Cancel" 
                             Margin="0,0,12,0" Click="Cancel_Click"/>
-                    <Button Grid.Column="2" Classes="primary-btn" Content="Create" 
-                            Name="CreateButton" Click="Create_Click"/>
+                    <Button Grid.Column="2" Name="CreateButton" Classes="primary-btn" Content="Create" 
+                            Click="Create_Click"/>
                 </Grid>
             </Border>
         </Grid>

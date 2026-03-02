@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using Insait_Edit_C_Sharp.ViewModels;
 using Insait_Edit_C_Sharp.Services;
 using Insait_Edit_C_Sharp.Controls;
+using Insait_Edit_C_Sharp.InsaitCodeEditor;
 using Insait_Edit_C_Sharp.Models;
 using Insait_Edit_C_Sharp.Esp.Windows;
 using Insait_Edit_C_Sharp.Esp.Models;
@@ -39,7 +40,7 @@ public partial class MainWindow : Window
     private readonly PublishService _publishService;
     private readonly CopilotCliService _copilotCliService;
     private string? _projectPath;
-    private AvaloniaEditor? _monacoEditor;
+    private InsaitEditor? _insaitEditor;
     private TerminalControl? _terminalControl;
     private bool _isBuildInProgress;
     private bool _isAnalysisInProgress;
@@ -82,7 +83,7 @@ public partial class MainWindow : Window
         _restoreSize = new Size(Width, Height);
 
         // Wire up the editor that is declared directly in AXAML
-        InitializeMonacoEditor();
+        InitializeInsaitEditor();
 
         // Initialize Build Service events
         InitializeBuildService();
@@ -119,6 +120,10 @@ public partial class MainWindow : Window
         
         // Setup keyboard shortcuts
         SetupKeyboardShortcuts();
+        
+        // Apply localization and subscribe to language changes
+        ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(ApplyLocalization);
     }
     
     private void SetupColumnConstraints()
@@ -269,7 +274,9 @@ public partial class MainWindow : Window
         else if (e.Key == Key.F && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
         {
             _searchTabIsFiles = false;
-            SwitchSidePanel("search");
+            EnsureSidePanelVisible();
+            SwitchSidePanel("explorer");
+            ToggleExplorerSearch(open: true);
             UpdateSearchTabUI();
             this.FindControl<TextBox>("ContentSearchInputBox")?.Focus();
             e.Handled = true;
@@ -278,15 +285,47 @@ public partial class MainWindow : Window
         else if (e.Key == Key.P && e.KeyModifiers.HasFlag(KeyModifiers.Control) && !e.KeyModifiers.HasFlag(KeyModifiers.Shift))
         {
             _searchTabIsFiles = true;
-            SwitchSidePanel("search");
+            EnsureSidePanelVisible();
+            SwitchSidePanel("explorer");
+            ToggleExplorerSearch(open: true);
             UpdateSearchTabUI();
             this.FindControl<TextBox>("SearchInputBox")?.Focus();
+            e.Handled = true;
+        }
+        // Ctrl+Shift+Z - Zen Mode
+        else if (e.Key == Key.Z && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            ToggleZenMode();
             e.Handled = true;
         }
         // Ctrl+Shift+P - AXAML Preview
         else if (e.Key == Key.P && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
         {
             await OpenAxamlPreviewAsync();
+            e.Handled = true;
+        }
+        // Ctrl+Shift+E - Toggle Explorer panel
+        else if (e.Key == Key.E && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            ToggleSidePanel("explorer");
+            e.Handled = true;
+        }
+        // Ctrl+Shift+I - Toggle AI / Right panel
+        else if (e.Key == Key.I && e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            ToggleAIPanel();
+            e.Handled = true;
+        }
+        // Ctrl+` - Toggle Terminal / bottom panel
+        else if (e.Key == Key.OemTilde && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            ToggleBottomPanel();
+            e.Handled = true;
+        }
+        // Escape - exit Zen Mode if active
+        else if (e.Key == Key.Escape && _isZenMode)
+        {
+            ToggleZenMode();
             e.Handled = true;
         }
     }
@@ -329,9 +368,9 @@ public partial class MainWindow : Window
         _viewModel.Tabs.Add(newTab);
         _viewModel.ActiveTab = newTab;
         
-        if (_monacoEditor != null)
+        if (_insaitEditor != null)
         {
-            _monacoEditor.SetContent(string.Empty, "csharp");
+            _insaitEditor.SetContent(string.Empty, "csharp");
         }
         
         _viewModel.StatusText = "New file created";
@@ -361,13 +400,13 @@ public partial class MainWindow : Window
             _viewModel.CloseTab(tab);
             
             // Update editor with active tab content
-            if (_monacoEditor != null && _viewModel.ActiveTab != null)
+            if (_insaitEditor != null && _viewModel.ActiveTab != null)
             {
-                _monacoEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
+                _insaitEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
             }
-            else if (_monacoEditor != null)
+            else if (_insaitEditor != null)
             {
-                _monacoEditor.SetContent("", "plaintext");
+                _insaitEditor.SetContent("", "plaintext");
             }
         }
     }
@@ -408,7 +447,7 @@ public partial class MainWindow : Window
         return startPath;
     }
 
-    private void InitializeMonacoEditor()
+    private void InitializeInsaitEditor()
     {
         // Create the editor in code-behind and place it inside the named Border placeholder.
         // This guarantees correct layout — no AXAML template/size issues.
@@ -416,12 +455,12 @@ public partial class MainWindow : Window
         if (container == null)
         {
             // Retry after window is loaded
-            this.Loaded += (_, _) => InitializeMonacoEditor();
+            this.Loaded += (_, _) => InitializeInsaitEditor();
             return;
         }
 
-        _monacoEditor = new AvaloniaEditor();
-        container.Child = _monacoEditor;
+        _insaitEditor = new InsaitEditor();
+        container.Child = _insaitEditor;
 
         WireEditorEvents();
 
@@ -436,11 +475,11 @@ public partial class MainWindow : Window
 
     private void WireEditorEvents()
     {
-        _monacoEditor!.EditorReady             += OnEditorReady;
-        _monacoEditor!.ContentChanged          += OnEditorContentChanged;
-        _monacoEditor!.ContentChangedWithValue += OnEditorContentChangedWithValue;
-        _monacoEditor!.CursorPositionChanged   += OnCursorPositionChanged;
-        _monacoEditor!.UndoRedoManager.StateChanged += OnUndoRedoStateChanged;
+        _insaitEditor!.EditorReady             += OnEditorReady;
+        _insaitEditor!.ContentChanged          += OnEditorContentChanged;
+        _insaitEditor!.ContentChangedWithValue += OnEditorContentChangedWithValue;
+        _insaitEditor!.CursorPositionChanged   += OnCursorPositionChanged;
+        _insaitEditor!.UndoRedoManager.StateChanged += OnUndoRedoStateChanged;
     }
 
     private void OnEditorReady(object? sender, EventArgs e)
@@ -459,7 +498,7 @@ public partial class MainWindow : Window
 
     private void OnEditorContentChangedWithValue(object? sender, ContentChangedEventArgs e)
     {
-        // Update the active tab's content with the new value from Monaco
+        // Update the active tab's content with the new value from the editor
         if (_viewModel.ActiveTab != null)
         {
             _viewModel.ActiveTab.Content = e.NewContent;
@@ -492,10 +531,10 @@ public partial class MainWindow : Window
         if (tab == null || string.IsNullOrEmpty(tab.FilePath)) return;
         try
         {
-            if (_monacoEditor != null) tab.Content = await _monacoEditor.GetContentAsync();
+            if (_insaitEditor != null) tab.Content = await _insaitEditor.GetContentAsync();
             await File.WriteAllTextAsync(tab.FilePath, tab.Content);
             tab.IsDirty = false;
-            _monacoEditor?.MarkAsSaved();
+            _insaitEditor?.MarkAsSaved();
             _viewModel.StatusText = $"Auto-saved: {tab.FileName}";
         }
         catch (Exception ex)
@@ -628,16 +667,203 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>Apply current language strings to all named UI elements.</summary>
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+
+        // ── Title Bar buttons ────────────────────────────────────
+        SetButtonText("MainMenuButton", "☰", L("TitleBar.Menu"));
+        SetButtonTooltip("MainMenuButton", L("Tooltip.Menu"));
+
+        SetButtonTooltip("BuildProjectButton", L("Tooltip.Build"));
+
+        SetButtonTooltip("AnalyzeProjectButton", L("Tooltip.Analyze"));
+
+        SetButtonTooltip("RunConfigDropdownButton", L("Tooltip.RunConfig"));
+        SetButtonTooltip("EditConfigurationsButton", L("Tooltip.EditConfig"));
+
+        SetButtonText("RunProjectButton", "▶", L("TitleBar.Run"), textFgColor: "#FFA6E3A1");
+        SetButtonTooltip("RunProjectButton", L("Tooltip.Run"));
+
+        SetButtonText("DebugProjectButton", "🐛", L("TitleBar.Debug"));
+        SetButtonTooltip("DebugProjectButton", L("Tooltip.Debug"));
+
+        SetButtonText("CancelBuildButton", "⏹", L("TitleBar.Stop"));
+        SetButtonTooltip("CancelBuildButton", L("Tooltip.Stop"));
+
+        SetButtonTooltip("PublishButton", L("Tooltip.Publish"));
+        SetButtonTooltip("MsixManagerButton", L("Tooltip.MsixManager"));
+        SetButtonTooltip("UndoButton", L("Tooltip.Undo"));
+        SetButtonTooltip("RedoButton", L("Tooltip.Redo"));
+        SetButtonTooltip("NewWindowButton", L("Tooltip.NewWindow"));
+        SetButtonTooltip("RestartButton", L("Tooltip.Restart"));
+
+        // ── Sidebar tooltips ─────────────────────────────────────
+        SetButtonTooltip("ExplorerButton", L("Sidebar.Explorer"));
+        SetButtonTooltip("SearchButton", L("Sidebar.Search"));
+        SetButtonTooltip("GitButton", L("Sidebar.Git"));
+        SetButtonTooltip("NuGetButton", L("Sidebar.NuGet"));
+        SetButtonTooltip("LedPanelButton", L("Sidebar.LedPanel"));
+        SetButtonTooltip("AccountButton", L("Sidebar.Account"));
+        SetButtonTooltip("SettingsButton", L("Sidebar.Settings"));
+
+        // ── Panel Headers ────────────────────────────────────────
+        var sideHeader = this.FindControl<TextBlock>("SidePanelHeaderText");
+        if (sideHeader != null) sideHeader.Text = L("Panel.Explorer");
+
+        // ── Explorer actions tooltips ────────────────────────────
+        SetButtonTooltip("NewFileButton", L("Explorer.NewFile"));
+        SetButtonTooltip("NewFolderButton", L("Explorer.NewFolder"));
+        SetButtonTooltip("RefreshTreeButton", L("Explorer.Refresh"));
+
+        // ── AXAML Preview button ─────────────────────────────────
+        SetButtonTooltip("AxamlPreviewButton", L("Tooltip.PreviewAxaml"));
+
+        // ── Bottom panel tabs (set TextBlock inside StackPanel) ──
+        SetToolTabText("ProblemsTabButton", L("Tab.Problems"), 1);
+        SetToolTabText("BuildTabButton", L("Tab.Build"), 1);
+        SetToolTabText("RunTabButton", L("Tab.Run"), 1);
+        SetToolTabText("TerminalTabButton", L("Tab.Terminal"), 1);
+
+        // ── Bottom tool action tooltips ──────────────────────────
+        SetButtonTooltip("NewTerminalButton", L("Tooltip.NewTerminal"));
+        SetButtonTooltip("SplitTerminalButton", L("Tooltip.SplitTerminal"));
+        SetButtonTooltip("ClearTerminalButton", L("Tooltip.ClearAll"));
+        SetButtonTooltip("MinimizePanelButton", L("Tooltip.Minimize"));
+        SetButtonTooltip("MaximizePanelButton", L("Tooltip.Maximize"));
+        SetButtonTooltip("HidePanelButton", L("Tooltip.HidePanel"));
+        SetButtonTooltip("RefreshAnalysisButton", L("Tooltip.RefreshAnalysis"));
+        SetButtonTooltip("ClearProblemsButton", L("Tooltip.ClearProblems"));
+
+        // ── Problems panel ───────────────────────────────────────
+        var noProblems = this.FindControl<TextBlock>("NoProblemsText");
+        if (noProblems != null) noProblems.Text = L("Problems.NoProblems");
+
+        var msgText = this.FindControl<TextBlock>("ProblemsMessagesText");
+        if (msgText != null) msgText.Text = L("Problems.Messages");
+
+        // ── Build/Run output ─────────────────────────────────────
+        var buildOut = this.FindControl<SelectableTextBlock>("BuildOutputText");
+        if (buildOut != null && buildOut.Text == "Build output will appear here...")
+            buildOut.Text = L("Output.BuildPlaceholder");
+        var runOut = this.FindControl<SelectableTextBlock>("RunOutputText");
+        if (runOut != null && runOut.Text == "Run output will appear here...")
+            runOut.Text = L("Output.RunPlaceholder");
+
+        // ── Status bar tooltips ──────────────────────────────────
+        SetButtonTooltip("StatusProblemsButton", L("Status.ViewProblems"));
+        SetButtonTooltip("NotificationsButton", L("Status.Notifications"));
+
+        // ── AI Panel ─────────────────────────────────────────────
+        SetButtonTooltip("GitHubTuiButton", L("AI.Tooltip.OpenTUI"));
+        SetButtonTooltip("ClearAIChatButton", L("AI.Tooltip.NewChat"));
+        SetButtonTooltip("CloseAIPanelButton", L("AI.Tooltip.ClosePanel"));
+        SetButtonTooltip("SendAIButton", L("AI.Tooltip.Execute"));
+
+        var aiInput = this.FindControl<TextBox>("AIChatInput");
+        if (aiInput != null) aiInput.Watermark = L("AI.InputPlaceholder");
+
+        // ── AI Welcome message ────────────────────────────────────
+        var aiWelcomeTitle = this.FindControl<TextBlock>("AiWelcomeTitle");
+        if (aiWelcomeTitle != null) aiWelcomeTitle.Text = L("AI.Ready");
+        var aiWelcomeManage = this.FindControl<TextBlock>("AiWelcomeManageFiles");
+        if (aiWelcomeManage != null) aiWelcomeManage.Text = L("AI.ManageFiles");
+        var aiWelcomeGitHub = this.FindControl<TextBlock>("AiWelcomeGitHubCommands");
+        if (aiWelcomeGitHub != null) aiWelcomeGitHub.Text = L("AI.GitHubCommands");
+        var aiWelcomeHelp = this.FindControl<TextBlock>("AiWelcomeTypeHelp");
+        if (aiWelcomeHelp != null) aiWelcomeHelp.Text = L("AI.TypeHelp");
+
+        // ── Search panel ─────────────────────────────────────────
+        var searchInput = this.FindControl<TextBox>("SearchInputBox");
+        if (searchInput != null) searchInput.Watermark = L("Search.FileNamePlaceholder");
+        var contentInput = this.FindControl<TextBox>("ContentSearchInputBox");
+        if (contentInput != null) contentInput.Watermark = L("Search.ContentPlaceholder");
+        var replaceInput = this.FindControl<TextBox>("ReplaceInputBox");
+        if (replaceInput != null) replaceInput.Watermark = L("Search.ReplacePlaceholder");
+
+        SetButtonTooltip("SearchTabFilesBtn", L("Search.FindFiles"));
+        SetButtonTooltip("SearchTabContentBtn", L("Search.FindInFiles"));
+        SetButtonTooltip("SearchFileNamesButton", L("Search.FindFiles"));
+        SetButtonTooltip("SearchContentButton", L("Search.FindInFiles"));
+        SetButtonTooltip("ReplaceAllButton", L("Search.ReplaceAll"));
+
+        // Context menu items
+        var ctxRun = this.FindControl<MenuItem>("ContextMenuRun");
+        if (ctxRun != null) ctxRun.Header = L("Context.Run");
+        var ctxNew = this.FindControl<MenuItem>("ContextMenuNew");
+        if (ctxNew != null) ctxNew.Header = L("Context.New");
+        var ctxAdd = this.FindControl<MenuItem>("ContextMenuAdd");
+        if (ctxAdd != null) ctxAdd.Header = L("Context.Add");
+        var ctxBuild = this.FindControl<MenuItem>("ContextMenuBuild");
+        if (ctxBuild != null) ctxBuild.Header = L("Context.Build");
+        var ctxRebuild = this.FindControl<MenuItem>("ContextMenuRebuild");
+        if (ctxRebuild != null) ctxRebuild.Header = L("Context.Rebuild");
+        var ctxClean = this.FindControl<MenuItem>("ContextMenuClean");
+        if (ctxClean != null) ctxClean.Header = L("Context.Clean");
+        var ctxNuGet = this.FindControl<MenuItem>("ContextMenuNuGet");
+        if (ctxNuGet != null) ctxNuGet.Header = L("Context.ManageNuGet");
+        var ctxAddRef = this.FindControl<MenuItem>("ContextMenuAddReference");
+        if (ctxAddRef != null) ctxAddRef.Header = L("Context.AddReference");
+        var ctxCut = this.FindControl<MenuItem>("ContextMenuCut");
+        if (ctxCut != null) ctxCut.Header = L("Context.Cut");
+        var ctxCopy = this.FindControl<MenuItem>("ContextMenuCopy");
+        if (ctxCopy != null) ctxCopy.Header = L("Context.Copy");
+        var ctxPaste = this.FindControl<MenuItem>("ContextMenuPaste");
+        if (ctxPaste != null) ctxPaste.Header = L("Context.Paste");
+        var ctxRename = this.FindControl<MenuItem>("ContextMenuRename");
+        if (ctxRename != null) ctxRename.Header = L("Context.Rename");
+        var ctxDelete = this.FindControl<MenuItem>("ContextMenuDelete");
+        if (ctxDelete != null) ctxDelete.Header = L("Context.Delete");
+        var ctxCopyPath = this.FindControl<MenuItem>("ContextMenuCopyPath");
+        if (ctxCopyPath != null) ctxCopyPath.Header = L("Context.CopyPath");
+        var ctxExplorer = this.FindControl<MenuItem>("ContextMenuOpenExplorer");
+        if (ctxExplorer != null) ctxExplorer.Header = L("Context.OpenExplorer");
+        var ctxTerminal = this.FindControl<MenuItem>("ContextMenuOpenTerminal");
+        if (ctxTerminal != null) ctxTerminal.Header = L("Context.OpenTerminal");
+        var ctxRemove = this.FindControl<MenuItem>("ContextMenuRemoveFromSolution");
+        if (ctxRemove != null) ctxRemove.Header = L("Context.RemoveFromSolution");
+        var ctxUnload = this.FindControl<MenuItem>("ContextMenuUnloadProject");
+        if (ctxUnload != null) ctxUnload.Header = L("Context.UnloadProject");
+        var ctxGit = this.FindControl<MenuItem>("ContextMenuGit");
+        if (ctxGit != null) ctxGit.Header = L("Context.Git");
+        var ctxProps = this.FindControl<MenuItem>("ContextMenuProperties");
+        if (ctxProps != null) ctxProps.Header = L("Context.Properties");
+    }
+
+    // ── Localization helpers ─────────────────────────────────────────
+    private void SetButtonTooltip(string name, string tooltip)
+    {
+        var btn = this.FindControl<Button>(name);
+        if (btn != null) ToolTip.SetTip(btn, tooltip);
+    }
+
+    private void SetButtonText(string name, string icon, string label, string? textFgColor = null)
+    {
+        var btn = this.FindControl<Button>(name);
+        if (btn?.Content is StackPanel sp && sp.Children.Count >= 2)
+        {
+            if (sp.Children[1] is TextBlock tb) tb.Text = label;
+        }
+    }
+
+    private void SetToolTabText(string name, string text, int textBlockIndex)
+    {
+        var btn = this.FindControl<Button>(name);
+        if (btn?.Content is StackPanel sp && sp.Children.Count > textBlockIndex && sp.Children[textBlockIndex] is TextBlock tb)
+            tb.Text = text;
+    }
+
     #region Undo / Redo
 
     private void UndoButton_Click(object? sender, RoutedEventArgs e)
     {
-        _monacoEditor?.Undo();
+        _insaitEditor?.Undo();
     }
 
     private void RedoButton_Click(object? sender, RoutedEventArgs e)
     {
-        _monacoEditor?.Redo();
+        _insaitEditor?.Redo();
     }
 
     private void OnUndoRedoStateChanged(object? sender, EventArgs e)
@@ -646,15 +872,15 @@ public partial class MainWindow : Window
         {
             var undoBtn = this.FindControl<Button>("UndoButton");
             var redoBtn = this.FindControl<Button>("RedoButton");
-            if (undoBtn != null && _monacoEditor != null)
+            if (undoBtn != null && _insaitEditor != null)
             {
-                undoBtn.IsEnabled = _monacoEditor.CanUndo;
-                undoBtn.Opacity = _monacoEditor.CanUndo ? 1.0 : 0.5;
+                undoBtn.IsEnabled = _insaitEditor.CanUndo;
+                undoBtn.Opacity = _insaitEditor.CanUndo ? 1.0 : 0.5;
             }
-            if (redoBtn != null && _monacoEditor != null)
+            if (redoBtn != null && _insaitEditor != null)
             {
-                redoBtn.IsEnabled = _monacoEditor.CanRedo;
-                redoBtn.Opacity = _monacoEditor.CanRedo ? 1.0 : 0.5;
+                redoBtn.IsEnabled = _insaitEditor.CanRedo;
+                redoBtn.Opacity = _insaitEditor.CanRedo ? 1.0 : 0.5;
             }
         });
     }
@@ -966,25 +1192,27 @@ public partial class MainWindow : Window
 
             // Edit actions
             case "Undo":
-                _monacoEditor?.Undo();
+                _insaitEditor?.Undo();
                 break;
             case "Redo":
-                _monacoEditor?.Redo();
+                _insaitEditor?.Redo();
                 break;
             case "Find":
-                _monacoEditor?.Find();
+                _insaitEditor?.Find();
                 break;
             case "Replace":
-                _monacoEditor?.Replace();
+                _insaitEditor?.Replace();
                 break;
             case "FindInFiles":
                 _searchTabIsFiles = false;
-                SwitchSidePanel("search");
+                EnsureSidePanelVisible();
+                SwitchSidePanel("explorer");
+                ToggleExplorerSearch(open: true);
                 UpdateSearchTabUI();
                 this.FindControl<TextBox>("ContentSearchInputBox")?.Focus();
                 break;
             case "FormatDocument":
-                _monacoEditor?.FormatDocument();
+                _insaitEditor?.FormatDocument();
                 break;
             case "ToggleComment":
                 // TODO: Implement toggle comment
@@ -995,22 +1223,39 @@ public partial class MainWindow : Window
 
             // View actions
             case "ToggleAI":
+            case "ToggleRightPanel":
                 ToggleAIPanel();
                 break;
+            case "ToggleLeftPanel":
+                ToggleLeftPanel();
+                break;
+            case "ToggleBottomPanel":
+                ToggleBottomPanel();
+                break;
+            case "ToggleZenMode":
+                ToggleZenMode();
+                break;
             case "ShowExplorer":
-                // Already visible
+                ToggleSidePanel("explorer");
                 break;
             case "ShowSearch":
                 _searchTabIsFiles = true;
-                SwitchSidePanel("search");
+                EnsureSidePanelVisible();
+                SwitchSidePanel("explorer");
+                ToggleExplorerSearch(open: true);
                 UpdateSearchTabUI();
                 this.FindControl<TextBox>("SearchInputBox")?.Focus();
                 break;
             case "ShowSourceControl":
-                // TODO: Implement source control panel
+                await OpenGitWindowAsync();
                 break;
             case "ShowTerminal":
                 SwitchToolWindowPanel("terminal");
+                EnsureBottomPanelVisible();
+                break;
+            case "NewTerminal":
+                _terminalControl?.OpenExternalTerminal(title: "Insait Edit — Terminal");
+                _viewModel.StatusText = LocalizationService.Get("Menu.NewTerminal");
                 break;
             case "ShowProblems":
                 SwitchToolWindowPanel("problems");
@@ -1020,6 +1265,9 @@ public partial class MainWindow : Window
                 break;
             case "ShowRunOutput":
                 SwitchToolWindowPanel("run");
+                break;
+            case "ShowDebugConsole":
+                SwitchToolWindowPanel("build");
                 break;
             case "Minimize":
                 WindowState = WindowState.Minimized;
@@ -1037,6 +1285,26 @@ public partial class MainWindow : Window
                 break;
             case "Analyze":
                 await AnalyzeProjectAsync();
+                break;
+            case "ToggleBreakpoint":
+                if (_insaitEditor != null)
+                {
+                    var (bpLine, _) = _insaitEditor.CursorPosition;
+                    var bpFile = _viewModel.ActiveTab?.FilePath ?? string.Empty;
+                    if (!string.IsNullOrEmpty(bpFile))
+                        BreakpointService.Toggle(bpFile, bpLine);
+                }
+                break;
+            case "DeleteAllBreakpoints":
+                BreakpointService.ClearAll();
+                break;
+            case "StartDebugging":
+            case "StopDebugging":
+            case "StepOver":
+            case "StepInto":
+            case "StepOut":
+            case "StartWithoutDebugging":
+                _viewModel.StatusText = $"Debug: {action} (future DAP integration)";
                 break;
             case "Clean":
                 await CleanProjectAsync();
@@ -1146,7 +1414,7 @@ public partial class MainWindow : Window
     /// <summary>
     /// Reloads all open editor tabs from disk.
     /// Tabs that are not dirty are silently reloaded if their on-disk content differs.
-    /// The active tab's content is also pushed to the Monaco editor when updated.
+    /// The active tab's content is also pushed to the Insait Code Editor when updated.
     /// </summary>
     private void ReloadOpenTabsFromDisk()
     {
@@ -1181,10 +1449,10 @@ public partial class MainWindow : Window
             }
         }
 
-        // Push the reloaded content into Monaco if the active tab was updated
-        if (activeTabReloaded && _viewModel.ActiveTab != null && _monacoEditor != null)
+        // Push the reloaded content into the editor if the active tab was updated
+        if (activeTabReloaded && _viewModel.ActiveTab != null && _insaitEditor != null)
         {
-            _monacoEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
+            _insaitEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
             _viewModel.StatusText = $"Reloaded from disk: {_viewModel.ActiveTab.FileName}";
         }
     }
@@ -1328,7 +1596,7 @@ public partial class MainWindow : Window
 
         stack.Children.Add(new TextBlock
         {
-            Text = "A modern, lightweight C# IDE built with Avalonia UI and Monaco Editor.",
+            Text = "A modern, lightweight C# IDE built with Avalonia UI and Insait Code Editor.",
             FontSize = 12,
             Foreground = new SolidColorBrush(Color.Parse("#FF9399B2")),
             TextWrapping = Avalonia.Media.TextWrapping.Wrap
@@ -1369,12 +1637,120 @@ public partial class MainWindow : Window
 
     private void Explorer_Click(object? sender, RoutedEventArgs e)
     {
-        SwitchSidePanel("explorer");
+        ToggleSidePanel("explorer");
+    }
+
+    /// <summary>
+    /// Toggles the side panel: if the requested panel is already showing, hide the whole side panel;
+    /// otherwise show it (if hidden) and switch to the requested panel.
+    /// </summary>
+    private void ToggleSidePanel(string panelName)
+    {
+        bool isSamePanel = _currentSidePanel == panelName && _leftPanelVisible;
+
+        if (isSamePanel)
+        {
+            // Same panel clicked again → collapse
+            SnapshotSizes();
+            ApplyLeftPanel(false);
+        }
+        else
+        {
+            // Different panel, or panel was hidden → show and switch
+            ApplyLeftPanel(true);
+            SwitchSidePanel(panelName);
+            if (panelName == "explorer")
+                ToggleExplorerSearch(open: false);
+        }
+    }
+
+    /// <summary>Ensures the side panel container is visible (restores if collapsed).</summary>
+    private void EnsureSidePanelVisible()
+    {
+        if (!_leftPanelVisible) ApplyLeftPanel(true);
     }
 
     private void Search_Click(object? sender, RoutedEventArgs e)
     {
-        SwitchSidePanel("search");
+        // Switch to explorer and toggle the search bar
+        EnsureSidePanelVisible();
+        SwitchSidePanel("explorer");
+        ToggleExplorerSearch(open: true);
+    }
+
+    private void ExplorerSearchToggle_Click(object? sender, RoutedEventArgs e)
+    {
+        var searchBar = this.FindControl<Border>("ExplorerSearchBar");
+        if (searchBar == null) return;
+        ToggleExplorerSearch(open: !searchBar.IsVisible);
+    }
+
+    private void ToggleExplorerSearch(bool open)
+    {
+        var searchBar    = this.FindControl<Border>("ExplorerSearchBar");
+        var resultsScroll= this.FindControl<ScrollViewer>("SearchResultsScrollViewer");
+        if (searchBar == null) return;
+
+        searchBar.IsVisible = open;
+        if (resultsScroll != null) resultsScroll.IsVisible = open;
+
+        if (open)
+        {
+            UpdateSearchScopeCombos();
+            UpdateSearchTabUI();
+            if (_searchTabIsFiles)
+                this.FindControl<TextBox>("SearchInputBox")?.Focus();
+            else
+                this.FindControl<TextBox>("ContentSearchInputBox")?.Focus();
+        }
+        else
+        {
+            ClearSearchResults();
+        }
+    }
+
+    private void SwitchSidePanel(string panelName)
+    {
+        _currentSidePanel = panelName;
+        
+        // Get all panels
+        var explorerPanel = this.FindControl<Grid>("ExplorerPanel");
+        var nugetPanel = this.FindControl<Border>("NuGetSidePanel");
+        var accountPanel = this.FindControl<Border>("AccountSidePanel");
+        
+        // Get all sidebar buttons
+        var explorerButton = this.FindControl<Button>("ExplorerButton");
+        var gitButton = this.FindControl<Button>("GitButton");
+        var nugetButton = this.FindControl<Button>("NuGetButton");
+        var accountButton = this.FindControl<Button>("AccountButton");
+        
+        // Hide all panels
+        if (explorerPanel != null) explorerPanel.IsVisible = false;
+        if (nugetPanel != null) nugetPanel.IsVisible = false;
+        if (accountPanel != null) accountPanel.IsVisible = false;
+        
+        // Remove active class from all buttons
+        explorerButton?.Classes.Remove("active");
+        gitButton?.Classes.Remove("active");
+        nugetButton?.Classes.Remove("active");
+        accountButton?.Classes.Remove("active");
+        
+        // Show selected panel and activate button
+        switch (panelName)
+        {
+            case "explorer":
+                if (explorerPanel != null) explorerPanel.IsVisible = true;
+                explorerButton?.Classes.Add("active");
+                break;
+            case "nuget":
+                if (nugetPanel != null) nugetPanel.IsVisible = true;
+                nugetButton?.Classes.Add("active");
+                break;
+            case "account":
+                if (accountPanel != null) accountPanel.IsVisible = true;
+                accountButton?.Classes.Add("active");
+                break;
+        }
     }
 
     private async void Git_Click(object? sender, RoutedEventArgs e)
@@ -1426,6 +1802,7 @@ public partial class MainWindow : Window
     
     private async void NuGet_Click(object? sender, RoutedEventArgs e)
     {
+        EnsureSidePanelVisible();
         SwitchSidePanel("nuget");
         
         // Initialize NuGet panel if not done yet
@@ -2113,6 +2490,7 @@ public partial class MainWindow : Window
 
     private async void Account_Click(object? sender, RoutedEventArgs e)
     {
+        EnsureSidePanelVisible();
         SwitchSidePanel("account");
         
         // Initialize Account panel if not done yet
@@ -2132,64 +2510,6 @@ public partial class MainWindow : Window
     {
         // TODO: Show settings
         _viewModel.StatusText = "Settings coming soon...";
-    }
-
-    private void SwitchSidePanel(string panelName)
-    {
-        _currentSidePanel = panelName;
-        
-        // Get all panels
-        var explorerPanel = this.FindControl<Grid>("ExplorerPanel");
-        var searchPanel = this.FindControl<Grid>("SearchPanel");
-        var nugetPanel = this.FindControl<Border>("NuGetSidePanel");
-        var accountPanel = this.FindControl<Border>("AccountSidePanel");
-        
-        // Get all sidebar buttons
-        var explorerButton = this.FindControl<Button>("ExplorerButton");
-        var searchButton = this.FindControl<Button>("SearchButton");
-        var gitButton = this.FindControl<Button>("GitButton");
-        var nugetButton = this.FindControl<Button>("NuGetButton");
-        var accountButton = this.FindControl<Button>("AccountButton");
-        
-        // Hide all panels
-        if (explorerPanel != null) explorerPanel.IsVisible = false;
-        if (searchPanel != null) searchPanel.IsVisible = false;
-        if (nugetPanel != null) nugetPanel.IsVisible = false;
-        if (accountPanel != null) accountPanel.IsVisible = false;
-        
-        // Remove active class from all buttons
-        explorerButton?.Classes.Remove("active");
-        searchButton?.Classes.Remove("active");
-        gitButton?.Classes.Remove("active");
-        nugetButton?.Classes.Remove("active");
-        accountButton?.Classes.Remove("active");
-        
-        // Show selected panel and activate button
-        switch (panelName)
-        {
-            case "explorer":
-                if (explorerPanel != null) explorerPanel.IsVisible = true;
-                explorerButton?.Classes.Add("active");
-                break;
-            case "search":
-                if (searchPanel != null) searchPanel.IsVisible = true;
-                searchButton?.Classes.Add("active");
-                // Refresh scope combo and focus correct input
-                UpdateSearchScopeCombos();
-                if (_searchTabIsFiles)
-                    this.FindControl<TextBox>("SearchInputBox")?.Focus();
-                else
-                    this.FindControl<TextBox>("ContentSearchInputBox")?.Focus();
-                break;
-            case "nuget":
-                if (nugetPanel != null) nugetPanel.IsVisible = true;
-                nugetButton?.Classes.Add("active");
-                break;
-            case "account":
-                if (accountPanel != null) accountPanel.IsVisible = true;
-                accountButton?.Classes.Add("active");
-                break;
-        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -2236,8 +2556,8 @@ public partial class MainWindow : Window
 
     private void UpdateSearchTabUI()
     {
-        var filesBorder   = this.FindControl<Border>("FindFilesBorder");
-        var contentBorder = this.FindControl<Border>("FindContentBorder");
+        var filesBorder   = this.FindControl<StackPanel>("FindFilesBorder");
+        var contentBorder = this.FindControl<StackPanel>("FindContentBorder");
         if (filesBorder   != null) filesBorder.IsVisible   = _searchTabIsFiles;
         if (contentBorder != null) contentBorder.IsVisible  = !_searchTabIsFiles;
 
@@ -2548,12 +2868,17 @@ public partial class MainWindow : Window
 
         border.Child = innerStack;
         panel.Items.Add(border);
+        // Ensure the results scroll view is visible
+        var sv = this.FindControl<ScrollViewer>("SearchResultsScrollViewer");
+        if (sv != null) sv.IsVisible = true;
     }
 
     private void ClearSearchResults()
     {
         var panel = this.FindControl<ItemsControl>("SearchResultsPanel");
         if (panel != null) panel.Items.Clear();
+        var sv = this.FindControl<ScrollViewer>("SearchResultsScrollViewer");
+        if (sv != null) sv.IsVisible = false;
     }
 
     private void SetSearchStatus(string text)
@@ -3044,7 +3369,7 @@ public partial class MainWindow : Window
             if (!string.IsNullOrEmpty(diagnostic.FilePath) && File.Exists(diagnostic.FilePath))
             {
                 OpenFileInEditor(diagnostic.FilePath);
-                _monacoEditor?.GoToLine(diagnostic.Line, diagnostic.Column);
+                _insaitEditor?.GoToLine(diagnostic.Line, diagnostic.Column);
                 _viewModel.StatusText = $"{diagnostic.SeverityIcon} {diagnostic.Code}: {diagnostic.Message}";
             }
         }

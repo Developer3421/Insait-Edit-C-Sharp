@@ -131,6 +131,8 @@
             <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.icon-button:pointerover">
             <Setter Property="Background" Value="#20FFDAB0"/>
@@ -284,6 +286,10 @@
             <Setter Property="CaretBrush" Value="{StaticResource AppTextBrush}"/>
             <Setter Property="SelectionBrush" Value="{StaticResource AccentOrangeBrush}"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
@@ -343,14 +349,13 @@
                             Foreground="White"
                             CornerRadius="5"
                             Height="28"
-                            Padding="10,0"
+                            Width="34"
+                            Padding="0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand">
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="🔨" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
-                            <TextBlock Text="Build" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock Text="🔨" FontSize="15" FontFamily="Segoe UI Emoji"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
                     <!-- Analyze Button -->
@@ -360,15 +365,14 @@
                             Foreground="White"
                             CornerRadius="5"
                             Height="28"
-                            Padding="10,0"
+                            Width="34"
+                            Padding="0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="🔍" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
-                            <TextBlock Text="Analyze" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock Text="🔍" FontSize="15" FontFamily="Segoe UI Emoji"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
                     <!-- Separator -->
@@ -403,10 +407,14 @@
                                     Background="Transparent" 
                                     Foreground="#FFFFC09F"
                                     BorderThickness="0"
-                                    Padding="6,0"
+                                    Padding="0"
+                                    Width="26"
                                     Height="26"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
                                     Cursor="Hand">
-                                <TextBlock Text="⚙" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                <TextBlock Text="⚙" FontSize="13" FontFamily="Segoe UI Emoji"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -418,15 +426,13 @@
                             Foreground="White"
                             CornerRadius="5"
                             Height="28"
-                            Padding="10,0"
+                            Width="34"
+                            Padding="0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="▶" FontSize="12" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
-                            <TextBlock Text="Run" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock Text="▶" FontSize="14" Foreground="#FFA6E3A1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
                     
                     <!-- Debug Run Button -->
@@ -436,15 +442,13 @@
                             Foreground="White"
                             CornerRadius="5"
                             Height="28"
-                            Padding="10,0"
+                            Width="34"
+                            Padding="0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="2,0,0,0">
-                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="🐛" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
-                            <TextBlock Text="Debug" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock Text="🐛" FontSize="15" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
                     
                     <!-- Stop Button (hidden by default) -->
@@ -581,16 +585,21 @@
         </Grid>
 
         <!-- ROW 1: MAIN CONTENT -->
-        <Grid Grid.Row="1" ColumnDefinitions="52,250,5,*,5,300" Name="MainContentGrid">
+        <Grid Grid.Row="1" Name="MainContentGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="52"  MinWidth="0"/>
+                <ColumnDefinition Width="250" MinWidth="0"/>
+                <ColumnDefinition Width="5"   MinWidth="0"/>
+                <ColumnDefinition Width="*"   MinWidth="100"/>
+                <ColumnDefinition Width="5"   MinWidth="0"/>
+                <ColumnDefinition Width="300" MinWidth="0"/>
+            </Grid.ColumnDefinitions>
             
             <!-- Activity Bar (leftmost sidebar) -->
             <Border Grid.Column="0" Background="{StaticResource SidebarGradient}" Padding="2,8">
                 <StackPanel Spacing="4">
                     <Button Classes="sidebar-button active" Name="ExplorerButton" ToolTip.Tip="Explorer (Ctrl+Shift+E)" Click="Explorer_Click">
                         <TextBlock Text="📁" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Button>
-                    <Button Classes="sidebar-button" Name="SearchButton" ToolTip.Tip="Search (Ctrl+Shift+F)" Click="Search_Click">
-                        <TextBlock Text="🔍" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     <Button Classes="sidebar-button" Name="GitButton" ToolTip.Tip="Source Control (Ctrl+Shift+G)" Click="Git_Click">
                         <TextBlock Text="🔀" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -616,10 +625,10 @@
             </Border>
             
             <!-- Side Panel (Explorer, Search, Git, etc.) -->
-            <Border Grid.Column="1" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,1,0">
+            <Border Grid.Column="1" Name="SidePanelBorder" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,1,0">
                 <Grid>
                     <!-- Explorer Panel (default) -->
-                    <Grid RowDefinitions="Auto,*" Name="ExplorerPanel">
+                    <Grid RowDefinitions="Auto,Auto,Auto,*" Name="ExplorerPanel">
                         <!-- Panel Header -->
                         <Border Grid.Row="0" Padding="12,10" Background="#20000000">
                             <Grid ColumnDefinitions="*,Auto">
@@ -635,16 +644,129 @@
                                             Name="NewFolderButton" Click="ExplorerNewFolder_Click">
                                         <TextBlock Text="📁" FontSize="12" FontFamily="Segoe UI Emoji"/>
                                     </Button>
-                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Refresh"
-                                        Name="RefreshTreeButton" Click="RefreshTree_Click">
-                                    <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
-                                </Button>
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Refresh"
+                                            Name="RefreshTreeButton" Click="RefreshTree_Click">
+                                        <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                    </Button>
+                                    <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Toggle Search (Ctrl+Shift+F)"
+                                            Name="ExplorerSearchToggleButton" Click="ExplorerSearchToggle_Click">
+                                        <TextBlock Text="🔍" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Search bar (collapsible, inside Explorer) -->
+                        <Border Grid.Row="1" Name="ExplorerSearchBar" IsVisible="False"
+                                Padding="6,6,6,4" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1">
+                            <StackPanel Spacing="4">
+                                <!-- Tab toggle -->
+                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <TextBlock Grid.Column="0" Text="SEARCH" FontSize="10" FontWeight="SemiBold"
+                                               Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
+                                               LetterSpacing="0.5"/>
+                                    <Button Grid.Column="1" Name="SearchTabFilesBtn" Classes="icon-button"
+                                            Width="22" Height="22" ToolTip.Tip="Find Files by Name" Margin="0,0,2,0">
+                                        <TextBlock Text="📄" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Button>
+                                    <Button Grid.Column="2" Name="SearchTabContentBtn" Classes="icon-button"
+                                            Width="22" Height="22" ToolTip.Tip="Find in Files (content)">
+                                        <TextBlock Text="📝" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Find Files tab -->
+                                <StackPanel Name="FindFilesBorder" Spacing="4">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Name="SearchInputBox" Watermark="File name (*.cs, Program…)"
+                                                 Background="{StaticResource AppSurfaceBrush}"
+                                                 BorderBrush="{StaticResource AppBorderBrush}"
+                                                 CornerRadius="4" Padding="7,5" FontSize="12"/>
+                                        <Button Grid.Column="1" Classes="icon-button" Width="26" Height="26"
+                                                Margin="4,0,0,0" ToolTip.Tip="Search" Name="SearchFileNamesButton">
+                                            <TextBlock Text="↵" FontSize="13"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <TextBlock Grid.Column="0" Text="Scope:" FontSize="11"
+                                                   Foreground="{StaticResource AppTextMutedBrush}"
+                                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ComboBox Grid.Column="1" Name="SearchScopeCombo"
+                                                  Background="{StaticResource AppSurfaceBrush}"
+                                                  Foreground="{StaticResource AppTextBrush}"
+                                                  BorderBrush="{StaticResource AppBorderBrush}"
+                                                  FontSize="11" HorizontalAlignment="Stretch" Height="28">
+                                            <ComboBoxItem Content="Whole Solution" Tag="solution"/>
+                                        </ComboBox>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Find in Files (content) tab -->
+                                <StackPanel Name="FindContentBorder" Spacing="4" IsVisible="False">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Name="ContentSearchInputBox" Watermark="Search text…"
+                                                 Background="{StaticResource AppSurfaceBrush}"
+                                                 BorderBrush="{StaticResource AppBorderBrush}"
+                                                 CornerRadius="4" Padding="7,5" FontSize="12"/>
+                                        <Button Grid.Column="1" Classes="icon-button" Width="26" Height="26"
+                                                Margin="4,0,0,0" ToolTip.Tip="Search in Files" Name="SearchContentButton">
+                                            <TextBlock Text="↵" FontSize="13"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBox Grid.Column="0" Name="ReplaceInputBox" Watermark="Replace…"
+                                                 Background="{StaticResource AppSurfaceBrush}"
+                                                 BorderBrush="{StaticResource AppBorderBrush}"
+                                                 CornerRadius="4" Padding="7,5" FontSize="12"/>
+                                        <Button Grid.Column="1" Classes="icon-button" Margin="4,0,0,0"
+                                                Width="26" Height="26" ToolTip.Tip="Replace All" Name="ReplaceAllButton">
+                                            <TextBlock Text="↻" FontSize="13"/>
+                                        </Button>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <TextBlock Grid.Column="0" Text="Scope:" FontSize="11"
+                                                   Foreground="{StaticResource AppTextMutedBrush}"
+                                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ComboBox Grid.Column="1" Name="ContentSearchScopeCombo"
+                                                  Background="{StaticResource AppSurfaceBrush}"
+                                                  Foreground="{StaticResource AppTextBrush}"
+                                                  BorderBrush="{StaticResource AppBorderBrush}"
+                                                  FontSize="11" HorizontalAlignment="Stretch" Height="28">
+                                            <ComboBoxItem Content="Whole Solution" Tag="solution"/>
+                                        </ComboBox>
+                                    </Grid>
+                                    <WrapPanel Orientation="Horizontal">
+                                        <CheckBox Name="SearchCaseSensitiveCheck" Content="Case" FontSize="11"
+                                                  Foreground="{StaticResource AppTextMutedBrush}" Margin="0,0,8,0"/>
+                                        <CheckBox Name="SearchRegexCheck" Content="Regex" FontSize="11"
+                                                  Foreground="{StaticResource AppTextMutedBrush}" Margin="0,0,8,0"/>
+                                        <CheckBox Name="SearchWholeWordCheck" Content="Word" FontSize="11"
+                                                  Foreground="{StaticResource AppTextMutedBrush}"/>
+                                    </WrapPanel>
+                                </StackPanel>
+
+                                <!-- Status -->
+                                <Border IsVisible="False" Name="SearchStatusBorder">
+                                    <TextBlock Name="SearchStatusLabel" FontSize="11"
+                                               Foreground="{StaticResource AppTextMutedBrush}" TextWrapping="Wrap"/>
+                                </Border>
                             </StackPanel>
-                        </Grid>
-                    </Border>
+                        </Border>
+
+                        <!-- Search results (shown when search is active) -->
+                        <ScrollViewer Grid.Row="2" Name="SearchResultsScrollViewer" IsVisible="False" MaxHeight="220"
+                                      VerticalScrollBarVisibility="Auto" Margin="4,0">
+                            <ItemsControl Name="SearchResultsPanel">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <!-- Populated programmatically -->
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     
                     <!-- File Tree with rubber-band selection -->
-                    <Panel Grid.Row="1"
+                    <Panel Grid.Row="3"
                            Name="FileTreePanel"
                            PointerPressed="FileTreePanel_PointerPressed"
                            PointerMoved="FileTreePanel_PointerMoved"
@@ -848,134 +970,7 @@
                                     IsHitTestVisible="False"/>
                         </Canvas>
                     </Panel>
-                </Grid>
-                
-                <!-- Search Panel (hidden by default) -->
-                <Grid RowDefinitions="Auto,Auto,Auto,*" Name="SearchPanel" IsVisible="False">
-                    <!-- Header -->
-                    <Border Grid.Row="0" Padding="12,10" Background="#20000000">
-                        <Grid ColumnDefinitions="*,Auto,Auto">
-                            <TextBlock Grid.Column="0" Text="SEARCH" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
-                                       LetterSpacing="1"/>
-                            <!-- Tab toggle: Find in Files | Find Files -->
-                            <Button Grid.Column="1" Name="SearchTabFilesBtn" Classes="icon-button"
-                                    Width="28" Height="28" ToolTip.Tip="Find Files by Name"
-                                    Margin="0,0,2,0">
-                                <TextBlock Text="📄" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            </Button>
-                            <Button Grid.Column="2" Name="SearchTabContentBtn" Classes="icon-button"
-                                    Width="28" Height="28" ToolTip.Tip="Find in Files (by content)">
-                                <TextBlock Text="🔍" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            </Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- Find Files tab controls -->
-                    <Border Grid.Row="1" Name="FindFilesBorder" Margin="8,8,8,0" Padding="8"
-                            Background="#20000000" CornerRadius="6">
-                        <StackPanel Spacing="6">
-                            <!-- File name pattern -->
-                            <Grid ColumnDefinitions="*,Auto">
-                                 <TextBox Grid.Column="0" Name="SearchInputBox" Watermark="File name (e.g. *.cs, Program)"
-                                          Background="#FF252030" BorderBrush="{StaticResource AppBorderBrush}"
-                                          Foreground="{StaticResource AppTextBrush}"
-                                          CaretBrush="{StaticResource AppTextBrush}"
-                                          SelectionBrush="{StaticResource AccentOrangeBrush}"
-                                          SelectionForegroundBrush="#FF1F1A24"
-                                          CornerRadius="4" Padding="8,6"/>
-                                <Button Grid.Column="1" Classes="icon-button" Width="28" Height="28"
-                                        Margin="4,0,0,0" ToolTip.Tip="Search" Name="SearchFileNamesButton">
-                                    <TextBlock Text="↵" FontSize="14"/>
-                                </Button>
-                            </Grid>
-                            <!-- Scope selector -->
-                            <Grid ColumnDefinitions="Auto,*">
-                                <TextBlock Grid.Column="0" Text="Scope:" FontSize="11"
-                                           Foreground="{StaticResource AppTextMutedBrush}"
-                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <ComboBox Grid.Column="1" Name="SearchScopeCombo"
-                                          Background="#FF1F1A24" Foreground="{StaticResource AppTextBrush}"
-                                          BorderBrush="{StaticResource AppBorderBrush}"
-                                          FontSize="12" HorizontalAlignment="Stretch">
-                                    <ComboBoxItem Content="Whole Solution" Tag="solution"/>
-                                </ComboBox>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Find in Files (content) tab controls -->
-                    <Border Grid.Row="1" Name="FindContentBorder" Margin="8,8,8,0" Padding="8"
-                            Background="#20000000" CornerRadius="6" IsVisible="False">
-                        <StackPanel Spacing="6">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Grid.Column="0" Name="ContentSearchInputBox" Watermark="Search text..."
-                                         Background="#FF252030" BorderBrush="{StaticResource AppBorderBrush}"
-                                         Foreground="{StaticResource AppTextBrush}"
-                                         CaretBrush="{StaticResource AppTextBrush}"
-                                         SelectionBrush="{StaticResource AccentOrangeBrush}"
-                                         SelectionForegroundBrush="#FF1F1A24"
-                                         CornerRadius="4" Padding="8,6"/>
-                                <Button Grid.Column="1" Classes="icon-button" Width="28" Height="28"
-                                        Margin="4,0,0,0" ToolTip.Tip="Search in Files" Name="SearchContentButton">
-                                    <TextBlock Text="↵" FontSize="14"/>
-                                </Button>
-                            </Grid>
-                            <Grid ColumnDefinitions="*,Auto">
-                                <TextBox Grid.Column="0" Name="ReplaceInputBox" Watermark="Replace..."
-                                         Background="#FF252030" BorderBrush="{StaticResource AppBorderBrush}"
-                                         Foreground="{StaticResource AppTextBrush}"
-                                         CaretBrush="{StaticResource AppTextBrush}"
-                                         SelectionBrush="{StaticResource AccentOrangeBrush}"
-                                         SelectionForegroundBrush="#FF1F1A24"
-                                         CornerRadius="4" Padding="8,6"/>
-                                <Button Grid.Column="1" Classes="icon-button" Margin="4,0,0,0" Width="28" Height="28"
-                                        ToolTip.Tip="Replace All" Name="ReplaceAllButton">
-                                    <TextBlock Text="↻" FontSize="14"/>
-                                </Button>
-                            </Grid>
-                            <!-- Scope selector (content tab) -->
-                            <Grid ColumnDefinitions="Auto,*">
-                                <TextBlock Grid.Column="0" Text="Scope:" FontSize="11"
-                                           Foreground="{StaticResource AppTextMutedBrush}"
-                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                <ComboBox Grid.Column="1" Name="ContentSearchScopeCombo"
-                                          Background="#FF1F1A24" Foreground="{StaticResource AppTextBrush}"
-                                          BorderBrush="{StaticResource AppBorderBrush}"
-                                          FontSize="12" HorizontalAlignment="Stretch">
-                                    <ComboBoxItem Content="Whole Solution" Tag="solution"/>
-                                </ComboBox>
-                            </Grid>
-                            <!-- Options -->
-                            <WrapPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                <CheckBox Name="SearchCaseSensitiveCheck" Content="Case" FontSize="11"
-                                          Foreground="{StaticResource AppTextMutedBrush}" Margin="0,0,8,0"/>
-                                <CheckBox Name="SearchRegexCheck" Content="Regex" FontSize="11"
-                                          Foreground="{StaticResource AppTextMutedBrush}" Margin="0,0,8,0"/>
-                                <CheckBox Name="SearchWholeWordCheck" Content="Word" FontSize="11"
-                                          Foreground="{StaticResource AppTextMutedBrush}"/>
-                            </WrapPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Search status row -->
-                    <Border Grid.Row="2" Padding="8,4,8,0" IsVisible="False" Name="SearchStatusBorder">
-                        <TextBlock Name="SearchStatusLabel" FontSize="11"
-                                   Foreground="{StaticResource AppTextMutedBrush}" TextWrapping="Wrap"/>
-                    </Border>
-
-                    <!-- Results -->
-                    <ScrollViewer Grid.Row="3" Margin="4,4,4,4">
-                        <ItemsControl Name="SearchResultsPanel">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <!-- Populated programmatically -->
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-                
+                    </Grid>
                 
                 <!-- NuGet Panel (hidden by default) -->
                 <Border Name="NuGetSidePanel" IsVisible="False">
@@ -1010,7 +1005,13 @@
             </GridSplitter>
             
             <!-- Main Editor Area -->
-            <Grid Grid.Column="3" RowDefinitions="Auto,*,Auto,200" Name="EditorGrid">
+            <Grid Grid.Column="3" Name="EditorGrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"   MinHeight="50"/>
+                    <RowDefinition Height="5"   MinHeight="0"/>
+                    <RowDefinition Height="200" MinHeight="0"/>
+                </Grid.RowDefinitions>
                 <!-- Tab Bar -->
                 <Border Grid.Row="0" Background="#20000000" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1">
                     <Grid ColumnDefinitions="*,Auto">
@@ -1070,15 +1071,15 @@
                     </Grid>
                 </Border>
                 
-                <!-- Editor container — filled by AvaloniaEditControl from code-behind -->
+                <!-- Editor container — заповнюється InsaitEditor з code-behind -->
                 <Border Grid.Row="1"
                         x:Name="EditorContainer"
-                        Background="#FF1F1A24"
+                        Background="Transparent"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"/>
                 
                 <!-- Resize grip for terminal -->
-                <GridSplitter Grid.Row="2" Height="5" Classes="tool-splitter"
+                <GridSplitter Grid.Row="2" Height="5" Name="BottomPanelSplitter" Classes="tool-splitter"
                               ResizeDirection="Rows" HorizontalAlignment="Stretch"/>
                 
                 <!-- Terminal / Output Panel (JetBrains Rider Style) -->
@@ -1132,27 +1133,18 @@
                                 
                                 <!-- Right: Tool Actions -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,4,0" VerticalAlignment="Center">
-                                    <Button Classes="tool-action-button" ToolTip.Tip="New Terminal (Ctrl+Shift+`)" Name="NewTerminalButton" Click="NewTerminal_Click">
+                                    <Button Classes="tool-action-button" ToolTip.Tip="New External Terminal" Name="NewTerminalButton" Click="NewTerminal_Click">
                                         <TextBlock Text="+" FontSize="14" FontWeight="Bold"/>
                                     </Button>
-                                    <Button Classes="tool-action-button" ToolTip.Tip="Split Terminal" Name="SplitTerminalButton">
-                                        <TextBlock Text="⫿" FontSize="12"/>
-                                    </Button>
                                     <Border Width="1" Height="16" Background="#FF3E3050" Margin="4,0"/>
-                                    <Button Classes="tool-action-button" ToolTip.Tip="Clear All" Name="ClearTerminalButton" Click="ClearTerminal_Click">
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Clear" Name="ClearTerminalButton" Click="ClearTerminal_Click">
                                         <TextBlock Text="🗑" FontSize="11"/>
                                     </Button>
-                                    <Button Classes="tool-action-button" ToolTip.Tip="Scroll to End">
-                                        <TextBlock Text="↓" FontSize="12"/>
-                                    </Button>
                                     <Border Width="1" Height="16" Background="#FF3E3050" Margin="4,0"/>
-                                    <Button Classes="tool-action-button" ToolTip.Tip="Minimize" Name="MinimizePanelButton" Click="MinimizePanel_Click">
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Minimize Panel" Name="MinimizePanelButton" Click="MinimizePanel_Click">
                                         <TextBlock Text="▁" FontSize="10"/>
                                     </Button>
-                                    <Button Classes="tool-action-button" ToolTip.Tip="Maximize" Name="MaximizePanelButton" Click="MaximizePanel_Click">
-                                        <TextBlock Text="▢" FontSize="10"/>
-                                    </Button>
-                                    <Button Classes="tool-action-button" ToolTip.Tip="Hide (Esc)" Name="HidePanelButton" Click="HidePanel_Click">
+                                    <Button Classes="tool-action-button" ToolTip.Tip="Hide Panel (Esc)" Name="HidePanelButton" Click="HidePanel_Click">
                                         <TextBlock Text="✕" FontSize="10"/>
                                     </Button>
                                 </StackPanel>
@@ -1314,16 +1306,22 @@
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Open GitHub Copilot TUI in Terminal"
-                                        Name="GitHubTuiButton" Click="GitHubTui_Click">
-                                    <TextBlock Text="🐙" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                        Name="GitHubTuiButton" Click="GitHubTui_Click"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                    <TextBlock Text="🐙" FontSize="12" FontFamily="Segoe UI Emoji"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Button>
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat"
-                                        Name="ClearAIChatButton" Click="ClearAIChat_Click">
-                                    <TextBlock Text="🗑️" FontSize="10" FontFamily="Segoe UI Emoji"/>
+                                        Name="ClearAIChatButton" Click="ClearAIChat_Click"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                    <TextBlock Text="🗑️" FontSize="10" FontFamily="Segoe UI Emoji"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Button>
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Close Panel" 
-                                        Name="CloseAIPanelButton" Click="CloseAIPanel_Click">
-                                    <TextBlock Text="✕" FontSize="12"/>
+                                        Name="CloseAIPanelButton" Click="CloseAIPanel_Click"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                    <TextBlock Text="✕" FontSize="12"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -1335,8 +1333,8 @@
                             <!-- AI Welcome message -->
                             <Border Background="#40FFC09F" CornerRadius="8" Padding="12">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="🚀 Copilot CLI Ready!" FontWeight="SemiBold" Foreground="#FFFFFF" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                    <TextBlock Text="Manage your project files with commands:" 
+                                    <TextBlock Name="AiWelcomeTitle" Text="🚀 Copilot CLI Ready!" FontWeight="SemiBold" Foreground="#FFFFFF" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Name="AiWelcomeManageFiles" Text="Manage your project files with commands:" 
                                                Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="12"/>
                                     <StackPanel Spacing="4" Margin="8,4,0,0">
                                         <TextBlock Text="📁 create, delete, rename" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
@@ -1344,16 +1342,13 @@
                                         <TextBlock Text="🔍 find, search" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                         <TextBlock Text="📝 template, touch, write" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     </StackPanel>
-                                    <TextBlock Text="GitHub CLI Commands:" 
+                                    <TextBlock Name="AiWelcomeGitHubCommands" Text="GitHub CLI Commands:" 
                                                Foreground="#89B4FA" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0"/>
                                     <StackPanel Spacing="4" Margin="8,4,0,0">
                                         <TextBlock Text="🐙 gh-status, gh-install" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                         <TextBlock Text="🔑 gh-auth login/logout" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                        <TextBlock Text="📦 gh-repo create/clone/view" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                        <TextBlock Text="🔀 gh-pr create/list/checkout" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                        <TextBlock Text="🐛 gh-issue create/list/close" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     </StackPanel>
-                                    <TextBlock Text="Type 'help' for full command list" 
+                                    <TextBlock Name="AiWelcomeTypeHelp" Text="Type 'help' for full command list" 
                                                Foreground="#89B4FA" FontSize="11" FontStyle="Italic" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -1365,10 +1360,13 @@
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
                             <TextBox Name="AIChatInput" 
                                      Watermark="Enter command (create, ls, help...)"
-                                     Background="#FF0A0A0A"
+                                     Background="#FF1A1628"
                                      BorderBrush="#FF3E3050"
                                      BorderThickness="1"
-                                     Foreground="BlueViolet"
+                                     Foreground="{StaticResource AppTextBrush}"
+                                     CaretBrush="{StaticResource AppTextBrush}"
+                                     SelectionBrush="{StaticResource AccentOrangeBrush}"
+                                     SelectionForegroundBrush="#FF1F1A24"
                                      CornerRadius="8"
                                      Padding="12,10"
                                      FontFamily="Consolas, Monaco, monospace"

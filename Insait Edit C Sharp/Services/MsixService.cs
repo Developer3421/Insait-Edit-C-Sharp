@@ -240,6 +240,90 @@ public class MsixService
         catch (Exception) { /* process may have already exited */ }
     }
 
+    /// <summary>
+    /// Sign an MSIX package using SignTool.exe with a certificate from the
+    /// CurrentUser\My store identified by thumbprint. No timestamp is added.
+    /// </summary>
+    public async Task<MsixResult> SignMsixAsync(string msixPath, string thumbprint, string hashAlgorithm = "SHA256")
+    {
+        Log("══════════════ MSIX Sign Started ══════════════");
+        Log($"File      : {msixPath}");
+        Log($"Thumbprint: {thumbprint}");
+        Log($"Hash      : {hashAlgorithm}");
+        Log("");
+
+        var signTool = FindSignTool();
+        if (signTool == null)
+        {
+            return Fail("SignTool.exe not found. Install Windows SDK and ensure it is in the PATH or under 'C:\\Program Files (x86)\\Windows Kits\\10\\bin'.");
+        }
+
+        // signtool sign /fd <hash> /sha1 <thumbprint> "<file>"
+        // CurrentUser\My store is searched by default (no /sm flag)
+        var args = $"sign /fd {hashAlgorithm} /sha1 {thumbprint} \"{msixPath}\"";
+        Log($"{signTool} {args}");
+
+        var result = await RunProcessAsync(signTool, args, Path.GetDirectoryName(msixPath) ?? "");
+
+        if (result.Success)
+        {
+            Log("\n✅  MSIX signed successfully (no timestamp).");
+            Log("══════════════ MSIX Sign Succeeded ══════════════");
+            var r = new MsixResult { Success = true, OutputPath = msixPath };
+            PackageCompleted?.Invoke(this, new MsixCompletedEventArgs(r));
+            return r;
+        }
+        else
+        {
+            return Fail($"SignTool failed (exit {result.ExitCode})");
+        }
+    }
+
+    private static string? FindSignTool()
+    {
+        // 1. PATH
+        try
+        {
+            var inPath = Process.Start(new ProcessStartInfo
+            {
+                FileName = "where", Arguments = "signtool.exe",
+                UseShellExecute = false, RedirectStandardOutput = true, CreateNoWindow = true
+            });
+            if (inPath != null)
+            {
+                var line = inPath.StandardOutput.ReadLine();
+                inPath.WaitForExit();
+                if (!string.IsNullOrEmpty(line) && File.Exists(line.Trim()))
+                    return line.Trim();
+            }
+        }
+        catch { /* ignore */ }
+
+        // 2. Windows SDK locations
+        var programFiles = new[]
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+        };
+        foreach (var pf in programFiles)
+        {
+            var sdkBin = Path.Combine(pf, "Windows Kits", "10", "bin");
+            if (!Directory.Exists(sdkBin)) continue;
+            var versions = Directory.GetDirectories(sdkBin)
+                .Where(d => Regex.IsMatch(Path.GetFileName(d), @"^\d+\.\d+"))
+                .OrderByDescending(d => d).ToList();
+            foreach (var ver in versions)
+            {
+                foreach (var arch in new[] { "x64", "x86" })
+                {
+                    var candidate = Path.Combine(ver, arch, "signtool.exe");
+                    if (File.Exists(candidate)) return candidate;
+                }
+            }
+        }
+        return null;
+    }
+
     // ─────────────────────────────────────────────────────────────
     //  Private helpers
     // ─────────────────────────────────────────────────────────────

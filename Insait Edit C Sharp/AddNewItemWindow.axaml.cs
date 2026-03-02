@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp;
 
@@ -29,6 +30,43 @@ public partial class AddNewItemWindow : Window
         }
         
         UpdatePreview();
+        ApplyLocalization();
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("AddItem.Title");
+        var titleBar = this.FindControl<TextBlock>("TitleBarText");
+        if (titleBar != null) titleBar.Text = L("AddItem.Title");
+        var csHeader = this.FindControl<TextBlock>("CSharpTypesHeader");
+        if (csHeader != null) csHeader.Text = L("AddItem.CSharpTypes");
+        var fsHeader = this.FindControl<TextBlock>("FSharpTypesHeader");
+        if (fsHeader != null) fsHeader.Text = L("AddItem.FSharpTypes");
+        var aspHeader = this.FindControl<TextBlock>("AspNetHeader");
+        if (aspHeader != null) aspHeader.Text = L("AddItem.AspNet");
+        var avHeader = this.FindControl<TextBlock>("AvaloniaUIHeader");
+        if (avHeader != null) avHeader.Text = L("AddItem.AvaloniaUI");
+        var webHeader = this.FindControl<TextBlock>("WebFilesHeader");
+        if (webHeader != null) webHeader.Text = L("AddItem.WebFiles");
+        var cfgHeader = this.FindControl<TextBlock>("ConfigDataHeader");
+        if (cfgHeader != null) cfgHeader.Text = L("AddItem.ConfigData");
+        var dotNetHeader = this.FindControl<TextBlock>("DotNetConfigHeader");
+        if (dotNetHeader != null) dotNetHeader.Text = L("AddItem.DotNetConfig");
+        var gitHeader = this.FindControl<TextBlock>("GitHeader");
+        if (gitHeader != null) gitHeader.Text = L("AddItem.Git");
+        var nameLabel = this.FindControl<TextBlock>("NameLabel");
+        if (nameLabel != null) nameLabel.Text = L("AddItem.Name");
+        var previewLabel = this.FindControl<TextBlock>("PreviewLabel");
+        if (previewLabel != null) previewLabel.Text = L("AddItem.Preview");
+        var locLabel = this.FindControl<TextBlock>("LocationLabel");
+        if (locLabel != null) locLabel.Text = L("AddItem.Location");
+        var addToProject = this.FindControl<TextBlock>("AddToProjectText");
+        if (addToProject != null) addToProject.Text = L("AddItem.AddToProject");
+        var cancelBtn = this.FindControl<Button>("CancelButton");
+        if (cancelBtn != null) cancelBtn.Content = L("AddItem.Cancel");
+        var createBtn = this.FindControl<Button>("CreateButton");
+        if (createBtn != null) createBtn.Content = L("AddItem.Add");
     }
 
     private string GetNamespaceFromPath(string path)

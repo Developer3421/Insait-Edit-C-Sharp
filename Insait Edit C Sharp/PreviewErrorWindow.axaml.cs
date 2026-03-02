@@ -1,18 +1,27 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Insait_Edit_C_Sharp.Services;
+using System;
 
 namespace Insait_Edit_C_Sharp;
 
 /// <summary>Non-modal window showing full AXAML preview error details.</summary>
 public partial class PreviewErrorWindow : Window
 {
-    public PreviewErrorWindow() { InitializeComponent(); }
+    public PreviewErrorWindow() { InitializeComponent(); ApplyLocalization(); }
 
     public PreviewErrorWindow(string errorMessage)
     {
         InitializeComponent();
         SetText(errorMessage);
+        ApplyLocalization();
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("PreviewError.Title");
     }
 
     public void UpdateError(string message) => SetText(message);

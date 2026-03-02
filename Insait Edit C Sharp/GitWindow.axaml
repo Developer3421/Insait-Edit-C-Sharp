@@ -163,6 +163,10 @@
             <Setter Property="CaretBrush"               Value="{StaticResource TextBrush}"/>
             <Setter Property="SelectionBrush"           Value="{StaticResource OrangeBrush}"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="Background"               Value="{StaticResource SurfBrush}"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource SurfBrush}"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
@@ -237,7 +241,7 @@
                 <Border Grid.Row="0" Background="{StaticResource BgBrush}"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,6">
                     <Grid ColumnDefinitions="Auto,*,Auto">
-                        <TextBlock Grid.Column="0" Text="Scope:" FontSize="11"
+                        <TextBlock Grid.Column="0" Name="ScopeLabel" Text="Scope:" FontSize="11"
                                    Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox Grid.Column="1" Name="ScopeCombo"
                                   Background="#FF252030" Foreground="{StaticResource TextBrush}"
@@ -247,7 +251,7 @@
                             <ComboBoxItem Content="📁 Solution (all projects)" Tag="solution"/>
                         </ComboBox>
                         <Button Grid.Column="2" Classes="tb" Width="26" Height="26" Margin="4,0,0,0"
-                                ToolTip.Tip="Refresh" Click="Refresh_Click">
+                                Name="RefreshBtn" ToolTip.Tip="Refresh" Click="Refresh_Click">
                             <TextBlock Text="🔄" FontSize="12"/>
                         </Button>
                     </Grid>
@@ -258,32 +262,32 @@
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="4">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Orientation="Horizontal" Spacing="2">
-                            <Button Classes="tb" ToolTip.Tip="Focus commit message" Click="CommitToolbar_Click">
+                            <Button Classes="tb" Name="CommitToolbarBtn" ToolTip.Tip="Focus commit message" Click="CommitToolbar_Click">
                                 <TextBlock Text="✓" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
                             </Button>
-                            <Button Classes="tb" ToolTip.Tip="Pull / Update" Click="Pull_Click">
+                            <Button Classes="tb" Name="PullBtn" ToolTip.Tip="Pull / Update" Click="Pull_Click">
                                 <TextBlock Text="↓" FontSize="15" FontWeight="Bold" Foreground="{StaticResource BlueBrush}"/>
                             </Button>
-                            <Button Classes="tb" ToolTip.Tip="Push" Click="Push_Click">
+                            <Button Classes="tb" Name="PushBtn" ToolTip.Tip="Push" Click="Push_Click">
                                 <TextBlock Text="↑" FontSize="15" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
                             </Button>
                             <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,6"/>
-                            <Button Classes="tb" ToolTip.Tip="Fetch" Click="Fetch_Click">
+                            <Button Classes="tb" Name="FetchBtn" ToolTip.Tip="Fetch" Click="Fetch_Click">
                                 <TextBlock Text="⟳" FontSize="14"/>
                             </Button>
-                            <Button Classes="tb" ToolTip.Tip="Stash" Click="Stash_Click">
+                            <Button Classes="tb" Name="StashBtn" ToolTip.Tip="Stash" Click="Stash_Click">
                                 <TextBlock Text="📦" FontSize="12"/>
                             </Button>
-                            <Button Classes="tb" ToolTip.Tip="Pop stash" Click="PopStash_Click">
+                            <Button Classes="tb" Name="PopStashBtn" ToolTip.Tip="Pop stash" Click="PopStash_Click">
                                 <TextBlock Text="📤" FontSize="12"/>
                             </Button>
-                            <Button Classes="tb" ToolTip.Tip="Rollback all" Click="Rollback_Click">
+                            <Button Classes="tb" Name="RollbackBtn" ToolTip.Tip="Rollback all" Click="Rollback_Click">
                                 <TextBlock Text="↺" FontSize="13"/>
                             </Button>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
                             <!-- Create GitHub repo using GitHubAccountService -->
-                            <Button Classes="tb" ToolTip.Tip="Create GitHub repository" Name="CreateRepoBtn" Click="CreateRepo_Click">
+                            <Button Classes="tb" Name="CreateRepoBtn" ToolTip.Tip="Create GitHub repository" Click="CreateRepo_Click">
                                 <TextBlock Text="🐙" FontSize="14"/>
                             </Button>
                             <Button Classes="tb" ToolTip.Tip="Git console" Click="ConsoleTabFromToolbar_Click">

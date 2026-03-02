@@ -34,6 +34,10 @@ public sealed class InlineDiagnosticService : IDisposable
     private readonly QuickFixService       _quickFixService;
     private CancellationTokenSource?       _cts;
 
+    // ── project context ──────────────────────────────────────────────────
+    private string? _projectDir;
+    private List<string>? _projectCsFiles;
+
     // ── Avalonia-noise suppression (same logic as CodeAnalysisService) ─────
     private static readonly HashSet<string> _suppressedCodes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -164,6 +168,38 @@ public sealed class InlineDiagnosticService : IDisposable
         return spans;
     }
 
+    /// <summary>
+    /// Sets the project directory for cross-file diagnostics context.
+    /// </summary>
+    public void SetProjectContext(string? projectDir)
+    {
+        if (string.Equals(_projectDir, projectDir, StringComparison.OrdinalIgnoreCase))
+            return;
+        _projectDir = projectDir;
+        _projectCsFiles = null;
+        _trackedFilePath = null; // force rebuild
+    }
+
+    private List<string> GetProjectCsFiles()
+    {
+        if (_projectCsFiles != null) return _projectCsFiles;
+        _projectCsFiles = new List<string>();
+        if (string.IsNullOrEmpty(_projectDir) || !Directory.Exists(_projectDir))
+            return _projectCsFiles;
+        try
+        {
+            foreach (var f in Directory.GetFiles(_projectDir, "*.cs", SearchOption.AllDirectories))
+            {
+                if (f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) ||
+                    f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
+                    continue;
+                _projectCsFiles.Add(f);
+            }
+        }
+        catch { }
+        return _projectCsFiles;
+    }
+
     // ── Workspace management ───────────────────────────────────────────────
 
     private Document SyncDocument(string filePath, string sourceCode)
@@ -206,6 +242,24 @@ public sealed class InlineDiagnosticService : IDisposable
             filePath: filePath);
 
         sol = sol.AddDocument(docInfo);
+
+        // Add other project .cs files as context
+        var contextFiles = GetProjectCsFiles();
+        foreach (var csFile in contextFiles)
+        {
+            if (string.Equals(csFile, filePath, StringComparison.OrdinalIgnoreCase))
+                continue;
+            try
+            {
+                var auxDid = DocumentId.CreateNewId(projectId);
+                var auxText = File.ReadAllText(csFile);
+                sol = sol.AddDocument(DocumentInfo.Create(auxDid, Path.GetFileName(csFile),
+                    loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
+                    filePath: csFile));
+            }
+            catch { /* skip unreadable files */ }
+        }
+
         _workspace.TryApplyChanges(sol);
 
         _projectId       = projectId;

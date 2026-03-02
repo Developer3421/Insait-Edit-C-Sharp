@@ -68,6 +68,37 @@ public partial class NewProjectWindow : Window
             slnFormatRadio.IsCheckedChanged += (_, _) => UpdateProjectPathPreview();
         
         UpdateProjectPathPreview();
+        ApplyLocalization();
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("NewProject.Title");
+        var titleBar = this.FindControl<TextBlock>("TitleBarText");
+        if (titleBar != null) titleBar.Text = L("NewProject.Title");
+        var selectTemplate = this.FindControl<TextBlock>("SelectTemplateText");
+        if (selectTemplate != null) selectTemplate.Text = L("NewProject.SelectTemplate");
+        var configure = this.FindControl<TextBlock>("ConfigureText");
+        if (configure != null) configure.Text = L("NewProject.Configure");
+        var projLabel = this.FindControl<TextBlock>("ProjectNameLabel");
+        if (projLabel != null) projLabel.Text = L("NewProject.ProjectName");
+        var locLabel = this.FindControl<TextBlock>("LocationLabel");
+        if (locLabel != null) locLabel.Text = L("NewProject.Location");
+        var slnLabel = this.FindControl<TextBlock>("SolutionNameLabel");
+        if (slnLabel != null) slnLabel.Text = L("NewProject.SolutionName");
+        var fmtLabel = this.FindControl<TextBlock>("SolutionFormatLabel");
+        if (fmtLabel != null) fmtLabel.Text = L("NewProject.SolutionFormat");
+        var sameDir = this.FindControl<TextBlock>("PlaceSameDirText");
+        if (sameDir != null) sameDir.Text = L("NewProject.PlaceSameDir");
+        var gitRepo = this.FindControl<TextBlock>("CreateGitRepoText");
+        if (gitRepo != null) gitRepo.Text = L("NewProject.CreateGitRepo");
+        var browseBtn = this.FindControl<Button>("BrowseButton");
+        if (browseBtn != null) browseBtn.Content = L("Common.Browse");
+        var cancelBtn = this.FindControl<Button>("CancelButton");
+        if (cancelBtn != null) cancelBtn.Content = L("NewProject.Cancel");
+        var createBtn = this.FindControl<Button>("CreateButton");
+        if (createBtn != null) createBtn.Content = L("NewProject.Create");
     }
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)

@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Insait_Edit_C_Sharp.Services;
+using System;
 using System.IO;
 
 namespace Insait_Edit_C_Sharp;
@@ -30,7 +32,9 @@ public partial class AxamlPreviewWindow : Window
     private PreviewErrorWindow? _errorWindow;   // lazily created, reused
 
     // ── constructors ───────────────────────────────────────────────────
-    public AxamlPreviewWindow() { InitializeComponent(); AttachHost(); }
+    public AxamlPreviewWindow() { InitializeComponent(); AttachHost(); ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
+    }
 
     public AxamlPreviewWindow(string filePath)
     {
@@ -39,6 +43,7 @@ public partial class AxamlPreviewWindow : Window
         _restoreSize = new Size(Width, Height);
         AttachHost();
         LoadFromFile();
+        ApplyLocalization();
     }
 
     public AxamlPreviewWindow(string filePath, string content)
@@ -49,6 +54,13 @@ public partial class AxamlPreviewWindow : Window
         _restoreSize = new Size(Width, Height);
         AttachHost();
         LoadFromText(content);
+        ApplyLocalization();
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("AxamlPreview.Title");
     }
 
     // ── host wiring ────────────────────────────────────────────────────
@@ -94,9 +106,11 @@ public partial class AxamlPreviewWindow : Window
 
     private void UpdateTitleLabels(string name)
     {
-        if (TitleText     != null) TitleText.Text     = $"AXAML Preview — {name}";
+        var fmt = LocalizationService.Get("AxamlPreview.TitleFormat");
+        var titleStr = string.Format(fmt, name);
+        if (TitleText     != null) TitleText.Text     = titleStr;
         if (FileNameLabel != null) FileNameLabel.Text = name;
-        Title = $"AXAML Preview — {name}";
+        Title = titleStr;
     }
 
     private void UpdateStatusFromHost()
@@ -105,12 +119,12 @@ public partial class AxamlPreviewWindow : Window
 
         if (_liveHost.IsLiveRender)
         {
-            SetStatus("✔ Live preview", "#FFA6E3A1");
+            SetStatus(LocalizationService.Get("AxamlPreview.LivePreview"), "#FFA6E3A1");
             ClearError();
         }
         else
         {
-            SetError(_liveHost.LastError ?? "Unknown error");
+            SetError(_liveHost.LastError ?? LocalizationService.Get("AxamlPreview.UnknownError"));
         }
     }
 
@@ -119,7 +133,7 @@ public partial class AxamlPreviewWindow : Window
     {
         _lastError = message;
 
-        SetStatus("⚠ Fallback view", "#FFFFC09F");
+        SetStatus(LocalizationService.Get("AxamlPreview.FallbackView"), "#FFFFC09F");
 
         // Show the error button in the toolbar
         var btn = this.FindControl<Button>("ErrorButton");

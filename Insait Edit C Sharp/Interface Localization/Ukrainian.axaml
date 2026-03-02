@@ -1,0 +1,781 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         УКРАЇНСЬКА ЛОКАЛІЗАЦІЯ — Усі 21 вікно та попапи
+         ══════════════════════════════════════════════════════════════ -->
+
+    <!-- ── 1. MainWindow ─────────────────────────────────────────── -->
+    <x:String x:Key="App.Title">Insait Edit - C# IDE</x:String>
+    <x:String x:Key="TitleBar.Menu">Меню</x:String>
+    <x:String x:Key="TitleBar.Build">Збірка</x:String>
+    <x:String x:Key="TitleBar.Analyze">Аналіз</x:String>
+    <x:String x:Key="TitleBar.Run">Запуск</x:String>
+    <x:String x:Key="TitleBar.Debug">Налагодження</x:String>
+    <x:String x:Key="TitleBar.Stop">Стоп</x:String>
+    <x:String x:Key="TitleBar.Preview">Попередній перегляд</x:String>
+    <x:String x:Key="TitleBar.MSIX">MSIX</x:String>
+    <x:String x:Key="Tooltip.Menu">Меню</x:String>
+    <x:String x:Key="Tooltip.Build">Зібрати проєкт (Ctrl+Shift+B)</x:String>
+    <x:String x:Key="Tooltip.Analyze">Аналіз коду (Ctrl+Shift+A)</x:String>
+    <x:String x:Key="Tooltip.RunConfig">Обрати конфігурацію запуску (Shift+Alt+F10)</x:String>
+    <x:String x:Key="Tooltip.EditConfig">Редагувати конфігурації...</x:String>
+    <x:String x:Key="Tooltip.Run">Запустити проєкт (F5)</x:String>
+    <x:String x:Key="Tooltip.Debug">Запуск у режимі налагодження (F5)</x:String>
+    <x:String x:Key="Tooltip.Stop">Зупинити (Shift+F5)</x:String>
+    <x:String x:Key="Tooltip.Publish">Публікація проєкту...</x:String>
+    <x:String x:Key="Tooltip.MsixManager">Менеджер пакетів MSIX...</x:String>
+    <x:String x:Key="Tooltip.Undo">Скасувати (Ctrl+Z)</x:String>
+    <x:String x:Key="Tooltip.Redo">Повторити (Ctrl+Y)</x:String>
+    <x:String x:Key="Tooltip.NewWindow">Нове вікно</x:String>
+    <x:String x:Key="Tooltip.Restart">Перезапустити додаток</x:String>
+    <x:String x:Key="Tooltip.PreviewAxaml">Попередній перегляд AXAML (Ctrl+Shift+P)</x:String>
+    <x:String x:Key="Sidebar.Explorer">Провідник (Ctrl+Shift+E)</x:String>
+    <x:String x:Key="Sidebar.Search">Пошук (Ctrl+Shift+F)</x:String>
+    <x:String x:Key="Sidebar.Git">Керування версіями (Ctrl+Shift+G)</x:String>
+    <x:String x:Key="Sidebar.NuGet">Пакети NuGet (Ctrl+Shift+N)</x:String>
+    <x:String x:Key="Sidebar.LedPanel">LED-панель</x:String>
+    <x:String x:Key="Sidebar.Account">Акаунт</x:String>
+    <x:String x:Key="Sidebar.Settings">Налаштування (Ctrl+,)</x:String>
+    <x:String x:Key="Panel.Explorer">ПРОВІДНИК</x:String>
+    <x:String x:Key="Panel.Search">ПОШУК</x:String>
+    <x:String x:Key="Panel.CopilotCli">COPILOT CLI</x:String>
+    <x:String x:Key="Explorer.NewFile">Новий файл</x:String>
+    <x:String x:Key="Explorer.NewFolder">Нова тека</x:String>
+    <x:String x:Key="Explorer.Refresh">Оновити</x:String>
+    <x:String x:Key="Tab.Problems">Проблеми</x:String>
+    <x:String x:Key="Tab.Build">Збірка</x:String>
+    <x:String x:Key="Tab.Run">Запуск</x:String>
+    <x:String x:Key="Tab.Terminal">Термінал</x:String>
+    <x:String x:Key="Tooltip.NewTerminal">Новий термінал (Ctrl+Shift+`)</x:String>
+    <x:String x:Key="Tooltip.SplitTerminal">Розділити термінал</x:String>
+    <x:String x:Key="Tooltip.ClearAll">Очистити все</x:String>
+    <x:String x:Key="Tooltip.ScrollToEnd">Прокрутити донизу</x:String>
+    <x:String x:Key="Tooltip.Minimize">Згорнути</x:String>
+    <x:String x:Key="Tooltip.Maximize">Розгорнути</x:String>
+    <x:String x:Key="Tooltip.HidePanel">Сховати (Esc)</x:String>
+    <x:String x:Key="Tooltip.RefreshAnalysis">Оновити аналіз</x:String>
+    <x:String x:Key="Tooltip.ClearProblems">Очистити проблеми</x:String>
+    <x:String x:Key="Problems.NoProblems">Проблем не виявлено. Натисніть «Аналіз» для перевірки.</x:String>
+    <x:String x:Key="Problems.Errors">{0} помилок</x:String>
+    <x:String x:Key="Problems.Warnings">{0} попереджень</x:String>
+    <x:String x:Key="Problems.Messages">0 повідомлень</x:String>
+    <x:String x:Key="Output.BuildPlaceholder">Результат збірки з'явиться тут...</x:String>
+    <x:String x:Key="Output.RunPlaceholder">Результат запуску з'явиться тут...</x:String>
+    <x:String x:Key="Status.GitBranch">Гілка Git</x:String>
+    <x:String x:Key="Status.Sync">Синхронізувати зміни</x:String>
+    <x:String x:Key="Status.ViewProblems">Переглянути проблеми</x:String>
+    <x:String x:Key="Status.Encoding">Вибрати кодування</x:String>
+    <x:String x:Key="Status.LineEnding">Вибрати кінець рядка</x:String>
+    <x:String x:Key="Status.Language">Вибрати мову</x:String>
+    <x:String x:Key="Status.GoToLine">Перейти до рядка</x:String>
+    <x:String x:Key="Status.Indent">Вибрати відступ</x:String>
+    <x:String x:Key="Status.Notifications">Сповіщення</x:String>
+    <x:String x:Key="Context.Run">▶ Запустити</x:String>
+    <x:String x:Key="Context.New">Створити</x:String>
+    <x:String x:Key="Context.Add">Додати</x:String>
+    <x:String x:Key="Context.NewClass">📄 Клас...</x:String>
+    <x:String x:Key="Context.NewInterface">📄 Інтерфейс...</x:String>
+    <x:String x:Key="Context.NewRecord">📄 Запис...</x:String>
+    <x:String x:Key="Context.NewEnum">📄 Перелік...</x:String>
+    <x:String x:Key="Context.NewAvaloniaWindow">🪟 Вікно Avalonia...</x:String>
+    <x:String x:Key="Context.NewAvaloniaControl">🎛️ UserControl Avalonia...</x:String>
+    <x:String x:Key="Context.NewFile">📄 Файл...</x:String>
+    <x:String x:Key="Context.NewDirectory">📁 Тека</x:String>
+    <x:String x:Key="Context.AddNewProject">📦 Новий проєкт...</x:String>
+    <x:String x:Key="Context.AddExistingProject">📦 Існуючий проєкт...</x:String>
+    <x:String x:Key="Context.AddNewItem">📄 Новий елемент...</x:String>
+    <x:String x:Key="Context.AddExistingItem">📄 Існуючий елемент...</x:String>
+    <x:String x:Key="Context.Build">🔨 Зібрати</x:String>
+    <x:String x:Key="Context.Rebuild">🔄 Перезібрати</x:String>
+    <x:String x:Key="Context.Clean">🧹 Очистити</x:String>
+    <x:String x:Key="Context.ManageNuGet">📦 Керувати пакетами NuGet...</x:String>
+    <x:String x:Key="Context.AddReference">🔗 Додати посилання...</x:String>
+    <x:String x:Key="Context.Cut">✂️ Вирізати</x:String>
+    <x:String x:Key="Context.Copy">📋 Копіювати</x:String>
+    <x:String x:Key="Context.Paste">📄 Вставити</x:String>
+    <x:String x:Key="Context.Rename">✏️ Перейменувати</x:String>
+    <x:String x:Key="Context.Delete">🗑️ Безпечне видалення...</x:String>
+    <x:String x:Key="Context.CopyPath">Копіювати шлях</x:String>
+    <x:String x:Key="Context.AbsolutePath">📋 Абсолютний шлях</x:String>
+    <x:String x:Key="Context.RelativePath">📋 Відносний шлях</x:String>
+    <x:String x:Key="Context.FileName">📋 Ім'я файлу</x:String>
+    <x:String x:Key="Context.OpenExplorer">📂 Відкрити у провіднику</x:String>
+    <x:String x:Key="Context.OpenTerminal">💻 Відкрити в терміналі</x:String>
+    <x:String x:Key="Context.RemoveFromSolution">🗑️ Видалити з рішення</x:String>
+    <x:String x:Key="Context.UnloadProject">⬇️ Вивантажити проєкт</x:String>
+    <x:String x:Key="Context.Git">Git</x:String>
+    <x:String x:Key="Context.GitCommit">📝 Коміт...</x:String>
+    <x:String x:Key="Context.GitHistory">📜 Показати історію</x:String>
+    <x:String x:Key="Context.GitRevert">↩️ Відкотити...</x:String>
+    <x:String x:Key="Context.ReloadFromDisk">🔄 Перезавантажити з диска</x:String>
+    <x:String x:Key="Context.Properties">⚙️ Властивості</x:String>
+    <x:String x:Key="AI.Ready">🚀 Copilot CLI готовий!</x:String>
+    <x:String x:Key="AI.ManageFiles">Керуйте файлами проєкту командами:</x:String>
+    <x:String x:Key="AI.GitHubCommands">Команди GitHub CLI:</x:String>
+    <x:String x:Key="AI.TypeHelp">Введіть 'help' для повного списку команд</x:String>
+    <x:String x:Key="AI.InputPlaceholder">Введіть команду (create, ls, help...)</x:String>
+    <x:String x:Key="AI.Tooltip.OpenTUI">Відкрити GitHub Copilot TUI в терміналі</x:String>
+    <x:String x:Key="AI.Tooltip.Execute">Виконати команду</x:String>
+    <x:String x:Key="AI.Tooltip.NewChat">Новий чат</x:String>
+    <x:String x:Key="AI.Tooltip.ClosePanel">Закрити панель</x:String>
+
+    <!-- ── CLI Terminal Messages ─────────────────────────────────── -->
+    <x:String x:Key="Cli.NoCommand">Команду не вказано</x:String>
+    <x:String x:Key="Cli.InvalidCommand">Недійсна команда</x:String>
+    <x:String x:Key="Cli.UnknownCommand">Невідома команда: {0}. Введіть 'help' для перегляду доступних команд.</x:String>
+    <x:String x:Key="Cli.ErrorExecuting">Помилка виконання '{0}': {1}</x:String>
+    <x:String x:Key="Cli.FileAlreadyExists">Файл вже існує: {0}</x:String>
+    <x:String x:Key="Cli.CreatedFile">Створено файл: {0}</x:String>
+    <x:String x:Key="Cli.UpdatedTimestamp">Оновлено мітку часу: {0}</x:String>
+    <x:String x:Key="Cli.CreatedDirectory">Створено теку: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryAlreadyExists">Тека вже існує: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryNotEmpty">Тека не порожня: {0}. Додайте --force для видалення.</x:String>
+    <x:String x:Key="Cli.DeletedDirectory">Видалено теку: {0}</x:String>
+    <x:String x:Key="Cli.DeletedFile">Видалено файл: {0}</x:String>
+    <x:String x:Key="Cli.PathNotFound">Шлях не знайдено: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryNotFound">Теку не знайдено: {0}</x:String>
+    <x:String x:Key="Cli.FileNotFound">Файл не знайдено: {0}</x:String>
+    <x:String x:Key="Cli.SourceNotFound">Джерело не знайдено: {0}</x:String>
+    <x:String x:Key="Cli.DestinationExists">Призначення вже існує: {0}</x:String>
+    <x:String x:Key="Cli.Renamed">Перейменовано: {0} → {1}</x:String>
+    <x:String x:Key="Cli.Moved">Переміщено: {0} → {1}</x:String>
+    <x:String x:Key="Cli.Copied">Скопійовано: {0} → {1}</x:String>
+    <x:String x:Key="Cli.WrittenTo">Записано до: {0}</x:String>
+    <x:String x:Key="Cli.AppendedTo">Додано до: {0}</x:String>
+    <x:String x:Key="Cli.CreatedFromTemplate">Створено з шаблону '{0}': {1}</x:String>
+    <x:String x:Key="Cli.UnknownTemplate">Невідомий шаблон: {0}</x:String>
+    <x:String x:Key="Cli.Directory">Тека: {0}</x:String>
+    <x:String x:Key="Cli.DirsAndFiles">{0} тек, {1} файлів</x:String>
+    <x:String x:Key="Cli.NoFilesFound">Файлів, що відповідають '{0}', не знайдено</x:String>
+    <x:String x:Key="Cli.FoundFiles">Знайдено {0} файл(ів):</x:String>
+    <x:String x:Key="Cli.NoMatchesFound">Збігів для '{0}' не знайдено</x:String>
+    <x:String x:Key="Cli.FoundMatches">Знайдено {0} збіг(ів):</x:String>
+    <x:String x:Key="Cli.ChangedDirectory">Перейшли до теки: {0}</x:String>
+    <x:String x:Key="Cli.ExistsYes">Так ({0}): {1}</x:String>
+    <x:String x:Key="Cli.ExistsNo">Ні: {0}</x:String>
+    <x:String x:Key="Cli.GhNotFound">GitHub CLI (gh) не знайдено. Виконайте 'gh-install' для встановлення.</x:String>
+    <x:String x:Key="Cli.GhAlreadyInstalled">✅ GitHub CLI вже встановлено</x:String>
+    <x:String x:Key="Cli.GhInstallSuccess">✅ GitHub CLI успішно встановлено!</x:String>
+    <x:String x:Key="Cli.GhInstallFailed">❌ Встановлення не вдалося</x:String>
+    <x:String x:Key="Cli.GhInstallManual">Спробуйте встановити вручну: winget install GitHub.cli</x:String>
+    <x:String x:Key="Cli.GhInstallRestart">⚠️ Можливо, потрібно перезапустити застосунок. Виконайте 'gh-auth login' для авторизації.</x:String>
+    <x:String x:Key="Cli.GhAuthAlreadyLoggedIn">✅ Вже авторизовано як: {0}</x:String>
+    <x:String x:Key="Cli.GhAuthStarted">🔐 Авторизацію GitHub розпочато!</x:String>
+    <x:String x:Key="Cli.GhAuthStartedHint">Відкрито вікно терміналу. Дотримуйтесь інструкцій для завершення авторизації.</x:String>
+    <x:String x:Key="Cli.GhAuthVerifyHint">Після завершення виконайте 'gh-auth status' для перевірки.</x:String>
+    <x:String x:Key="Cli.GhAuthFailed">❌ Не вдалося запустити авторизацію: {0}</x:String>
+    <x:String x:Key="Cli.GhAuthFailedHint">Спробуйте вручну у терміналі: gh auth login</x:String>
+    <x:String x:Key="Cli.GhLoggedOut">✅ Вийшли з GitHub</x:String>
+    <x:String x:Key="Cli.GhLogoutFailed">❌ Вихід не вдався: {0}</x:String>
+    <x:String x:Key="Cli.GhRefreshed">✅ Авторизацію оновлено</x:String>
+    <x:String x:Key="Cli.GhRefreshFailed">❌ Оновлення не вдалося: {0}</x:String>
+    <x:String x:Key="Cli.GhSetupGit">✅ Git налаштовано для використання GitHub CLI як помічника облікових даних</x:String>
+    <x:String x:Key="Cli.GhSetupGitFailed">❌ Налаштування не вдалося: {0}</x:String>
+    <x:String x:Key="Cli.GhToken">🔑 Токен GitHub:</x:String>
+    <x:String x:Key="Cli.GhTokenFailed">❌ Не вдалося отримати токен: {0}</x:String>
+    <x:String x:Key="Cli.GhLoggedInAs">✅ Авторизовано в GitHub як: {0}</x:String>
+    <x:String x:Key="Cli.GhNotLoggedIn">❌ Не авторизовано в GitHub. Виконайте 'gh-auth login'.</x:String>
+    <x:String x:Key="Cli.GhStatusTitle">📊 Статус GitHub CLI</x:String>
+    <x:String x:Key="Cli.GhStatusInstalled">✅ Встановлено: {0}</x:String>
+    <x:String x:Key="Cli.GhStatusAuthAs">✅ Авторизовано як: {0}</x:String>
+    <x:String x:Key="Cli.GhStatusNotAuth">❌ Не авторизовано. Виконайте 'gh-auth login'</x:String>
+    <x:String x:Key="Cli.GhStatusWorkDir">📁 Робоча тека:</x:String>
+    <x:String x:Key="Cli.GhStatusRepo">📦 Репозиторій: {0}</x:String>
+    <x:String x:Key="Cli.GhNotInstalled">❌ GitHub CLI не встановлено. Виконайте: gh-install</x:String>
+    <x:String x:Key="Cli.GhCopilotSuggestion">🤖 Пропозиція Copilot:</x:String>
+    <x:String x:Key="Cli.GhCopilotFailed">❌ Copilot не виконав завдання: {0}</x:String>
+    <x:String x:Key="Cli.GhModelUpdated">✅ Модель Copilot оновлено.</x:String>
+    <x:String x:Key="Cli.GhModelFailed">❌ Не вдалося змінити модель: {0}</x:String>
+    <x:String x:Key="Cli.GhExtensionNotInstalled">❌ Розширення GitHub Copilot не встановлено.</x:String>
+    <x:String x:Key="Cli.GhExtensionInstallHint">Виконайте: gh-extension install github/gh-copilot</x:String>
+    <x:String x:Key="Cli.GhCopilotLaunching">🚀 Запуск GitHub Copilot CLI у зовнішньому терміналі...</x:String>
+    <x:String x:Key="Cli.GhCopilotOpened">✅ Відкрито GitHub Copilot CLI у {0}.</x:String>
+    <x:String x:Key="Cli.GhCopilotTip">💡 Порада: після роботи з Copilot скопіюйте команду і вставте сюди.</x:String>
+    <x:String x:Key="Cli.GhCopilotError">❌ Помилка запуску GitHub Copilot: {0}</x:String>
+    <x:String x:Key="Cli.GhConfigList">⚙️ Конфігурація:</x:String>
+    <x:String x:Key="Cli.GhConfigDone">✅ Конфігурацію оновлено:</x:String>
+    <x:String x:Key="Cli.GhConfigFailed">❌ Не вдалося змінити конфігурацію: {0}</x:String>
+    <x:String x:Key="Cli.GhExtensionList">🔌 Розширення:</x:String>
+    <x:String x:Key="Cli.GhExtensionDone">✅ Операцію з розширенням виконано:</x:String>
+    <x:String x:Key="Cli.GhExtensionFailed">❌ Операція з розширенням не вдалася: {0}</x:String>
+    <x:String x:Key="Cli.TerminalOpened">✅ Відкрито {0}</x:String>
+    <x:String x:Key="Cli.TerminalWorkDir">📁 Робоча тека: {0}</x:String>
+    <x:String x:Key="Cli.TerminalCommand">🔧 Команда: {0}</x:String>
+    <x:String x:Key="Cli.TerminalError">❌ Помилка відкриття терміналу: {0}</x:String>
+    <x:String x:Key="Cli.PowerShellOpened">✅ Відкрито PowerShell</x:String>
+    <x:String x:Key="Cli.PowerShellError">❌ Помилка відкриття PowerShell: {0}</x:String>
+
+    <!-- ── CLI Usage strings ─────────────────────────────────────── -->
+    <x:String x:Key="Cli.Usage.Create">Використання: create &lt;шлях&gt; [--content &lt;вміст&gt;] [--dir]</x:String>
+    <x:String x:Key="Cli.Usage.Touch">Використання: touch &lt;шлях&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Mkdir">Використання: mkdir &lt;шлях&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Template">Використання: template &lt;назва-шаблону&gt; &lt;шлях&gt;&#10;&#10;Доступні шаблони:&#10;  class - C# клас&#10;  interface - C# інтерфейс&#10;  record - C# запис&#10;  enum - C# перелік&#10;  service - C# сервіс&#10;  viewmodel - MVVM ViewModel&#10;  html - HTML файл&#10;  json - JSON файл&#10;  xml - XML файл</x:String>
+    <x:String x:Key="Cli.Usage.Delete">Використання: delete &lt;шлях&gt; [--force]</x:String>
+    <x:String x:Key="Cli.Usage.Rmdir">Використання: rmdir &lt;шлях&gt; [--force]</x:String>
+    <x:String x:Key="Cli.Usage.Rename">Використання: rename &lt;старий-шлях&gt; &lt;нова-назва&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Mv">Використання: mv &lt;джерело&gt; &lt;призначення&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Copy">Використання: copy &lt;джерело&gt; &lt;призначення&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Write">Використання: write &lt;шлях&gt; &lt;вміст&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Append">Використання: append &lt;шлях&gt; &lt;вміст&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Read">Використання: read &lt;шлях&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Cd">Використання: cd &lt;шлях&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Find">Використання: find &lt;шаблон&gt; [--path &lt;тека&gt;]</x:String>
+    <x:String x:Key="Cli.Usage.Search">Використання: search &lt;текст&gt; [--path &lt;тека&gt;] [--ext &lt;розширення&gt;]</x:String>
+    <x:String x:Key="Cli.Usage.Info">Використання: info &lt;шлях&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Exists">Використання: exists &lt;шлях&gt;</x:String>
+    <x:String x:Key="Cli.Usage.GhTask">Використання: gh-t "&lt;опис завдання&gt;"</x:String>
+    <x:String x:Key="Cli.Usage.GhModel">Використання: gh-m &lt;назва моделі&gt;&#10;&#10;Приклад:&#10;  gh-m gpt-4o</x:String>
+
+    <!-- ── CLI Info output labels ─────────────────────────────────── -->
+    <x:String x:Key="Cli.Info.Directory">Тека: {0}</x:String>
+    <x:String x:Key="Cli.Info.File">Файл: {0}</x:String>
+    <x:String x:Key="Cli.Info.Size">Розмір: {0}</x:String>
+    <x:String x:Key="Cli.Info.Created">Створено: {0}</x:String>
+    <x:String x:Key="Cli.Info.Modified">Змінено: {0}</x:String>
+    <x:String x:Key="Cli.Info.Contains">Містить: {0} файлів, {1} підтек</x:String>
+    <x:String x:Key="Cli.Info.Extension">Розширення: {0}</x:String>
+
+    <!-- ── CLI Exists type labels ─────────────────────────────────── -->
+    <x:String x:Key="Cli.Exists.TypeDir">тека</x:String>
+    <x:String x:Key="Cli.Exists.TypeFile">файл</x:String>
+    <x:String x:Key="Cli.Exists.TypeNone">нічого</x:String>
+
+    <!-- ── CLI Help strings ───────────────────────────────────────── -->
+    <x:String x:Key="Cli.Help.Command">Команда: {0}</x:String>
+    <x:String x:Key="Cli.Help.Description">Опис: {0}</x:String>
+    <x:String x:Key="Cli.Help.Usage">Використання: {0} {1}</x:String>
+    <x:String x:Key="Cli.Help.Title">Команди Copilot CLI:</x:String>
+    <x:String x:Key="Cli.Help.FileOps">Операції з файлами:</x:String>
+    <x:String x:Key="Cli.Help.Create">  create, new     - Створити новий файл або теку</x:String>
+    <x:String x:Key="Cli.Help.Delete">  delete, rm      - Видалити файл або теку</x:String>
+    <x:String x:Key="Cli.Help.Touch">  touch           - Створити порожній файл або оновити мітку часу</x:String>
+    <x:String x:Key="Cli.Help.Template">  template        - Створити файл з шаблону</x:String>
+    <x:String x:Key="Cli.Help.DirOps">Операції з теками:</x:String>
+    <x:String x:Key="Cli.Help.Mkdir">  mkdir           - Створити нову теку</x:String>
+    <x:String x:Key="Cli.Help.Rmdir">  rmdir           - Видалити теку</x:String>
+    <x:String x:Key="Cli.Help.FileManip">Маніпуляції з файлами:</x:String>
+    <x:String x:Key="Cli.Help.Rename">  rename          - Перейменувати файл або теку</x:String>
+    <x:String x:Key="Cli.Help.Mv">  mv              - Перемістити файл або теку</x:String>
+    <x:String x:Key="Cli.Help.Copy">  copy, cp        - Скопіювати файл або теку</x:String>
+    <x:String x:Key="Cli.Help.FileContent">Вміст файлів:</x:String>
+    <x:String x:Key="Cli.Help.Write">  write           - Записати вміст у файл</x:String>
+    <x:String x:Key="Cli.Help.Append">  append          - Додати вміст у кінець файлу</x:String>
+    <x:String x:Key="Cli.Help.Read">  read, cat       - Показати вміст файлу</x:String>
+    <x:String x:Key="Cli.Help.NavList">Навігація та перегляд:</x:String>
+    <x:String x:Key="Cli.Help.Ls">  ls, dir         - Список вмісту теки</x:String>
+    <x:String x:Key="Cli.Help.Tree">  tree            - Показати дерево тек</x:String>
+    <x:String x:Key="Cli.Help.Pwd">  pwd             - Поточна робоча тека</x:String>
+    <x:String x:Key="Cli.Help.Cd">  cd              - Змінити робочу теку</x:String>
+    <x:String x:Key="Cli.Help.SearchSec">Пошук:</x:String>
+    <x:String x:Key="Cli.Help.Find">  find            - Знайти файли за шаблоном імені</x:String>
+    <x:String x:Key="Cli.Help.Search">  search          - Пошук тексту у файлах</x:String>
+    <x:String x:Key="Cli.Help.InfoSec">Інформація:</x:String>
+    <x:String x:Key="Cli.Help.Info">  info            - Показати інформацію про файл/теку</x:String>
+    <x:String x:Key="Cli.Help.Exists">  exists          - Перевірити існування шляху</x:String>
+    <x:String x:Key="Cli.Help.Help">  help            - Показати цю довідку або деталі команди</x:String>
+    <x:String x:Key="Cli.Help.GhSec">GitHub CLI — Налаштування &amp; Статус:</x:String>
+    <x:String x:Key="Cli.Help.GhInstall">  gh-install      - Встановити GitHub CLI через winget</x:String>
+    <x:String x:Key="Cli.Help.GhAuth">  gh-auth         - Авторизація GitHub (login/logout/status/token)</x:String>
+    <x:String x:Key="Cli.Help.GhStatus">  gh-status       - Статус установки та авторизації GitHub CLI</x:String>
+    <x:String x:Key="Cli.Help.GhConfig">  gh-config       - Керування конфігурацією gh</x:String>
+    <x:String x:Key="Cli.Help.GhExtension">  gh-extension    - Керування розширеннями gh (напр. Copilot)</x:String>
+    <x:String x:Key="Cli.Help.TermSec">🖥️ Команди зовнішнього терміналу:</x:String>
+    <x:String x:Key="Cli.Help.Terminal">  terminal [cmd]       - Відкрити Windows Terminal або CMD</x:String>
+    <x:String x:Key="Cli.Help.CmdExt">  cmd-ext [cmd]        - Відкрити зовнішнє вікно CMD</x:String>
+    <x:String x:Key="Cli.Help.Wt">  wt [cmd]             - Відкрити Windows Terminal</x:String>
+    <x:String x:Key="Cli.Help.PsExt">  powershell-ext [cmd] - Відкрити зовнішній PowerShell</x:String>
+    <x:String x:Key="Cli.Help.Footer">Введіть 'help &lt;команда&gt;' для детальної довідки.</x:String>
+    <x:String x:Key="Search.FileNamePlaceholder">Ім'я файлу (наприклад *.cs, Program)</x:String>
+    <x:String x:Key="Search.ContentPlaceholder">Текст пошуку...</x:String>
+    <x:String x:Key="Search.ReplacePlaceholder">Замінити...</x:String>
+    <x:String x:Key="Search.Scope">Область:</x:String>
+    <x:String x:Key="Search.WholeSolution">Усе рішення</x:String>
+    <x:String x:Key="Search.FindFiles">Знайти файли за ім'ям</x:String>
+    <x:String x:Key="Search.FindInFiles">Знайти у файлах (за вмістом)</x:String>
+    <x:String x:Key="Search.ReplaceAll">Замінити все</x:String>
+    <x:String x:Key="Search.Case">Регістр</x:String>
+    <x:String x:Key="Search.Regex">Regex</x:String>
+    <x:String x:Key="Search.Word">Слово</x:String>
+
+    <!-- ── 2. WelcomeWindow ──────────────────────────────────────── -->
+    <x:String x:Key="Welcome.Title">Ласкаво просимо до Insait Edit</x:String>
+    <x:String x:Key="Welcome.Subtitle">C# IDE на базі Insait Code Editor</x:String>
+    <x:String x:Key="Welcome.Version">Версія 1.0.0 Попередній перегляд</x:String>
+    <x:String x:Key="Welcome.NewSolution">Нове рішення</x:String>
+    <x:String x:Key="Welcome.NewSolutionDesc">Створити нове .sln рішення</x:String>
+    <x:String x:Key="Welcome.NewProject">Новий проєкт</x:String>
+    <x:String x:Key="Welcome.NewProjectDesc">Створити новий C# проєкт</x:String>
+    <x:String x:Key="Welcome.Open">Відкрити</x:String>
+    <x:String x:Key="Welcome.OpenDesc">Відкрити проєкт або рішення</x:String>
+    <x:String x:Key="Welcome.CloneRepository">Клонувати репозиторій</x:String>
+    <x:String x:Key="Welcome.CloneRepositoryDesc">Отримати код із Git-репозиторію</x:String>
+    <x:String x:Key="Welcome.Documentation">Документація</x:String>
+    <x:String x:Key="Welcome.GitHub">GitHub</x:String>
+    <x:String x:Key="Welcome.Settings">Налаштування</x:String>
+    <x:String x:Key="Welcome.SearchRecent">🔍  Пошук останніх проєктів...</x:String>
+    <x:String x:Key="Welcome.ClearAll">Очистити все</x:String>
+    <x:String x:Key="Welcome.RecentProjects">Останні проєкти</x:String>
+
+    <!-- ── 3. MenuWindow ─────────────────────────────────────────── -->
+    <x:String x:Key="Menu.Title">Меню</x:String>
+    <x:String x:Key="Menu.File">Файл</x:String>
+    <x:String x:Key="Menu.Edit">Редагування</x:String>
+    <x:String x:Key="Menu.View">Вигляд</x:String>
+    <x:String x:Key="Menu.Build">Збірка</x:String>
+    <x:String x:Key="Menu.Debug">Налагодження</x:String>
+    <x:String x:Key="Menu.Tools">Інструменти</x:String>
+    <x:String x:Key="Menu.Help">Довідка</x:String>
+    <x:String x:Key="Menu.Language">🌐 Мова</x:String>
+    <!-- File menu -->
+    <x:String x:Key="Menu.SolutionProject">📦 Рішення та проєкт</x:String>
+    <x:String x:Key="Menu.NewSolution">📦 Нове рішення...</x:String>
+    <x:String x:Key="Menu.NewProject">📁 Новий проєкт...</x:String>
+    <x:String x:Key="Menu.NewNanoProject">🔌 Новий nanoFramework проєкт...</x:String>
+    <x:String x:Key="Menu.AddProjectToSolution">➕ Додати проєкт до рішення...</x:String>
+    <x:String x:Key="Menu.FileOperations">📁 Операції з файлами</x:String>
+    <x:String x:Key="Menu.NewFile">📄 Новий файл</x:String>
+    <x:String x:Key="Menu.OpenFile">📂 Відкрити файл...</x:String>
+    <x:String x:Key="Menu.OpenFolder">📁 Відкрити теку...</x:String>
+    <x:String x:Key="Menu.OpenSolution">📦 Відкрити рішення...</x:String>
+    <x:String x:Key="Menu.Save">💾 Зберегти</x:String>
+    <x:String x:Key="Menu.SaveAs">💾 Зберегти як...</x:String>
+    <x:String x:Key="Menu.SaveAll">💾 Зберегти все</x:String>
+    <x:String x:Key="Menu.Exit">🚪 Вихід</x:String>
+    <!-- Edit menu -->
+    <x:String x:Key="Menu.UndoRedo">↩️ Скасувати/Повторити</x:String>
+    <x:String x:Key="Menu.Undo">↩️ Скасувати</x:String>
+    <x:String x:Key="Menu.Redo">↪️ Повторити</x:String>
+    <x:String x:Key="Menu.FindReplace">🔍 Знайти та замінити</x:String>
+    <x:String x:Key="Menu.Find">🔍 Знайти</x:String>
+    <x:String x:Key="Menu.Replace">🔄 Замінити</x:String>
+    <x:String x:Key="Menu.FindInFiles">🔍 Знайти у файлах</x:String>
+    <x:String x:Key="Menu.Code">📝 Код</x:String>
+    <x:String x:Key="Menu.FormatDocument">📋 Форматувати документ</x:String>
+    <x:String x:Key="Menu.ToggleComment">💬 Перемкнути коментар</x:String>
+    <!-- View menu -->
+    <x:String x:Key="Menu.Panels">📊 Панелі</x:String>
+    <x:String x:Key="Menu.AIAssistant">🤖 AI-асистент</x:String>
+    <x:String x:Key="Menu.Explorer">📁 Провідник</x:String>
+    <x:String x:Key="Menu.Search">🔍 Пошук</x:String>
+    <x:String x:Key="Menu.SourceControl">🔀 Керування версіями</x:String>
+    <x:String x:Key="Menu.FocusLayout">🎯 Режим фокусу</x:String>
+    <x:String x:Key="Menu.ToggleLeftPanel">📁 Ліва панель (Провідник)</x:String>
+    <x:String x:Key="Menu.ToggleBottomPanel">💻 Нижня панель (Термінал)</x:String>
+    <x:String x:Key="Menu.ToggleAIPanel">🤖 AI-панель (Copilot)</x:String>
+    <x:String x:Key="Menu.ZenMode">🧘 Дзен-режим (тільки редактор)</x:String>
+    <x:String x:Key="Menu.Preview">🎨 Попередній перегляд</x:String>
+    <x:String x:Key="Menu.PreviewAxaml">🎨 Попередній перегляд AXAML</x:String>
+    <x:String x:Key="Menu.BottomPanel">⬇️ Нижня панель</x:String>
+    <x:String x:Key="Menu.Terminal">💻 Термінал</x:String>
+    <x:String x:Key="Menu.NewTerminal">➕ Новий термінал</x:String>
+    <x:String x:Key="Menu.Problems">⚠️ Проблеми</x:String>
+    <x:String x:Key="Menu.BuildOutput">📋 Вивід збірки</x:String>
+    <x:String x:Key="Menu.RunOutput">▶️ Вивід запуску</x:String>
+    <x:String x:Key="Menu.DebugConsole">🐛 Консоль налагодження</x:String>
+    <x:String x:Key="Menu.Window">🖥️ Вікно</x:String>
+    <x:String x:Key="Menu.Minimize">➖ Згорнути</x:String>
+    <x:String x:Key="Menu.MaximizeRestore">🔲 Розгорнути/Відновити</x:String>
+    <!-- Build menu -->
+    <x:String x:Key="Menu.BuildHeader">🔨 Збірка</x:String>
+    <x:String x:Key="Menu.BuildProject">🔨 Зібрати проєкт</x:String>
+    <x:String x:Key="Menu.RebuildProject">🔄 Перезібрати проєкт</x:String>
+    <x:String x:Key="Menu.CleanProject">🧹 Очистити проєкт</x:String>
+    <x:String x:Key="Menu.Analysis">🔍 Аналіз</x:String>
+    <x:String x:Key="Menu.AnalyzeCode">🔍 Аналізувати код</x:String>
+    <x:String x:Key="Menu.RunHeader">▶️ Запуск</x:String>
+    <x:String x:Key="Menu.RunProject">▶️ Запустити проєкт</x:String>
+    <x:String x:Key="Menu.StopProject">⏹️ Зупинити</x:String>
+    <x:String x:Key="Menu.RunConfigurations">⚙️ Конфігурації запуску...</x:String>
+    <x:String x:Key="Menu.PackagesDeploy">📦 Пакети та розгортання</x:String>
+    <x:String x:Key="Menu.RestoreNuGet">📦 Відновити пакети NuGet</x:String>
+    <x:String x:Key="Menu.Publish">📤 Публікація...</x:String>
+    <!-- Debug menu -->
+    <x:String x:Key="Menu.DebugHeader">🐛 Налагодження</x:String>
+    <x:String x:Key="Menu.StartDebugging">▶️ Почати налагодження</x:String>
+    <x:String x:Key="Menu.StartWithout">⏸️ Запуск без налагодження</x:String>
+    <x:String x:Key="Menu.StopDebugging">⏹️ Зупинити налагодження</x:String>
+    <x:String x:Key="Menu.Breakpoints">🔴 Точки зупинки</x:String>
+    <x:String x:Key="Menu.ToggleBreakpoint">🔴 Перемкнути точку зупинки</x:String>
+    <x:String x:Key="Menu.DeleteAllBreakpoints">❌ Видалити всі точки зупинки</x:String>
+    <x:String x:Key="Menu.Step">👣 Крок</x:String>
+    <x:String x:Key="Menu.StepOver">➡️ Крок через</x:String>
+    <x:String x:Key="Menu.StepInto">⬇️ Крок всередину</x:String>
+    <x:String x:Key="Menu.StepOut">⬆️ Крок назовні</x:String>
+    <!-- Tools menu -->
+    <x:String x:Key="Menu.ToolsHeader">🔧 Інструменти</x:String>
+    <x:String x:Key="Menu.OpenTerminal">💻 Відкрити термінал</x:String>
+    <x:String x:Key="Menu.RefreshFileTree">🔄 Оновити дерево файлів</x:String>
+    <x:String x:Key="Menu.SettingsHeader">⚙️ Налаштування</x:String>
+    <x:String x:Key="Menu.Settings">⚙️ Налаштування</x:String>
+    <x:String x:Key="Menu.Theme">🎨 Тема</x:String>
+    <x:String x:Key="Menu.KeyboardShortcuts">⌨️ Комбінації клавіш</x:String>
+    <x:String x:Key="Menu.NuGetHeader">📦 NuGet</x:String>
+    <x:String x:Key="Menu.ManageNuGet">📦 Керувати пакетами NuGet</x:String>
+    <!-- Help menu -->
+    <x:String x:Key="Menu.HelpHeader">❓ Довідка</x:String>
+    <x:String x:Key="Menu.Documentation">📖 Документація</x:String>
+    <x:String x:Key="Menu.GettingStarted">🎓 Початок роботи</x:String>
+    <x:String x:Key="Menu.KeyboardShortcutsHelp">⌨️ Комбінації клавіш</x:String>
+    <x:String x:Key="Menu.Feedback">📣 Зворотній зв'язок</x:String>
+    <x:String x:Key="Menu.ReportIssue">🐛 Повідомити про помилку</x:String>
+    <x:String x:Key="Menu.FeatureRequest">💡 Запит на функцію</x:String>
+    <x:String x:Key="Menu.About">ℹ️ Про програму</x:String>
+    <x:String x:Key="Menu.AboutInsait">ℹ️ Про Insait Edit</x:String>
+    <x:String x:Key="Menu.CheckUpdates">📋 Перевірити оновлення</x:String>
+
+    <!-- ── 4. NewProjectWindow ───────────────────────────────────── -->
+    <x:String x:Key="NewProject.Title">Новий проєкт</x:String>
+    <x:String x:Key="NewProject.SelectTemplate">Оберіть шаблон</x:String>
+    <x:String x:Key="NewProject.Configure">Налаштуйте ваш проєкт</x:String>
+    <x:String x:Key="NewProject.ProjectName">Назва проєкту</x:String>
+    <x:String x:Key="NewProject.Location">Розташування</x:String>
+    <x:String x:Key="NewProject.SolutionName">Назва рішення</x:String>
+    <x:String x:Key="NewProject.SolutionFormat">Формат файлу рішення</x:String>
+    <x:String x:Key="NewProject.PlaceSameDir">Розмістити рішення і проєкт в одній теці</x:String>
+    <x:String x:Key="NewProject.CreateGitRepo">Створити репозиторій Git</x:String>
+    <x:String x:Key="NewProject.Cancel">Скасувати</x:String>
+    <x:String x:Key="NewProject.Create">Створити</x:String>
+
+    <!-- ── 5. NewSolutionWindow ──────────────────────────────────── -->
+    <x:String x:Key="NewSolution.Title">Нове рішення</x:String>
+    <x:String x:Key="NewSolution.SolutionName">Назва рішення</x:String>
+    <x:String x:Key="NewSolution.Location">Розташування</x:String>
+    <x:String x:Key="NewSolution.CreateSolutionDir">Створити теку рішення</x:String>
+    <x:String x:Key="NewSolution.InitGitRepo">Ініціалізувати репозиторій Git</x:String>
+    <x:String x:Key="NewSolution.SolutionFormat">Формат рішення</x:String>
+    <x:String x:Key="NewSolution.CreatedAt">Рішення буде створено за адресою:</x:String>
+    <x:String x:Key="NewSolution.Cancel">Скасувати</x:String>
+    <x:String x:Key="NewSolution.Create">Створити</x:String>
+
+    <!-- ── 6. AddNewItemWindow ───────────────────────────────────── -->
+    <x:String x:Key="AddItem.Title">Додати новий елемент</x:String>
+    <x:String x:Key="AddItem.CSharpTypes">Типи C#</x:String>
+    <x:String x:Key="AddItem.Class">Клас</x:String>
+    <x:String x:Key="AddItem.Interface">Інтерфейс</x:String>
+    <x:String x:Key="AddItem.Record">Запис</x:String>
+    <x:String x:Key="AddItem.Struct">Структура</x:String>
+    <x:String x:Key="AddItem.Enum">Перелік</x:String>
+    <x:String x:Key="AddItem.Delegate">Делегат</x:String>
+    <x:String x:Key="AddItem.Exception">Виключення</x:String>
+    <x:String x:Key="AddItem.GlobalUsings">Глобальні using</x:String>
+    <x:String x:Key="AddItem.FSharpTypes">Типи F#</x:String>
+    <x:String x:Key="AddItem.AspNet">ASP.NET</x:String>
+    <x:String x:Key="AddItem.AvaloniaUI">Avalonia UI</x:String>
+    <x:String x:Key="AddItem.WebFiles">Веб-файли</x:String>
+    <x:String x:Key="AddItem.ConfigData">Конфігурація / Дані</x:String>
+    <x:String x:Key="AddItem.DotNetConfig">Конфігурація .NET</x:String>
+    <x:String x:Key="AddItem.Git">Git</x:String>
+    <x:String x:Key="AddItem.Name">Назва</x:String>
+    <x:String x:Key="AddItem.Preview">Попередній перегляд</x:String>
+    <x:String x:Key="AddItem.Location">Розташування:</x:String>
+    <x:String x:Key="AddItem.AddToProject">Додати до файлу проєкту (.csproj / .fsproj)</x:String>
+    <x:String x:Key="AddItem.Cancel">Скасувати</x:String>
+    <x:String x:Key="AddItem.Add">Додати</x:String>
+
+    <!-- ── 7. AddProjectToSolutionWindow ─────────────────────────── -->
+    <x:String x:Key="AddProject.Title">Додати новий проєкт до рішення</x:String>
+    <x:String x:Key="AddProject.Solution">Рішення:</x:String>
+    <x:String x:Key="AddProject.Template">Шаблон проєкту</x:String>
+    <x:String x:Key="AddProject.ProjectName">Назва проєкту</x:String>
+    <x:String x:Key="AddProject.CreatedAt">Проєкт буде створено за адресою:</x:String>
+    <x:String x:Key="AddProject.Cancel">Скасувати</x:String>
+    <x:String x:Key="AddProject.Add">Додати проєкт</x:String>
+
+    <!-- ── 8. CloneRepositoryWindow ──────────────────────────────── -->
+    <x:String x:Key="Clone.Title">Клонувати репозиторій</x:String>
+    <x:String x:Key="Clone.RepoUrl">URL репозиторію</x:String>
+    <x:String x:Key="Clone.LocalPath">Локальний шлях</x:String>
+    <x:String x:Key="Clone.Browse">Огляд...</x:String>
+    <x:String x:Key="Clone.Cloning">Клонування...</x:String>
+    <x:String x:Key="Clone.Cancel">Скасувати</x:String>
+    <x:String x:Key="Clone.Clone">Клонувати</x:String>
+
+    <!-- ── 9. GitWindow ──────────────────────────────────────────── -->
+    <x:String x:Key="Git.Title">Git — Insait Edit</x:String>
+    <x:String x:Key="Git.Scope">Область:</x:String>
+    <x:String x:Key="Git.SolutionAll">📁 Рішення (усі проєкти)</x:String>
+    <x:String x:Key="Git.Refresh">Оновити</x:String>
+    <x:String x:Key="Git.Pull">Завантажити / Оновити</x:String>
+    <x:String x:Key="Git.Push">Відправити</x:String>
+    <x:String x:Key="Git.Fetch">Отримати</x:String>
+    <x:String x:Key="Git.Stash">Заховати</x:String>
+    <x:String x:Key="Git.PopStash">Дістати заховане</x:String>
+    <x:String x:Key="Git.Rollback">Скасувати все</x:String>
+    <x:String x:Key="Git.CreateRepo">Створити GitHub-репозиторій</x:String>
+    <x:String x:Key="Git.Console">Git-консоль</x:String>
+
+    <!-- ── 10. ImageViewerWindow ─────────────────────────────────── -->
+    <x:String x:Key="ImageViewer.Title">Переглядач зображень</x:String>
+    <x:String x:Key="ImageViewer.ZoomIn">Збільшити (Ctrl++)</x:String>
+    <x:String x:Key="ImageViewer.ZoomOut">Зменшити (Ctrl+-)</x:String>
+    <x:String x:Key="ImageViewer.FitToWindow">Вписати у вікно</x:String>
+    <x:String x:Key="ImageViewer.ActualSize">Фактичний розмір (1:1)</x:String>
+    <x:String x:Key="ImageViewer.OpenExternal">Відкрити у системному переглядачі</x:String>
+
+    <!-- ── 11. AxamlPreviewWindow ────────────────────────────────── -->
+    <x:String x:Key="AxamlPreview.Title">Попередній перегляд AXAML</x:String>
+    <x:String x:Key="AxamlPreview.Refresh">Оновити</x:String>
+    <x:String x:Key="AxamlPreview.Size">Розмір:</x:String>
+    <x:String x:Key="AxamlPreview.Free">Вільний</x:String>
+    <x:String x:Key="AxamlPreview.ToggleBg">Перемикач фону</x:String>
+    <x:String x:Key="AxamlPreview.Ready">Готово</x:String>
+    <x:String x:Key="AxamlPreview.Error">Помилка</x:String>
+    <x:String x:Key="AxamlPreview.ShowError">Показати деталі помилки</x:String>
+
+    <!-- ── 12. PreviewErrorWindow ────────────────────────────────── -->
+    <x:String x:Key="PreviewError.Title">Деталі помилки перегляду</x:String>
+    <x:String x:Key="PreviewError.Hint">Текст можна виділити — Ctrl+A для виділення всього</x:String>
+    <x:String x:Key="PreviewError.Copy">Копіювати</x:String>
+
+    <!-- ── 13. CompoundRunWindow ─────────────────────────────────── -->
+    <x:String x:Key="Compound.Title">Комплексні конфігурації запуску</x:String>
+    <x:String x:Key="Compound.Subtitle">Запуск кількох проєктів одночасно</x:String>
+    <x:String x:Key="Compound.Configurations">Комплексні конфігурації</x:String>
+    <x:String x:Key="Compound.ConfigName">Назва конфігурації</x:String>
+    <x:String x:Key="Compound.ProjectsToLaunch">Проєкти для запуску</x:String>
+    <x:String x:Key="Compound.ExecutionOptions">Параметри виконання</x:String>
+    <x:String x:Key="Compound.Sequential">Запускати проєкти послідовно (один за одним)</x:String>
+    <x:String x:Key="Compound.StopOnFailure">Зупинити при першій помилці</x:String>
+    <x:String x:Key="Compound.Delay">Затримка між запусками (мс)</x:String>
+    <x:String x:Key="Compound.LaunchPreview">Попередній перегляд запуску</x:String>
+    <x:String x:Key="Compound.RunAll">▶▶ Запустити все</x:String>
+    <x:String x:Key="Compound.StopAll">■ Зупинити все</x:String>
+    <x:String x:Key="Compound.Apply">Застосувати</x:String>
+    <x:String x:Key="Compound.Cancel">Скасувати</x:String>
+    <x:String x:Key="Compound.OK">OK</x:String>
+
+    <!-- ── 14. RunConfigurationsWindow ────────────────────────────── -->
+    <x:String x:Key="RunConfig.Title">Конфігурації запуску/налагодження</x:String>
+    <x:String x:Key="RunConfig.Name">Назва</x:String>
+    <x:String x:Key="RunConfig.Project">Проєкт</x:String>
+    <x:String x:Key="RunConfig.BuildConfig">Конфігурація збірки</x:String>
+    <x:String x:Key="RunConfig.TargetFramework">Цільовий фреймворк</x:String>
+    <x:String x:Key="RunConfig.LaunchProfile">Профіль запуску (необов'язково)</x:String>
+    <x:String x:Key="RunConfig.WorkingDir">Робоча тека</x:String>
+    <x:String x:Key="RunConfig.Arguments">Аргументи програми</x:String>
+    <x:String x:Key="RunConfig.EnvVars">Змінні середовища</x:String>
+    <x:String x:Key="RunConfig.RunOptions">Параметри запуску</x:String>
+    <x:String x:Key="RunConfig.AllowParallel">Дозволити паралельний запуск</x:String>
+    <x:String x:Key="RunConfig.BuildBeforeRun">Збірка перед запуском</x:String>
+    <x:String x:Key="RunConfig.ActivateToolWindow">Активувати вікно інструментів при виведенні</x:String>
+    <x:String x:Key="RunConfig.Run">▶ Запуск</x:String>
+    <x:String x:Key="RunConfig.Debug">🐛 Налагодження</x:String>
+    <x:String x:Key="RunConfig.Apply">Застосувати</x:String>
+    <x:String x:Key="RunConfig.Cancel">Скасувати</x:String>
+    <x:String x:Key="RunConfig.OK">OK</x:String>
+
+    <!-- ── 15. PublishWindow ─────────────────────────────────────── -->
+    <x:String x:Key="Publish.Title">Публікація проєкту</x:String>
+    <x:String x:Key="Publish.Project">Проєкт</x:String>
+    <x:String x:Key="Publish.DeploymentMode">Режим розгортання</x:String>
+    <x:String x:Key="Publish.FrameworkDependent">Залежний від фреймворку (потрібен .NET на цільовій машині)</x:String>
+    <x:String x:Key="Publish.SelfContained">Автономний (включає середовище .NET)</x:String>
+    <x:String x:Key="Publish.Configuration">Конфігурація</x:String>
+    <x:String x:Key="Publish.TargetRuntime">Цільова платформа</x:String>
+    <x:String x:Key="Publish.TargetFramework">Цільовий фреймворк</x:String>
+    <x:String x:Key="Publish.OutputFolder">Вихідна тека</x:String>
+    <x:String x:Key="Publish.Options">Параметри публікації</x:String>
+    <x:String x:Key="Publish.SingleFile">Один файл</x:String>
+    <x:String x:Key="Publish.ReadyToRun">Увімкнути компіляцію ReadyToRun</x:String>
+    <x:String x:Key="Publish.Trim">Обрізати невикористані збірки</x:String>
+    <x:String x:Key="Publish.Compression">Стиснення в одному файлі</x:String>
+    <x:String x:Key="Publish.NativeLibs">Включити нативні бібліотеки</x:String>
+    <x:String x:Key="Publish.QuickPresets">Швидкі налаштування</x:String>
+    <x:String x:Key="Publish.EstimatedSize">Очікуваний розмір з'явиться після публікації</x:String>
+    <x:String x:Key="Publish.Cancel">Скасувати</x:String>
+    <x:String x:Key="Publish.Publish">📦 Опублікувати</x:String>
+
+    <!-- ── 16. ProjectPropertiesWindow ────────────────────────────── -->
+    <x:String x:Key="ProjectProps.Title">Властивості проєкту</x:String>
+    <x:String x:Key="ProjectProps.General">⚙️  Загальне</x:String>
+    <x:String x:Key="ProjectProps.Build">🔨  Збірка</x:String>
+    <x:String x:Key="ProjectProps.Package">📦  Пакет / NuGet</x:String>
+    <x:String x:Key="ProjectProps.Signing">🔏  Підпис</x:String>
+    <x:String x:Key="ProjectProps.Debug">🐛  Налагодження</x:String>
+    <x:String x:Key="ProjectProps.AssemblyName">Ім'я збірки</x:String>
+    <x:String x:Key="ProjectProps.DefaultNamespace">Простір імен за замовчуванням</x:String>
+    <x:String x:Key="ProjectProps.TargetFramework">Цільовий фреймворк</x:String>
+    <x:String x:Key="ProjectProps.OutputType">Тип виводу</x:String>
+    <x:String x:Key="ProjectProps.LangVersion">Версія мови C#</x:String>
+    <x:String x:Key="ProjectProps.Nullable">Типи з підтримкою null</x:String>
+    <x:String x:Key="ProjectProps.ImplicitUsings">Увімкнути неявні using</x:String>
+    <x:String x:Key="ProjectProps.AllowUnsafe">Дозволити unsafe-код</x:String>
+    <x:String x:Key="ProjectProps.Apply">Застосувати</x:String>
+    <x:String x:Key="ProjectProps.OK">OK</x:String>
+    <x:String x:Key="ProjectProps.Cancel">Скасувати</x:String>
+
+    <!-- ── 17. MsixManagerWindow ─────────────────────────────────── -->
+    <x:String x:Key="Msix.Title">Менеджер пакетів MSIX</x:String>
+    <x:String x:Key="Msix.BuildMsix">Збірка MSIX</x:String>
+    <x:String x:Key="Msix.OpenMsix">Відкрити MSIX</x:String>
+    <x:String x:Key="Msix.Identity">Ідентифікація</x:String>
+    <x:String x:Key="Msix.EntryPoint">Точка входу</x:String>
+    <x:String x:Key="Msix.ManifestXml">Маніфест XML</x:String>
+    <x:String x:Key="Msix.BuildLog">Журнал збірки</x:String>
+    <x:String x:Key="Msix.Ready">Готово</x:String>
+    <x:String x:Key="Msix.Close">Закрити</x:String>
+    <x:String x:Key="Msix.StartBuild">🔨 Зібрати MSIX</x:String>
+
+    <!-- ── 18. NuGetPanelControl ─────────────────────────────────── -->
+    <x:String x:Key="NuGet.Title">ПАКЕТИ NUGET</x:String>
+    <x:String x:Key="NuGet.Browse">Огляд</x:String>
+    <x:String x:Key="NuGet.Installed">Встановлені</x:String>
+    <x:String x:Key="NuGet.Updates">Оновлення</x:String>
+    <x:String x:Key="NuGet.SearchPlaceholder">Пошук NuGet-пакетів...</x:String>
+    <x:String x:Key="NuGet.NoProject">Проєкт не завантажено</x:String>
+    <x:String x:Key="NuGet.NoPackages">Пакети не встановлені</x:String>
+    <x:String x:Key="NuGet.AllUpToDate">Усі пакети оновлені</x:String>
+    <x:String x:Key="NuGet.UpdateAll">Оновити все</x:String>
+
+    <!-- ── 19. AccountPanelControl ───────────────────────────────── -->
+    <x:String x:Key="Account.Title">АКАУНТ</x:String>
+    <x:String x:Key="Account.SignInTitle">Увійти через GitHub</x:String>
+    <x:String x:Key="Account.SignInDesc">Підключіть GitHub-акаунт для доступу до репозиторіїв.</x:String>
+    <x:String x:Key="Account.SignInBtn">Увійти через GitHub</x:String>
+    <x:String x:Key="Account.PublicRepos">Публічні репозиторії</x:String>
+    <x:String x:Key="Account.Followers">Підписники</x:String>
+    <x:String x:Key="Account.Following">Підписки</x:String>
+    <x:String x:Key="Account.YourRepos">ВАШІ РЕПОЗИТОРІЇ</x:String>
+    <x:String x:Key="Account.SearchRepos">Пошук репозиторіїв...</x:String>
+    <x:String x:Key="Account.LoadMore">Завантажити більше</x:String>
+    <x:String x:Key="Account.SignOut">Вийти</x:String>
+
+    <!-- ── 20. GitPanelControl ───────────────────────────────────── -->
+    <x:String x:Key="GitPanel.LocalChanges">Локальні зміни</x:String>
+    <x:String x:Key="GitPanel.Log">Журнал</x:String>
+    <x:String x:Key="GitPanel.Console">Консоль</x:String>
+    <x:String x:Key="GitPanel.NoRepo">Немає Git-репозиторію</x:String>
+    <x:String x:Key="GitPanel.NoRepoHint">Відкрийте теку з Git-репозиторієм або ініціалізуйте новий.</x:String>
+    <x:String x:Key="GitPanel.InitRepo">Ініціалізувати репозиторій</x:String>
+    <x:String x:Key="GitPanel.CloneRepo">Клонувати репозиторій...</x:String>
+    <x:String x:Key="GitPanel.DefaultChangelist">Список змін за замовчуванням</x:String>
+    <x:String x:Key="GitPanel.CommitPlaceholder">Повідомлення коміту (Ctrl+Enter для коміту)</x:String>
+
+    <!-- ── 21. Diagnostic / Editor ───────────────────────────────── -->
+    <x:String x:Key="Diag.QuickFixes">Швидкі виправлення:</x:String>
+    <x:String x:Key="Diag.LineCol">Рядок {0}, Стовпець {1}</x:String>
+    <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn готовий</x:String>
+
+    <!-- ── 22. LedPanelDesignerWindow ───────────────────────────── -->
+    <x:String x:Key="Led.Title">Дизайнер LED-панелі</x:String>
+    <x:String x:Key="Led.PanelSize">РОЗМІР ПАНЕЛІ</x:String>
+    <x:String x:Key="Led.Rows">Рядки</x:String>
+    <x:String x:Key="Led.Columns">Стовпці</x:String>
+    <x:String x:Key="Led.TotalLeds">Загальна кількість LED</x:String>
+    <x:String x:Key="Led.Hardware">АПАРАТНЕ ЗАБЕЗПЕЧЕННЯ</x:String>
+    <x:String x:Key="Led.GpioPin">Пін GPIO</x:String>
+    <x:String x:Key="Led.StripType">Тип стрічки</x:String>
+    <x:String x:Key="Led.Brightness">Яскравість</x:String>
+    <x:String x:Key="Led.PaintColor">КОЛІР МАЛЮВАННЯ</x:String>
+    <x:String x:Key="Led.DrawMode">РЕЖИМ МАЛЮВАННЯ</x:String>
+    <x:String x:Key="Led.DrawSingle">🖌️ Один LED</x:String>
+    <x:String x:Key="Led.DrawRow">↔️ Цілий рядок</x:String>
+    <x:String x:Key="Led.DrawColumn">↕️ Цілий стовпець</x:String>
+    <x:String x:Key="Led.DrawErase">🧹 Гумка</x:String>
+    <x:String x:Key="Led.DrawFill">🪣 Заповнити все</x:String>
+    <x:String x:Key="Led.Actions">ДІЇ</x:String>
+    <x:String x:Key="Led.ClearAll">🗑️ Очистити все</x:String>
+    <x:String x:Key="Led.InvertColors">🔄 Інвертувати кольори</x:String>
+    <x:String x:Key="Led.RandomPattern">🎲 Випадковий шаблон</x:String>
+    <x:String x:Key="Led.Animation">АНІМАЦІЯ</x:String>
+    <x:String x:Key="Led.CaptureFrame">📸 Зробити кадр</x:String>
+    <x:String x:Key="Led.FrameDelay">Затримка кадру (мс)</x:String>
+    <x:String x:Key="Led.InfiniteLoop">♾️ Нескінченний цикл</x:String>
+    <x:String x:Key="Led.LoopCount">Кількість циклів</x:String>
+    <x:String x:Key="Led.ClearFrames">🗑️ Видалити кадри</x:String>
+    <x:String x:Key="Led.LedDisplay">LED-дисплей</x:String>
+    <x:String x:Key="Led.HoverLeds">Наведіть на LED</x:String>
+    <x:String x:Key="Led.GridLines">Лінії сітки</x:String>
+    <x:String x:Key="Led.Coordinates">Координати</x:String>
+    <x:String x:Key="Led.PreviewPattern">Переглянути шаблон</x:String>
+    <x:String x:Key="Led.Playing">Відтворення...</x:String>
+    <x:String x:Key="Led.PreviewComplete">Перегляд завершено</x:String>
+    <x:String x:Key="Led.Stop">⏹ Зупинити</x:String>
+    <x:String x:Key="Led.SaveConfig">💾 Зберегти конфіг</x:String>
+    <x:String x:Key="Led.LoadConfig">📂 Завантажити конфіг</x:String>
+    <x:String x:Key="Led.StatusReady">Готово — Створіть LED-шаблон</x:String>
+    <x:String x:Key="Led.GenerateCode">Згенерувати код nanoFramework</x:String>
+    <x:String x:Key="Led.Cancel">Скасувати</x:String>
+    <x:String x:Key="Led.Frames">Кадри: {0}</x:String>
+    <x:String x:Key="Led.FrameStatus">Кадр {0}/{1} (Цикл {2}/5)</x:String>
+    <x:String x:Key="Led.SaveDialogTitle">Зберегти конфігурацію LED-панелі</x:String>
+    <x:String x:Key="Led.LoadDialogTitle">Завантажити конфігурацію LED-панелі</x:String>
+
+    <!-- ── 23. NewNanoProjectWindow ──────────────────────────────── -->
+    <x:String x:Key="Nano.Title">Новий nanoFramework проєкт</x:String>
+    <x:String x:Key="Nano.Subtitle">Створити C# проєкт для ESP32 / nanoFramework</x:String>
+    <x:String x:Key="Nano.SelectTemplate">Виберіть шаблон</x:String>
+    <x:String x:Key="Nano.Configure">Налаштуйте проєкт</x:String>
+    <x:String x:Key="Nano.ProjectName">Назва проєкту</x:String>
+    <x:String x:Key="Nano.Location">Розташування</x:String>
+    <x:String x:Key="Nano.TargetBoard">Цільова плата</x:String>
+    <x:String x:Key="Nano.Solution">Рішення</x:String>
+    <x:String x:Key="Nano.AddToSolution">Додати до існуючого рішення</x:String>
+    <x:String x:Key="Nano.CreateNewSolution">Створити нове рішення</x:String>
+    <x:String x:Key="Nano.Requirements">ℹ️ Вимоги</x:String>
+    <x:String x:Key="Nano.Req1">• nanoff CLI (встановлюється автоматично)</x:String>
+    <x:String x:Key="Nano.Req2">• ESP32, підключений через USB</x:String>
+    <x:String x:Key="Nano.Req3">• Драйвер USB-до-Serial (CP210x або CH340)</x:String>
+    <x:String x:Key="Nano.Browse">Огляд...</x:String>
+    <x:String x:Key="Nano.Cancel">Скасувати</x:String>
+    <x:String x:Key="Nano.Create">Створити nanoFramework проєкт</x:String>
+    <x:String x:Key="Nano.TplBlankName">Порожній застосунок</x:String>
+    <x:String x:Key="Nano.TplBlankDesc">Пустий nanoFramework застосунок</x:String>
+    <x:String x:Key="Nano.TplClassLibName">Бібліотека класів</x:String>
+    <x:String x:Key="Nano.TplClassLibDesc">Бібліотека, що повторно використовується</x:String>
+    <x:String x:Key="Nano.TplGpioName">GPIO Blink</x:String>
+    <x:String x:Key="Nano.TplGpioDesc">Приклад блимання LED</x:String>
+    <x:String x:Key="Nano.TplWifiName">Wi-Fi</x:String>
+    <x:String x:Key="Nano.TplWifiDesc">Підключення Wi-Fi</x:String>
+    <x:String x:Key="Nano.TplHttpName">HTTP-клієнт</x:String>
+    <x:String x:Key="Nano.TplHttpDesc">HTTP-запити</x:String>
+    <x:String x:Key="Nano.TplI2CName">I2C-датчик</x:String>
+    <x:String x:Key="Nano.TplI2CDesc">Зчитування датчика</x:String>
+
+    <!-- ── AxamlPreview extra ─────────────────────────────────────── -->
+    <x:String x:Key="AxamlPreview.LivePreview">✔ Живий перегляд</x:String>
+    <x:String x:Key="AxamlPreview.FallbackView">⚠ Резервний вигляд</x:String>
+    <x:String x:Key="AxamlPreview.TitleFormat">Перегляд AXAML — {0}</x:String>
+    <x:String x:Key="AxamlPreview.UnknownError">Невідома помилка</x:String>
+
+    <!-- ── RunConfig extra ────────────────────────────────────────── -->
+    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Пошук конфігурацій...</x:String>
+    <x:String x:Key="RunConfig.Single">ОДИНОЧНИЙ</x:String>
+    <x:String x:Key="RunConfig.Compound">СКЛАДЕНИЙ</x:String>
+    <x:String x:Key="RunConfig.ManageCompound">⚡ Керувати</x:String>
+    <x:String x:Key="RunConfig.Add">Додати конфігурацію</x:String>
+    <x:String x:Key="RunConfig.Remove">Видалити конфігурацію</x:String>
+    <x:String x:Key="RunConfig.Duplicate">Дублювати конфігурацію</x:String>
+    <x:String x:Key="RunConfig.NoEnvVars">Змінні середовища не задані</x:String>
+    <x:String x:Key="RunConfig.AddEnvVar">+ Додати</x:String>
+    <x:String x:Key="RunConfig.Projects">проєктів</x:String>
+
+    <!-- ── NuGet extra ────────────────────────────────────────────── -->
+    <x:String x:Key="NuGet.NanoFramework">🔌 Популярні пакети nanoFramework</x:String>
+    <x:String x:Key="NuGet.NanoFrameworkDesc">Популярні пакети для nanoFramework. Використовуйте пошук для будь-якого NuGet-пакету.</x:String>
+    <x:String x:Key="NuGet.NoPackagesFound">Пакети не знайдено</x:String>
+    <x:String x:Key="NuGet.Install">Встановити</x:String>
+    <x:String x:Key="NuGet.Update">Оновити</x:String>
+    <x:String x:Key="NuGet.Uninstall">Видалити</x:String>
+    <x:String x:Key="NuGet.AllUpToDateCheck">✅ Усі пакети оновлені</x:String>
+
+    <!-- ── Common ────────────────────────────────────────────────── -->
+    <x:String x:Key="Common.OK">OK</x:String>
+    <x:String x:Key="Common.Cancel">Скасувати</x:String>
+    <x:String x:Key="Common.Apply">Застосувати</x:String>
+    <x:String x:Key="Common.Close">Закрити</x:String>
+    <x:String x:Key="Common.Browse">Огляд...</x:String>
+    <x:String x:Key="Common.Save">Зберегти</x:String>
+    <x:String x:Key="Common.Refresh">Оновити</x:String>
+
+    <!-- ── Language Switcher ─────────────────────────────────────── -->
+    <x:String x:Key="Lang.Language">🌐 Мова</x:String>
+    <x:String x:Key="Lang.English">English</x:String>
+    <x:String x:Key="Lang.Ukrainian">Українська</x:String>
+    <x:String x:Key="Lang.German">Deutsch</x:String>
+    <x:String x:Key="Lang.Russian">Русский</x:String>
+    <x:String x:Key="Lang.Turkish">Türkçe</x:String>
+
+</ResourceDictionary>

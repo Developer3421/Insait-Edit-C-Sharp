@@ -38,6 +38,34 @@ public partial class RunConfigurationsWindow : Window
         
         SetupEventHandlers();
         LoadConfigurations();
+        ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("RunConfig.Title");
+        var searchBox = this.FindControl<TextBox>("SearchBox");
+        if (searchBox != null) searchBox.Watermark = L("RunConfig.SearchPlaceholder");
+        var addBtn = this.FindControl<Button>("AddConfigButton");
+        if (addBtn != null) ToolTip.SetTip(addBtn, L("RunConfig.Add"));
+        var removeBtn = this.FindControl<Button>("RemoveConfigButton");
+        if (removeBtn != null) ToolTip.SetTip(removeBtn, L("RunConfig.Remove"));
+        var dupBtn = this.FindControl<Button>("DuplicateConfigButton");
+        if (dupBtn != null) ToolTip.SetTip(dupBtn, L("RunConfig.Duplicate"));
+        var runBtn = this.FindControl<Button>("RunButton");
+        if (runBtn != null) runBtn.Content = L("RunConfig.Run");
+        var debugBtn = this.FindControl<Button>("DebugButton");
+        if (debugBtn != null) debugBtn.Content = L("RunConfig.Debug");
+        var applyBtn = this.FindControl<Button>("ApplyButton");
+        if (applyBtn != null) applyBtn.Content = L("RunConfig.Apply");
+        var cancelBtn = this.FindControl<Button>("CancelButton");
+        if (cancelBtn != null) cancelBtn.Content = L("RunConfig.Cancel");
+        var okBtn = this.FindControl<Button>("OkButton");
+        if (okBtn != null) okBtn.Content = L("RunConfig.OK");
+        var manageBtn = this.FindControl<Button>("ManageCompoundButton");
+        if (manageBtn != null) manageBtn.Content = L("RunConfig.ManageCompound");
     }
 
     private void InitializeComponent()

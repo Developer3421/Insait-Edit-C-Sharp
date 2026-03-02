@@ -54,7 +54,31 @@ public partial class GitWindow : Window
     //  Init
     // ═══════════════════════════════════════════════════════════
 
-    public GitWindow() { InitializeComponent(); }
+    public GitWindow() { InitializeComponent(); ApplyLocalization(); }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("Git.Title");
+        var scopeLabel = this.FindControl<TextBlock>("ScopeLabel");
+        if (scopeLabel != null) scopeLabel.Text = L("Git.Scope");
+        var refreshBtn = this.FindControl<Button>("RefreshBtn");
+        if (refreshBtn != null) ToolTip.SetTip(refreshBtn, L("Git.Refresh"));
+        var pullBtn = this.FindControl<Button>("PullBtn");
+        if (pullBtn != null) ToolTip.SetTip(pullBtn, L("Git.Pull"));
+        var pushBtn = this.FindControl<Button>("PushBtn");
+        if (pushBtn != null) ToolTip.SetTip(pushBtn, L("Git.Push"));
+        var fetchBtn = this.FindControl<Button>("FetchBtn");
+        if (fetchBtn != null) ToolTip.SetTip(fetchBtn, L("Git.Fetch"));
+        var stashBtn = this.FindControl<Button>("StashBtn");
+        if (stashBtn != null) ToolTip.SetTip(stashBtn, L("Git.Stash"));
+        var popStashBtn = this.FindControl<Button>("PopStashBtn");
+        if (popStashBtn != null) ToolTip.SetTip(popStashBtn, L("Git.PopStash"));
+        var rollbackBtn = this.FindControl<Button>("RollbackBtn");
+        if (rollbackBtn != null) ToolTip.SetTip(rollbackBtn, L("Git.Rollback"));
+        var createRepoBtn = this.FindControl<Button>("CreateRepoBtn");
+        if (createRepoBtn != null) ToolTip.SetTip(createRepoBtn, L("Git.CreateRepo"));
+    }
 
     public async Task InitializeAsync(string? projectPath, IEnumerable<string>? allProjects = null)
     {
@@ -88,7 +112,7 @@ public partial class GitWindow : Window
         var combo = this.FindControl<ComboBox>("ScopeCombo");
         if (combo == null) return;
         combo.Items.Clear();
-        combo.Items.Add(new ComboBoxItem { Content = "📁 Solution (all projects)", Tag = "solution" });
+        combo.Items.Add(new ComboBoxItem { Content = LocalizationService.Get("Git.SolutionAll"), Tag = "solution" });
         foreach (var p in _projectPaths)
             combo.Items.Add(new ComboBoxItem
             {

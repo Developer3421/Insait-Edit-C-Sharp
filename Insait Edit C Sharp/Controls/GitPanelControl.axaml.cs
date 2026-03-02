@@ -35,6 +35,16 @@ public partial class GitPanelControl : UserControl
             commitMessageBox.TextChanged += CommitMessageBox_TextChanged;
             commitMessageBox.KeyDown += CommitMessageBox_KeyDown;
         }
+        
+        ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        var commitMsg = this.FindControl<TextBox>("CommitMessageBox");
+        if (commitMsg != null) commitMsg.Watermark = L("GitPanel.CommitPlaceholder");
     }
 
     public async Task SetRepositoryPathAsync(string? path)

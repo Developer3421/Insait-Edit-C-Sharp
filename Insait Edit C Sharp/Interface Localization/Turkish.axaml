@@ -1,0 +1,780 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         TÜRKÇE YERELLEŞTİRME — Tüm 21 Pencere ve Açılır Menüler
+         ══════════════════════════════════════════════════════════════ -->
+
+    <x:String x:Key="App.Title">Insait Edit - C# IDE</x:String>
+    <x:String x:Key="TitleBar.Menu">Menü</x:String>
+    <x:String x:Key="TitleBar.Build">Derle</x:String>
+    <x:String x:Key="TitleBar.Analyze">Analiz</x:String>
+    <x:String x:Key="TitleBar.Run">Çalıştır</x:String>
+    <x:String x:Key="TitleBar.Debug">Hata Ayıkla</x:String>
+    <x:String x:Key="TitleBar.Stop">Durdur</x:String>
+    <x:String x:Key="TitleBar.Preview">Önizleme</x:String>
+    <x:String x:Key="TitleBar.MSIX">MSIX</x:String>
+    <x:String x:Key="Tooltip.Menu">Menü</x:String>
+    <x:String x:Key="Tooltip.Build">Projeyi Derle (Ctrl+Shift+B)</x:String>
+    <x:String x:Key="Tooltip.Analyze">Kod Analizi (Ctrl+Shift+A)</x:String>
+    <x:String x:Key="Tooltip.RunConfig">Çalıştırma Yapılandırması Seç (Shift+Alt+F10)</x:String>
+    <x:String x:Key="Tooltip.EditConfig">Yapılandırmaları Düzenle...</x:String>
+    <x:String x:Key="Tooltip.Run">Projeyi Çalıştır (F5)</x:String>
+    <x:String x:Key="Tooltip.Debug">Hata Ayıklama Modunda Çalıştır (F5)</x:String>
+    <x:String x:Key="Tooltip.Stop">Durdur (Shift+F5)</x:String>
+    <x:String x:Key="Tooltip.Publish">Projeyi Yayınla...</x:String>
+    <x:String x:Key="Tooltip.MsixManager">MSIX Paket Yöneticisi...</x:String>
+    <x:String x:Key="Tooltip.Undo">Geri Al (Ctrl+Z)</x:String>
+    <x:String x:Key="Tooltip.Redo">Yinele (Ctrl+Y)</x:String>
+    <x:String x:Key="Tooltip.NewWindow">Yeni Pencere</x:String>
+    <x:String x:Key="Tooltip.Restart">Uygulamayı Yeniden Başlat</x:String>
+    <x:String x:Key="Tooltip.PreviewAxaml">AXAML Önizleme (Ctrl+Shift+P)</x:String>
+    <x:String x:Key="Sidebar.Explorer">Gezgin (Ctrl+Shift+E)</x:String>
+    <x:String x:Key="Sidebar.Search">Ara (Ctrl+Shift+F)</x:String>
+    <x:String x:Key="Sidebar.Git">Kaynak Denetimi (Ctrl+Shift+G)</x:String>
+    <x:String x:Key="Sidebar.NuGet">NuGet Paketleri (Ctrl+Shift+N)</x:String>
+    <x:String x:Key="Sidebar.LedPanel">LED Panel Tasarımcısı</x:String>
+    <x:String x:Key="Sidebar.Account">Hesap</x:String>
+    <x:String x:Key="Sidebar.Settings">Ayarlar (Ctrl+,)</x:String>
+    <x:String x:Key="Panel.Explorer">GEZGİN</x:String>
+    <x:String x:Key="Panel.Search">ARAMA</x:String>
+    <x:String x:Key="Panel.CopilotCli">COPILOT CLI</x:String>
+    <x:String x:Key="Explorer.NewFile">Yeni Dosya</x:String>
+    <x:String x:Key="Explorer.NewFolder">Yeni Klasör</x:String>
+    <x:String x:Key="Explorer.Refresh">Yenile</x:String>
+    <x:String x:Key="Tab.Problems">Sorunlar</x:String>
+    <x:String x:Key="Tab.Build">Derleme</x:String>
+    <x:String x:Key="Tab.Run">Çalıştır</x:String>
+    <x:String x:Key="Tab.Terminal">Terminal</x:String>
+    <x:String x:Key="Tooltip.NewTerminal">Yeni Terminal (Ctrl+Shift+`)</x:String>
+    <x:String x:Key="Tooltip.SplitTerminal">Terminali Böl</x:String>
+    <x:String x:Key="Tooltip.ClearAll">Tümünü Temizle</x:String>
+    <x:String x:Key="Tooltip.ScrollToEnd">Sona Kaydır</x:String>
+    <x:String x:Key="Tooltip.Minimize">Simge Durumuna Küçült</x:String>
+    <x:String x:Key="Tooltip.Maximize">Büyüt</x:String>
+    <x:String x:Key="Tooltip.HidePanel">Gizle (Esc)</x:String>
+    <x:String x:Key="Tooltip.RefreshAnalysis">Analizi Yenile</x:String>
+    <x:String x:Key="Tooltip.ClearProblems">Sorunları Temizle</x:String>
+    <x:String x:Key="Problems.NoProblems">Sorun bulunamadı. Kontrol için «Analiz» düğmesine basın.</x:String>
+    <x:String x:Key="Problems.Errors">{0} Hata</x:String>
+    <x:String x:Key="Problems.Warnings">{0} Uyarı</x:String>
+    <x:String x:Key="Problems.Messages">0 Mesaj</x:String>
+    <x:String x:Key="Output.BuildPlaceholder">Derleme çıktısı burada görüntülenecek...</x:String>
+    <x:String x:Key="Output.RunPlaceholder">Çalıştırma çıktısı burada görüntülenecek...</x:String>
+    <x:String x:Key="Status.GitBranch">Git Dalı</x:String>
+    <x:String x:Key="Status.Sync">Değişiklikleri Senkronize Et</x:String>
+    <x:String x:Key="Status.ViewProblems">Sorunları Görüntüle</x:String>
+    <x:String x:Key="Status.Encoding">Kodlama Seç</x:String>
+    <x:String x:Key="Status.LineEnding">Satır Sonu Seç</x:String>
+    <x:String x:Key="Status.Language">Dil Modu Seç</x:String>
+    <x:String x:Key="Status.GoToLine">Satıra Git</x:String>
+    <x:String x:Key="Status.Indent">Girinti Seç</x:String>
+    <x:String x:Key="Status.Notifications">Bildirimler</x:String>
+    <x:String x:Key="Context.Run">▶ Çalıştır</x:String>
+    <x:String x:Key="Context.New">Yeni</x:String>
+    <x:String x:Key="Context.Add">Ekle</x:String>
+    <x:String x:Key="Context.NewClass">📄 Sınıf...</x:String>
+    <x:String x:Key="Context.NewInterface">📄 Arayüz...</x:String>
+    <x:String x:Key="Context.NewRecord">📄 Kayıt...</x:String>
+    <x:String x:Key="Context.NewEnum">📄 Numaralandırma...</x:String>
+    <x:String x:Key="Context.NewAvaloniaWindow">🪟 Avalonia Penceresi...</x:String>
+    <x:String x:Key="Context.NewAvaloniaControl">🎛️ Avalonia UserControl...</x:String>
+    <x:String x:Key="Context.NewFile">📄 Dosya...</x:String>
+    <x:String x:Key="Context.NewDirectory">📁 Dizin</x:String>
+    <x:String x:Key="Context.AddNewProject">📦 Yeni Proje...</x:String>
+    <x:String x:Key="Context.AddExistingProject">📦 Mevcut Proje...</x:String>
+    <x:String x:Key="Context.AddNewItem">📄 Yeni Öğe...</x:String>
+    <x:String x:Key="Context.AddExistingItem">📄 Mevcut Öğe...</x:String>
+    <x:String x:Key="Context.Build">🔨 Derle</x:String>
+    <x:String x:Key="Context.Rebuild">🔄 Yeniden Derle</x:String>
+    <x:String x:Key="Context.Clean">🧹 Temizle</x:String>
+    <x:String x:Key="Context.ManageNuGet">📦 NuGet Paketlerini Yönet...</x:String>
+    <x:String x:Key="Context.AddReference">🔗 Başvuru Ekle...</x:String>
+    <x:String x:Key="Context.Cut">✂️ Kes</x:String>
+    <x:String x:Key="Context.Copy">📋 Kopyala</x:String>
+    <x:String x:Key="Context.Paste">📄 Yapıştır</x:String>
+    <x:String x:Key="Context.Rename">✏️ Yeniden Adlandır</x:String>
+    <x:String x:Key="Context.Delete">🗑️ Güvenli Sil...</x:String>
+    <x:String x:Key="Context.CopyPath">Yolu Kopyala</x:String>
+    <x:String x:Key="Context.AbsolutePath">📋 Mutlak Yol</x:String>
+    <x:String x:Key="Context.RelativePath">📋 Göreli Yol</x:String>
+    <x:String x:Key="Context.FileName">📋 Dosya Adı</x:String>
+    <x:String x:Key="Context.OpenExplorer">📂 Gezginde Aç</x:String>
+    <x:String x:Key="Context.OpenTerminal">💻 Terminalde Aç</x:String>
+    <x:String x:Key="Context.RemoveFromSolution">🗑️ Çözümden Kaldır</x:String>
+    <x:String x:Key="Context.UnloadProject">⬇️ Projeyi Kaldır</x:String>
+    <x:String x:Key="Context.Git">Git</x:String>
+    <x:String x:Key="Context.GitCommit">📝 İşle...</x:String>
+    <x:String x:Key="Context.GitHistory">📜 Geçmişi Göster</x:String>
+    <x:String x:Key="Context.GitRevert">↩️ Geri Al...</x:String>
+    <x:String x:Key="Context.ReloadFromDisk">🔄 Diskten Yeniden Yükle</x:String>
+    <x:String x:Key="Context.Properties">⚙️ Özellikler</x:String>
+    <x:String x:Key="AI.Ready">🚀 Copilot CLI Hazır!</x:String>
+    <x:String x:Key="AI.ManageFiles">Proje dosyalarınızı komutlarla yönetin:</x:String>
+    <x:String x:Key="AI.GitHubCommands">GitHub CLI Komutları:</x:String>
+    <x:String x:Key="AI.TypeHelp">Tam komut listesi için 'help' yazın</x:String>
+    <x:String x:Key="AI.InputPlaceholder">Komut girin (create, ls, help...)</x:String>
+    <x:String x:Key="AI.Tooltip.OpenTUI">GitHub Copilot TUI'yi Terminalde Aç</x:String>
+    <x:String x:Key="AI.Tooltip.Execute">Komutu çalıştır</x:String>
+    <x:String x:Key="AI.Tooltip.NewChat">Yeni Sohbet</x:String>
+    <x:String x:Key="AI.Tooltip.ClosePanel">Paneli Kapat</x:String>
+
+    <!-- ── CLI Terminal Messages ─────────────────────────────────── -->
+    <x:String x:Key="Cli.NoCommand">Komut belirtilmedi</x:String>
+    <x:String x:Key="Cli.InvalidCommand">Geçersiz komut</x:String>
+    <x:String x:Key="Cli.UnknownCommand">Bilinmeyen komut: {0}. Mevcut komutları görmek için 'help' yazın.</x:String>
+    <x:String x:Key="Cli.ErrorExecuting">'{0}' çalıştırılırken hata: {1}</x:String>
+    <x:String x:Key="Cli.FileAlreadyExists">Dosya zaten var: {0}</x:String>
+    <x:String x:Key="Cli.CreatedFile">Dosya oluşturuldu: {0}</x:String>
+    <x:String x:Key="Cli.UpdatedTimestamp">Zaman damgası güncellendi: {0}</x:String>
+    <x:String x:Key="Cli.CreatedDirectory">Klasör oluşturuldu: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryAlreadyExists">Klasör zaten var: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryNotEmpty">Klasör boş değil: {0}. Silmek için --force ekleyin.</x:String>
+    <x:String x:Key="Cli.DeletedDirectory">Klasör silindi: {0}</x:String>
+    <x:String x:Key="Cli.DeletedFile">Dosya silindi: {0}</x:String>
+    <x:String x:Key="Cli.PathNotFound">Yol bulunamadı: {0}</x:String>
+    <x:String x:Key="Cli.DirectoryNotFound">Klasör bulunamadı: {0}</x:String>
+    <x:String x:Key="Cli.FileNotFound">Dosya bulunamadı: {0}</x:String>
+    <x:String x:Key="Cli.SourceNotFound">Kaynak bulunamadı: {0}</x:String>
+    <x:String x:Key="Cli.DestinationExists">Hedef zaten var: {0}</x:String>
+    <x:String x:Key="Cli.Renamed">Yeniden adlandırıldı: {0} → {1}</x:String>
+    <x:String x:Key="Cli.Moved">Taşındı: {0} → {1}</x:String>
+    <x:String x:Key="Cli.Copied">Kopyalandı: {0} → {1}</x:String>
+    <x:String x:Key="Cli.WrittenTo">Yazıldı: {0}</x:String>
+    <x:String x:Key="Cli.AppendedTo">Eklendi: {0}</x:String>
+    <x:String x:Key="Cli.CreatedFromTemplate">'{0}' şablonundan oluşturuldu: {1}</x:String>
+    <x:String x:Key="Cli.UnknownTemplate">Bilinmeyen şablon: {0}</x:String>
+    <x:String x:Key="Cli.Directory">Klasör: {0}</x:String>
+    <x:String x:Key="Cli.DirsAndFiles">{0} klasör, {1} dosya</x:String>
+    <x:String x:Key="Cli.NoFilesFound">'{0}' ile eşleşen dosya bulunamadı</x:String>
+    <x:String x:Key="Cli.FoundFiles">{0} dosya bulundu:</x:String>
+    <x:String x:Key="Cli.NoMatchesFound">'{0}' için eşleşme bulunamadı</x:String>
+    <x:String x:Key="Cli.FoundMatches">{0} eşleşme bulundu:</x:String>
+    <x:String x:Key="Cli.ChangedDirectory">Klasör değiştirildi: {0}</x:String>
+    <x:String x:Key="Cli.ExistsYes">Evet ({0}): {1}</x:String>
+    <x:String x:Key="Cli.ExistsNo">Hayır: {0}</x:String>
+    <x:String x:Key="Cli.GhNotFound">GitHub CLI (gh) bulunamadı. Yüklemek için 'gh-install' çalıştırın.</x:String>
+    <x:String x:Key="Cli.GhAlreadyInstalled">✅ GitHub CLI zaten yüklü</x:String>
+    <x:String x:Key="Cli.GhInstallSuccess">✅ GitHub CLI başarıyla yüklendi!</x:String>
+    <x:String x:Key="Cli.GhInstallFailed">❌ Kurulum başarısız oldu</x:String>
+    <x:String x:Key="Cli.GhInstallManual">Manuel kurulum: winget install GitHub.cli</x:String>
+    <x:String x:Key="Cli.GhInstallRestart">⚠️ Yeniden başlatma gerekebilir. Kimlik doğrulama için 'gh-auth login' çalıştırın.</x:String>
+    <x:String x:Key="Cli.GhAuthAlreadyLoggedIn">✅ Zaten giriş yapılmış: {0}</x:String>
+    <x:String x:Key="Cli.GhAuthStarted">🔐 GitHub kimlik doğrulaması başlatıldı!</x:String>
+    <x:String x:Key="Cli.GhAuthStartedHint">Bir terminal penceresi açıldı. Kimlik doğrulamayı tamamlamak için talimatları izleyin.</x:String>
+    <x:String x:Key="Cli.GhAuthVerifyHint">Tamamlandıktan sonra 'gh-auth status' çalıştırarak doğrulayın.</x:String>
+    <x:String x:Key="Cli.GhAuthFailed">❌ Kimlik doğrulama başlatılamadı: {0}</x:String>
+    <x:String x:Key="Cli.GhAuthFailedHint">Terminalde manuel deneyin: gh auth login</x:String>
+    <x:String x:Key="Cli.GhLoggedOut">✅ GitHub'dan çıkış yapıldı</x:String>
+    <x:String x:Key="Cli.GhLogoutFailed">❌ Çıkış başarısız: {0}</x:String>
+    <x:String x:Key="Cli.GhRefreshed">✅ Kimlik doğrulama yenilendi</x:String>
+    <x:String x:Key="Cli.GhRefreshFailed">❌ Yenileme başarısız: {0}</x:String>
+    <x:String x:Key="Cli.GhSetupGit">✅ Git, GitHub CLI kimlik yardımcısı olarak yapılandırıldı</x:String>
+    <x:String x:Key="Cli.GhSetupGitFailed">❌ Yapılandırma başarısız: {0}</x:String>
+    <x:String x:Key="Cli.GhToken">🔑 GitHub Token:</x:String>
+    <x:String x:Key="Cli.GhTokenFailed">❌ Token alınamadı: {0}</x:String>
+    <x:String x:Key="Cli.GhLoggedInAs">✅ GitHub'a giriş yapıldı: {0}</x:String>
+    <x:String x:Key="Cli.GhNotLoggedIn">❌ GitHub'a giriş yapılmadı. 'gh-auth login' çalıştırın.</x:String>
+    <x:String x:Key="Cli.GhStatusTitle">📊 GitHub CLI Durumu</x:String>
+    <x:String x:Key="Cli.GhStatusInstalled">✅ Yüklendi: {0}</x:String>
+    <x:String x:Key="Cli.GhStatusAuthAs">✅ Kimlik doğrulandı: {0}</x:String>
+    <x:String x:Key="Cli.GhStatusNotAuth">❌ Kimlik doğrulanmadı. 'gh-auth login' çalıştırın</x:String>
+    <x:String x:Key="Cli.GhStatusWorkDir">📁 Çalışma klasörü:</x:String>
+    <x:String x:Key="Cli.GhStatusRepo">📦 Depo: {0}</x:String>
+    <x:String x:Key="Cli.GhNotInstalled">❌ GitHub CLI yüklü değil. Çalıştırın: gh-install</x:String>
+    <x:String x:Key="Cli.GhCopilotSuggestion">🤖 Copilot önerisi:</x:String>
+    <x:String x:Key="Cli.GhCopilotFailed">❌ Copilot görevi başarısız: {0}</x:String>
+    <x:String x:Key="Cli.GhModelUpdated">✅ Copilot modeli güncellendi.</x:String>
+    <x:String x:Key="Cli.GhModelFailed">❌ Model ayarlanamadı: {0}</x:String>
+    <x:String x:Key="Cli.GhExtensionNotInstalled">❌ GitHub Copilot uzantısı yüklü değil.</x:String>
+    <x:String x:Key="Cli.GhExtensionInstallHint">Çalıştırın: gh-extension install github/gh-copilot</x:String>
+    <x:String x:Key="Cli.GhCopilotLaunching">🚀 GitHub Copilot CLI harici terminalde başlatılıyor...</x:String>
+    <x:String x:Key="Cli.GhCopilotOpened">✅ GitHub Copilot CLI {0} içinde açıldı.</x:String>
+    <x:String x:Key="Cli.GhCopilotTip">💡 İpucu: Copilot'u kullandıktan sonra önerilen komutu kopyalayıp buraya yapıştırın.</x:String>
+    <x:String x:Key="Cli.GhCopilotError">❌ GitHub Copilot başlatılırken hata: {0}</x:String>
+    <x:String x:Key="Cli.GhConfigList">⚙️ Yapılandırma:</x:String>
+    <x:String x:Key="Cli.GhConfigDone">✅ Yapılandırma güncellendi:</x:String>
+    <x:String x:Key="Cli.GhConfigFailed">❌ Başarısız: {0}</x:String>
+    <x:String x:Key="Cli.GhExtensionList">🔌 Uzantılar:</x:String>
+    <x:String x:Key="Cli.GhExtensionDone">✅ Uzantı işlemi tamamlandı:</x:String>
+    <x:String x:Key="Cli.GhExtensionFailed">❌ Başarısız: {0}</x:String>
+    <x:String x:Key="Cli.TerminalOpened">✅ {0} açıldı</x:String>
+    <x:String x:Key="Cli.TerminalWorkDir">📁 Çalışma klasörü: {0}</x:String>
+    <x:String x:Key="Cli.TerminalCommand">🔧 Komut: {0}</x:String>
+    <x:String x:Key="Cli.TerminalError">❌ Terminal açılırken hata: {0}</x:String>
+    <x:String x:Key="Cli.PowerShellOpened">✅ PowerShell açıldı</x:String>
+    <x:String x:Key="Cli.PowerShellError">❌ PowerShell açılırken hata: {0}</x:String>
+
+    <!-- ── CLI Usage strings ─────────────────────────────────────── -->
+    <x:String x:Key="Cli.Usage.Create">Kullanım: create &lt;yol&gt; [--content &lt;içerik&gt;] [--dir]</x:String>
+    <x:String x:Key="Cli.Usage.Touch">Kullanım: touch &lt;yol&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Mkdir">Kullanım: mkdir &lt;yol&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Template">Kullanım: template &lt;şablon-adı&gt; &lt;yol&gt;&#10;&#10;Mevcut şablonlar:&#10;  class - C# sınıf&#10;  interface - C# arayüz&#10;  record - C# kayıt&#10;  enum - C# numaralandırma&#10;  service - C# servis&#10;  viewmodel - MVVM ViewModel&#10;  html - HTML dosyası&#10;  json - JSON dosyası&#10;  xml - XML dosyası</x:String>
+    <x:String x:Key="Cli.Usage.Delete">Kullanım: delete &lt;yol&gt; [--force]</x:String>
+    <x:String x:Key="Cli.Usage.Rmdir">Kullanım: rmdir &lt;yol&gt; [--force]</x:String>
+    <x:String x:Key="Cli.Usage.Rename">Kullanım: rename &lt;eski-yol&gt; &lt;yeni-ad&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Mv">Kullanım: mv &lt;kaynak&gt; &lt;hedef&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Copy">Kullanım: copy &lt;kaynak&gt; &lt;hedef&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Write">Kullanım: write &lt;yol&gt; &lt;içerik&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Append">Kullanım: append &lt;yol&gt; &lt;içerik&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Read">Kullanım: read &lt;yol&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Cd">Kullanım: cd &lt;yol&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Find">Kullanım: find &lt;desen&gt; [--path &lt;dizin&gt;]</x:String>
+    <x:String x:Key="Cli.Usage.Search">Kullanım: search &lt;metin&gt; [--path &lt;dizin&gt;] [--ext &lt;uzantı&gt;]</x:String>
+    <x:String x:Key="Cli.Usage.Info">Kullanım: info &lt;yol&gt;</x:String>
+    <x:String x:Key="Cli.Usage.Exists">Kullanım: exists &lt;yol&gt;</x:String>
+    <x:String x:Key="Cli.Usage.GhTask">Kullanım: gh-t "&lt;görev açıklaması&gt;"</x:String>
+    <x:String x:Key="Cli.Usage.GhModel">Kullanım: gh-m &lt;model adı&gt;&#10;&#10;Örnek:&#10;  gh-m gpt-4o</x:String>
+
+    <!-- ── CLI Info output labels ─────────────────────────────────── -->
+    <x:String x:Key="Cli.Info.Directory">Dizin: {0}</x:String>
+    <x:String x:Key="Cli.Info.File">Dosya: {0}</x:String>
+    <x:String x:Key="Cli.Info.Size">Boyut: {0}</x:String>
+    <x:String x:Key="Cli.Info.Created">Oluşturuldu: {0}</x:String>
+    <x:String x:Key="Cli.Info.Modified">Değiştirildi: {0}</x:String>
+    <x:String x:Key="Cli.Info.Contains">İçerik: {0} dosya, {1} alt dizin</x:String>
+    <x:String x:Key="Cli.Info.Extension">Uzantı: {0}</x:String>
+
+    <!-- ── CLI Exists type labels ─────────────────────────────────── -->
+    <x:String x:Key="Cli.Exists.TypeDir">dizin</x:String>
+    <x:String x:Key="Cli.Exists.TypeFile">dosya</x:String>
+    <x:String x:Key="Cli.Exists.TypeNone">hiçbir şey</x:String>
+
+    <!-- ── CLI Help strings ───────────────────────────────────────── -->
+    <x:String x:Key="Cli.Help.Command">Komut: {0}</x:String>
+    <x:String x:Key="Cli.Help.Description">Açıklama: {0}</x:String>
+    <x:String x:Key="Cli.Help.Usage">Kullanım: {0} {1}</x:String>
+    <x:String x:Key="Cli.Help.Title">Copilot CLI Komutları:</x:String>
+    <x:String x:Key="Cli.Help.FileOps">Dosya İşlemleri:</x:String>
+    <x:String x:Key="Cli.Help.Create">  create, new     - Yeni dosya veya dizin oluştur</x:String>
+    <x:String x:Key="Cli.Help.Delete">  delete, rm      - Dosya veya dizin sil</x:String>
+    <x:String x:Key="Cli.Help.Touch">  touch           - Boş dosya oluştur veya zaman damgasını güncelle</x:String>
+    <x:String x:Key="Cli.Help.Template">  template        - Şablondan dosya oluştur</x:String>
+    <x:String x:Key="Cli.Help.DirOps">Dizin İşlemleri:</x:String>
+    <x:String x:Key="Cli.Help.Mkdir">  mkdir           - Yeni dizin oluştur</x:String>
+    <x:String x:Key="Cli.Help.Rmdir">  rmdir           - Dizini kaldır</x:String>
+    <x:String x:Key="Cli.Help.FileManip">Dosya İşleme:</x:String>
+    <x:String x:Key="Cli.Help.Rename">  rename          - Dosya veya dizini yeniden adlandır</x:String>
+    <x:String x:Key="Cli.Help.Mv">  mv              - Dosya veya dizini taşı</x:String>
+    <x:String x:Key="Cli.Help.Copy">  copy, cp        - Dosya veya dizini kopyala</x:String>
+    <x:String x:Key="Cli.Help.FileContent">Dosya İçeriği:</x:String>
+    <x:String x:Key="Cli.Help.Write">  write           - Dosyaya içerik yaz</x:String>
+    <x:String x:Key="Cli.Help.Append">  append          - Dosya sonuna içerik ekle</x:String>
+    <x:String x:Key="Cli.Help.Read">  read, cat       - Dosya içeriğini göster</x:String>
+    <x:String x:Key="Cli.Help.NavList">Gezinme &amp; Listeleme:</x:String>
+    <x:String x:Key="Cli.Help.Ls">  ls, dir         - Dizin içeriğini listele</x:String>
+    <x:String x:Key="Cli.Help.Tree">  tree            - Dizin ağacını göster</x:String>
+    <x:String x:Key="Cli.Help.Pwd">  pwd             - Çalışma dizinini yazdır</x:String>
+    <x:String x:Key="Cli.Help.Cd">  cd              - Çalışma dizinini değiştir</x:String>
+    <x:String x:Key="Cli.Help.SearchSec">Arama:</x:String>
+    <x:String x:Key="Cli.Help.Find">  find            - Ad desenine göre dosya bul</x:String>
+    <x:String x:Key="Cli.Help.Search">  search          - Dosyalarda metin ara</x:String>
+    <x:String x:Key="Cli.Help.InfoSec">Bilgi:</x:String>
+    <x:String x:Key="Cli.Help.Info">  info            - Dosya/dizin bilgilerini göster</x:String>
+    <x:String x:Key="Cli.Help.Exists">  exists          - Yolun var olup olmadığını kontrol et</x:String>
+    <x:String x:Key="Cli.Help.Help">  help            - Bu yardımı veya komut ayrıntılarını göster</x:String>
+    <x:String x:Key="Cli.Help.GhSec">GitHub CLI — Kurulum &amp; Durum:</x:String>
+    <x:String x:Key="Cli.Help.GhInstall">  gh-install      - winget ile GitHub CLI kur</x:String>
+    <x:String x:Key="Cli.Help.GhAuth">  gh-auth         - GitHub kimlik doğrulama (login/logout/status/token)</x:String>
+    <x:String x:Key="Cli.Help.GhStatus">  gh-status       - GitHub CLI kurulum ve kimlik doğrulama durumu</x:String>
+    <x:String x:Key="Cli.Help.GhConfig">  gh-config       - gh yapılandırmasını yönet</x:String>
+    <x:String x:Key="Cli.Help.GhExtension">  gh-extension    - gh uzantılarını yönet (ör. Copilot)</x:String>
+    <x:String x:Key="Cli.Help.TermSec">🖥️ Harici Terminal Komutları:</x:String>
+    <x:String x:Key="Cli.Help.Terminal">  terminal [cmd]       - Windows Terminal veya CMD aç</x:String>
+    <x:String x:Key="Cli.Help.CmdExt">  cmd-ext [cmd]        - Harici CMD penceresi aç</x:String>
+    <x:String x:Key="Cli.Help.Wt">  wt [cmd]             - Windows Terminal aç</x:String>
+    <x:String x:Key="Cli.Help.PsExt">  powershell-ext [cmd] - Harici PowerShell penceresi aç</x:String>
+    <x:String x:Key="Cli.Help.Footer">Belirli bir komut hakkında ayrıntı için 'help &lt;komut&gt;' yazın.</x:String>
+    <x:String x:Key="Search.FileNamePlaceholder">Dosya adı (ör. *.cs, Program)</x:String>
+    <x:String x:Key="Search.ContentPlaceholder">Arama metni...</x:String>
+    <x:String x:Key="Search.ReplacePlaceholder">Değiştir...</x:String>
+    <x:String x:Key="Search.Scope">Kapsam:</x:String>
+    <x:String x:Key="Search.WholeSolution">Tüm Çözüm</x:String>
+    <x:String x:Key="Search.FindFiles">Ada Göre Dosya Bul</x:String>
+    <x:String x:Key="Search.FindInFiles">Dosyalarda Bul (içeriğe göre)</x:String>
+    <x:String x:Key="Search.ReplaceAll">Tümünü Değiştir</x:String>
+    <x:String x:Key="Search.Case">Büyük/Küçük</x:String>
+    <x:String x:Key="Search.Regex">Regex</x:String>
+    <x:String x:Key="Search.Word">Kelime</x:String>
+
+    <!-- WelcomeWindow -->
+    <x:String x:Key="Welcome.Title">Insait Edit'e Hoş Geldiniz</x:String>
+    <x:String x:Key="Welcome.Subtitle">Insait Code Editor tabanlı C# IDE</x:String>
+    <x:String x:Key="Welcome.Version">Sürüm 1.0.0 Önizleme</x:String>
+    <x:String x:Key="Welcome.NewSolution">Yeni Çözüm</x:String>
+    <x:String x:Key="Welcome.NewSolutionDesc">Yeni bir .sln çözümü oluştur</x:String>
+    <x:String x:Key="Welcome.NewProject">Yeni Proje</x:String>
+    <x:String x:Key="Welcome.NewProjectDesc">Yeni bir C# projesi oluştur</x:String>
+    <x:String x:Key="Welcome.Open">Aç</x:String>
+    <x:String x:Key="Welcome.OpenDesc">Proje veya çözüm aç</x:String>
+    <x:String x:Key="Welcome.CloneRepository">Depoyu Klonla</x:String>
+    <x:String x:Key="Welcome.CloneRepositoryDesc">Git deposundan kod al</x:String>
+    <x:String x:Key="Welcome.Documentation">Belgeler</x:String>
+    <x:String x:Key="Welcome.GitHub">GitHub</x:String>
+    <x:String x:Key="Welcome.Settings">Ayarlar</x:String>
+    <x:String x:Key="Welcome.SearchRecent">🔍  Son projelerde ara...</x:String>
+    <x:String x:Key="Welcome.ClearAll">Tümünü Temizle</x:String>
+    <x:String x:Key="Welcome.RecentProjects">Son Projeler</x:String>
+
+    <!-- MenuWindow -->
+    <x:String x:Key="Menu.Title">Menü</x:String>
+    <x:String x:Key="Menu.File">Dosya</x:String>
+    <x:String x:Key="Menu.Edit">Düzenle</x:String>
+    <x:String x:Key="Menu.View">Görünüm</x:String>
+    <x:String x:Key="Menu.Build">Derle</x:String>
+    <x:String x:Key="Menu.Debug">Hata Ayıkla</x:String>
+    <x:String x:Key="Menu.Tools">Araçlar</x:String>
+    <x:String x:Key="Menu.Help">Yardım</x:String>
+    <x:String x:Key="Menu.Language">🌐 Dil</x:String>
+    <!-- File menu -->
+    <x:String x:Key="Menu.SolutionProject">📦 Çözüm ve Proje</x:String>
+    <x:String x:Key="Menu.NewSolution">📦 Yeni Çözüm...</x:String>
+    <x:String x:Key="Menu.NewProject">📁 Yeni Proje...</x:String>
+    <x:String x:Key="Menu.NewNanoProject">🔌 Yeni nanoFramework Projesi...</x:String>
+    <x:String x:Key="Menu.AddProjectToSolution">➕ Çözüme Proje Ekle...</x:String>
+    <x:String x:Key="Menu.FileOperations">📁 Dosya İşlemleri</x:String>
+    <x:String x:Key="Menu.NewFile">📄 Yeni Dosya</x:String>
+    <x:String x:Key="Menu.OpenFile">📂 Dosya Aç...</x:String>
+    <x:String x:Key="Menu.OpenFolder">📁 Klasör Aç...</x:String>
+    <x:String x:Key="Menu.OpenSolution">📦 Çözüm Aç...</x:String>
+    <x:String x:Key="Menu.Save">💾 Kaydet</x:String>
+    <x:String x:Key="Menu.SaveAs">💾 Farklı Kaydet...</x:String>
+    <x:String x:Key="Menu.SaveAll">💾 Tümünü Kaydet</x:String>
+    <x:String x:Key="Menu.Exit">🚪 Çıkış</x:String>
+    <!-- Edit menu -->
+    <x:String x:Key="Menu.UndoRedo">↩️ Geri Al/Yinele</x:String>
+    <x:String x:Key="Menu.Undo">↩️ Geri Al</x:String>
+    <x:String x:Key="Menu.Redo">↪️ Yinele</x:String>
+    <x:String x:Key="Menu.FindReplace">🔍 Bul ve Değiştir</x:String>
+    <x:String x:Key="Menu.Find">🔍 Bul</x:String>
+    <x:String x:Key="Menu.Replace">🔄 Değiştir</x:String>
+    <x:String x:Key="Menu.FindInFiles">🔍 Dosyalarda Bul</x:String>
+    <x:String x:Key="Menu.Code">📝 Kod</x:String>
+    <x:String x:Key="Menu.FormatDocument">📋 Belgeyi Biçimlendir</x:String>
+    <x:String x:Key="Menu.ToggleComment">💬 Yorum Ekle/Kaldır</x:String>
+    <!-- View menu -->
+    <x:String x:Key="Menu.Panels">📊 Paneller</x:String>
+    <x:String x:Key="Menu.AIAssistant">🤖 Yapay Zeka Asistanı</x:String>
+    <x:String x:Key="Menu.Explorer">📁 Gezgin</x:String>
+    <x:String x:Key="Menu.Search">🔍 Arama</x:String>
+    <x:String x:Key="Menu.SourceControl">🔀 Kaynak Denetimi</x:String>
+    <x:String x:Key="Menu.FocusLayout">🎯 Odak Düzeni</x:String>
+    <x:String x:Key="Menu.ToggleLeftPanel">📁 Sol Panel (Gezgin)</x:String>
+    <x:String x:Key="Menu.ToggleBottomPanel">💻 Alt Panel (Terminal)</x:String>
+    <x:String x:Key="Menu.ToggleAIPanel">🤖 AI Paneli (Copilot)</x:String>
+    <x:String x:Key="Menu.ZenMode">🧘 Zen Modu (Yalnızca Düzenleyici)</x:String>
+    <x:String x:Key="Menu.Preview">🎨 Önizleme</x:String>
+    <x:String x:Key="Menu.PreviewAxaml">🎨 AXAML Tasarım Önizleme</x:String>
+    <x:String x:Key="Menu.BottomPanel">⬇️ Alt Panel</x:String>
+    <x:String x:Key="Menu.Terminal">💻 Terminal</x:String>
+    <x:String x:Key="Menu.NewTerminal">➕ Yeni Terminal</x:String>
+    <x:String x:Key="Menu.Problems">⚠️ Sorunlar</x:String>
+    <x:String x:Key="Menu.BuildOutput">📋 Derleme Çıktısı</x:String>
+    <x:String x:Key="Menu.RunOutput">▶️ Çalıştırma Çıktısı</x:String>
+    <x:String x:Key="Menu.DebugConsole">🐛 Hata Ayıklama Konsolu</x:String>
+    <x:String x:Key="Menu.Window">🖥️ Pencere</x:String>
+    <x:String x:Key="Menu.Minimize">➖ Simge Durumuna Küçült</x:String>
+    <x:String x:Key="Menu.MaximizeRestore">🔲 Büyüt/Geri Yükle</x:String>
+    <!-- Build menu -->
+    <x:String x:Key="Menu.BuildHeader">🔨 Derleme</x:String>
+    <x:String x:Key="Menu.BuildProject">🔨 Projeyi Derle</x:String>
+    <x:String x:Key="Menu.RebuildProject">🔄 Projeyi Yeniden Derle</x:String>
+    <x:String x:Key="Menu.CleanProject">🧹 Projeyi Temizle</x:String>
+    <x:String x:Key="Menu.Analysis">🔍 Analiz</x:String>
+    <x:String x:Key="Menu.AnalyzeCode">🔍 Kodu Analiz Et</x:String>
+    <x:String x:Key="Menu.RunHeader">▶️ Çalıştır</x:String>
+    <x:String x:Key="Menu.RunProject">▶️ Projeyi Çalıştır</x:String>
+    <x:String x:Key="Menu.StopProject">⏹️ Durdur</x:String>
+    <x:String x:Key="Menu.RunConfigurations">⚙️ Çalıştırma Yapılandırmaları...</x:String>
+    <x:String x:Key="Menu.PackagesDeploy">📦 Paketler ve Dağıtım</x:String>
+    <x:String x:Key="Menu.RestoreNuGet">📦 NuGet Paketlerini Geri Yükle</x:String>
+    <x:String x:Key="Menu.Publish">📤 Yayınla...</x:String>
+    <!-- Debug menu -->
+    <x:String x:Key="Menu.DebugHeader">🐛 Hata Ayıklama</x:String>
+    <x:String x:Key="Menu.StartDebugging">▶️ Hata Ayıklamayı Başlat</x:String>
+    <x:String x:Key="Menu.StartWithout">⏸️ Hata Ayıklamadan Başlat</x:String>
+    <x:String x:Key="Menu.StopDebugging">⏹️ Hata Ayıklamayı Durdur</x:String>
+    <x:String x:Key="Menu.Breakpoints">🔴 Kesme Noktaları</x:String>
+    <x:String x:Key="Menu.ToggleBreakpoint">🔴 Kesme Noktası Ekle/Kaldır</x:String>
+    <x:String x:Key="Menu.DeleteAllBreakpoints">❌ Tüm Kesme Noktalarını Sil</x:String>
+    <x:String x:Key="Menu.Step">👣 Adım</x:String>
+    <x:String x:Key="Menu.StepOver">➡️ Üzerinden Adımla</x:String>
+    <x:String x:Key="Menu.StepInto">⬇️ İçine Adımla</x:String>
+    <x:String x:Key="Menu.StepOut">⬆️ Dışına Adımla</x:String>
+    <!-- Tools menu -->
+    <x:String x:Key="Menu.ToolsHeader">🔧 Araçlar</x:String>
+    <x:String x:Key="Menu.OpenTerminal">💻 Terminal Aç</x:String>
+    <x:String x:Key="Menu.RefreshFileTree">🔄 Dosya Ağacını Yenile</x:String>
+    <x:String x:Key="Menu.SettingsHeader">⚙️ Ayarlar</x:String>
+    <x:String x:Key="Menu.Settings">⚙️ Ayarlar</x:String>
+    <x:String x:Key="Menu.Theme">🎨 Tema</x:String>
+    <x:String x:Key="Menu.KeyboardShortcuts">⌨️ Klavye Kısayolları</x:String>
+    <x:String x:Key="Menu.NuGetHeader">📦 NuGet</x:String>
+    <x:String x:Key="Menu.ManageNuGet">📦 NuGet Paketlerini Yönet</x:String>
+    <!-- Help menu -->
+    <x:String x:Key="Menu.HelpHeader">❓ Yardım</x:String>
+    <x:String x:Key="Menu.Documentation">📖 Belgeler</x:String>
+    <x:String x:Key="Menu.GettingStarted">🎓 Başlarken</x:String>
+    <x:String x:Key="Menu.KeyboardShortcutsHelp">⌨️ Klavye Kısayolları</x:String>
+    <x:String x:Key="Menu.Feedback">📣 Geri Bildirim</x:String>
+    <x:String x:Key="Menu.ReportIssue">🐛 Hata Bildir</x:String>
+    <x:String x:Key="Menu.FeatureRequest">💡 Özellik İsteği</x:String>
+    <x:String x:Key="Menu.About">ℹ️ Hakkında</x:String>
+    <x:String x:Key="Menu.AboutInsait">ℹ️ Insait Edit Hakkında</x:String>
+    <x:String x:Key="Menu.CheckUpdates">📋 Güncellemeleri Kontrol Et</x:String>
+
+    <!-- NewProjectWindow -->
+    <x:String x:Key="NewProject.Title">Yeni Proje</x:String>
+    <x:String x:Key="NewProject.SelectTemplate">Şablon seçin</x:String>
+    <x:String x:Key="NewProject.Configure">Projenizi yapılandırın</x:String>
+    <x:String x:Key="NewProject.ProjectName">Proje adı</x:String>
+    <x:String x:Key="NewProject.Location">Konum</x:String>
+    <x:String x:Key="NewProject.SolutionName">Çözüm adı</x:String>
+    <x:String x:Key="NewProject.SolutionFormat">Çözüm dosya biçimi</x:String>
+    <x:String x:Key="NewProject.PlaceSameDir">Çözüm ve projeyi aynı dizine yerleştir</x:String>
+    <x:String x:Key="NewProject.CreateGitRepo">Git deposu oluştur</x:String>
+    <x:String x:Key="NewProject.Cancel">İptal</x:String>
+    <x:String x:Key="NewProject.Create">Oluştur</x:String>
+
+    <!-- NewSolutionWindow -->
+    <x:String x:Key="NewSolution.Title">Yeni Çözüm</x:String>
+    <x:String x:Key="NewSolution.SolutionName">Çözüm adı</x:String>
+    <x:String x:Key="NewSolution.Location">Konum</x:String>
+    <x:String x:Key="NewSolution.CreateSolutionDir">Çözüm dizini oluştur</x:String>
+    <x:String x:Key="NewSolution.InitGitRepo">Git deposu başlat</x:String>
+    <x:String x:Key="NewSolution.SolutionFormat">Çözüm biçimi</x:String>
+    <x:String x:Key="NewSolution.CreatedAt">Çözüm şurada oluşturulacak:</x:String>
+    <x:String x:Key="NewSolution.Cancel">İptal</x:String>
+    <x:String x:Key="NewSolution.Create">Oluştur</x:String>
+
+    <!-- AddNewItemWindow -->
+    <x:String x:Key="AddItem.Title">Yeni Öğe Ekle</x:String>
+    <x:String x:Key="AddItem.CSharpTypes">C# Türleri</x:String>
+    <x:String x:Key="AddItem.Class">Sınıf</x:String>
+    <x:String x:Key="AddItem.Interface">Arayüz</x:String>
+    <x:String x:Key="AddItem.Record">Kayıt</x:String>
+    <x:String x:Key="AddItem.Struct">Yapı</x:String>
+    <x:String x:Key="AddItem.Enum">Numaralandırma</x:String>
+    <x:String x:Key="AddItem.Delegate">Temsilci</x:String>
+    <x:String x:Key="AddItem.Exception">İstisna</x:String>
+    <x:String x:Key="AddItem.GlobalUsings">Global using'ler</x:String>
+    <x:String x:Key="AddItem.FSharpTypes">F# Türleri</x:String>
+    <x:String x:Key="AddItem.AspNet">ASP.NET</x:String>
+    <x:String x:Key="AddItem.AvaloniaUI">Avalonia UI</x:String>
+    <x:String x:Key="AddItem.WebFiles">Web Dosyaları</x:String>
+    <x:String x:Key="AddItem.ConfigData">Yapılandırma / Veri</x:String>
+    <x:String x:Key="AddItem.DotNetConfig">.NET Yapılandırması</x:String>
+    <x:String x:Key="AddItem.Git">Git</x:String>
+    <x:String x:Key="AddItem.Name">Ad</x:String>
+    <x:String x:Key="AddItem.Preview">Önizleme</x:String>
+    <x:String x:Key="AddItem.Location">Konum:</x:String>
+    <x:String x:Key="AddItem.AddToProject">Proje dosyasına ekle (.csproj / .fsproj)</x:String>
+    <x:String x:Key="AddItem.Cancel">İptal</x:String>
+    <x:String x:Key="AddItem.Add">Ekle</x:String>
+
+    <!-- AddProjectToSolutionWindow -->
+    <x:String x:Key="AddProject.Title">Çözüme Yeni Proje Ekle</x:String>
+    <x:String x:Key="AddProject.Solution">Çözüm:</x:String>
+    <x:String x:Key="AddProject.Template">Proje şablonu</x:String>
+    <x:String x:Key="AddProject.ProjectName">Proje adı</x:String>
+    <x:String x:Key="AddProject.CreatedAt">Proje şurada oluşturulacak:</x:String>
+    <x:String x:Key="AddProject.Cancel">İptal</x:String>
+    <x:String x:Key="AddProject.Add">Proje Ekle</x:String>
+
+    <!-- CloneRepositoryWindow -->
+    <x:String x:Key="Clone.Title">Depoyu Klonla</x:String>
+    <x:String x:Key="Clone.RepoUrl">Depo URL'si</x:String>
+    <x:String x:Key="Clone.LocalPath">Yerel Yol</x:String>
+    <x:String x:Key="Clone.Browse">Göz At...</x:String>
+    <x:String x:Key="Clone.Cloning">Klonlanıyor...</x:String>
+    <x:String x:Key="Clone.Cancel">İptal</x:String>
+    <x:String x:Key="Clone.Clone">Klonla</x:String>
+
+    <!-- GitWindow -->
+    <x:String x:Key="Git.Title">Git — Insait Edit</x:String>
+    <x:String x:Key="Git.Scope">Kapsam:</x:String>
+    <x:String x:Key="Git.SolutionAll">📁 Çözüm (tüm projeler)</x:String>
+    <x:String x:Key="Git.Refresh">Yenile</x:String>
+    <x:String x:Key="Git.Pull">Çek / Güncelle</x:String>
+    <x:String x:Key="Git.Push">Gönder</x:String>
+    <x:String x:Key="Git.Fetch">Getir</x:String>
+    <x:String x:Key="Git.Stash">Sakla</x:String>
+    <x:String x:Key="Git.PopStash">Saklananı Geri Yükle</x:String>
+    <x:String x:Key="Git.Rollback">Tümünü Geri Al</x:String>
+    <x:String x:Key="Git.CreateRepo">GitHub deposu oluştur</x:String>
+    <x:String x:Key="Git.Console">Git konsolu</x:String>
+
+    <!-- ImageViewerWindow -->
+    <x:String x:Key="ImageViewer.Title">Resim Görüntüleyici</x:String>
+    <x:String x:Key="ImageViewer.ZoomIn">Yakınlaştır (Ctrl++)</x:String>
+    <x:String x:Key="ImageViewer.ZoomOut">Uzaklaştır (Ctrl+-)</x:String>
+    <x:String x:Key="ImageViewer.FitToWindow">Pencereye Sığdır</x:String>
+    <x:String x:Key="ImageViewer.ActualSize">Gerçek Boyut (1:1)</x:String>
+    <x:String x:Key="ImageViewer.OpenExternal">Sistem görüntüleyicisinde aç</x:String>
+
+    <!-- AxamlPreviewWindow -->
+    <x:String x:Key="AxamlPreview.Title">AXAML Önizleme</x:String>
+    <x:String x:Key="AxamlPreview.Refresh">Yenile</x:String>
+    <x:String x:Key="AxamlPreview.Size">Boyut:</x:String>
+    <x:String x:Key="AxamlPreview.Free">Serbest</x:String>
+    <x:String x:Key="AxamlPreview.ToggleBg">Arka planı değiştir</x:String>
+    <x:String x:Key="AxamlPreview.Ready">Hazır</x:String>
+    <x:String x:Key="AxamlPreview.Error">Hata</x:String>
+    <x:String x:Key="AxamlPreview.ShowError">Hata ayrıntılarını göster</x:String>
+
+    <!-- PreviewErrorWindow -->
+    <x:String x:Key="PreviewError.Title">Önizleme Hata Ayrıntıları</x:String>
+    <x:String x:Key="PreviewError.Hint">Metin seçilebilir — Tümünü seçmek için Ctrl+A</x:String>
+    <x:String x:Key="PreviewError.Copy">Kopyala</x:String>
+
+    <!-- CompoundRunWindow -->
+    <x:String x:Key="Compound.Title">Bileşik Çalıştırma Yapılandırmaları</x:String>
+    <x:String x:Key="Compound.Subtitle">Birden fazla projeyi aynı anda çalıştır</x:String>
+    <x:String x:Key="Compound.Configurations">Bileşik Yapılandırmalar</x:String>
+    <x:String x:Key="Compound.ConfigName">Yapılandırma Adı</x:String>
+    <x:String x:Key="Compound.ProjectsToLaunch">Başlatılacak Projeler</x:String>
+    <x:String x:Key="Compound.ExecutionOptions">Yürütme Seçenekleri</x:String>
+    <x:String x:Key="Compound.Sequential">Projeleri sırayla başlat (birbiri ardına)</x:String>
+    <x:String x:Key="Compound.StopOnFailure">İlk hatada durdur</x:String>
+    <x:String x:Key="Compound.Delay">Başlatmalar arası gecikme (ms)</x:String>
+    <x:String x:Key="Compound.LaunchPreview">Başlatma Önizlemesi</x:String>
+    <x:String x:Key="Compound.RunAll">▶▶ Tümünü Çalıştır</x:String>
+    <x:String x:Key="Compound.StopAll">■ Tümünü Durdur</x:String>
+    <x:String x:Key="Compound.Apply">Uygula</x:String>
+    <x:String x:Key="Compound.Cancel">İptal</x:String>
+    <x:String x:Key="Compound.OK">Tamam</x:String>
+
+    <!-- RunConfigurationsWindow -->
+    <x:String x:Key="RunConfig.Title">Çalıştırma/Hata Ayıklama Yapılandırmaları</x:String>
+    <x:String x:Key="RunConfig.Name">Ad</x:String>
+    <x:String x:Key="RunConfig.Project">Proje</x:String>
+    <x:String x:Key="RunConfig.BuildConfig">Derleme Yapılandırması</x:String>
+    <x:String x:Key="RunConfig.TargetFramework">Hedef Çerçeve</x:String>
+    <x:String x:Key="RunConfig.LaunchProfile">Başlatma Profili (İsteğe bağlı)</x:String>
+    <x:String x:Key="RunConfig.WorkingDir">Çalışma Dizini</x:String>
+    <x:String x:Key="RunConfig.Arguments">Program Argümanları</x:String>
+    <x:String x:Key="RunConfig.EnvVars">Ortam Değişkenleri</x:String>
+    <x:String x:Key="RunConfig.RunOptions">Çalıştırma Seçenekleri</x:String>
+    <x:String x:Key="RunConfig.AllowParallel">Paralel çalıştırmaya izin ver</x:String>
+    <x:String x:Key="RunConfig.BuildBeforeRun">Çalıştırmadan önce derle</x:String>
+    <x:String x:Key="RunConfig.ActivateToolWindow">Çıktıda araç penceresini etkinleştir</x:String>
+    <x:String x:Key="RunConfig.Run">▶ Çalıştır</x:String>
+    <x:String x:Key="RunConfig.Debug">🐛 Hata Ayıkla</x:String>
+    <x:String x:Key="RunConfig.Apply">Uygula</x:String>
+    <x:String x:Key="RunConfig.Cancel">İptal</x:String>
+    <x:String x:Key="RunConfig.OK">Tamam</x:String>
+
+    <!-- PublishWindow -->
+    <x:String x:Key="Publish.Title">Projeyi Yayınla</x:String>
+    <x:String x:Key="Publish.Project">Proje</x:String>
+    <x:String x:Key="Publish.DeploymentMode">Dağıtım Modu</x:String>
+    <x:String x:Key="Publish.FrameworkDependent">Çerçeveye bağımlı (hedefte .NET çalışma zamanı gerekir)</x:String>
+    <x:String x:Key="Publish.SelfContained">Bağımsız (.NET çalışma zamanı dahil)</x:String>
+    <x:String x:Key="Publish.Configuration">Yapılandırma</x:String>
+    <x:String x:Key="Publish.TargetRuntime">Hedef Çalışma Zamanı</x:String>
+    <x:String x:Key="Publish.TargetFramework">Hedef Çerçeve</x:String>
+    <x:String x:Key="Publish.OutputFolder">Çıktı Klasörü</x:String>
+    <x:String x:Key="Publish.Options">Yayınlama Seçenekleri</x:String>
+    <x:String x:Key="Publish.SingleFile">Tek dosya</x:String>
+    <x:String x:Key="Publish.ReadyToRun">ReadyToRun derlemeyi etkinleştir</x:String>
+    <x:String x:Key="Publish.Trim">Kullanılmayan derlemeleri kırp</x:String>
+    <x:String x:Key="Publish.Compression">Tek dosyada sıkıştırma</x:String>
+    <x:String x:Key="Publish.NativeLibs">Yerel kütüphaneleri dahil et</x:String>
+    <x:String x:Key="Publish.QuickPresets">Hızlı Ön Ayarlar</x:String>
+    <x:String x:Key="Publish.EstimatedSize">Tahmini çıktı boyutu yayınlamadan sonra görünecek</x:String>
+    <x:String x:Key="Publish.Cancel">İptal</x:String>
+    <x:String x:Key="Publish.Publish">📦 Yayınla</x:String>
+
+    <!-- ProjectPropertiesWindow -->
+    <x:String x:Key="ProjectProps.Title">Proje Özellikleri</x:String>
+    <x:String x:Key="ProjectProps.General">⚙️  Genel</x:String>
+    <x:String x:Key="ProjectProps.Build">🔨  Derleme</x:String>
+    <x:String x:Key="ProjectProps.Package">📦  Paket / NuGet</x:String>
+    <x:String x:Key="ProjectProps.Signing">🔏  İmzalama</x:String>
+    <x:String x:Key="ProjectProps.Debug">🐛  Hata Ayıklama</x:String>
+    <x:String x:Key="ProjectProps.AssemblyName">Derleme adı</x:String>
+    <x:String x:Key="ProjectProps.DefaultNamespace">Varsayılan ad alanı</x:String>
+    <x:String x:Key="ProjectProps.TargetFramework">Hedef çerçeve</x:String>
+    <x:String x:Key="ProjectProps.OutputType">Çıktı türü</x:String>
+    <x:String x:Key="ProjectProps.LangVersion">C# dil sürümü</x:String>
+    <x:String x:Key="ProjectProps.Nullable">Nullable başvuru türleri</x:String>
+    <x:String x:Key="ProjectProps.ImplicitUsings">Örtük using'leri etkinleştir</x:String>
+    <x:String x:Key="ProjectProps.AllowUnsafe">Güvenli olmayan koda izin ver</x:String>
+    <x:String x:Key="ProjectProps.Apply">Uygula</x:String>
+    <x:String x:Key="ProjectProps.OK">Tamam</x:String>
+    <x:String x:Key="ProjectProps.Cancel">İptal</x:String>
+
+    <!-- MsixManagerWindow -->
+    <x:String x:Key="Msix.Title">MSIX Paket Yöneticisi</x:String>
+    <x:String x:Key="Msix.BuildMsix">MSIX Derle</x:String>
+    <x:String x:Key="Msix.OpenMsix">MSIX Aç</x:String>
+    <x:String x:Key="Msix.Identity">Kimlik</x:String>
+    <x:String x:Key="Msix.EntryPoint">Giriş Noktası</x:String>
+    <x:String x:Key="Msix.ManifestXml">Manifest XML</x:String>
+    <x:String x:Key="Msix.BuildLog">Derleme Günlüğü</x:String>
+    <x:String x:Key="Msix.Ready">Hazır</x:String>
+    <x:String x:Key="Msix.Close">Kapat</x:String>
+    <x:String x:Key="Msix.StartBuild">🔨 MSIX Derle</x:String>
+
+    <!-- NuGetPanelControl -->
+    <x:String x:Key="NuGet.Title">NUGET PAKETLERİ</x:String>
+    <x:String x:Key="NuGet.Browse">Göz At</x:String>
+    <x:String x:Key="NuGet.Installed">Yüklü</x:String>
+    <x:String x:Key="NuGet.Updates">Güncellemeler</x:String>
+    <x:String x:Key="NuGet.SearchPlaceholder">NuGet paketlerini ara...</x:String>
+    <x:String x:Key="NuGet.NoProject">Proje yüklenmedi</x:String>
+    <x:String x:Key="NuGet.NoPackages">Paket yüklenmemiş</x:String>
+    <x:String x:Key="NuGet.AllUpToDate">Tüm paketler güncel</x:String>
+    <x:String x:Key="NuGet.UpdateAll">Tümünü Güncelle</x:String>
+
+    <!-- AccountPanelControl -->
+    <x:String x:Key="Account.Title">HESAP</x:String>
+    <x:String x:Key="Account.SignInTitle">GitHub ile Giriş Yap</x:String>
+    <x:String x:Key="Account.SignInDesc">Depolarınıza erişmek için GitHub hesabınızı bağlayın.</x:String>
+    <x:String x:Key="Account.SignInBtn">GitHub ile Giriş Yap</x:String>
+    <x:String x:Key="Account.PublicRepos">Herkese Açık Depolar</x:String>
+    <x:String x:Key="Account.Followers">Takipçiler</x:String>
+    <x:String x:Key="Account.Following">Takip Edilenler</x:String>
+    <x:String x:Key="Account.YourRepos">DEPOLARINIZ</x:String>
+    <x:String x:Key="Account.SearchRepos">Depo ara...</x:String>
+    <x:String x:Key="Account.LoadMore">Daha fazla yükle</x:String>
+    <x:String x:Key="Account.SignOut">Çıkış Yap</x:String>
+
+    <!-- GitPanelControl -->
+    <x:String x:Key="GitPanel.LocalChanges">Yerel Değişiklikler</x:String>
+    <x:String x:Key="GitPanel.Log">Günlük</x:String>
+    <x:String x:Key="GitPanel.Console">Konsol</x:String>
+    <x:String x:Key="GitPanel.NoRepo">Git Deposu Yok</x:String>
+    <x:String x:Key="GitPanel.NoRepoHint">Git deposu içeren bir klasör açın veya yeni bir tane başlatın.</x:String>
+    <x:String x:Key="GitPanel.InitRepo">Depo Başlat</x:String>
+    <x:String x:Key="GitPanel.CloneRepo">Depoyu Klonla...</x:String>
+    <x:String x:Key="GitPanel.DefaultChangelist">Varsayılan Değişiklik Listesi</x:String>
+    <x:String x:Key="GitPanel.CommitPlaceholder">İşleme mesajı (Ctrl+Enter ile işle)</x:String>
+
+    <!-- Diagnostic / Editor -->
+    <x:String x:Key="Diag.QuickFixes">Hızlı Düzeltmeler:</x:String>
+    <x:String x:Key="Diag.LineCol">Satır {0}, Sütun {1}</x:String>
+    <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn hazır</x:String>
+
+    <!-- LED Panel Designer -->
+    <x:String x:Key="Led.Title">LED Panel Tasarımcısı</x:String>
+    <x:String x:Key="Led.PanelSize">PANEL BOYUTU</x:String>
+    <x:String x:Key="Led.Rows">Satırlar</x:String>
+    <x:String x:Key="Led.Columns">Sütunlar</x:String>
+    <x:String x:Key="Led.TotalLeds">Toplam LED</x:String>
+    <x:String x:Key="Led.Hardware">DONANIM</x:String>
+    <x:String x:Key="Led.GpioPin">GPIO Pini</x:String>
+    <x:String x:Key="Led.StripType">Şerit Türü</x:String>
+    <x:String x:Key="Led.Brightness">Parlaklık</x:String>
+    <x:String x:Key="Led.PaintColor">BOYA RENGİ</x:String>
+    <x:String x:Key="Led.DrawMode">ÇİZİM MODU</x:String>
+    <x:String x:Key="Led.DrawSingle">🖌️ Tek LED</x:String>
+    <x:String x:Key="Led.DrawRow">↔️ Tüm Satır</x:String>
+    <x:String x:Key="Led.DrawColumn">↕️ Tüm Sütun</x:String>
+    <x:String x:Key="Led.DrawErase">🧹 Silgi</x:String>
+    <x:String x:Key="Led.DrawFill">🪣 Tümünü Doldur</x:String>
+    <x:String x:Key="Led.Actions">EYLEMLER</x:String>
+    <x:String x:Key="Led.ClearAll">🗑️ Tümünü Temizle</x:String>
+    <x:String x:Key="Led.InvertColors">🔄 Renkleri Ters Çevir</x:String>
+    <x:String x:Key="Led.RandomPattern">🎲 Rastgele Desen</x:String>
+    <x:String x:Key="Led.Animation">ANİMASYON</x:String>
+    <x:String x:Key="Led.CaptureFrame">📸 Kare Yakala</x:String>
+    <x:String x:Key="Led.FrameDelay">Kare Gecikmesi (ms)</x:String>
+    <x:String x:Key="Led.InfiniteLoop">♾️ Sonsuz Döngü</x:String>
+    <x:String x:Key="Led.LoopCount">Döngü Sayısı</x:String>
+    <x:String x:Key="Led.ClearFrames">🗑️ Kareleri Sil</x:String>
+    <x:String x:Key="Led.LedDisplay">LED Ekranı</x:String>
+    <x:String x:Key="Led.HoverLeds">LED'lerin üzerine gelin</x:String>
+    <x:String x:Key="Led.GridLines">Izgara Çizgileri</x:String>
+    <x:String x:Key="Led.Coordinates">Koordinatlar</x:String>
+    <x:String x:Key="Led.PreviewPattern">Deseni Önizle</x:String>
+    <x:String x:Key="Led.Playing">Oynatılıyor...</x:String>
+    <x:String x:Key="Led.PreviewComplete">Önizleme tamamlandı</x:String>
+    <x:String x:Key="Led.Stop">⏹ Durdur</x:String>
+    <x:String x:Key="Led.SaveConfig">💾 Yapılandırmayı Kaydet</x:String>
+    <x:String x:Key="Led.LoadConfig">📂 Yapılandırmayı Yükle</x:String>
+    <x:String x:Key="Led.StatusReady">Hazır — LED deseni tasarlayın</x:String>
+    <x:String x:Key="Led.GenerateCode">nanoFramework Kodu Oluştur</x:String>
+    <x:String x:Key="Led.Cancel">İptal</x:String>
+    <x:String x:Key="Led.Frames">Kareler: {0}</x:String>
+    <x:String x:Key="Led.FrameStatus">Kare {0}/{1} (Döngü {2}/5)</x:String>
+    <x:String x:Key="Led.SaveDialogTitle">LED Panel Yapılandırmasını Kaydet</x:String>
+    <x:String x:Key="Led.LoadDialogTitle">LED Panel Yapılandırmasını Yükle</x:String>
+
+    <!-- nanoFramework Project -->
+    <x:String x:Key="Nano.Title">Yeni nanoFramework Projesi</x:String>
+    <x:String x:Key="Nano.Subtitle">ESP32 / nanoFramework için C# projesi oluştur</x:String>
+    <x:String x:Key="Nano.SelectTemplate">Şablon seçin</x:String>
+    <x:String x:Key="Nano.Configure">Projeyi yapılandırın</x:String>
+    <x:String x:Key="Nano.ProjectName">Proje adı</x:String>
+    <x:String x:Key="Nano.Location">Konum</x:String>
+    <x:String x:Key="Nano.TargetBoard">Hedef Kart</x:String>
+    <x:String x:Key="Nano.Solution">Çözüm</x:String>
+    <x:String x:Key="Nano.AddToSolution">Mevcut çözüme ekle</x:String>
+    <x:String x:Key="Nano.CreateNewSolution">Yeni çözüm oluştur</x:String>
+    <x:String x:Key="Nano.Requirements">ℹ️ Gereksinimler</x:String>
+    <x:String x:Key="Nano.Req1">• nanoff CLI (eksikse otomatik yüklenir)</x:String>
+    <x:String x:Key="Nano.Req2">• USB üzerinden bağlı ESP32</x:String>
+    <x:String x:Key="Nano.Req3">• USB-Serial sürücüsü (CP210x veya CH340)</x:String>
+    <x:String x:Key="Nano.Browse">Gözat...</x:String>
+    <x:String x:Key="Nano.Cancel">İptal</x:String>
+    <x:String x:Key="Nano.Create">nanoFramework Projesi Oluştur</x:String>
+    <x:String x:Key="Nano.TplBlankName">Boş Uygulama</x:String>
+    <x:String x:Key="Nano.TplBlankDesc">Boş nanoFramework uygulaması</x:String>
+    <x:String x:Key="Nano.TplClassLibName">Sınıf Kitaplığı</x:String>
+    <x:String x:Key="Nano.TplClassLibDesc">Yeniden kullanılabilir kitaplık</x:String>
+    <x:String x:Key="Nano.TplGpioName">GPIO Blink</x:String>
+    <x:String x:Key="Nano.TplGpioDesc">LED yanıp sönme örneği</x:String>
+    <x:String x:Key="Nano.TplWifiName">Wi-Fi</x:String>
+    <x:String x:Key="Nano.TplWifiDesc">Wi-Fi bağlantısı</x:String>
+    <x:String x:Key="Nano.TplHttpName">HTTP İstemcisi</x:String>
+    <x:String x:Key="Nano.TplHttpDesc">HTTP istekleri</x:String>
+    <x:String x:Key="Nano.TplI2CName">I2C Sensörü</x:String>
+    <x:String x:Key="Nano.TplI2CDesc">Sensör okuma</x:String>
+
+    <!-- AxamlPreview extra -->
+    <x:String x:Key="AxamlPreview.LivePreview">✔ Canlı önizleme</x:String>
+    <x:String x:Key="AxamlPreview.FallbackView">⚠ Yedek görünüm</x:String>
+    <x:String x:Key="AxamlPreview.TitleFormat">AXAML Önizleme — {0}</x:String>
+    <x:String x:Key="AxamlPreview.UnknownError">Bilinmeyen hata</x:String>
+
+    <!-- RunConfig extra -->
+    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Yapılandırma ara...</x:String>
+    <x:String x:Key="RunConfig.Single">TEKİL</x:String>
+    <x:String x:Key="RunConfig.Compound">BİLEŞİK</x:String>
+    <x:String x:Key="RunConfig.ManageCompound">⚡ Yönet</x:String>
+    <x:String x:Key="RunConfig.Add">Yapılandırma Ekle</x:String>
+    <x:String x:Key="RunConfig.Remove">Yapılandırmayı Kaldır</x:String>
+    <x:String x:Key="RunConfig.Duplicate">Yapılandırmayı Çoğalt</x:String>
+    <x:String x:Key="RunConfig.NoEnvVars">Ortam değişkeni tanımlı değil</x:String>
+    <x:String x:Key="RunConfig.AddEnvVar">+ Ekle</x:String>
+    <x:String x:Key="RunConfig.Projects">proje</x:String>
+
+    <!-- NuGet extra -->
+    <x:String x:Key="NuGet.NanoFramework">🔌 Popüler nanoFramework Paketleri</x:String>
+    <x:String x:Key="NuGet.NanoFrameworkDesc">nanoFramework için popüler paketler. Herhangi bir NuGet paketi için aramayı kullanın.</x:String>
+    <x:String x:Key="NuGet.NoPackagesFound">Paket bulunamadı</x:String>
+    <x:String x:Key="NuGet.Install">Yükle</x:String>
+    <x:String x:Key="NuGet.Update">Güncelle</x:String>
+    <x:String x:Key="NuGet.Uninstall">Kaldır</x:String>
+    <x:String x:Key="NuGet.AllUpToDateCheck">✅ Tüm paketler güncel</x:String>
+
+    <!-- Common -->
+    <x:String x:Key="Common.OK">Tamam</x:String>
+    <x:String x:Key="Common.Cancel">İptal</x:String>
+    <x:String x:Key="Common.Apply">Uygula</x:String>
+    <x:String x:Key="Common.Close">Kapat</x:String>
+    <x:String x:Key="Common.Browse">Göz At...</x:String>
+    <x:String x:Key="Common.Save">Kaydet</x:String>
+    <x:String x:Key="Common.Refresh">Yenile</x:String>
+
+    <!-- Language Switcher -->
+    <x:String x:Key="Lang.Language">🌐 Dil</x:String>
+    <x:String x:Key="Lang.English">English</x:String>
+    <x:String x:Key="Lang.Ukrainian">Українська</x:String>
+    <x:String x:Key="Lang.German">Deutsch</x:String>
+    <x:String x:Key="Lang.Russian">Русский</x:String>
+    <x:String x:Key="Lang.Turkish">Türkçe</x:String>
+
+</ResourceDictionary>

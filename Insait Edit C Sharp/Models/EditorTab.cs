@@ -152,6 +152,14 @@ public class EditorTab : INotifyPropertyChanged
             ".ps1" => "powershell",
             ".bat" => "bat",
             ".cmd" => "bat",
+            ".csproj" or ".fsproj" or ".vbproj" or ".nfproj" => "xml",
+            ".props" or ".targets" or ".nuspec" or ".config" => "xml",
+            ".sln" or ".slnx" => "plaintext",
+            ".txt" or ".log" or ".csv" or ".cfg" or ".ini" or ".conf" => "plaintext",
+            ".toml" => "toml",
+            ".kt" or ".kts" => "kotlin",
+            ".swift" => "swift",
+            ".razor" or ".cshtml" => "html",
             _ => "plaintext"
         };
     }

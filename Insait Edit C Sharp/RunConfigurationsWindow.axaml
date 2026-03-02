@@ -51,6 +51,9 @@
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,10"/>
         </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF352840"/>
+        </Style>
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="#FF352840"/>
             <Setter Property="Foreground" Value="#FFF0E8F4"/>

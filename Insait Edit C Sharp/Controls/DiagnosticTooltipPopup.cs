@@ -14,16 +14,16 @@ namespace Insait_Edit_C_Sharp.Controls;
 /// </summary>
 public sealed class DiagnosticTooltipPopup : Popup
 {
-    private static readonly Color BgColor    = Color.Parse("#FF1E2030");
-    private static readonly Color BdColor    = Color.Parse("#FF3E4257");
+    private static readonly Color BgColor    = Color.Parse("#FF1F1A24");
+    private static readonly Color BdColor    = Color.Parse("#FF6C3FAA");
     private static readonly Color ErrorFg    = Color.Parse("#FFF38BA8");
     private static readonly Color WarningFg  = Color.Parse("#FFF5A623");
     private static readonly Color InfoFg     = Color.Parse("#FF89B4FA");
     private static readonly Color HintFg     = Color.Parse("#FFA6E3A1");
-    private static readonly Color TextFg     = Color.Parse("#FFCDD6F4");
-    private static readonly Color DimFg      = Color.Parse("#FF7F849C");
-    private static readonly Color FixHover   = Color.Parse("#FF45475A");
-    private static readonly Color CodeFg     = Color.Parse("#FF89DCEB");
+    private static readonly Color TextFg     = Color.Parse("#FFF0E8F4");
+    private static readonly Color DimFg      = Color.Parse("#FF9E90B0");
+    private static readonly Color FixHover   = Color.Parse("#FF3E3050");
+    private static readonly Color CodeFg     = Color.Parse("#FFDCC4FF");
 
     public event EventHandler<QuickFixEventArgs>? FixRequested;
 
@@ -93,7 +93,7 @@ public sealed class DiagnosticTooltipPopup : Popup
             stack.Children.Add(new Border { Height = 1, Background = new SolidColorBrush(BdColor), Margin = new Thickness(0, 2, 0, 0) });
             stack.Children.Add(new TextBlock
             {
-                Text       = "Quick Fixes:",
+                Text       = LocalizationService.Get("Diag.QuickFixes"),
                 FontSize   = 10,
                 FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"),
                 Foreground = new SolidColorBrush(DimFg),
@@ -105,7 +105,7 @@ public sealed class DiagnosticTooltipPopup : Popup
 
         stack.Children.Add(new TextBlock
         {
-            Text       = $"Line {span.Line}, Col {span.Column}",
+            Text       = string.Format(LocalizationService.Get("Diag.LineCol"), span.Line, span.Column),
             FontSize   = 10,
             FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"),
             Foreground = new SolidColorBrush(DimFg),

@@ -9,6 +9,7 @@ using Insait_Edit_C_Sharp.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using IOPath = System.IO.Path;
@@ -30,6 +31,10 @@ public partial class MsixManagerWindow : Window
     private string?  _lastOutputMsixPath;
     private readonly StringBuilder _logBuffer = new();
 
+    // Certificate signing
+    private List<CertificateViewModel> _userCerts = new();
+    private CertificateViewModel?      _selectedCert;
+
     // ─────────────────────────────────────────────────────────────
     //  Constructors
     // ─────────────────────────────────────────────────────────────
@@ -42,6 +47,35 @@ public partial class MsixManagerWindow : Window
         WireEvents();
         if (!string.IsNullOrEmpty(projectPath))
             PreFillFromProject(projectPath);
+        ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("Msix.Title");
+        SetBtn("StartBuildBtn",   L("Msix.StartBuild"));
+        SetBtn("CloseBtn",        L("Msix.Close"));
+        SetBtn("CloseWindowBtn",  L("Msix.Close"));
+        SetNavBtn("NavBuildMsixBtn",  L("Msix.BuildMsix"));
+        SetNavBtn("NavOpenMsixBtn",   L("Msix.OpenMsix"));
+        SetNavBtn("NavIdentityBtn",   L("Msix.Identity"));
+        SetNavBtn("NavEntryBtn",      L("Msix.EntryPoint"));
+        SetNavBtn("NavManifestBtn",   L("Msix.ManifestXml"));
+        SetNavBtn("NavLogBtn",        L("Msix.BuildLog"));
+    }
+
+    private void SetBtn(string name, string text)
+    {
+        var btn = this.FindControl<Button>(name);
+        if (btn != null) btn.Content = text;
+    }
+
+    private void SetNavBtn(string name, string text)
+    {
+        var btn = this.FindControl<Button>(name);
+        if (btn != null) btn.Content = text;
     }
 
     private void InitializeComponent() =>
@@ -92,6 +126,12 @@ public partial class MsixManagerWindow : Window
         Bind("CopyLogBtn",         (Button b) => b.Click += async (_, _) => await CopyToClipboardAsync(_logBuffer.ToString()));
         Bind("OpenOutputFolderBtn",(Button b) => b.Click += OpenOutputFolder_Click);
 
+        // Sign page
+        Bind("BrowseSignMsixBtn", (Button b) => b.Click += BrowseSignMsix_Click);
+        Bind("RefreshCertsBtn",   (Button b) => b.Click += (_, _) => _ = LoadUserCertificatesAsync());
+        Bind("DoSignMsixBtn",     (Button b) => b.Click += DoSignMsix_Click);
+        Bind("CertListBox",       (ListBox lb) => lb.SelectionChanged += CertListBox_SelectionChanged);
+
         // Service events
         _service.OutputReceived  += (_, e) => Dispatcher.UIThread.Post(() => AppendLog(e.Output));
         _service.PackageStarted  += (_, _) => Dispatcher.UIThread.Post(() => SetBusy(true));
@@ -126,20 +166,25 @@ public partial class MsixManagerWindow : Window
     internal void NavEntry_Click(object? s, RoutedEventArgs e)    => ShowPage("entry");
     internal void NavManifest_Click(object? s, RoutedEventArgs e) => ShowPage("manifest");
     internal void NavOutput_Click(object? s, RoutedEventArgs e)   => ShowPage("output");
+    internal void NavSign_Click(object? s, RoutedEventArgs e)     => ShowPage("sign");
 
     private void ShowPage(string page)
     {
-        string[] pageNames = { "PageBuild", "PageOpen", "PageIdentity", "PageEntry", "PageManifest", "PageOutput" };
-        string[] navNames  = { "NavBuildBtn", "NavOpenBtn", "NavIdentityBtn", "NavEntryBtn", "NavManifestBtn", "NavOutputBtn" };
+        string[] pageNames = { "PageBuild", "PageOpen", "PageIdentity", "PageEntry", "PageManifest", "PageOutput", "PageSign" };
+        string[] navNames  = { "NavBuildBtn", "NavOpenBtn", "NavIdentityBtn", "NavEntryBtn", "NavManifestBtn", "NavOutputBtn", "NavSignBtn" };
         var pageMap = new Dictionary<string, string>
         {
-            ["build"] = "PageBuild", ["open"] = "PageOpen", ["identity"] = "PageIdentity",
-            ["entry"] = "PageEntry", ["manifest"] = "PageManifest", ["output"] = "PageOutput",
+            ["build"]    = "PageBuild",    ["open"]     = "PageOpen",
+            ["identity"] = "PageIdentity", ["entry"]    = "PageEntry",
+            ["manifest"] = "PageManifest", ["output"]   = "PageOutput",
+            ["sign"]     = "PageSign",
         };
         var btnMap = new Dictionary<string, string>
         {
-            ["build"] = "NavBuildBtn", ["open"] = "NavOpenBtn", ["identity"] = "NavIdentityBtn",
-            ["entry"] = "NavEntryBtn", ["manifest"] = "NavManifestBtn", ["output"] = "NavOutputBtn",
+            ["build"]    = "NavBuildBtn",    ["open"]     = "NavOpenBtn",
+            ["identity"] = "NavIdentityBtn", ["entry"]    = "NavEntryBtn",
+            ["manifest"] = "NavManifestBtn", ["output"]   = "NavOutputBtn",
+            ["sign"]     = "NavSignBtn",
         };
 
         foreach (var p in pageNames)
@@ -154,8 +199,14 @@ public partial class MsixManagerWindow : Window
             if (btnMap[page] == nb) btn.Classes.Add("active");
             else btn.Classes.Remove("active");
         }
+
         var startBtn = this.FindControl<Button>("StartBuildBtn");
+        var signBtn  = this.FindControl<Button>("DoSignMsixBtn");
         if (startBtn != null) startBtn.IsVisible = page == "build";
+        if (signBtn  != null) signBtn.IsVisible  = page == "sign";
+
+        if (page == "sign")
+            _ = LoadUserCertificatesAsync();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -589,6 +640,155 @@ public partial class MsixManagerWindow : Window
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             BeginMoveDrag(e);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  MSIX Signing
+    // ─────────────────────────────────────────────────────────────
+
+    private async Task LoadUserCertificatesAsync()
+    {
+        _userCerts.Clear();
+        var noCertsText = this.FindControl<TextBlock>("NoCertsText");
+        var listBox     = this.FindControl<ListBox>("CertListBox");
+
+        try
+        {
+            var certs = await Task.Run(() =>
+            {
+                using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser, OpenFlags.ReadOnly);
+                return store.Certificates
+                    .Cast<X509Certificate2>()
+                    .Where(c => c.HasPrivateKey)
+                    .Select(c => new CertificateViewModel(c))
+                    .ToList();
+            });
+
+            _userCerts = certs;
+            if (listBox != null) listBox.ItemsSource = _userCerts;
+
+            if (noCertsText != null) noCertsText.IsVisible = _userCerts.Count == 0;
+        }
+        catch (Exception ex)
+        {
+            if (noCertsText != null)
+            {
+                noCertsText.Text = $"⚠️  Could not read certificate store: {ex.Message}";
+                noCertsText.IsVisible = true;
+            }
+        }
+
+        // Clear selection info
+        UpdateCertInfo(null);
+    }
+
+    private void CertListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        _selectedCert = (sender as ListBox)?.SelectedItem as CertificateViewModel;
+        UpdateCertInfo(_selectedCert);
+    }
+
+    private void UpdateCertInfo(CertificateViewModel? cert)
+    {
+        var panel = this.FindControl<Border>("SelectedCertInfoPanel");
+        if (panel != null) panel.IsVisible = cert != null;
+        if (cert == null) return;
+
+        SetText("CertSubjectText",    cert.SubjectName);
+        SetText("CertIssuerText",     cert.IssuerName);
+        SetText("CertThumbprintText", cert.Thumbprint);
+        SetText("CertExpiryText",     cert.ExpiryDisplay);
+    }
+
+    private async void BrowseSignMsix_Click(object? s, RoutedEventArgs e)
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Select MSIX to Sign", AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("MSIX Package") { Patterns = new[] { "*.msix", "*.appx" } },
+                new FilePickerFileType("All Files")    { Patterns = new[] { "*.*" } }
+            }
+        });
+        if (files.Count > 0) SetText("SignMsixPathBox", files[0].Path.LocalPath);
+    }
+
+    private async void DoSignMsix_Click(object? s, RoutedEventArgs e)
+    {
+        if (_isBusy) return;
+
+        var msixPath = GetText("SignMsixPathBox")?.Trim();
+        if (string.IsNullOrEmpty(msixPath) || !IOFile.Exists(msixPath))
+        {
+            SetStatus("❌ Please select a valid .msix file.", false);
+            return;
+        }
+
+        if (_selectedCert == null)
+        {
+            SetStatus("❌ Please select a certificate from the list.", false);
+            return;
+        }
+
+        var hashCombo = this.FindControl<ComboBox>("SignHashAlgoCombo");
+        var hashAlgo  = (hashCombo?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "SHA256";
+
+        SetBusy(true);
+        SetStatus("Signing…", null);
+        _logBuffer.Clear();
+        ShowPage("output");
+
+        var result = await _service.SignMsixAsync(msixPath, _selectedCert.Thumbprint, hashAlgo);
+
+        SetBusy(false);
+        SetStatus(result.Success ? $"✅ Signed: {IOPath.GetFileName(msixPath)}"
+                                 : $"❌ {result.ErrorMessage}", result.Success);
+    }
+}
+
+/// <summary>View model for a certificate entry in the cert list.</summary>
+public sealed class CertificateViewModel
+{
+    private readonly X509Certificate2 _cert;
+
+    public CertificateViewModel(X509Certificate2 cert)
+    {
+        _cert = cert;
+        SubjectName  = SimplifyDN(cert.SubjectName.Name);
+        IssuerName   = SimplifyDN(cert.IssuerName.Name);
+        Thumbprint   = cert.Thumbprint;
+        NotAfter     = cert.NotAfter;
+
+        var daysLeft = (NotAfter - DateTime.Now).TotalDays;
+        ExpiryDisplay = daysLeft < 0
+            ? $"Expired {-daysLeft:0}d ago"
+            : $"Expires {NotAfter:yyyy-MM-dd} ({daysLeft:0}d)";
+        ExpiryColor = daysLeft < 0 ? "#FFEF5350"
+                    : daysLeft < 30 ? "#FFBB9A6F"
+                    : "#FF9E90B0";
+    }
+
+    public string SubjectName  { get; }
+    public string IssuerName   { get; }
+    public string Thumbprint   { get; }
+    public DateTime NotAfter   { get; }
+    public string ExpiryDisplay { get; }
+    public string ExpiryColor  { get; }
+
+    /// <summary>Gets the underlying certificate (for signing).</summary>
+    internal X509Certificate2 Certificate => _cert;
+
+    private static string SimplifyDN(string dn)
+    {
+        // Extract CN= value for brevity
+        foreach (var part in dn.Split(','))
+        {
+            var trimmed = part.Trim();
+            if (trimmed.StartsWith("CN=", StringComparison.OrdinalIgnoreCase))
+                return trimmed[3..].Trim('"');
+        }
+        return dn;
     }
 }
 

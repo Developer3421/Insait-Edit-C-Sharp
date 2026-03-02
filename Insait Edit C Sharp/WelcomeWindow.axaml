@@ -125,6 +125,9 @@
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontSize" Value="13"/>
         </Style>
+        <Style Selector="TextBox.search-box /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+        </Style>
         <Style Selector="TextBox.search-box:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
@@ -189,14 +192,14 @@
                             <StackPanel Spacing="4">
                                 <TextBlock Text="Insait Edit" FontSize="28" FontWeight="Bold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBlock Text="C# IDE powered by Monaco Editor" FontSize="13"
+                                <TextBlock Name="WelcomeSubtitleText" Text="C# IDE powered by Insait Code Editor" FontSize="13"
                                            Foreground="{StaticResource TextSecondaryBrush}"/>
                             </StackPanel>
                             
                             <!-- Version -->
                             <Border Background="{StaticResource BgTertiaryBrush}" CornerRadius="4" 
                                     Padding="8,4" HorizontalAlignment="Left">
-                                <TextBlock Text="Version 1.0.0 Preview" FontSize="11"
+                                <TextBlock Name="WelcomeVersionText" Text="Version 1.0.0 Preview" FontSize="11"
                                            Foreground="{StaticResource TextMutedBrush}"/>
                             </Border>
                         </StackPanel>
@@ -211,8 +214,8 @@
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="New Solution" FontSize="14" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Create a new .sln solution" FontSize="11"
+                                        <TextBlock Name="NewSolutionTitle" Text="New Solution" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Name="NewSolutionDesc" Text="Create a new .sln solution" FontSize="11"
                                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                                     </StackPanel>
                                 </Grid>
@@ -226,8 +229,8 @@
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="New Project" FontSize="14" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Create a new C# project" FontSize="11"
+                                        <TextBlock Name="NewProjectTitle" Text="New Project" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Name="NewProjectDesc" Text="Create a new C# project" FontSize="11"
                                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                                     </StackPanel>
                                 </Grid>
@@ -241,8 +244,8 @@
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="Open" FontSize="14" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Open project or solution" FontSize="11"
+                                        <TextBlock Name="OpenTitle" Text="Open" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Name="OpenDesc" Text="Open project or solution" FontSize="11"
                                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                                     </StackPanel>
                                 </Grid>
@@ -256,8 +259,8 @@
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="Clone Repository" FontSize="14" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Get code from Git repository" FontSize="11"
+                                        <TextBlock Name="CloneTitle" Text="Clone Repository" FontSize="14" FontWeight="SemiBold"/>
+                                        <TextBlock Name="CloneDesc" Text="Get code from Git repository" FontSize="11"
                                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                                     </StackPanel>
                                 </Grid>
@@ -273,9 +276,9 @@
                         <StackPanel Grid.Row="3" Margin="24,0,24,24" Spacing="12">
                             <Separator Background="{StaticResource BorderBrush}" Height="1"/>
                             <StackPanel Orientation="Horizontal" Spacing="16">
-                                <Button Classes="link-btn" Content="Documentation" Click="Documentation_Click"/>
-                                <Button Classes="link-btn" Content="GitHub" Click="GitHub_Click"/>
-                                <Button Classes="link-btn" Content="Settings" Click="Settings_Click"/>
+                                <Button Name="DocLink" Classes="link-btn" Content="Documentation" Click="Documentation_Click"/>
+                                <Button Name="GitHubLink" Classes="link-btn" Content="GitHub" Click="GitHub_Click"/>
+                                <Button Name="SettingsLink" Classes="link-btn" Content="Settings" Click="Settings_Click"/>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
@@ -290,7 +293,7 @@
                             <TextBox Classes="search-box" Name="SearchBox" 
                                      Watermark="🔍  Search recent projects..."
                                      TextChanged="SearchBox_TextChanged"/>
-                            <Button Grid.Column="1" Classes="link-btn" Content="Clear All" 
+                            <Button Grid.Column="1" Name="ClearAllButton" Classes="link-btn" Content="Clear All" 
                                     Margin="16,0,0,0" VerticalAlignment="Center"
                                     Click="ClearRecent_Click"/>
                         </Grid>

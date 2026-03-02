@@ -28,6 +28,52 @@ public partial class WelcomeWindow : Window
         _filteredProjects = new ObservableCollection<RecentProjectItem>();
         
         LoadRecentProjects();
+        ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        
+        Title = L("Welcome.Title");
+        
+        var subtitle = this.FindControl<TextBlock>("WelcomeSubtitleText");
+        if (subtitle != null) subtitle.Text = L("Welcome.Subtitle");
+        var version = this.FindControl<TextBlock>("WelcomeVersionText");
+        if (version != null) version.Text = L("Welcome.Version");
+        
+        var newSlnTitle = this.FindControl<TextBlock>("NewSolutionTitle");
+        if (newSlnTitle != null) newSlnTitle.Text = L("Welcome.NewSolution");
+        var newSlnDesc = this.FindControl<TextBlock>("NewSolutionDesc");
+        if (newSlnDesc != null) newSlnDesc.Text = L("Welcome.NewSolutionDesc");
+        
+        var newProjTitle = this.FindControl<TextBlock>("NewProjectTitle");
+        if (newProjTitle != null) newProjTitle.Text = L("Welcome.NewProject");
+        var newProjDesc = this.FindControl<TextBlock>("NewProjectDesc");
+        if (newProjDesc != null) newProjDesc.Text = L("Welcome.NewProjectDesc");
+        
+        var openTitle = this.FindControl<TextBlock>("OpenTitle");
+        if (openTitle != null) openTitle.Text = L("Welcome.Open");
+        var openDesc = this.FindControl<TextBlock>("OpenDesc");
+        if (openDesc != null) openDesc.Text = L("Welcome.OpenDesc");
+        
+        var cloneTitle = this.FindControl<TextBlock>("CloneTitle");
+        if (cloneTitle != null) cloneTitle.Text = L("Welcome.CloneRepository");
+        var cloneDesc = this.FindControl<TextBlock>("CloneDesc");
+        if (cloneDesc != null) cloneDesc.Text = L("Welcome.CloneRepositoryDesc");
+        
+        var docLink = this.FindControl<Button>("DocLink");
+        if (docLink != null) docLink.Content = L("Welcome.Documentation");
+        var ghLink = this.FindControl<Button>("GitHubLink");
+        if (ghLink != null) ghLink.Content = L("Welcome.GitHub");
+        var settingsLink = this.FindControl<Button>("SettingsLink");
+        if (settingsLink != null) settingsLink.Content = L("Welcome.Settings");
+        
+        var searchBox = this.FindControl<TextBox>("SearchBox");
+        if (searchBox != null) searchBox.Watermark = L("Welcome.SearchRecent");
+        var clearBtn = this.FindControl<Button>("ClearAllButton");
+        if (clearBtn != null) clearBtn.Content = L("Welcome.ClearAll");
     }
 
     private void LoadRecentProjects()

@@ -32,6 +32,13 @@ public partial class PublishWindow : Window
         
         SetupEventHandlers();
         LoadData();
+        ApplyLocalization();
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("Publish.Title");
     }
 
     private void InitializeComponent()

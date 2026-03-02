@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp;
 
@@ -27,6 +28,27 @@ public partial class CloneRepositoryWindow : Window
         {
             localPathBox.Text = _defaultPath;
         }
+        ApplyLocalization();
+    }
+
+    private void ApplyLocalization()
+    {
+        var L = (Func<string, string>)LocalizationService.Get;
+        Title = L("Clone.Title");
+        var titleBar = this.FindControl<TextBlock>("TitleBarText");
+        if (titleBar != null) titleBar.Text = L("Clone.Title");
+        var repoLabel = this.FindControl<TextBlock>("RepoUrlLabel");
+        if (repoLabel != null) repoLabel.Text = L("Clone.RepoUrl");
+        var pathLabel = this.FindControl<TextBlock>("LocalPathLabel");
+        if (pathLabel != null) pathLabel.Text = L("Clone.LocalPath");
+        var browseBtn = this.FindControl<Button>("BrowseButton");
+        if (browseBtn != null) browseBtn.Content = L("Clone.Browse");
+        var statusText = this.FindControl<TextBlock>("StatusText");
+        if (statusText != null) statusText.Text = L("Clone.Cloning");
+        var cancelBtn = this.FindControl<Button>("CancelButton");
+        if (cancelBtn != null) cancelBtn.Content = L("Clone.Cancel");
+        var cloneBtn = this.FindControl<Button>("CloneButton");
+        if (cloneBtn != null) cloneBtn.Content = L("Clone.Clone");
     }
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)

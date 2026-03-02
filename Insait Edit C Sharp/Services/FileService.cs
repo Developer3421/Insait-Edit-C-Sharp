@@ -13,15 +13,23 @@ public class FileService
 {
     private readonly HashSet<string> _supportedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".cs", ".csx", ".vb",
+        ".cs", ".csx", ".vb", ".fs",
         ".xaml", ".axaml",
         ".json", ".xml", ".config",
         ".html", ".htm", ".css", ".scss", ".less",
         ".js", ".ts", ".jsx", ".tsx",
-        ".md", ".txt", ".log",
+        ".md", ".txt", ".log", ".csv",
         ".yaml", ".yml",
         ".sql",
-        ".sln", ".csproj", ".vbproj", ".fsproj", ".nfproj"
+        ".sln", ".slnx", ".csproj", ".vbproj", ".fsproj", ".nfproj",
+        ".props", ".targets", ".nuspec",
+        ".py", ".rb", ".go", ".rs", ".java", ".cpp", ".c", ".h", ".hpp",
+        ".sh", ".bat", ".cmd", ".ps1",
+        ".toml", ".ini", ".cfg", ".conf",
+        ".razor", ".cshtml",
+        ".dockerfile", ".gitignore", ".editorconfig", ".gitattributes",
+        ".env",
+        ".kt", ".kts", ".swift", ".php",
     };
 
     /// <summary>
