@@ -408,6 +408,7 @@ public partial class MainWindow : Window
             {
                 _insaitEditor.SetContent("", "plaintext");
             }
+            UpdateWelcomeScreenVisibility();
         }
     }
 
@@ -471,6 +472,9 @@ public partial class MainWindow : Window
             _pendingTab = null;
             ShowTabInEditor(tab);
         }
+
+        // Show/hide welcome screen based on whether any tab is open
+        UpdateWelcomeScreenVisibility();
     }
 
     private void WireEditorEvents()
@@ -480,6 +484,53 @@ public partial class MainWindow : Window
         _insaitEditor!.ContentChangedWithValue += OnEditorContentChangedWithValue;
         _insaitEditor!.CursorPositionChanged   += OnCursorPositionChanged;
         _insaitEditor!.UndoRedoManager.StateChanged += OnUndoRedoStateChanged;
+        _insaitEditor!.GoToDefinitionRequested += OnGoToDefinitionRequested;
+        _insaitEditor!.RenameCompleted         += OnRenameCompleted;
+    }
+
+    /// <summary>
+    /// Handles Go to Definition navigation to a different file.
+    /// Opens the file in editor and navigates to the specified line/column.
+    /// </summary>
+    private void OnGoToDefinitionRequested(object? sender, InsaitCodeEditor.GoToDefinitionRequestedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            OpenFileInEditor(e.FilePath);
+            // After opening, navigate to line/col
+            _insaitEditor?.GoToLine(e.Line, e.Column);
+            _viewModel.StatusText = $"Definition: {Path.GetFileName(e.FilePath)} Ln {e.Line}, Col {e.Column}";
+        });
+    }
+
+    /// <summary>
+    /// Handles Rename Symbol completion — applies changes to other open tabs.
+    /// </summary>
+    private void OnRenameCompleted(object? sender, InsaitCodeEditor.RenameCompletedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var currentFile = _viewModel.ActiveTab?.FilePath;
+            // Apply changes to other open tabs
+            foreach (var change in e.Result.Changes)
+            {
+                if (string.Equals(change.FilePath, currentFile, StringComparison.OrdinalIgnoreCase))
+                    continue; // already applied by InsaitEditor
+
+                var tab = _viewModel.FindTabByPath(change.FilePath);
+                if (tab != null)
+                {
+                    // Re-read the file from disk to reflect rename
+                    try
+                    {
+                        tab.Content = File.ReadAllText(change.FilePath);
+                        tab.IsDirty = true;
+                    }
+                    catch { }
+                }
+            }
+            _viewModel.StatusText = $"Renamed: {e.Result.OldName} → {e.Result.NewName} ({e.Result.Changes.Count} changes)";
+        });
     }
 
     private void OnEditorReady(object? sender, EventArgs e)
@@ -829,6 +880,9 @@ public partial class MainWindow : Window
         if (ctxGit != null) ctxGit.Header = L("Context.Git");
         var ctxProps = this.FindControl<MenuItem>("ContextMenuProperties");
         if (ctxProps != null) ctxProps.Header = L("Context.Properties");
+
+        // ── Welcome Screen ───────────────────────────────────────
+        ApplyWelcomeScreenLocalization(L);
     }
 
     // ── Localization helpers ─────────────────────────────────────────
@@ -852,6 +906,76 @@ public partial class MainWindow : Window
         var btn = this.FindControl<Button>(name);
         if (btn?.Content is StackPanel sp && sp.Children.Count > textBlockIndex && sp.Children[textBlockIndex] is TextBlock tb)
             tb.Text = text;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  Welcome Screen
+    // ═══════════════════════════════════════════════════════════
+
+    private void UpdateWelcomeScreenVisibility()
+    {
+        var panel = this.FindControl<Border>("WelcomeScreenPanel");
+        if (panel == null) return;
+        panel.IsVisible = _viewModel.ActiveTab == null;
+    }
+
+    private void ApplyWelcomeScreenLocalization(Func<string, string> L)
+    {
+        var subtitle = this.FindControl<TextBlock>("WelcomeMainSubtitle");
+        if (subtitle != null) subtitle.Text = L("WelcomeScreen.Subtitle");
+
+        var cardNew = this.FindControl<TextBlock>("WelcomeCardNewProject");
+        if (cardNew != null) cardNew.Text = L("WelcomeScreen.NewProject");
+
+        var cardOpen = this.FindControl<TextBlock>("WelcomeCardOpen");
+        if (cardOpen != null) cardOpen.Text = L("WelcomeScreen.Open");
+
+        var cardClone = this.FindControl<TextBlock>("WelcomeCardClone");
+        if (cardClone != null) cardClone.Text = L("WelcomeScreen.Clone");
+
+        var tip = this.FindControl<TextBlock>("WelcomeTip");
+        if (tip != null) tip.Text = L("WelcomeScreen.Tip");
+
+        var shortcutNew = this.FindControl<TextBlock>("WelcomeShortcutNew");
+        if (shortcutNew != null) shortcutNew.Text = L("WelcomeScreen.NewProject");
+
+        var shortcutOpen = this.FindControl<TextBlock>("WelcomeShortcutOpen");
+        if (shortcutOpen != null) shortcutOpen.Text = L("WelcomeScreen.Open");
+    }
+
+    private async void WelcomeNewProject_Click(object? sender, RoutedEventArgs e)
+    {
+        var currentSolution = FindSolutionFile();
+        var win = new NewProjectWindow(currentSolution ?? _projectPath);
+        var result = await win.ShowDialog<string?>(this);
+        if (!string.IsNullOrEmpty(result))
+            await LoadProjectAsync(result);
+    }
+
+    private async void WelcomeOpen_Click(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = GetTopLevel(this);
+        if (topLevel == null) return;
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Project or Solution",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("Solution / Project Files") { Patterns = new[] { "*.sln", "*.slnx", "*.csproj", "*.fsproj" } },
+                new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } }
+            }
+        });
+        if (files.Count > 0)
+            await LoadProjectAsync(files[0].Path.LocalPath);
+    }
+
+    private async void WelcomeClone_Click(object? sender, RoutedEventArgs e)
+    {
+        var win = new CloneRepositoryWindow();
+        var result = await win.ShowDialog<string?>(this);
+        if (!string.IsNullOrEmpty(result))
+            await LoadProjectAsync(result);
     }
 
     #region Undo / Redo

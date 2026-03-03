@@ -317,6 +317,13 @@
     <x:String x:Key="Welcome.ClearAll">Tümünü Temizle</x:String>
     <x:String x:Key="Welcome.RecentProjects">Son Projeler</x:String>
 
+    <!-- ── WelcomeScreen (IDE başlangıç ekranı) ─────────────────── -->
+    <x:String x:Key="WelcomeScreen.Subtitle">C# IDE · Insait Code Engine ile desteklenmektedir</x:String>
+    <x:String x:Key="WelcomeScreen.NewProject">Yeni Proje</x:String>
+    <x:String x:Key="WelcomeScreen.Open">Aç</x:String>
+    <x:String x:Key="WelcomeScreen.Clone">Klonla</x:String>
+    <x:String x:Key="WelcomeScreen.Tip">Başlamak için bir proje açın veya yeni bir tane oluşturun</x:String>
+
     <!-- MenuWindow -->
     <x:String x:Key="Menu.Title">Menü</x:String>
     <x:String x:Key="Menu.File">Dosya</x:String>
@@ -759,6 +766,54 @@
     <x:String x:Key="NuGet.Update">Güncelle</x:String>
     <x:String x:Key="NuGet.Uninstall">Kaldır</x:String>
     <x:String x:Key="NuGet.AllUpToDateCheck">✅ Tüm paketler güncel</x:String>
+    <!-- NuGet detay ve durum dizileri -->
+    <x:String x:Key="NuGet.PackageDetails">Paket Ayrıntıları</x:String>
+    <x:String x:Key="NuGet.Version">SÜRÜM</x:String>
+    <x:String x:Key="NuGet.Downloads">İNDİRMELER</x:String>
+    <x:String x:Key="NuGet.Published">YAYINLANDI</x:String>
+    <x:String x:Key="NuGet.Description">AÇIKLAMA</x:String>
+    <x:String x:Key="NuGet.Dependencies">BAĞIMLILIKLAR</x:String>
+    <x:String x:Key="NuGet.Tags">ETİKETLER</x:String>
+    <x:String x:Key="NuGet.Links">BAĞLANTILAR</x:String>
+    <x:String x:Key="NuGet.ProjectLink">Proje</x:String>
+    <x:String x:Key="NuGet.NoDescription">Açıklama mevcut değil</x:String>
+    <x:String x:Key="NuGet.Reinstall">Yeniden Yükle</x:String>
+    <x:String x:Key="NuGet.Verified">✓ Doğrulandı</x:String>
+    <x:String x:Key="NuGet.ViewOnNuGetOrg">nuget.org'da görüntüle</x:String>
+    <x:String x:Key="NuGet.SearchAbove">Yukarıdan NuGet paketi arayın</x:String>
+    <x:String x:Key="NuGet.Project.Label">Proje:</x:String>
+    <x:String x:Key="NuGet.NanoFrameworkMode">NUGET PAKETLERİ (NANOFRAMEWORK)</x:String>
+    <x:String x:Key="NuGet.Tooltip.Refresh">Yenile</x:String>
+    <x:String x:Key="NuGet.Tooltip.NanoSuggestions">Popüler nanoFramework Paketleri</x:String>
+    <x:String x:Key="NuGet.ByAuthor">{0} tarafından</x:String>
+    <x:String x:Key="NuGet.InstalledVersion">Yüklü: v{0}</x:String>
+    <x:String x:Key="NuGet.InstalledCount">{0} paket yüklü</x:String>
+    <x:String x:Key="NuGet.UpdatesAvailable">{0} güncelleme mevcut</x:String>
+    <x:String x:Key="NuGet.UpdatesTabBadge">Güncellemeler ({0})</x:String>
+    <x:String x:Key="NuGet.Loading">Yükleniyor...</x:String>
+    <x:String x:Key="NuGet.Searching">'{0}' aranıyor...</x:String>
+    <x:String x:Key="NuGet.LoadingDetails">{0} ayrıntıları yükleniyor...</x:String>
+    <x:String x:Key="NuGet.LoadingInstalled">Yüklü paketler yükleniyor...</x:String>
+    <x:String x:Key="NuGet.Installing">{0} yükleniyor...</x:String>
+    <x:String x:Key="NuGet.Uninstalling">{0} kaldırılıyor...</x:String>
+    <x:String x:Key="NuGet.Updating">{0} güncelleniyor...</x:String>
+    <x:String x:Key="NuGet.UpdatingAll">Tüm paketler güncelleniyor...</x:String>
+    <x:String x:Key="NuGet.UpdatingCount">{0} güncelleniyor ({1}/{2})...</x:String>
+    <x:String x:Key="NuGet.SuccessInstalled">{0} başarıyla yüklendi</x:String>
+    <x:String x:Key="NuGet.SuccessUninstalled">{0} başarıyla kaldırıldı</x:String>
+    <x:String x:Key="NuGet.SuccessUpdated">{0} başarıyla güncellendi</x:String>
+    <x:String x:Key="NuGet.SuccessUpdatedCount">{0} paket başarıyla güncellendi</x:String>
+    <x:String x:Key="NuGet.NoProject.Error">Proje yüklenmedi</x:String>
+    <x:String x:Key="NuGet.SearchFailed">Arama başarısız: {0}</x:String>
+    <x:String x:Key="NuGet.LoadDetailsFailed">Paket ayrıntıları yüklenemedi: {0}</x:String>
+    <x:String x:Key="NuGet.OpenUrlFailed">URL açılamadı: {0}</x:String>
+    <x:String x:Key="NuGet.LoadPackagesFailed">Paketler yüklenemedi: {0}</x:String>
+    <x:String x:Key="NuGet.RelativeDate.Today">bugün</x:String>
+    <x:String x:Key="NuGet.RelativeDate.Yesterday">dün</x:String>
+    <x:String x:Key="NuGet.RelativeDate.DaysAgo">{0}g önce</x:String>
+    <x:String x:Key="NuGet.RelativeDate.WeeksAgo">{0}h önce</x:String>
+    <x:String x:Key="NuGet.RelativeDate.MonthsAgo">{0}ay önce</x:String>
+    <x:String x:Key="NuGet.RelativeDate.YearsAgo">{0}y önce</x:String>
 
     <!-- Common -->
     <x:String x:Key="Common.OK">Tamam</x:String>

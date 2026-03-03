@@ -318,6 +318,13 @@
     <x:String x:Key="Welcome.ClearAll">Clear All</x:String>
     <x:String x:Key="Welcome.RecentProjects">Recent Projects</x:String>
 
+    <!-- ── WelcomeScreen (in-IDE start screen) ──────────────────── -->
+    <x:String x:Key="WelcomeScreen.Subtitle">C# IDE · Powered by Insait Code Engine</x:String>
+    <x:String x:Key="WelcomeScreen.NewProject">New Project</x:String>
+    <x:String x:Key="WelcomeScreen.Open">Open</x:String>
+    <x:String x:Key="WelcomeScreen.Clone">Clone</x:String>
+    <x:String x:Key="WelcomeScreen.Tip">Open a project or create a new one to get started</x:String>
+
     <!-- ── 3. MenuWindow ─────────────────────────────────────────── -->
     <x:String x:Key="Menu.Title">Menu</x:String>
     <x:String x:Key="Menu.File">File</x:String>
@@ -760,6 +767,54 @@
     <x:String x:Key="NuGet.Update">Update</x:String>
     <x:String x:Key="NuGet.Uninstall">Uninstall</x:String>
     <x:String x:Key="NuGet.AllUpToDateCheck">✅ All packages are up to date</x:String>
+    <!-- ── NuGet details & status strings ──────────────────────── -->
+    <x:String x:Key="NuGet.PackageDetails">Package Details</x:String>
+    <x:String x:Key="NuGet.Version">VERSION</x:String>
+    <x:String x:Key="NuGet.Downloads">DOWNLOADS</x:String>
+    <x:String x:Key="NuGet.Published">PUBLISHED</x:String>
+    <x:String x:Key="NuGet.Description">DESCRIPTION</x:String>
+    <x:String x:Key="NuGet.Dependencies">DEPENDENCIES</x:String>
+    <x:String x:Key="NuGet.Tags">TAGS</x:String>
+    <x:String x:Key="NuGet.Links">LINKS</x:String>
+    <x:String x:Key="NuGet.ProjectLink">Project</x:String>
+    <x:String x:Key="NuGet.NoDescription">No description available</x:String>
+    <x:String x:Key="NuGet.Reinstall">Reinstall</x:String>
+    <x:String x:Key="NuGet.Verified">✓ Verified</x:String>
+    <x:String x:Key="NuGet.ViewOnNuGetOrg">View on nuget.org</x:String>
+    <x:String x:Key="NuGet.SearchAbove">Search for NuGet packages above</x:String>
+    <x:String x:Key="NuGet.Project.Label">Project:</x:String>
+    <x:String x:Key="NuGet.NanoFrameworkMode">NUGET PACKAGES (NANOFRAMEWORK)</x:String>
+    <x:String x:Key="NuGet.Tooltip.Refresh">Refresh</x:String>
+    <x:String x:Key="NuGet.Tooltip.NanoSuggestions">Popular nanoFramework Packages</x:String>
+    <x:String x:Key="NuGet.ByAuthor">by {0}</x:String>
+    <x:String x:Key="NuGet.InstalledVersion">Installed: v{0}</x:String>
+    <x:String x:Key="NuGet.InstalledCount">{0} package(s) installed</x:String>
+    <x:String x:Key="NuGet.UpdatesAvailable">{0} update(s) available</x:String>
+    <x:String x:Key="NuGet.UpdatesTabBadge">Updates ({0})</x:String>
+    <x:String x:Key="NuGet.Loading">Loading...</x:String>
+    <x:String x:Key="NuGet.Searching">Searching for '{0}'...</x:String>
+    <x:String x:Key="NuGet.LoadingDetails">Loading {0} details...</x:String>
+    <x:String x:Key="NuGet.LoadingInstalled">Loading installed packages...</x:String>
+    <x:String x:Key="NuGet.Installing">Installing {0}...</x:String>
+    <x:String x:Key="NuGet.Uninstalling">Uninstalling {0}...</x:String>
+    <x:String x:Key="NuGet.Updating">Updating {0}...</x:String>
+    <x:String x:Key="NuGet.UpdatingAll">Updating all packages...</x:String>
+    <x:String x:Key="NuGet.UpdatingCount">Updating {0} ({1}/{2})...</x:String>
+    <x:String x:Key="NuGet.SuccessInstalled">Successfully installed {0}</x:String>
+    <x:String x:Key="NuGet.SuccessUninstalled">Successfully uninstalled {0}</x:String>
+    <x:String x:Key="NuGet.SuccessUpdated">Successfully updated {0}</x:String>
+    <x:String x:Key="NuGet.SuccessUpdatedCount">Successfully updated {0} packages</x:String>
+    <x:String x:Key="NuGet.NoProject.Error">No project loaded</x:String>
+    <x:String x:Key="NuGet.SearchFailed">Search failed: {0}</x:String>
+    <x:String x:Key="NuGet.LoadDetailsFailed">Failed to load package details: {0}</x:String>
+    <x:String x:Key="NuGet.OpenUrlFailed">Failed to open URL: {0}</x:String>
+    <x:String x:Key="NuGet.LoadPackagesFailed">Failed to load packages: {0}</x:String>
+    <x:String x:Key="NuGet.RelativeDate.Today">today</x:String>
+    <x:String x:Key="NuGet.RelativeDate.Yesterday">yesterday</x:String>
+    <x:String x:Key="NuGet.RelativeDate.DaysAgo">{0}d ago</x:String>
+    <x:String x:Key="NuGet.RelativeDate.WeeksAgo">{0}w ago</x:String>
+    <x:String x:Key="NuGet.RelativeDate.MonthsAgo">{0}mo ago</x:String>
+    <x:String x:Key="NuGet.RelativeDate.YearsAgo">{0}y ago</x:String>
 
     <!-- ── Common ────────────────────────────────────────────────── -->
     <x:String x:Key="Common.OK">OK</x:String>

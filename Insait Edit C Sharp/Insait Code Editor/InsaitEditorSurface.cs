@@ -115,6 +115,8 @@ internal sealed class InsaitEditorSurface : Control
     public event EventHandler<DiagnosticSpan>? HoverDiagnostic;
     public event EventHandler?                 HoverCleared;
     public event EventHandler<DiagnosticSpan>? RequestQuickFix;
+    /// <summary>Fired on Ctrl+Click — cursor position is set, caller should invoke Go to Definition.</summary>
+    public event EventHandler?                 CtrlClickGoToDefinition;
 
     // ══════════════════════════════════════════════════════════════════════
     //  Constructor
@@ -639,6 +641,13 @@ internal sealed class InsaitEditorSurface : Control
         _selStartLine = li; _selStartCol = ci;
         _selEndLine = -1; _selEndCol = -1;
         InvalidateVisual(); e.Handled = true;
+
+        // Ctrl+Click → Go to Definition
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            CtrlClickGoToDefinition?.Invoke(this, EventArgs.Empty);
+        }
+
         base.OnPointerPressed(e);
     }
 
@@ -835,6 +844,11 @@ internal sealed class InsaitEditorSurface : Control
             if (i < parts.Length - 1) InsertNewLine();
         }
     }
+
+    // ── Public clipboard wrappers (for context menu) ─────────────────────
+    public void DoCut()   => _ = CutAsync();
+    public void DoCopy()  => _ = CopyAsync();
+    public void DoPaste() => _ = PasteAsync();
     private string GetSelectedText()
     {
         if (!HasSelection) return string.Empty;

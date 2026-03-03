@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.Controls.GoToDefinitionWindow"
+        Title="Go to Definition"
+        Width="550" Height="380"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="BorderOnly"
+        Background="#FF1F1A24">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="GdBg"      Color="#FF1F1A24"/>
+        <SolidColorBrush x:Key="GdSurface"  Color="#FF2A2230"/>
+        <SolidColorBrush x:Key="GdBorder"   Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="GdText"     Color="#FFF0E8F4"/>
+        <SolidColorBrush x:Key="GdMuted"    Color="#FF9E90B0"/>
+        <SolidColorBrush x:Key="GdAccent"   Color="#FF8B5CF6"/>
+    </Window.Resources>
+
+    <Border Background="{StaticResource GdBg}"
+            BorderBrush="{StaticResource GdBorder}"
+            BorderThickness="1" CornerRadius="8"
+            Padding="16">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+            <!-- Title -->
+            <TextBlock Grid.Row="0" Text="📍 Go to Definition"
+                       FontSize="16" FontWeight="SemiBold"
+                       Foreground="{StaticResource GdText}"
+                       Margin="0,0,0,8"/>
+
+            <!-- Symbol info -->
+            <Border Grid.Row="1" Background="{StaticResource GdSurface}"
+                    CornerRadius="4" Padding="10,6" Margin="0,0,0,10">
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="SymbolNameText"
+                               FontSize="14" FontWeight="SemiBold"
+                               FontFamily="Cascadia Code, Consolas, monospace"
+                               Foreground="{StaticResource GdAccent}"/>
+                    <TextBlock x:Name="SymbolKindText"
+                               FontSize="11"
+                               Foreground="{StaticResource GdMuted}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Locations list -->
+            <Border Grid.Row="2" Background="{StaticResource GdSurface}"
+                    BorderBrush="{StaticResource GdBorder}"
+                    BorderThickness="1" CornerRadius="4" Padding="4">
+                <ListBox x:Name="LocationsList"
+                         Background="Transparent"
+                         Foreground="{StaticResource GdText}"
+                         BorderThickness="0"
+                         DoubleTapped="OnLocationDoubleTapped"/>
+            </Border>
+
+            <!-- Close button -->
+            <Button Grid.Row="3" Content="Close" HorizontalAlignment="Right"
+                    Width="80" Height="30" FontSize="12" Margin="0,10,0,0"
+                    Background="{StaticResource GdSurface}"
+                    Foreground="{StaticResource GdText}"
+                    BorderBrush="{StaticResource GdBorder}"
+                    CornerRadius="4" Click="OnClose"/>
+        </Grid>
+    </Border>
+</Window>
+

@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Insait_Edit_C_Sharp.Controls.DiagnosticsPanel"
+             Background="#FF221C2C">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="DpBg"     Color="#FF221C2C"/>
+        <SolidColorBrush x:Key="DpSurface" Color="#FF2A2230"/>
+        <SolidColorBrush x:Key="DpBorder"  Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="DpText"    Color="#FFF0E8F4"/>
+        <SolidColorBrush x:Key="DpMuted"   Color="#FF9E90B0"/>
+        <SolidColorBrush x:Key="DpError"   Color="#FFF38BA8"/>
+        <SolidColorBrush x:Key="DpWarning" Color="#FFF5A623"/>
+        <SolidColorBrush x:Key="DpInfo"    Color="#FF89B4FA"/>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource DpSurface}"
+                BorderBrush="{StaticResource DpBorder}"
+                BorderThickness="0,0,0,1" Padding="12,6">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16">
+                    <TextBlock Text="🔍 Diagnostics" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{StaticResource DpText}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="⛔" FontSize="11"/>
+                        <TextBlock x:Name="ErrorCountText" Text="0" FontSize="11"
+                                   Foreground="{StaticResource DpError}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="⚠" FontSize="11"/>
+                        <TextBlock x:Name="WarningCountText" Text="0" FontSize="11"
+                                   Foreground="{StaticResource DpWarning}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="ℹ" FontSize="11"/>
+                        <TextBlock x:Name="InfoCountText" Text="0" FontSize="11"
+                                   Foreground="{StaticResource DpInfo}"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                    <Button x:Name="RefreshButton" Content="⟳" FontSize="13"
+                            Width="28" Height="28" Padding="0"
+                            Background="Transparent" Foreground="{StaticResource DpText}"
+                            BorderThickness="0" CornerRadius="4"
+                            ToolTip.Tip="Refresh diagnostics"
+                            Click="OnRefresh"/>
+                    <Button x:Name="ClearButton" Content="✕" FontSize="11"
+                            Width="28" Height="28" Padding="0"
+                            Background="Transparent" Foreground="{StaticResource DpMuted}"
+                            BorderThickness="0" CornerRadius="4"
+                            ToolTip.Tip="Clear all"
+                            Click="OnClear"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Diagnostics list -->
+        <ListBox Grid.Row="1" x:Name="DiagList"
+                 Background="{StaticResource DpBg}"
+                 Foreground="{StaticResource DpText}"
+                 BorderThickness="0"
+                 SelectionChanged="OnDiagSelected"/>
+    </Grid>
+</UserControl>
+

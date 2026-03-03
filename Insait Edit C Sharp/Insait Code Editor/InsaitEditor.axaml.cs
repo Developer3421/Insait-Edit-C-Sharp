@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Services;
@@ -18,21 +20,15 @@ namespace Insait_Edit_C_Sharp.InsaitCodeEditor;
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  InsaitEditor — code-behind
-//  UI визначений в InsaitEditor.axaml, тут тільки логіка:
-//    • з'єднання з InsaitEditorSurface
-//    • Roslyn autocompletion, signature help
-//    • Roslyn diagnostics + quick fixes
-//    • keyboard shortcuts для popup-навігації
+//  Completion, QuickFix, GoTo, Rename, Hover → separate independent windows
+//  Context menu on right-click
+//  All completion via real Roslyn factory (RoslynCompletionEngine)
 // ═══════════════════════════════════════════════════════════════════════════
 
 public partial class InsaitEditor : UserControl
 {
-    // ── AXAML controls (x:Name) ──────────────────────────────────────────
+    // ── Minimal AXAML overlays ───────────────────────────────────────────
     private readonly Border    _readyBadge;
-    private readonly ListBox   _completionList;
-    private readonly Border    _completionPopup;
-    private readonly ListBox   _quickFixList;
-    private readonly Border    _quickFixPopup;
     private readonly TextBlock _signatureText;
     private readonly Border    _signaturePopup;
     private readonly TextBlock _tooltipText;
@@ -40,8 +36,12 @@ public partial class InsaitEditor : UserControl
     private readonly ScrollBar _vScroll;
     private readonly ScrollBar _hScroll;
 
-    // ── Surface (custom render, додається в code-behind) ─────────────────
+    // ── Surface ──────────────────────────────────────────────────────────
     private readonly InsaitEditorSurface _surface;
+
+    // ── Independent windows (created on demand, reused) ──────────────────
+    private RoslynCompletionWindow? _completionWin;
+    private RoslynQuickFixWindow?   _quickFixWin;
 
     // ── Editor state ─────────────────────────────────────────────────────
     private string _currentFilePath = "untitled.cs";
@@ -51,6 +51,7 @@ public partial class InsaitEditor : UserControl
     private readonly InlineDiagnosticService _diagService      = new();
     private readonly RoslynCompletionEngine  _completionEngine = new();
     private readonly QuickFixService         _quickFixService  = new();
+    private readonly CSharpCompletionService _csharpService    = new();
     private List<DiagnosticSpan>             _diagnosticSpans  = new();
     private CancellationTokenSource?         _completionCts;
     private CancellationTokenSource?         _signatureCts;
@@ -62,6 +63,8 @@ public partial class InsaitEditor : UserControl
     public event EventHandler<ContentChangedEventArgs>?        ContentChangedWithValue;
     public event EventHandler<CursorPositionChangedEventArgs>? CursorPositionChanged;
     public event EventHandler<NuGetInstallRequestedEventArgs>? NuGetInstallRequested;
+    public event EventHandler<GoToDefinitionRequestedEventArgs>? GoToDefinitionRequested;
+    public event EventHandler<RenameCompletedEventArgs>?       RenameCompleted;
 
     // ── Public properties ────────────────────────────────────────────────
     public bool   IsDirty        => _isDirty;
@@ -79,12 +82,7 @@ public partial class InsaitEditor : UserControl
     {
         AvaloniaXamlLoader.Load(this);
 
-        // resolve AXAML elements
         _readyBadge     = this.FindControl<Border>("ReadyBadge")!;
-        _completionList = this.FindControl<ListBox>("CompletionList")!;
-        _completionPopup= this.FindControl<Border>("CompletionPopup")!;
-        _quickFixList   = this.FindControl<ListBox>("QuickFixList")!;
-        _quickFixPopup  = this.FindControl<Border>("QuickFixPopup")!;
         _signatureText  = this.FindControl<TextBlock>("SignatureText")!;
         _signaturePopup = this.FindControl<Border>("SignaturePopup")!;
         _tooltipText    = this.FindControl<TextBlock>("TooltipText")!;
@@ -92,16 +90,14 @@ public partial class InsaitEditor : UserControl
         _vScroll        = this.FindControl<ScrollBar>("VScroll")!;
         _hScroll        = this.FindControl<ScrollBar>("HScroll")!;
 
-        // create surface and place into host
         _surface = new InsaitEditorSurface
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment   = VerticalAlignment.Stretch,
         };
-        var host = this.FindControl<Border>("SurfaceHost")!;
-        host.Child = _surface;
+        this.FindControl<Border>("SurfaceHost")!.Child = _surface;
 
-        // wire surface events
+        // ── Wire surface events ─────────────────────────────────────────
         _surface.TextChanged       += OnSurfaceTextChanged;
         _surface.CursorMoved       += OnSurfaceCursorMoved;
         _surface.RequestCompletion += (_, _) => { if (!_suppressCompletion) _ = ShowCompletionAsync(); };
@@ -109,8 +105,9 @@ public partial class InsaitEditor : UserControl
         _surface.HoverDiagnostic   += OnHoverDiagnostic;
         _surface.HoverCleared      += (_, _) => HideTooltip();
         _surface.RequestQuickFix   += (_, d) => _ = ShowQuickFixAsync(d);
+        _surface.CtrlClickGoToDefinition += (_, _) => _ = GoToDefinitionAsync();
 
-        // wire scrollbars
+        // ── Scrollbars ──────────────────────────────────────────────────
         _vScroll.Scroll += (_, e) => _surface.ScrollTop = (int)e.NewValue;
         _hScroll.Scroll += (_, e) => _surface.ScrollLeft = (int)e.NewValue;
         _surface.ScrollChanged += (_, _) =>
@@ -126,21 +123,66 @@ public partial class InsaitEditor : UserControl
             _hScroll.LargeChange = Math.Max(10, _surface.ViewportWidth);
         };
 
-        // wire completion list
-        _completionList.SelectionChanged += OnCompletionSelected;
-        _quickFixList.SelectionChanged   += OnQuickFixSelected;
+        // ── Right-click context menu ────────────────────────────────────
+        BuildContextMenu();
 
-        // diagnostics service
+        // ── Diagnostics ─────────────────────────────────────────────────
         _diagService.DiagnosticsUpdated += OnDiagnosticsUpdated;
 
-        // show ready badge
         Dispatcher.UIThread.Post(() => _ = ShowReadyBadgeAsync(), DispatcherPriority.Loaded);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  Public API (сумісний з AmberFluentEditor / AvaloniaEditor)
+    //  Context Menu (right-click)
     // ═══════════════════════════════════════════════════════════════════════
+    private void BuildContextMenu()
+    {
+        var menu = new ContextMenu
+        {
+            Background = new SolidColorBrush(Color.Parse("#FF201A2E")),
+            BorderBrush = new SolidColorBrush(Color.Parse("#FF6C3FAA")),
+            BorderThickness = new Thickness(1),
+        };
 
+        var miGoTo     = new MenuItem { Header = "📍  Go to Definition        F12" };
+        var miRefs     = new MenuItem { Header = "🔎  Find References      Shift+F12" };
+        var miRename   = new MenuItem { Header = "✏  Rename Symbol             F2" };
+        var miHover    = new MenuItem { Header = "ℹ  Quick Info         Ctrl+Shift+H" };
+        var sep1       = new Separator();
+        var miComplete = new MenuItem { Header = "✦  Trigger IntelliSense   Ctrl+Space" };
+        var miQuickFix = new MenuItem { Header = "💡  Quick Fix             Alt+Enter" };
+        var miFormat   = new MenuItem { Header = "🔧  Format Document    Ctrl+Shift+I" };
+        var sep2       = new Separator();
+        var miCut      = new MenuItem { Header = "✂  Cut                     Ctrl+X" };
+        var miCopy     = new MenuItem { Header = "📋  Copy                    Ctrl+C" };
+        var miPaste    = new MenuItem { Header = "📌  Paste                   Ctrl+V" };
+
+        miGoTo.Click     += (_, _) => _ = GoToDefinitionAsync();
+        miRefs.Click     += (_, _) => _ = FindReferencesAsync();
+        miRename.Click   += (_, _) => _ = RenameSymbolAsync();
+        miHover.Click    += (_, _) => _ = ShowHoverInfoAsync();
+        miComplete.Click += (_, _) => _ = ShowCompletionAsync();
+        miQuickFix.Click += (_, _) =>
+        {
+            var d = _surface.GetDiagnosticAtCursor();
+            if (d != null) _ = ShowQuickFixAsync(d);
+        };
+        miFormat.Click   += (_, _) => FormatDocument();
+        miCut.Click      += (_, _) => _surface.DoCut();
+        miCopy.Click     += (_, _) => _surface.DoCopy();
+        miPaste.Click    += (_, _) => _surface.DoPaste();
+
+        foreach (var mi in new object[] { miGoTo, miRefs, miRename, miHover, sep1,
+                                          miComplete, miQuickFix, miFormat, sep2,
+                                          miCut, miCopy, miPaste })
+            menu.Items.Add(mi);
+
+        _surface.ContextMenu = menu;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Public API
+    // ═══════════════════════════════════════════════════════════════════════
     public void SetContent(string content, string language = "csharp")
     {
         _surface.SetText(content ?? string.Empty);
@@ -156,24 +198,20 @@ public partial class InsaitEditor : UserControl
     }
 
     public Task<string> GetContentAsync() => Task.FromResult(_surface.Text);
-    public void MarkAsSaved()          => _isDirty = false;
-    public void SetReadOnly(bool v)    => _surface.IsReadOnly = v;
-    public void SetFontSize(int sz)    => _surface.FontSize = sz;
-    public void FocusEditor()          => _surface.Focus();
-    public void Undo()                 => _surface.Undo();
-    public void Redo()                 => _surface.Redo();
-    public void Find()                 { /* TODO */ }
-    public void Replace()              { /* TODO */ }
-    public void FormatDocument()       => _ = FormatAsync();
-    public void SetLanguage(string _)  { }
+    public void MarkAsSaved()           => _isDirty = false;
+    public void SetReadOnly(bool v)     => _surface.IsReadOnly = v;
+    public void SetFontSize(int sz)     => _surface.FontSize = sz;
+    public void FocusEditor()           => _surface.Focus();
+    public void Undo()                  => _surface.Undo();
+    public void Redo()                  => _surface.Redo();
+    public void Find()                  { /* TODO */ }
+    public void Replace()               { /* TODO */ }
+    public void FormatDocument()        => _ = FormatAsync();
+    public void SetLanguage(string _)   { }
     public void GoToLine(int line, int col = 1) => _surface.GoToLine(line, col);
-    public void TriggerCompletion()    => _ = ShowCompletionAsync();
+    public void TriggerCompletion()     => _ = ShowCompletionAsync();
     public void LoadProjectReferences(string path) { /* TODO */ }
 
-    /// <summary>
-    /// Sets the project directory for full-project Roslyn context
-    /// (cross-file namespace resolution, completion, etc.)
-    /// </summary>
     public void SetProjectContext(string? projectDir)
     {
         _surface.SetProjectContext(projectDir);
@@ -217,7 +255,6 @@ public partial class InsaitEditor : UserControl
     // ═══════════════════════════════════════════════════════════════════════
     private void ScheduleDiagnostics()
     {
-        // Only run Roslyn diagnostics for pure C# source files (not .axaml.cs code-behind)
         if (!_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
              _currentFilePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase) ||
              _currentFilePath.EndsWith(".xaml.cs", StringComparison.OrdinalIgnoreCase))
@@ -245,8 +282,8 @@ public partial class InsaitEditor : UserControl
         ContentChanged?.Invoke(this, EventArgs.Empty);
         ContentChangedWithValue?.Invoke(this, new ContentChangedEventArgs(_surface.Text));
         ScheduleDiagnostics();
-        HideCompletion();
-        HideQuickFix();
+        HideCompletionWindow();
+        HideQuickFixWindow();
     }
 
     private void OnSurfaceCursorMoved(object? sender, (int line, int col) pos)
@@ -256,9 +293,6 @@ public partial class InsaitEditor : UserControl
         HideTooltip();
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  Hover diagnostics
-    // ═══════════════════════════════════════════════════════════════════════
     private void OnHoverDiagnostic(object? sender, DiagnosticSpan diag)
     {
         Dispatcher.UIThread.Post(() =>
@@ -279,8 +313,85 @@ public partial class InsaitEditor : UserControl
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  Quick Fix
+    //  Completion — independent window via Roslyn factory
     // ═══════════════════════════════════════════════════════════════════════
+    private async Task ShowCompletionAsync()
+    {
+        if (!IsCSharpFile()) return;
+
+        _completionCts?.Cancel();
+        _completionCts = new CancellationTokenSource();
+        var ct = _completionCts.Token;
+        try
+        {
+            var (line, col) = _surface.CursorPosition;
+            var items = await _completionEngine.GetCompletionsAsync(
+                _currentFilePath, _surface.Text, line, col, ct);
+            if (ct.IsCancellationRequested || !items.Any()) { HideCompletionWindow(); return; }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var parentWin = TopLevel.GetTopLevel(this) as Window;
+                if (parentWin == null) return;
+
+                // Get cursor screen position
+                var r = _surface.GetCursorRect();
+                var surfacePos = _surface.PointToScreen(new Point(r.X, r.Bottom + 4));
+
+                if (_completionWin == null || !_completionWin.IsVisible)
+                {
+                    _completionWin = new RoslynCompletionWindow();
+                    _completionWin.ItemCommitted += OnCompletionItemCommitted;
+                    _completionWin.Closed += (_, _) => _completionWin = null;
+                }
+
+                _completionWin.SetItems(items);
+                _completionWin.Position = new PixelPoint(surfacePos.X, surfacePos.Y);
+
+                if (!_completionWin.IsVisible)
+                    _completionWin.Show(parentWin);
+            });
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[InsaitEditor] Completion: {ex.Message}");
+        }
+    }
+
+    private async void OnCompletionItemCommitted(object? sender, RoslynCompletionItem item)
+    {
+        HideCompletionWindow();
+        _suppressCompletion = true;
+        try
+        {
+            var change = await _completionEngine.GetCompletionChangeAsync(
+                item, _currentFilePath, _surface.Text);
+            if (change != null)
+                _surface.ApplyCompletionChange(change.SpanStart, change.SpanLength,
+                    change.NewText, change.IsSnippet);
+            else
+                _surface.InsertCompletion(item.InsertText);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[InsaitEditor] CommitCompletion: {ex.Message}");
+            _surface.InsertCompletion(item.InsertText);
+        }
+        finally { _suppressCompletion = false; }
+    }
+
+    private void HideCompletionWindow()
+    {
+        try { _completionWin?.SafeClose(); } catch { }
+        _completionWin = null;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Quick Fix — independent window
+    // ═══════════════════════════════════════════════════════════════════════
+    private DiagnosticSpan? _activeQuickFixDiag;
+
     private async Task ShowQuickFixAsync(DiagnosticSpan diag)
     {
         try
@@ -291,16 +402,28 @@ public partial class InsaitEditor : UserControl
                 diag.Code, diag.Message);
             if (!fixes.Any()) return;
 
+            _activeQuickFixDiag = diag;
+
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                _quickFixList.Items.Clear();
-                foreach (var f in fixes.Take(10))
-                    _quickFixList.Items.Add(new InsaitQuickFixItem(f, diag));
-                _quickFixList.SelectedIndex = 0;
+                var parentWin = TopLevel.GetTopLevel(this) as Window;
+                if (parentWin == null) return;
+
                 var r = _surface.GetCursorRectForPos(diag.Line - 1, diag.Column - 1);
-                Canvas.SetLeft(_quickFixPopup, r.X + 20);
-                Canvas.SetTop(_quickFixPopup, r.Bottom + 4);
-                _quickFixPopup.IsVisible = true;
+                var screenPos = _surface.PointToScreen(new Point(r.X, r.Bottom + 4));
+
+                if (_quickFixWin == null || !_quickFixWin.IsVisible)
+                {
+                    _quickFixWin = new RoslynQuickFixWindow();
+                    _quickFixWin.FixChosen += OnQuickFixChosen;
+                    _quickFixWin.Closed += (_, _) => _quickFixWin = null;
+                }
+
+                _quickFixWin.SetFixes(fixes, diag.Code);
+                _quickFixWin.Position = new PixelPoint(screenPos.X, screenPos.Y);
+
+                if (!_quickFixWin.IsVisible)
+                    _quickFixWin.Show(parentWin);
             });
         }
         catch (Exception ex)
@@ -309,17 +432,11 @@ public partial class InsaitEditor : UserControl
         }
     }
 
-    private void OnQuickFixSelected(object? sender, SelectionChangedEventArgs e)
+    private void OnQuickFixChosen(object? sender, QuickFixSuggestion fix)
     {
-        if (_quickFixList.SelectedItem is InsaitQuickFixItem item)
-        {
-            ApplyQuickFix(item.Suggestion, item.SourceDiagnostic);
-            HideQuickFix();
-        }
-    }
-
-    private void ApplyQuickFix(QuickFixSuggestion fix, DiagnosticSpan diag)
-    {
+        HideQuickFixWindow();
+        if (_activeQuickFixDiag == null) return;
+        var diag = _activeQuickFixDiag;
         switch (fix.Kind)
         {
             case QuickFixKind.AddUsing when !string.IsNullOrEmpty(fix.NamespaceName):
@@ -341,56 +458,18 @@ public partial class InsaitEditor : UserControl
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  Autocompletion
-    // ═══════════════════════════════════════════════════════════════════════
-    private async Task ShowCompletionAsync()
+    private void HideQuickFixWindow()
     {
-        // Roslyn completion only works for C# files
-        if (!_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
-            _currentFilePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase))
-            return;
-
-        _completionCts?.Cancel();
-        _completionCts = new CancellationTokenSource();
-        var ct = _completionCts.Token;
-        try
-        {
-            var (line, col) = _surface.CursorPosition;
-            var items = await _completionEngine.GetCompletionsAsync(
-                _currentFilePath, _surface.Text, line, col, ct);
-            if (ct.IsCancellationRequested) return;
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                if (!items.Any()) { HideCompletion(); return; }
-                _completionList.Items.Clear();
-                foreach (var item in items.Take(60))
-                    _completionList.Items.Add(new InsaitCompletionItem(item));
-                _completionList.SelectedIndex = 0;
-
-                var r = _surface.GetCursorRect();
-                Canvas.SetLeft(_completionPopup, r.X + 60);
-                Canvas.SetTop(_completionPopup, r.Bottom + 2);
-                _completionPopup.IsVisible = true;
-            });
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[InsaitEditor] Completion: {ex.Message}");
-        }
+        try { _quickFixWin?.SafeClose(); } catch { }
+        _quickFixWin = null;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  Signature Help
+    //  Signature Help (lightweight Canvas overlay — stays inline)
     // ═══════════════════════════════════════════════════════════════════════
     private async Task ShowSignatureHelpAsync()
     {
-        // Roslyn signature help only works for C# files
-        if (!_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
-            _currentFilePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase))
-            return;
-
+        if (!IsCSharpFile()) return;
         _signatureCts?.Cancel();
         _signatureCts = new CancellationTokenSource();
         var ct = _signatureCts.Token;
@@ -405,7 +484,6 @@ public partial class InsaitEditor : UserControl
             {
                 var sig = info.Signatures.ElementAtOrDefault(info.ActiveSignature);
                 if (sig == null) { HideSignature(); return; }
-
                 var sb = new StringBuilder();
                 sb.Append(sig.Label);
                 if (sig.Parameters.Count > 0 && info.ActiveParameter < sig.Parameters.Count)
@@ -433,55 +511,155 @@ public partial class InsaitEditor : UserControl
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  Popup helpers
+    //  Go to Definition — opens RoslynToolsWindow
     // ═══════════════════════════════════════════════════════════════════════
-    private void HideCompletion() => _completionPopup.IsVisible = false;
-    private void HideQuickFix()   => _quickFixPopup.IsVisible   = false;
-    private void HideSignature()  => _signaturePopup.IsVisible  = false;
-    private void HideTooltip()    => _tooltipPopup.IsVisible    = false;
-    private void HideAllPopups()  { HideCompletion(); HideQuickFix(); HideSignature(); HideTooltip(); }
-
-    /// <summary>
-    /// Commits the selected completion item. If Roslyn provides a
-    /// CompletionChange (including snippet expansions), we apply it;
-    /// otherwise we fall back to simple text insertion.
-    /// </summary>
-    private async Task CommitCompletionAsync(InsaitCompletionItem ci)
+    private async Task GoToDefinitionAsync()
     {
-        HideCompletion();
-        _suppressCompletion = true;
+        if (!IsCSharpFile()) return;
         try
         {
-            // Ask Roslyn for the real text change (handles snippets, overrides, etc.)
-            var change = await _completionEngine.GetCompletionChangeAsync(
-                ci.Source, _currentFilePath, _surface.Text);
-            if (change != null)
+            int offset = _surface.GetCursorOffset();
+            var result = await _csharpService.GetDefinitionAsync(
+                _currentFilePath, _surface.Text, offset);
+            if (result == null || !result.Locations.Any()) return;
+
+            // Single in-source location — navigate directly
+            var srcLocs = result.Locations.Where(l => !l.IsMetadata).ToList();
+            if (srcLocs.Count == 1)
             {
-                _surface.ApplyCompletionChange(
-                    change.SpanStart, change.SpanLength,
-                    change.NewText, change.IsSnippet);
+                var loc = srcLocs[0];
+                if (string.Equals(loc.FilePath, _currentFilePath, StringComparison.OrdinalIgnoreCase))
+                    _surface.GoToLine(loc.StartLine, loc.StartColumn);
+                else
+                    GoToDefinitionRequested?.Invoke(this,
+                        new GoToDefinitionRequestedEventArgs(loc.FilePath, loc.StartLine, loc.StartColumn));
+                return;
             }
-            else
+
+            // Multiple — show tools window
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                // Fallback: simple prefix-based insertion
-                _surface.InsertCompletion(ci.InsertText);
-            }
+                var win = new RoslynToolsWindow();
+                win.ShowDefinition(result);
+                win.NavigateRequested += (_, entry) =>
+                {
+                    if (string.Equals(entry.FilePath, _currentFilePath, StringComparison.OrdinalIgnoreCase))
+                        _surface.GoToLine(entry.Line, entry.Column);
+                    else
+                        GoToDefinitionRequested?.Invoke(this,
+                            new GoToDefinitionRequestedEventArgs(entry.FilePath, entry.Line, entry.Column));
+                    win.Close();
+                };
+                ShowToolWindow(win);
+            });
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[InsaitEditor] CommitCompletion (change): {ex.Message}");
-            _surface.InsertCompletion(ci.InsertText);
-        }
-        finally
-        {
-            _suppressCompletion = false;
-        }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[InsaitEditor] GoTo: {ex.Message}"); }
     }
 
-    private void OnCompletionSelected(object? sender, SelectionChangedEventArgs e)
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Find References — opens RoslynToolsWindow
+    // ═══════════════════════════════════════════════════════════════════════
+    private async Task FindReferencesAsync()
     {
-        // Do NOT auto-commit on selection change — the user navigates with
-        // Up/Down and commits explicitly with Tab/Enter.
+        if (!IsCSharpFile()) return;
+        try
+        {
+            int offset = _surface.GetCursorOffset();
+            var refs = await _csharpService.FindReferencesAsync(
+                _currentFilePath, _surface.Text, offset);
+            if (!refs.Any()) return;
+
+            var wordAtCursor = GetWordAtOffset(offset);
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var win = new RoslynToolsWindow();
+                win.ShowReferences(wordAtCursor, refs);
+                win.NavigateRequested += (_, entry) =>
+                {
+                    if (string.Equals(entry.FilePath, _currentFilePath, StringComparison.OrdinalIgnoreCase))
+                        _surface.GoToLine(entry.Line, entry.Column);
+                    else
+                        GoToDefinitionRequested?.Invoke(this,
+                            new GoToDefinitionRequestedEventArgs(entry.FilePath, entry.Line, entry.Column));
+                };
+                ShowToolWindow(win);
+            });
+        }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[InsaitEditor] Refs: {ex.Message}"); }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Rename Symbol — opens RenameSymbolDialog
+    // ═══════════════════════════════════════════════════════════════════════
+    private async Task RenameSymbolAsync()
+    {
+        if (!IsCSharpFile()) return;
+        try
+        {
+            int offset = _surface.GetCursorOffset();
+            var oldName = GetWordAtOffset(offset);
+            if (string.IsNullOrEmpty(oldName)) return;
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var dialog = new RenameSymbolDialog(
+                    _csharpService, _currentFilePath, _surface.Text, offset, oldName);
+                dialog.RenameConfirmed += (_, result) =>
+                {
+                    var changes = result.Changes
+                        .Where(c => string.Equals(c.FilePath, _currentFilePath, StringComparison.OrdinalIgnoreCase))
+                        .OrderByDescending(c => c.StartPosition).ToList();
+                    var sb = new StringBuilder(_surface.Text);
+                    foreach (var ch in changes)
+                    {
+                        sb.Remove(ch.StartPosition, ch.EndPosition - ch.StartPosition);
+                        sb.Insert(ch.StartPosition, ch.NewText);
+                    }
+                    _surface.SetText(sb.ToString(), preserveCursor: true);
+                    RenameCompleted?.Invoke(this, new RenameCompletedEventArgs(result));
+                };
+                ShowToolWindow(dialog);
+            });
+        }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[InsaitEditor] Rename: {ex.Message}"); }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Hover / Quick Info — opens RoslynToolsWindow
+    // ═══════════════════════════════════════════════════════════════════════
+    private async Task ShowHoverInfoAsync()
+    {
+        if (!IsCSharpFile()) return;
+        try
+        {
+            int offset = _surface.GetCursorOffset();
+            var qi = await _completionEngine.GetQuickInfoAsync(
+                _currentFilePath, _surface.Text, offset);
+            if (qi == null || !qi.Sections.Any()) return;
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var win = new RoslynToolsWindow();
+                win.ShowQuickInfo(qi);
+                ShowToolWindow(win);
+            });
+        }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[InsaitEditor] Hover: {ex.Message}"); }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Hide helpers
+    // ═══════════════════════════════════════════════════════════════════════
+    private void HideSignature()  => _signaturePopup.IsVisible = false;
+    private void HideTooltip()    => _tooltipPopup.IsVisible = false;
+    private void HideAllPopups()  { HideCompletionWindow(); HideQuickFixWindow(); HideSignature(); HideTooltip(); }
+
+    private void ShowToolWindow(Window win)
+    {
+        var parent = TopLevel.GetTopLevel(this) as Window;
+        if (parent != null) win.ShowDialog(parent);
+        else win.Show();
     }
 
     private async Task ShowReadyBadgeAsync()
@@ -493,45 +671,43 @@ public partial class InsaitEditor : UserControl
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  Keyboard: popup navigation + shortcuts
+    //  Keyboard
     // ═══════════════════════════════════════════════════════════════════════
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        // ── Completion ───────────────────────────────────────────────────
-        if (_completionPopup.IsVisible)
+        // ── Completion window navigation ─────────────────────────────────
+        if (_completionWin != null && _completionWin.IsVisible)
         {
             switch (e.Key)
             {
-                case Key.Escape: HideCompletion(); e.Handled = true; return;
+                case Key.Escape:
+                    HideCompletionWindow(); e.Handled = true; return;
                 case Key.Tab or Key.Return:
-                    if (_completionList.SelectedItem is InsaitCompletionItem ci)
-                    { _ = CommitCompletionAsync(ci); e.Handled = true; return; }
-                    break;
+                    _completionWin.CommitSelected(); e.Handled = true; return;
                 case Key.Down:
-                    _completionList.SelectedIndex = Math.Min(_completionList.SelectedIndex + 1, _completionList.Items.Count - 1);
-                    e.Handled = true; return;
+                    _completionWin.SelectNext(); e.Handled = true; return;
                 case Key.Up:
-                    _completionList.SelectedIndex = Math.Max(_completionList.SelectedIndex - 1, 0);
-                    e.Handled = true; return;
+                    _completionWin.SelectPrev(); e.Handled = true; return;
+                case Key.PageDown:
+                    _completionWin.SelectNextPage(); e.Handled = true; return;
+                case Key.PageUp:
+                    _completionWin.SelectPrevPage(); e.Handled = true; return;
             }
         }
 
-        // ── Quick fix ────────────────────────────────────────────────────
-        if (_quickFixPopup.IsVisible)
+        // ── Quick fix window navigation ──────────────────────────────────
+        if (_quickFixWin != null && _quickFixWin.IsVisible)
         {
             switch (e.Key)
             {
-                case Key.Escape: HideQuickFix(); e.Handled = true; return;
+                case Key.Escape:
+                    HideQuickFixWindow(); e.Handled = true; return;
                 case Key.Return:
-                    if (_quickFixList.SelectedItem is InsaitQuickFixItem qi)
-                    { ApplyQuickFix(qi.Suggestion, qi.SourceDiagnostic); HideQuickFix(); e.Handled = true; return; }
-                    break;
+                    _quickFixWin.CommitSelected(); e.Handled = true; return;
                 case Key.Down:
-                    _quickFixList.SelectedIndex = Math.Min(_quickFixList.SelectedIndex + 1, _quickFixList.Items.Count - 1);
-                    e.Handled = true; return;
+                    _quickFixWin.SelectNext(); e.Handled = true; return;
                 case Key.Up:
-                    _quickFixList.SelectedIndex = Math.Max(_quickFixList.SelectedIndex - 1, 0);
-                    e.Handled = true; return;
+                    _quickFixWin.SelectPrev(); e.Handled = true; return;
             }
         }
 
@@ -543,30 +719,72 @@ public partial class InsaitEditor : UserControl
             if (diag != null) { _ = ShowQuickFixAsync(diag); e.Handled = true; return; }
         }
 
-        // F9 → toggle breakpoint at current line
         if (e.Key == Key.F9)
         {
             var (bpLine, _) = _surface.CursorPosition;
-            var bpFile = _currentFilePath;
-            if (!string.IsNullOrEmpty(bpFile))
-                BreakpointService.Toggle(bpFile, bpLine);
-            e.Handled = true;
-            return;
+            if (!string.IsNullOrEmpty(_currentFilePath))
+                BreakpointService.Toggle(_currentFilePath, bpLine);
+            e.Handled = true; return;
         }
 
-        // Ctrl+Shift+I → format
         if (e.Key == Key.I && e.KeyModifiers.HasFlag(KeyModifiers.Control)
                            && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
         { FormatDocument(); e.Handled = true; return; }
 
+        if (e.Key == Key.F12)
+        { _ = GoToDefinitionAsync(); e.Handled = true; return; }
+
+        if (e.Key == Key.F12 && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        { _ = FindReferencesAsync(); e.Handled = true; return; }
+
+        if (e.Key == Key.F2 ||
+            (e.Key == Key.R && e.KeyModifiers.HasFlag(KeyModifiers.Control)))
+        { _ = RenameSymbolAsync(); e.Handled = true; return; }
+
+        if (e.Key == Key.H && e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                           && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        { _ = ShowHoverInfoAsync(); e.Handled = true; return; }
+
         base.OnKeyDown(e);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Helpers
+    // ═══════════════════════════════════════════════════════════════════════
+    private bool IsCSharpFile() =>
+        _currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) &&
+        !_currentFilePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase);
+
+    private string GetWordAtOffset(int offset)
+    {
+        var text = _surface.Text;
+        int s = offset, e = offset;
+        while (s > 0 && (char.IsLetterOrDigit(text[s - 1]) || text[s - 1] == '_')) s--;
+        while (e < text.Length && (char.IsLetterOrDigit(text[e]) || text[e] == '_')) e++;
+        return text[s..e];
     }
 }
 
-/// <summary>Fired when user selects "Install NuGet package" in quick fix popup.</summary>
+// ── Event args ──────────────────────────────────────────────────────────
+
 public sealed class NuGetInstallRequestedEventArgs : EventArgs
 {
     public string PackageName { get; }
     public NuGetInstallRequestedEventArgs(string packageName) => PackageName = packageName;
+}
+
+public sealed class GoToDefinitionRequestedEventArgs : EventArgs
+{
+    public string FilePath { get; }
+    public int Line { get; }
+    public int Column { get; }
+    public GoToDefinitionRequestedEventArgs(string filePath, int line, int column)
+    { FilePath = filePath; Line = line; Column = column; }
+}
+
+public sealed class RenameCompletedEventArgs : EventArgs
+{
+    public RenameResult Result { get; }
+    public RenameCompletedEventArgs(RenameResult result) => Result = result;
 }
 

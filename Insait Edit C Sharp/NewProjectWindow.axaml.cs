@@ -133,9 +133,9 @@ public partial class NewProjectWindow : Window
             _selectedTemplate = template;
             
             // Update visual selection
-            var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate", "WebApiTemplate",
+            var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate",
                                     "NanoTemplate", "FSharpConsoleTemplate", "FSharpEmptyTemplate",
-                                    "WinFormsTemplate", "CSharpEmptyTemplate", "FSharpSafeStackTemplate" };
+                                    "WinFormsTemplate", "CSharpEmptyTemplate" };
             foreach (var name in templates)
             {
                 var btn = this.FindControl<Button>(name);
@@ -274,16 +274,14 @@ public partial class NewProjectWindow : Window
                 "console"        => "console",
                 "classlib"       => "classlib",
                 "avalonia"       => "avalonia.app",
-                "webapi"         => "webapi",
                 "fsharp-console" => "console",
                 "fsharp-empty"   => "classlib",
-                "fsharp-safestack"=> "SAFE",
                 "winforms"       => "winforms",
                 "csharp-empty"   => "classlib",
                 _                => "console"
             };
 
-            // F# templates need the --language flag (SAFE Stack is already F# only)
+            // F# templates need the --language flag
             var isFSharp = _selectedTemplate is "fsharp-console" or "fsharp-empty";
             var langArg  = isFSharp ? " --language F#" : string.Empty;
 
@@ -313,25 +311,7 @@ public partial class NewProjectWindow : Window
             if (process.ExitCode == 0)
             {
                 // F# projects use .fsproj; everything else uses .csproj.
-                // SAFE Stack creates: projectDir\src\<Name>.Server.fsproj (server-side entry point)
                 string csprojPath;
-                if (_selectedTemplate == "fsharp-safestack")
-                {
-                    var srcDir = Path.Combine(projectDir, "src");
-                    var serverProj = Path.Combine(srcDir, $"{projectName}.Server.fsproj");
-                    var clientProj = Path.Combine(srcDir, $"{projectName}.Client.fsproj");
-                    // prefer Server project; fall back to any .fsproj found
-                    if (File.Exists(serverProj))
-                        csprojPath = serverProj;
-                    else if (File.Exists(clientProj))
-                        csprojPath = clientProj;
-                    else
-                    {
-                        var found = Directory.GetFiles(projectDir, "*.fsproj", SearchOption.AllDirectories);
-                        csprojPath = found.Length > 0 ? found[0] : Path.Combine(projectDir, $"{projectName}.fsproj");
-                    }
-                }
-                else
                 {
                     var projExt = _selectedTemplate is "fsharp-console" or "fsharp-empty" ? ".fsproj" : ".csproj";
                     csprojPath = Path.Combine(projectDir, $"{projectName}{projExt}");

@@ -1,0 +1,83 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.Controls.RenameSymbolDialog"
+        Title="Rename Symbol"
+        Width="480" Height="340"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        SystemDecorations="BorderOnly"
+        Background="#FF1F1A24">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="DlgBg"      Color="#FF1F1A24"/>
+        <SolidColorBrush x:Key="DlgSurface"  Color="#FF2A2230"/>
+        <SolidColorBrush x:Key="DlgBorder"   Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="DlgText"     Color="#FFF0E8F4"/>
+        <SolidColorBrush x:Key="DlgAccent"   Color="#FF8B5CF6"/>
+        <SolidColorBrush x:Key="DlgMuted"    Color="#FF9E90B0"/>
+    </Window.Resources>
+
+    <Border Background="{StaticResource DlgBg}"
+            BorderBrush="{StaticResource DlgBorder}"
+            BorderThickness="1" CornerRadius="8"
+            Padding="20">
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+            <!-- Title -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                <TextBlock Text="✏ Rename Symbol"
+                           FontSize="16" FontWeight="SemiBold"
+                           Foreground="{StaticResource DlgText}"/>
+                <TextBlock x:Name="OldNameText"
+                           FontSize="12" Margin="0,4,0,0"
+                           Foreground="{StaticResource DlgMuted}"/>
+            </StackPanel>
+
+            <!-- New name input -->
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,0,0,12">
+                <TextBlock Grid.Column="0" Text="New name:"
+                           FontSize="13" VerticalAlignment="Center"
+                           Foreground="{StaticResource DlgText}" Margin="0,0,10,0"/>
+                <TextBox Grid.Column="1" x:Name="NewNameInput"
+                         FontSize="13" FontFamily="Cascadia Code, Consolas, monospace"
+                         Background="{StaticResource DlgSurface}"
+                         Foreground="{StaticResource DlgText}"
+                         BorderBrush="{StaticResource DlgBorder}"
+                         Padding="8,6" CornerRadius="4"/>
+            </Grid>
+
+            <!-- Preview checkbox -->
+            <CheckBox Grid.Row="2" x:Name="PreviewCheckBox"
+                      Content="Preview changes" IsChecked="True"
+                      Foreground="{StaticResource DlgText}" FontSize="12"
+                      Margin="0,0,0,8"/>
+
+            <!-- Preview list -->
+            <Border Grid.Row="3" Background="{StaticResource DlgSurface}"
+                    BorderBrush="{StaticResource DlgBorder}"
+                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,12"
+                    Padding="4">
+                <ScrollViewer>
+                    <StackPanel x:Name="PreviewPanel" Spacing="2"/>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal"
+                        HorizontalAlignment="Right" Spacing="10">
+                <Button x:Name="CancelButton" Content="Cancel"
+                        Width="90" Height="32" FontSize="12"
+                        Background="{StaticResource DlgSurface}"
+                        Foreground="{StaticResource DlgText}"
+                        BorderBrush="{StaticResource DlgBorder}"
+                        CornerRadius="4" Click="OnCancel"/>
+                <Button x:Name="RenameButton" Content="Rename"
+                        Width="90" Height="32" FontSize="12"
+                        Background="{StaticResource DlgAccent}"
+                        Foreground="White"
+                        CornerRadius="4" Click="OnRename"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
+

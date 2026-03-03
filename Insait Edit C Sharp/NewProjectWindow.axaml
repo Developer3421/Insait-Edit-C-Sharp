@@ -188,17 +188,7 @@
                                 </StackPanel>
                             </Button>
                             
-                            <Button Classes="template-btn" Name="WebApiTemplate" Margin="0,0,12,12"
-                                    Click="Template_Click" Tag="webapi">
-                                <StackPanel Width="140">
-                                    <TextBlock Text="🌐" FontSize="32" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="ASP.NET Web API" FontSize="13" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
-                                    <TextBlock Text="A project for creating RESTful HTTP services"
-                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextWrapping="Wrap" TextAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
+
                             
                             <Button Classes="template-btn" Name="NanoTemplate" Margin="0,0,12,12"
                                     Click="Template_Click" Tag="nano">
@@ -265,18 +255,7 @@
                                 </StackPanel>
                             </Button>
 
-                            <Button Classes="template-btn" Name="FSharpSafeStackTemplate" Margin="0,0,12,12"
-                                    Click="Template_Click" Tag="fsharp-safestack">
-                                <StackPanel Width="140">
-                                    <TextBlock Text="🔷🌐" FontSize="32" HorizontalAlignment="Center"
-                                               FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                    <TextBlock Text="F# SAFE Stack" FontSize="13" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
-                                    <TextBlock Text="Full-stack F# web app (Saturn + Fable + Elmish)"
-                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextWrapping="Wrap" TextAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
+
                         </WrapPanel>
                     </StackPanel>
 

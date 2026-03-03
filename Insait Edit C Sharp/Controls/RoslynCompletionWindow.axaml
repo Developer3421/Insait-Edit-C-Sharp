@@ -1,0 +1,74 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.Controls.RoslynCompletionWindow"
+        Title=""
+        SystemDecorations="None"
+        Background="Transparent"
+        CanResize="False"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Focusable="False"
+        Topmost="True"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="Manual"
+        TransparencyLevelHint="Transparent">
+
+    <Border Background="#FF1A1525"
+            BorderBrush="#FF6C3FAA"
+            BorderThickness="1"
+            CornerRadius="8"
+            ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect Color="#CC3E1060" BlurRadius="24" OffsetX="0" OffsetY="8" Opacity="0.85"/>
+        </Border.Effect>
+
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Header -->
+            <Border Grid.Row="0" Padding="10,5" Background="#15DCC4FF" CornerRadius="6,6,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="✦" FontSize="11" Foreground="#FF8B5CF6"/>
+                    <TextBlock x:Name="HeaderText" Text="Roslyn IntelliSense"
+                               FontSize="10" FontWeight="SemiBold" Foreground="#FF9E90B0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Items list -->
+            <ListBox Grid.Row="1" x:Name="ItemsList"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     MinWidth="340" MaxWidth="580"
+                     MaxHeight="320"
+                     Padding="2,2"
+                     Focusable="False"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="MinHeight" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Padding="10,4" Background="#10DCC4FF" CornerRadius="0,0,6,6">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="FooterText" Text=""
+                               FontSize="9" Foreground="#FF9E90B0"/>
+                    <TextBlock Text="  Tab/Enter ⏎  Esc ✕"
+                               FontSize="9" Foreground="#60DCC4FF" Margin="12,0,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+

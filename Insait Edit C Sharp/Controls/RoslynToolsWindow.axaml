@@ -1,0 +1,83 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.Controls.RoslynToolsWindow"
+        Title="Roslyn Tools"
+        Width="560" Height="420"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="BorderOnly"
+        Background="Transparent">
+
+    <Border Background="#FF1A1525"
+            BorderBrush="#FF6C3FAA"
+            BorderThickness="1"
+            CornerRadius="8"
+            ClipToBounds="True"
+            Padding="0">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+            <!-- Title bar -->
+            <Border Grid.Row="0" Background="#FF201A2E" Padding="14,10"
+                    CornerRadius="6,6,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="⚙" FontSize="16" Foreground="#FF8B5CF6"/>
+                        <TextBlock x:Name="TitleText" Text="Roslyn Tools"
+                                   FontSize="14" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="✕" FontSize="12"
+                            Width="28" Height="28" Padding="0"
+                            Background="Transparent" Foreground="#FF9E90B0"
+                            BorderThickness="0" CornerRadius="4"
+                            Click="OnClose"/>
+                </Grid>
+            </Border>
+
+            <!-- Symbol info header -->
+            <Border Grid.Row="1" Background="#10DCC4FF" Padding="14,8">
+                <StackPanel Spacing="2">
+                    <TextBlock x:Name="SymbolText"
+                               FontSize="13" FontWeight="SemiBold"
+                               FontFamily="Cascadia Code, Consolas, monospace"
+                               Foreground="#FFDCC4FF" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="SymbolKindText"
+                               FontSize="11" Foreground="#FF9E90B0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Results list -->
+            <ListBox Grid.Row="2" x:Name="ResultsList"
+                     Background="Transparent"
+                     Foreground="#FFF0E8F4"
+                     BorderThickness="0"
+                     Padding="4"
+                     Focusable="True">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="MinHeight" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#FF5B3A8A"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#30DCC4FF"/>
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+
+            <!-- Footer -->
+            <Border Grid.Row="3" Background="#FF201A2E" Padding="14,8"
+                    CornerRadius="0,0,6,6">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock x:Name="StatusText" Text="" FontSize="10" Foreground="#FF9E90B0"/>
+                    <TextBlock Text="Double-click or Enter to navigate" FontSize="10" Foreground="#60DCC4FF"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+

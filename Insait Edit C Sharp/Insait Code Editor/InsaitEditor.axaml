@@ -9,158 +9,66 @@
              Background="Transparent">
 
     <!-- ═══════════════════════════════════════════════════════════════════
-         InsaitEditor — Amber Fluent Code Editor
-         UI layout: Surface + ScrollBars + Overlay Popups
+         InsaitEditor — Roslyn-powered editor
+         Completion + QuickFix → separate independent windows
+         Only surface, scrollbars, signature/tooltip overlays here
          ═══════════════════════════════════════════════════════════════════ -->
 
     <UserControl.Resources>
-        <!-- Purple Fluent palette brushes -->
-        <SolidColorBrush x:Key="AmberBg"        Color="#FF1F1A24"/>
-        <SolidColorBrush x:Key="AmberPopupBg"    Color="#FF1F1A24"/>
-        <SolidColorBrush x:Key="AmberBorder"     Color="#FF3E3050"/>
-        <SolidColorBrush x:Key="AmberOrange"     Color="#FF8B5CF6"/>
-        <SolidColorBrush x:Key="AmberText"       Color="#FFF0E8F4"/>
-        <SolidColorBrush x:Key="AmberBadgeText"  Color="#FFF0E8F4"/>
-        <SolidColorBrush x:Key="AmberFixBg"      Color="#FF2A2230"/>
-        <SolidColorBrush x:Key="AmberFixBorder"  Color="#FF7C3AED"/>
-        <SolidColorBrush x:Key="AmberSigBg"      Color="#FF2A2230"/>
-        <SolidColorBrush x:Key="AmberDiagBorder" Color="#FFF38BA8"/>
-        <SolidColorBrush x:Key="ScrollBg"        Color="#20DCC4FF"/>
-        <SolidColorBrush x:Key="ScrollFg"        Color="#60DCC4FF"/>
+        <SolidColorBrush x:Key="SigBg"      Color="#FF2A2230"/>
+        <SolidColorBrush x:Key="BorderDim"   Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="DiagBorder"  Color="#FFF38BA8"/>
+        <SolidColorBrush x:Key="PopupBg"     Color="#FF201A2E"/>
+        <SolidColorBrush x:Key="PurpleBorder" Color="#FF6C3FAA"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFF0E8F4"/>
+        <SolidColorBrush x:Key="ScrollBg"    Color="#20DCC4FF"/>
+        <SolidColorBrush x:Key="ScrollFg"    Color="#60DCC4FF"/>
     </UserControl.Resources>
 
-    <!-- ListBox item styles — prevent Fluent theme white backgrounds -->
-    <UserControl.Styles>
-        <Style Selector="ListBox#CompletionList ListBoxItem">
-            <Setter Property="Padding" Value="4,2"/>
-            <Setter Property="Background" Value="Transparent"/>
-        </Style>
-        <Style Selector="ListBox#CompletionList ListBoxItem:selected /template/ ContentPresenter">
-            <Setter Property="Background" Value="#40DCC4FF"/>
-        </Style>
-        <Style Selector="ListBox#CompletionList ListBoxItem:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#25DCC4FF"/>
-        </Style>
-
-        <Style Selector="ListBox#QuickFixList ListBoxItem">
-            <Setter Property="Padding" Value="4,2"/>
-            <Setter Property="Background" Value="Transparent"/>
-        </Style>
-        <Style Selector="ListBox#QuickFixList ListBoxItem:selected /template/ ContentPresenter">
-            <Setter Property="Background" Value="#40DCC4FF"/>
-        </Style>
-        <Style Selector="ListBox#QuickFixList ListBoxItem:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#25DCC4FF"/>
-        </Style>
-    </UserControl.Styles>
-
     <Panel>
-        <!-- ── Main grid: Surface + ScrollBars ─────────────────────────── -->
+        <!-- ── Surface + ScrollBars ────────────────────────────────────── -->
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
-
-            <!-- Editor rendering surface (InsaitEditorSurface lives here via code-behind) -->
-            <Border Grid.Row="0" Grid.Column="0"
-                    x:Name="SurfaceHost"
+            <Border Grid.Row="0" Grid.Column="0" x:Name="SurfaceHost"
                     Background="Transparent"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"/>
-
-            <!-- Vertical scroll bar -->
-            <ScrollBar Grid.Row="0" Grid.Column="1"
-                       x:Name="VScroll"
-                       Orientation="Vertical"
-                       Width="12"
-                       Background="{StaticResource ScrollBg}"
-                       Foreground="{StaticResource ScrollFg}"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <ScrollBar Grid.Row="0" Grid.Column="1" x:Name="VScroll"
+                       Orientation="Vertical" Width="12"
+                       Background="{StaticResource ScrollBg}" Foreground="{StaticResource ScrollFg}"
                        Minimum="0" SmallChange="1"/>
-
-            <!-- Horizontal scroll bar -->
-            <ScrollBar Grid.Row="1" Grid.Column="0"
-                       x:Name="HScroll"
-                       Orientation="Horizontal"
-                       Height="12"
-                       Background="{StaticResource ScrollBg}"
-                       Foreground="{StaticResource ScrollFg}"
+            <ScrollBar Grid.Row="1" Grid.Column="0" x:Name="HScroll"
+                       Orientation="Horizontal" Height="12"
+                       Background="{StaticResource ScrollBg}" Foreground="{StaticResource ScrollFg}"
                        Minimum="0" SmallChange="10"/>
         </Grid>
 
-        <!-- ══ Overlay Canvas for popups (не перехоплює хіт-тест) ══════ -->
+        <!-- ── Lightweight overlays (signature + diagnostic tooltip) ── -->
         <Canvas IsHitTestVisible="False">
-
             <!-- Ready badge -->
-            <Border x:Name="ReadyBadge"
-                    Background="#FF8B5CF6"
-                    CornerRadius="0,0,6,0"
-                    Padding="12,4"
-                    IsVisible="False"
-                    Canvas.Left="0" Canvas.Top="0">
-                <TextBlock Text="✦ Insait Code Editor · Roslyn готовий"
-                           FontSize="11" FontWeight="SemiBold"
-                           Foreground="#FFF0E8F4"/>
+            <Border x:Name="ReadyBadge" Background="#FF8B5CF6"
+                    CornerRadius="0,0,6,0" Padding="12,4"
+                    IsVisible="False" Canvas.Left="0" Canvas.Top="0">
+                <TextBlock Text="✦ Insait · Roslyn IntelliSense"
+                           FontSize="11" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
             </Border>
 
-            <!-- ── Completion popup ──────────────────────────────────── -->
-            <Border x:Name="CompletionPopup"
-                    Background="{StaticResource AmberPopupBg}"
-                    BorderBrush="{StaticResource AmberBorder}"
-                    BorderThickness="1" CornerRadius="6"
-                    BoxShadow="0 4 20 0 #50000000"
-                    IsVisible="False">
-                <ListBox x:Name="CompletionList"
-                         Background="{StaticResource AmberPopupBg}"
-                         Foreground="{StaticResource AmberText}"
-                         MaxHeight="220" MinWidth="300"
-                         Focusable="False"
-                         BorderThickness="0"
-                         FontFamily="Cascadia Code, Consolas, monospace"
-                         FontSize="12"/>
-            </Border>
-
-            <!-- ── Quick fix popup ───────────────────────────────────── -->
-            <Border x:Name="QuickFixPopup"
-                    Background="{StaticResource AmberFixBg}"
-                    BorderBrush="{StaticResource AmberFixBorder}"
-                    BorderThickness="1" CornerRadius="6"
-                    BoxShadow="0 4 20 0 #50000000"
-                    IsVisible="False">
-                <ListBox x:Name="QuickFixList"
-                         Background="{StaticResource AmberFixBg}"
-                         Foreground="{StaticResource AmberText}"
-                         MaxHeight="180" MinWidth="320"
-                         Focusable="False"
-                         BorderThickness="0"
-                         FontFamily="Cascadia Code, Consolas, monospace"
-                         FontSize="12"/>
-            </Border>
-
-            <!-- ── Signature help popup ──────────────────────────────── -->
-            <Border x:Name="SignaturePopup"
-                    Background="{StaticResource AmberSigBg}"
-                    BorderBrush="{StaticResource AmberBorder}"
-                    BorderThickness="1" CornerRadius="6"
-                    Padding="10,6"
-                    BoxShadow="0 3 12 0 #40000000"
+            <!-- Signature help -->
+            <Border x:Name="SignaturePopup" Background="{StaticResource SigBg}"
+                    BorderBrush="{StaticResource BorderDim}" BorderThickness="1"
+                    CornerRadius="6" Padding="10,6" BoxShadow="0 3 12 0 #40000000"
                     IsVisible="False">
                 <TextBlock x:Name="SignatureText"
-                           FontFamily="Cascadia Code, Consolas, monospace"
-                           FontSize="12"
-                           Foreground="{StaticResource AmberText}"
-                           TextWrapping="Wrap" MaxWidth="500"/>
+                           FontFamily="Cascadia Code, Consolas, monospace" FontSize="12"
+                           Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" MaxWidth="500"/>
             </Border>
 
-            <!-- ── Diagnostic tooltip (hover) ────────────────────────── -->
-            <Border x:Name="TooltipPopup"
-                    Background="{StaticResource AmberPopupBg}"
-                    BorderBrush="{StaticResource AmberDiagBorder}"
-                    BorderThickness="1" CornerRadius="4"
-                    Padding="8,4"
-                    BoxShadow="0 2 8 0 #30000000"
+            <!-- Diagnostic tooltip -->
+            <Border x:Name="TooltipPopup" Background="{StaticResource PopupBg}"
+                    BorderBrush="{StaticResource DiagBorder}" BorderThickness="1"
+                    CornerRadius="4" Padding="8,4" BoxShadow="0 2 8 0 #30000000"
                     IsVisible="False">
                 <TextBlock x:Name="TooltipText"
-                           FontFamily="Cascadia Code, Consolas, monospace"
-                           FontSize="11"
-                           Foreground="{StaticResource AmberText}"
-                           TextWrapping="Wrap" MaxWidth="450"/>
+                           FontFamily="Cascadia Code, Consolas, monospace" FontSize="11"
+                           Foreground="{StaticResource TextPrimary}" TextWrapping="Wrap" MaxWidth="450"/>
             </Border>
         </Canvas>
     </Panel>

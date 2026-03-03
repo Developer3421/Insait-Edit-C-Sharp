@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.Controls.RoslynQuickFixWindow"
+        Title=""
+        SystemDecorations="None"
+        Background="Transparent"
+        CanResize="False"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Focusable="False"
+        Topmost="True"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="Manual"
+        TransparencyLevelHint="Transparent">
+
+    <Border Background="#FF1A1525"
+            BorderBrush="#FF7C3AED"
+            BorderThickness="1"
+            CornerRadius="8"
+            ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect Color="#CC3E1060" BlurRadius="20" OffsetX="0" OffsetY="6" Opacity="0.8"/>
+        </Border.Effect>
+
+        <Grid RowDefinitions="Auto,*">
+            <!-- Header -->
+            <Border Grid.Row="0" Padding="10,5" Background="#18DCC4FF" CornerRadius="6,6,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="💡" FontSize="11"/>
+                    <TextBlock x:Name="HeaderText" Text="Quick Fix"
+                               FontSize="10" FontWeight="SemiBold" Foreground="#FF9E90B0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Fix items -->
+            <ListBox Grid.Row="1" x:Name="FixList"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     MinWidth="320" MaxWidth="560"
+                     MaxHeight="240"
+                     Padding="2,2"
+                     Focusable="False"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="MinHeight" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+        </Grid>
+    </Border>
+</Window>
+

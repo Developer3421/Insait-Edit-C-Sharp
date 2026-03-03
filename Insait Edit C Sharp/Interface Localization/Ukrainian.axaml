@@ -318,6 +318,13 @@
     <x:String x:Key="Welcome.ClearAll">Очистити все</x:String>
     <x:String x:Key="Welcome.RecentProjects">Останні проєкти</x:String>
 
+    <!-- ── WelcomeScreen (стартовий екран в IDE) ────────────────── -->
+    <x:String x:Key="WelcomeScreen.Subtitle">C# IDE · На базі Insait Code Engine</x:String>
+    <x:String x:Key="WelcomeScreen.NewProject">Новий проєкт</x:String>
+    <x:String x:Key="WelcomeScreen.Open">Відкрити</x:String>
+    <x:String x:Key="WelcomeScreen.Clone">Клонувати</x:String>
+    <x:String x:Key="WelcomeScreen.Tip">Відкрийте проєкт або створіть новий, щоб розпочати роботу</x:String>
+
     <!-- ── 3. MenuWindow ─────────────────────────────────────────── -->
     <x:String x:Key="Menu.Title">Меню</x:String>
     <x:String x:Key="Menu.File">Файл</x:String>
@@ -760,6 +767,54 @@
     <x:String x:Key="NuGet.Update">Оновити</x:String>
     <x:String x:Key="NuGet.Uninstall">Видалити</x:String>
     <x:String x:Key="NuGet.AllUpToDateCheck">✅ Усі пакети оновлені</x:String>
+    <!-- ── NuGet деталі та статусні рядки ──────────────────────── -->
+    <x:String x:Key="NuGet.PackageDetails">Деталі пакету</x:String>
+    <x:String x:Key="NuGet.Version">ВЕРСІЯ</x:String>
+    <x:String x:Key="NuGet.Downloads">ЗАВАНТАЖЕННЯ</x:String>
+    <x:String x:Key="NuGet.Published">ОПУБЛІКОВАНО</x:String>
+    <x:String x:Key="NuGet.Description">ОПИС</x:String>
+    <x:String x:Key="NuGet.Dependencies">ЗАЛЕЖНОСТІ</x:String>
+    <x:String x:Key="NuGet.Tags">ТЕГИ</x:String>
+    <x:String x:Key="NuGet.Links">ПОСИЛАННЯ</x:String>
+    <x:String x:Key="NuGet.ProjectLink">Проєкт</x:String>
+    <x:String x:Key="NuGet.NoDescription">Опис недоступний</x:String>
+    <x:String x:Key="NuGet.Reinstall">Перевстановити</x:String>
+    <x:String x:Key="NuGet.Verified">✓ Підтверджено</x:String>
+    <x:String x:Key="NuGet.ViewOnNuGetOrg">Переглянути на nuget.org</x:String>
+    <x:String x:Key="NuGet.SearchAbove">Шукайте NuGet-пакети вище</x:String>
+    <x:String x:Key="NuGet.Project.Label">Проєкт:</x:String>
+    <x:String x:Key="NuGet.NanoFrameworkMode">ПАКЕТИ NUGET (NANOFRAMEWORK)</x:String>
+    <x:String x:Key="NuGet.Tooltip.Refresh">Оновити</x:String>
+    <x:String x:Key="NuGet.Tooltip.NanoSuggestions">Популярні пакети nanoFramework</x:String>
+    <x:String x:Key="NuGet.ByAuthor">від {0}</x:String>
+    <x:String x:Key="NuGet.InstalledVersion">Встановлено: v{0}</x:String>
+    <x:String x:Key="NuGet.InstalledCount">{0} пакет(ів) встановлено</x:String>
+    <x:String x:Key="NuGet.UpdatesAvailable">{0} оновлень доступно</x:String>
+    <x:String x:Key="NuGet.UpdatesTabBadge">Оновлення ({0})</x:String>
+    <x:String x:Key="NuGet.Loading">Завантаження...</x:String>
+    <x:String x:Key="NuGet.Searching">Пошук '{0}'...</x:String>
+    <x:String x:Key="NuGet.LoadingDetails">Завантаження деталей {0}...</x:String>
+    <x:String x:Key="NuGet.LoadingInstalled">Завантаження встановлених пакетів...</x:String>
+    <x:String x:Key="NuGet.Installing">Встановлення {0}...</x:String>
+    <x:String x:Key="NuGet.Uninstalling">Видалення {0}...</x:String>
+    <x:String x:Key="NuGet.Updating">Оновлення {0}...</x:String>
+    <x:String x:Key="NuGet.UpdatingAll">Оновлення всіх пакетів...</x:String>
+    <x:String x:Key="NuGet.UpdatingCount">Оновлення {0} ({1}/{2})...</x:String>
+    <x:String x:Key="NuGet.SuccessInstalled">Пакет {0} успішно встановлено</x:String>
+    <x:String x:Key="NuGet.SuccessUninstalled">Пакет {0} успішно видалено</x:String>
+    <x:String x:Key="NuGet.SuccessUpdated">Пакет {0} успішно оновлено</x:String>
+    <x:String x:Key="NuGet.SuccessUpdatedCount">Успішно оновлено {0} пакетів</x:String>
+    <x:String x:Key="NuGet.NoProject.Error">Проєкт не завантажено</x:String>
+    <x:String x:Key="NuGet.SearchFailed">Помилка пошуку: {0}</x:String>
+    <x:String x:Key="NuGet.LoadDetailsFailed">Помилка завантаження деталей пакету: {0}</x:String>
+    <x:String x:Key="NuGet.OpenUrlFailed">Помилка відкриття URL: {0}</x:String>
+    <x:String x:Key="NuGet.LoadPackagesFailed">Помилка завантаження пакетів: {0}</x:String>
+    <x:String x:Key="NuGet.RelativeDate.Today">сьогодні</x:String>
+    <x:String x:Key="NuGet.RelativeDate.Yesterday">вчора</x:String>
+    <x:String x:Key="NuGet.RelativeDate.DaysAgo">{0}д тому</x:String>
+    <x:String x:Key="NuGet.RelativeDate.WeeksAgo">{0}тж тому</x:String>
+    <x:String x:Key="NuGet.RelativeDate.MonthsAgo">{0}міс тому</x:String>
+    <x:String x:Key="NuGet.RelativeDate.YearsAgo">{0}р тому</x:String>
 
     <!-- ── Common ────────────────────────────────────────────────── -->
     <x:String x:Key="Common.OK">OK</x:String>

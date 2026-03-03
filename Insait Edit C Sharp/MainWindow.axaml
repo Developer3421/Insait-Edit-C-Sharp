@@ -1077,6 +1077,195 @@
                         Background="Transparent"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"/>
+
+                <!-- Welcome Screen — shown when no file is open -->
+                <Border Grid.Row="1"
+                        x:Name="WelcomeScreenPanel"
+                        IsVisible="True"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ZIndex="10">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#FF1F1A24" Offset="0"/>
+                            <GradientStop Color="#FF2A1A10" Offset="0.5"/>
+                            <GradientStop Color="#FF1F1A24" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <!-- Decorative orange glow -->
+                        <Ellipse Width="600" Height="600"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Opacity="0.04">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#FFFFC09F" Offset="0"/>
+                                    <GradientStop Color="Transparent" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="32" MaxWidth="560">
+                            <!-- Logo + Title -->
+                            <StackPanel HorizontalAlignment="Center" Spacing="16">
+                                <Border Width="88" Height="88" CornerRadius="22"
+                                        HorizontalAlignment="Center">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#FFFFC09F" Offset="0"/>
+                                            <GradientStop Color="#FFFF8C42" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Image Source="avares://Insait Edit C Sharp/Icons/AppIconIDE.png"
+                                           Width="56" Height="56"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                    <TextBlock x:Name="WelcomeMainTitle"
+                                               Text="Insait Edit"
+                                               FontSize="36" FontWeight="Bold"
+                                               HorizontalAlignment="Center">
+                                        <TextBlock.Foreground>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="#FFFFC09F" Offset="0"/>
+                                                <GradientStop Color="#FFFF8C42" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </TextBlock.Foreground>
+                                    </TextBlock>
+                                    <TextBlock x:Name="WelcomeMainSubtitle"
+                                               Text="C# IDE · Powered by Insait Code Engine"
+                                               FontSize="14"
+                                               Foreground="{StaticResource AppTextMutedBrush}"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Quick action cards -->
+                            <Grid ColumnDefinitions="*,*,*" HorizontalAlignment="Center" Width="520">
+                                <!-- New Project -->
+                                <Button Grid.Column="0" x:Name="WelcomeNewProjectBtn"
+                                        Click="WelcomeNewProject_Click"
+                                        Margin="0,0,8,0"
+                                        Padding="0" BorderThickness="0" Background="Transparent" Cursor="Hand">
+                                    <Border CornerRadius="12" Padding="18,16"
+                                            BorderThickness="1.5">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#60FFC09F" Offset="0"/>
+                                                <GradientStop Color="#30FFC09F" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#18FFC09F" Offset="0"/>
+                                                <GradientStop Color="#08FFC09F" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="➕" FontSize="28"
+                                                       FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="WelcomeCardNewProject"
+                                                       Text="New Project"
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource AccentOrangeBrush}"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Button>
+
+                                <!-- Open -->
+                                <Button Grid.Column="1" x:Name="WelcomeOpenBtn"
+                                        Click="WelcomeOpen_Click"
+                                        Margin="4,0"
+                                        Padding="0" BorderThickness="0" Background="Transparent" Cursor="Hand">
+                                    <Border CornerRadius="12" Padding="18,16"
+                                            BorderThickness="1.5">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#6089B4FA" Offset="0"/>
+                                                <GradientStop Color="#3089B4FA" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#1889B4FA" Offset="0"/>
+                                                <GradientStop Color="#0889B4FA" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="📂" FontSize="28"
+                                                       FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="WelcomeCardOpen"
+                                                       Text="Open"
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource AccentBlueBrush}"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Button>
+
+                                <!-- Clone -->
+                                <Button Grid.Column="2" x:Name="WelcomeCloneBtn"
+                                        Click="WelcomeClone_Click"
+                                        Margin="8,0,0,0"
+                                        Padding="0" BorderThickness="0" Background="Transparent" Cursor="Hand">
+                                    <Border CornerRadius="12" Padding="18,16"
+                                            BorderThickness="1.5">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#60A6E3A1" Offset="0"/>
+                                                <GradientStop Color="#30A6E3A1" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#18A6E3A1" Offset="0"/>
+                                                <GradientStop Color="#08A6E3A1" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="🔀" FontSize="28"
+                                                       FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="WelcomeCardClone"
+                                                       Text="Clone"
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource AccentGreenBrush}"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Button>
+                            </Grid>
+
+                            <!-- Tip text -->
+                            <TextBlock x:Name="WelcomeTip"
+                                       Text="Open a project or create a new one to get started"
+                                       FontSize="13"
+                                       Foreground="{StaticResource AppTextMutedBrush}"
+                                       HorizontalAlignment="Center"
+                                       Opacity="0.7"/>
+
+                            <!-- Keyboard shortcuts hint -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="24" Opacity="0.5">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Border Background="#30FFFFFF" CornerRadius="4" Padding="5,2">
+                                        <TextBlock Text="Ctrl+Shift+N" FontSize="10" Foreground="{StaticResource AppTextMutedBrush}" FontFamily="Consolas"/>
+                                    </Border>
+                                    <TextBlock x:Name="WelcomeShortcutNew" Text="New Project" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Border Background="#30FFFFFF" CornerRadius="4" Padding="5,2">
+                                        <TextBlock Text="Ctrl+O" FontSize="10" Foreground="{StaticResource AppTextMutedBrush}" FontFamily="Consolas"/>
+                                    </Border>
+                                    <TextBlock x:Name="WelcomeShortcutOpen" Text="Open" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
                 
                 <!-- Resize grip for terminal -->
                 <GridSplitter Grid.Row="2" Height="5" Name="BottomPanelSplitter" Classes="tool-splitter"
