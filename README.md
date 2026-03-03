@@ -14,7 +14,7 @@
   <img alt="Avalonia UI" src="https://img.shields.io/badge/Avalonia_UI-11.3-8B44AC?logo=avalonia&logoColor=white"/>
   <img alt="Roslyn" src="https://img.shields.io/badge/Roslyn-5.0-blue"/>
   <img alt="Platform" src="https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white"/>
-  <img alt="License" src="https://img.shields.io/badge/License-Proprietary-orange"/>
+  <img alt="License" src="https://img.shields.io/badge/License-MIT%20(with%20exclusions)-yellow"/>
 </p>
 
 <p align="center">
@@ -187,7 +187,18 @@ dotnet publish -c Release -r win-x64 --self-contained
 
 ## 📸 Screenshots
 
-> *Coming soon*
+<p align="center">
+  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English1.png" alt="Insait Edit Screenshot 1" width="100%"/>
+</p>
+<p align="center">
+  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English2.png" alt="Insait Edit Screenshot 2" width="100%"/>
+</p>
+<p align="center">
+  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English3.png" alt="Insait Edit Screenshot 3" width="100%"/>
+</p>
+<p align="center">
+  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English4.png" alt="Insait Edit Screenshot 4" width="100%"/>
+</p>
 
 ---
 
@@ -215,7 +226,9 @@ Contributions are welcome! Please open an issue to discuss proposed changes befo
 
 ## 📄 License
 
-This project is proprietary software. All rights reserved.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+> **Note:** The application's UI styles, icons, and visual assets are **excluded** from the MIT License and remain All Rights Reserved. See the [LICENSE](LICENSE) file for the full exclusion list.
 
 ---
 
@@ -390,7 +403,18 @@ dotnet publish -c Release -r win-x64 --self-contained
 
 ## 📸 Screenshots
 
-> *Demnächst verfügbar*
+<p align="center">
+  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English1.png" alt="Insait Edit Screenshot 1" width="100%"/>
+</p>
+<p align="center">
+  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English2.png" alt="Insait Edit Screenshot 2" width="100%"/>
+</p>
+<p align="center">
+  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English3.png" alt="Insait Edit Screenshot 3" width="100%"/>
+</p>
+<p align="center">
+  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English4.png" alt="Insait Edit Screenshot 4" width="100%"/>
+</p>
 
 ---
 
@@ -419,7 +443,9 @@ Beiträge sind willkommen! Bitte eröffnen Sie ein Issue, um vorgeschlagene Änd
 
 ## 📄 Lizenz
 
-Diese Software ist proprietär. Alle Rechte vorbehalten.
+Dieses Projekt steht unter der **MIT-Lizenz** — Details finden Sie in der Datei [LICENSE](LICENSE).
+
+> **Hinweis:** Die UI-Stile, Icons und visuellen Assets der Anwendung sind von der MIT-Lizenz **ausgenommen** und bleiben Alle Rechte vorbehalten. Siehe die Datei [LICENSE](LICENSE) für die vollständige Ausschlussliste.
 
 ---
 
