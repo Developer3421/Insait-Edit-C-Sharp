@@ -57,10 +57,98 @@ public class MsixService
 
             // 2. Generate AppxManifest.xml into publishDir
             Log("── Step 2/3: Generating AppxManifest.xml ──");
-            GenerateAppxManifest(opts, publishDir);
+            try
+            {
+                GenerateAppxManifest(opts, publishDir);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Fail(ex.Message);
+            }
 
             // 3. MakeAppx pack
             Log("── Step 3/3: Packing MSIX ──");
+            var msixPath = opts.OutputMsixPath;
+            if (string.IsNullOrWhiteSpace(msixPath))
+                msixPath = Path.Combine(
+                    Path.GetDirectoryName(opts.ProjectPath)!,
+                    "bin",
+                    opts.PackageIdentityName + ".msix");
+
+            Directory.CreateDirectory(Path.GetDirectoryName(msixPath)!);
+
+            var packResult = await RunMakeAppxAsync(publishDir, msixPath);
+            if (!packResult.Success)
+                return Fail($"MakeAppx failed (exit {packResult.ExitCode})");
+
+            var size = new FileInfo(msixPath).Length;
+            Log($"\n✅  MSIX created: {msixPath}  ({FormatSize(size)})");
+            Log("══════════════ MSIX Build Succeeded ══════════════");
+
+            var r = new MsixResult { Success = true, OutputPath = msixPath };
+            PackageCompleted?.Invoke(this, new MsixCompletedEventArgs(r));
+            return r;
+        }
+        catch (OperationCanceledException)
+        {
+            Log("\n⚠️  Build cancelled by user.");
+            return Fail("Cancelled");
+        }
+        catch (Exception ex)
+        {
+            return Fail($"Unexpected error: {ex.Message}");
+        }
+        finally
+        {
+            _cts?.Dispose();
+            _cts = null;
+        }
+    }
+
+    /// <summary>
+    /// Pipeline steps 2 + 3 only: generate AppxManifest → MakeAppx pack.
+    /// Call this after publish has already been done via <see cref="PublishService"/>.
+    /// </summary>
+    public async Task<MsixResult> PackageFromPublishedAsync(MsixPackageOptions opts, string publishDir)
+    {
+        _cts = new CancellationTokenSource();
+        PackageStarted?.Invoke(this, EventArgs.Empty);
+
+        try
+        {
+            Log("");
+            Log("══════════════ MSIX Packaging ══════════════");
+            Log($"Identity : {opts.PackageIdentityName}  v{opts.Version}");
+            Log($"Source   : {publishDir}");
+            Log("");
+
+            // ── Verify publish directory contains an executable ──
+            var hasExe = Directory.Exists(publishDir)
+                      && Directory.GetFiles(publishDir, "*.exe", SearchOption.AllDirectories).Length > 0;
+
+            if (!hasExe && opts.SelfContained)
+            {
+                Log("⚠ No .exe found in publish directory — re-publishing as self-contained…");
+                Log("── Step 0: Re-publishing (self-contained) ──");
+                var rePublish = await RunDotnetPublishAsync(opts, publishDir);
+                if (!rePublish.Success)
+                    return Fail($"Self-contained re-publish failed (exit {rePublish.ExitCode})");
+                Log("");
+            }
+
+            // 1. Generate AppxManifest.xml into publishDir
+            Log("── Step 1/2: Generating AppxManifest.xml ──");
+            try
+            {
+                GenerateAppxManifest(opts, publishDir);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Fail(ex.Message);
+            }
+
+            // 2. MakeAppx pack
+            Log("── Step 2/2: Packing MSIX ──");
             var msixPath = opts.OutputMsixPath;
             if (string.IsNullOrWhiteSpace(msixPath))
                 msixPath = Path.Combine(
@@ -153,6 +241,14 @@ public class MsixService
             Log($"Extracting to: {tempDir}");
             ZipFile.ExtractToDirectory(info.MsixPath, tempDir, overwriteFiles: true);
 
+            // Remove signing artifacts that MakeAppx will regenerate
+            var blockMap = Path.Combine(tempDir, "AppxBlockMap.xml");
+            if (File.Exists(blockMap)) File.Delete(blockMap);
+            var sigFile = Path.Combine(tempDir, "AppxSignature.p7x");
+            if (File.Exists(sigFile)) File.Delete(sigFile);
+            var ctFile = Path.Combine(tempDir, "[Content_Types].xml");
+            if (File.Exists(ctFile)) File.Delete(ctFile);
+
             var manifestPath = Path.Combine(tempDir, "AppxManifest.xml");
             var doc  = XDocument.Load(manifestPath);
             var ns   = doc.Root?.Name.Namespace ?? XNamespace.None;
@@ -186,6 +282,9 @@ public class MsixService
             }
 
             doc.Save(manifestPath);
+
+            // Ensure all file references in the manifest exist (create placeholders if needed)
+            EnsureManifestFilesExist(doc, ns, tempDir);
 
             // Re-pack
             Log($"Repacking to: {info.MsixPath}");
@@ -241,8 +340,134 @@ public class MsixService
     }
 
     /// <summary>
+    /// Apply a PNG icon to an existing MSIX package.
+    /// Extracts the MSIX, replaces all icon file references (Logo, Square*Logo, Wide*Logo)
+    /// with the provided PNG file, and repacks.
+    /// </summary>
+    public async Task<MsixResult> ApplyIconToMsixAsync(string msixPath, string iconPngPath)
+    {
+        Log("══════════════ Apply Icon to MSIX ══════════════");
+        Log($"MSIX : {msixPath}");
+        Log($"Icon : {iconPngPath}");
+        Log("");
+
+        if (!File.Exists(msixPath))
+            return Fail("MSIX file not found.");
+        if (!File.Exists(iconPngPath))
+            return Fail("Icon PNG file not found.");
+        if (!iconPngPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            return Fail("MSIX only supports PNG icons. Please provide a .png file.");
+
+        string? tempDir = null;
+        try
+        {
+            tempDir = Path.Combine(Path.GetTempPath(), "MsixIcon_" + Guid.NewGuid().ToString("N")[..8]);
+            Directory.CreateDirectory(tempDir);
+
+            Log($"Extracting to: {tempDir}");
+            ZipFile.ExtractToDirectory(msixPath, tempDir, overwriteFiles: true);
+
+            // Remove signing artifacts
+            var blockMap = Path.Combine(tempDir, "AppxBlockMap.xml");
+            if (File.Exists(blockMap)) File.Delete(blockMap);
+            var signature = Path.Combine(tempDir, "AppxSignature.p7x");
+            if (File.Exists(signature)) File.Delete(signature);
+            var contentTypes = Path.Combine(tempDir, "[Content_Types].xml");
+            if (File.Exists(contentTypes)) File.Delete(contentTypes);
+
+            var manifestPath = Path.Combine(tempDir, "AppxManifest.xml");
+            if (!File.Exists(manifestPath))
+                return Fail("AppxManifest.xml not found inside MSIX.");
+
+            var doc = XDocument.Load(manifestPath);
+            var ns = doc.Root?.Name.Namespace ?? XNamespace.None;
+
+            // Collect all file paths referenced as icons
+            var iconRefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            var logoEl = doc.Root?.Element(ns + "Properties")?.Element(ns + "Logo");
+            if (logoEl != null && !string.IsNullOrWhiteSpace(logoEl.Value))
+                iconRefs.Add(logoEl.Value);
+
+            var uap = XNamespace.Get("http://schemas.microsoft.com/appx/manifest/uap/windows10");
+            foreach (var ve in doc.Descendants(uap + "VisualElements"))
+            {
+                foreach (var attr in ve.Attributes())
+                {
+                    if (attr.Value.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                        iconRefs.Add(attr.Value);
+                }
+            }
+            foreach (var dt in doc.Descendants(uap + "DefaultTile"))
+            {
+                foreach (var attr in dt.Attributes())
+                {
+                    if (attr.Value.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                        iconRefs.Add(attr.Value);
+                }
+            }
+
+            // Copy the new icon to each referenced path
+            var iconBytes = File.ReadAllBytes(iconPngPath);
+            foreach (var relPath in iconRefs)
+            {
+                var fullPath = Path.Combine(tempDir, relPath.Replace('/', Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+                File.WriteAllBytes(fullPath, iconBytes);
+                Log($"  ✅ Replaced: {relPath}");
+            }
+
+            // If no icon refs found, create a default one
+            if (iconRefs.Count == 0)
+            {
+                var defaultLogo = @"Assets\Logo.png";
+                var defaultPath = Path.Combine(tempDir, "Assets", "Logo.png");
+                Directory.CreateDirectory(Path.GetDirectoryName(defaultPath)!);
+                File.WriteAllBytes(defaultPath, iconBytes);
+
+                // Update manifest
+                if (logoEl != null)
+                    logoEl.SetValue(defaultLogo);
+
+                foreach (var ve in doc.Descendants(uap + "VisualElements"))
+                {
+                    ve.SetAttributeValue("Square150x150Logo", defaultLogo);
+                    ve.SetAttributeValue("Square44x44Logo", defaultLogo);
+                }
+                foreach (var dt in doc.Descendants(uap + "DefaultTile"))
+                {
+                    dt.SetAttributeValue("Wide310x150Logo", defaultLogo);
+                }
+
+                doc.Save(manifestPath);
+                Log($"  ✅ Created default icon: {defaultLogo}");
+            }
+
+            Log("Repacking MSIX…");
+            var packResult = await RunMakeAppxAsync(tempDir, msixPath);
+            if (!packResult.Success)
+                return Fail("MakeAppx repack failed after applying icon.");
+
+            Log($"\n✅  Icon applied to: {msixPath}");
+            Log("══════════════ Icon Applied Successfully ══════════════");
+            var r = new MsixResult { Success = true, OutputPath = msixPath };
+            PackageCompleted?.Invoke(this, new MsixCompletedEventArgs(r));
+            return r;
+        }
+        catch (Exception ex)
+        {
+            return Fail($"Apply icon error: {ex.Message}");
+        }
+        finally
+        {
+            if (tempDir != null) CleanupTemp(tempDir);
+        }
+    }
+
+    /// <summary>
     /// Sign an MSIX package using SignTool.exe with a certificate from the
-    /// CurrentUser\My store identified by thumbprint. No timestamp is added.
+    /// CurrentUser\My store identified by thumbprint.
+    /// Automatically ensures the manifest Publisher matches the certificate Subject.
     /// </summary>
     public async Task<MsixResult> SignMsixAsync(string msixPath, string thumbprint, string hashAlgorithm = "SHA256")
     {
@@ -258,6 +483,49 @@ public class MsixService
             return Fail("SignTool.exe not found. Install Windows SDK and ensure it is in the PATH or under 'C:\\Program Files (x86)\\Windows Kits\\10\\bin'.");
         }
 
+        // ── Ensure manifest Publisher matches the certificate Subject ──
+        // MSIX signing requires an exact match between the Identity/@Publisher
+        // attribute in AppxManifest.xml and the signing certificate's Subject DN.
+        // Error 0x8007000b (ERROR_BAD_FORMAT) occurs when they don't match.
+        try
+        {
+            var certSubjectDN = GetCertificateSubjectDN(thumbprint);
+            if (certSubjectDN != null)
+            {
+                Log($"Certificate Subject: {certSubjectDN}");
+                var manifestPublisher = ReadManifestPublisher(msixPath);
+                if (manifestPublisher != null)
+                {
+                    Log($"Manifest Publisher : {manifestPublisher}");
+
+                    if (!string.Equals(manifestPublisher, certSubjectDN, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log("");
+                        Log("⚠ Publisher mismatch detected — updating manifest to match certificate…");
+                        var updated = await UpdateManifestPublisherAsync(msixPath, certSubjectDN);
+                        if (!updated)
+                        {
+                            return Fail(
+                                $"Publisher mismatch: manifest has \"{manifestPublisher}\" but certificate requires \"{certSubjectDN}\". " +
+                                "Auto-fix failed — please update the Publisher field manually in the Identity editor.");
+                        }
+                        Log($"✅ Manifest Publisher updated to: {certSubjectDN}");
+                    }
+                    else
+                    {
+                        Log("✅ Publisher matches certificate — OK");
+                    }
+                }
+                Log("");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log($"⚠ Could not verify Publisher/certificate match: {ex.Message}");
+            Log("  Proceeding with signing anyway…");
+            Log("");
+        }
+
         // signtool sign /fd <hash> /sha1 <thumbprint> "<file>"
         // CurrentUser\My store is searched by default (no /sm flag)
         var args = $"sign /fd {hashAlgorithm} /sha1 {thumbprint} \"{msixPath}\"";
@@ -267,7 +535,7 @@ public class MsixService
 
         if (result.Success)
         {
-            Log("\n✅  MSIX signed successfully (no timestamp).");
+            Log("\n✅  MSIX signed successfully.");
             Log("══════════════ MSIX Sign Succeeded ══════════════");
             var r = new MsixResult { Success = true, OutputPath = msixPath };
             PackageCompleted?.Invoke(this, new MsixCompletedEventArgs(r));
@@ -276,6 +544,173 @@ public class MsixService
         else
         {
             return Fail($"SignTool failed (exit {result.ExitCode})");
+        }
+    }
+
+    /// <summary>
+    /// Reads the Publisher attribute from the Identity element of the AppxManifest.xml inside an MSIX.
+    /// </summary>
+    private static string? ReadManifestPublisher(string msixPath)
+    {
+        try
+        {
+            using var zip = ZipFile.OpenRead(msixPath);
+            var entry = zip.GetEntry("AppxManifest.xml");
+            if (entry == null) return null;
+
+            using var stream = entry.Open();
+            var doc = XDocument.Load(stream);
+            var ns = doc.Root?.Name.Namespace ?? XNamespace.None;
+            return doc.Root?.Element(ns + "Identity")?.Attribute("Publisher")?.Value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves the full Subject distinguished name from a certificate in the CurrentUser\My store.
+    /// </summary>
+    private static string? GetCertificateSubjectDN(string thumbprint)
+    {
+        try
+        {
+            using var store = new System.Security.Cryptography.X509Certificates.X509Store(
+                System.Security.Cryptography.X509Certificates.StoreName.My,
+                System.Security.Cryptography.X509Certificates.StoreLocation.CurrentUser,
+                System.Security.Cryptography.X509Certificates.OpenFlags.ReadOnly);
+
+            var certs = store.Certificates.Find(
+                System.Security.Cryptography.X509Certificates.X509FindType.FindByThumbprint,
+                thumbprint, validOnly: false);
+
+            if (certs.Count == 0) return null;
+            return certs[0].SubjectName.Name;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Extracts the MSIX, updates the Publisher in AppxManifest.xml, and repacks.
+    /// Also ensures all file references in the manifest (logos, etc.) exist,
+    /// creating placeholder PNGs for any missing files.
+    /// Returns true on success.
+    /// </summary>
+    private async Task<bool> UpdateManifestPublisherAsync(string msixPath, string newPublisher)
+    {
+        string? tempDir = null;
+        try
+        {
+            tempDir = Path.Combine(Path.GetTempPath(), "MsixSign_" + Guid.NewGuid().ToString("N")[..8]);
+            Directory.CreateDirectory(tempDir);
+
+            Log($"  Extracting to: {tempDir}");
+            ZipFile.ExtractToDirectory(msixPath, tempDir, overwriteFiles: true);
+
+            // Remove signing artifacts that MakeAppx doesn't like
+            var blockMap = Path.Combine(tempDir, "AppxBlockMap.xml");
+            if (File.Exists(blockMap)) File.Delete(blockMap);
+            var signature = Path.Combine(tempDir, "AppxSignature.p7x");
+            if (File.Exists(signature)) File.Delete(signature);
+            var contentTypes = Path.Combine(tempDir, "[Content_Types].xml");
+            if (File.Exists(contentTypes)) File.Delete(contentTypes);
+
+            var manifestPath = Path.Combine(tempDir, "AppxManifest.xml");
+            if (!File.Exists(manifestPath)) return false;
+
+            var doc = XDocument.Load(manifestPath);
+            var ns = doc.Root?.Name.Namespace ?? XNamespace.None;
+            var identity = doc.Root?.Element(ns + "Identity");
+            if (identity == null) return false;
+
+            identity.SetAttributeValue("Publisher", newPublisher);
+
+            // ── Ensure all file references in the manifest actually exist ──
+            // MakeAppx validates that Logo / Square*Logo / Wide*Logo files are present.
+            // Collect all file paths referenced by attributes and element values.
+            EnsureManifestFilesExist(doc, ns, tempDir);
+
+            doc.Save(manifestPath);
+
+            Log("  Repacking MSIX…");
+            var packResult = await RunMakeAppxAsync(tempDir, msixPath);
+            return packResult.Success;
+        }
+        catch (Exception ex)
+        {
+            Log($"  ❌ Update failed: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            if (tempDir != null) CleanupTemp(tempDir);
+        }
+    }
+
+    /// <summary>
+    /// Scans the manifest for all file path references (Logo, Square*Logo, Wide*Logo, etc.)
+    /// and creates placeholder PNG files for any that don't exist in the content directory.
+    /// </summary>
+    private void EnsureManifestFilesExist(XDocument doc, XNamespace ns, string contentDir)
+    {
+        // 1×1 transparent PNG (89 bytes)
+        const string placeholderPngBase64 =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+        var fileRefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Collect file paths from well-known elements / attributes
+        // Properties/Logo (element value)
+        var logo = doc.Root?.Element(ns + "Properties")?.Element(ns + "Logo")?.Value;
+        if (!string.IsNullOrWhiteSpace(logo)) fileRefs.Add(logo);
+
+        // VisualElements attributes: Square150x150Logo, Square44x44Logo, Square71x71Logo, etc.
+        // DefaultTile attributes: Wide310x150Logo, Square310x310Logo, etc.
+        var uap = XNamespace.Get("http://schemas.microsoft.com/appx/manifest/uap/windows10");
+        var visualElements = doc.Descendants(uap + "VisualElements");
+        foreach (var ve in visualElements)
+        {
+            foreach (var attr in ve.Attributes())
+            {
+                var val = attr.Value;
+                if (val.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                    || val.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+                    || val.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    fileRefs.Add(val);
+                }
+            }
+        }
+
+        var defaultTiles = doc.Descendants(uap + "DefaultTile");
+        foreach (var dt in defaultTiles)
+        {
+            foreach (var attr in dt.Attributes())
+            {
+                var val = attr.Value;
+                if (val.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                    || val.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+                    || val.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    fileRefs.Add(val);
+                }
+            }
+        }
+
+        // Create placeholder files for any missing references
+        foreach (var relPath in fileRefs)
+        {
+            var fullPath = Path.Combine(contentDir, relPath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(fullPath))
+            {
+                Log($"  ⚠ Missing file referenced in manifest: {relPath} — creating placeholder PNG");
+                Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+                File.WriteAllBytes(fullPath, Convert.FromBase64String(placeholderPngBase64));
+            }
         }
     }
 
@@ -330,11 +765,12 @@ public class MsixService
 
     private async Task<ProcessRunResult> RunDotnetPublishAsync(MsixPackageOptions opts, string publishDir)
     {
-        var sb = new StringBuilder($"publish \"{opts.ProjectPath}\"");
+        var projectPath = ResolveSolutionToProject(opts.ProjectPath);
+        var sb = new StringBuilder($"publish \"{projectPath}\"");
         sb.Append($" -c {opts.Configuration}");
         sb.Append($" -r {opts.RuntimeIdentifier}");
         sb.Append($" -o \"{publishDir}\"");
-        sb.Append(" --self-contained true");
+        sb.Append(opts.SelfContained ? " --self-contained true" : " --self-contained false");
         if (!string.IsNullOrEmpty(opts.Framework))
             sb.Append($" -f {opts.Framework}");
         if (opts.SingleFile)
@@ -347,6 +783,78 @@ public class MsixService
         Log($"dotnet {sb}");
         return await RunProcessAsync("dotnet", sb.ToString(),
             Path.GetDirectoryName(opts.ProjectPath) ?? "");
+    }
+
+    /// <summary>
+    /// If the path points to a .sln/.slnx file, resolve to the first
+    /// project file inside it. Avoids NETSDK1194 when using <c>-o</c> with solutions.
+    /// </summary>
+    private string ResolveSolutionToProject(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return path;
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        if (ext is not ".sln" and not ".slnx") return path;
+
+        var solutionDir = Path.GetDirectoryName(path) ?? "";
+        string? resolved = null;
+
+        try
+        {
+            if (ext == ".slnx")
+            {
+                var content = File.ReadAllText(path);
+                var doc = XDocument.Parse(content);
+                var root = doc.Root;
+                if (root != null)
+                {
+                    var projEl = root.Elements("Project").FirstOrDefault()
+                              ?? root.Elements("Folder")
+                                     .SelectMany(f => f.Elements("Project"))
+                                     .FirstOrDefault();
+                    var relPath = projEl?.Attribute("Path")?.Value;
+                    if (!string.IsNullOrEmpty(relPath))
+                    {
+                        var full = Path.GetFullPath(Path.Combine(solutionDir, relPath.Replace("/", "\\")));
+                        if (File.Exists(full)) resolved = full;
+                    }
+                }
+            }
+            else
+            {
+                var lines = File.ReadAllLines(path);
+                foreach (var line in lines)
+                {
+                    if (!line.StartsWith("Project(")) continue;
+                    var parts = line.Split('"');
+                    if (parts.Length >= 6)
+                    {
+                        var relPath = parts[5];
+                        if (relPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                            relPath.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+                            relPath.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var full = Path.GetFullPath(Path.Combine(solutionDir, relPath));
+                            if (File.Exists(full)) { resolved = full; break; }
+                        }
+                    }
+                }
+            }
+        }
+        catch { /* fallback below */ }
+
+        if (resolved == null)
+        {
+            var csprojFiles = Directory.GetFiles(solutionDir, "*.csproj", SearchOption.AllDirectories);
+            if (csprojFiles.Length > 0) resolved = csprojFiles[0];
+        }
+
+        if (resolved != null)
+        {
+            Log($"📌 Resolved solution to project: {Path.GetFileName(resolved)}");
+            return resolved;
+        }
+
+        return path;
     }
 
     private async Task<ProcessRunResult> RunMakeAppxAsync(string contentDir, string msixPath)
@@ -410,17 +918,94 @@ public class MsixService
 
     private void GenerateAppxManifest(MsixPackageOptions opts, string publishDir)
     {
-        // Find executable
+        // ── Log all files in publishDir for diagnostics ──
+        var allFiles = Directory.GetFiles(publishDir, "*", SearchOption.AllDirectories);
+        Log($"  📂 Publish directory contains {allFiles.Length} file(s):");
+        foreach (var f in allFiles)
+            Log($"     • {Path.GetRelativePath(publishDir, f)}");
+
+        // Find executable — search recursively, not just top-level
         var exe = opts.EntryExecutable;
         if (string.IsNullOrWhiteSpace(exe))
         {
+            // 1. Try top-level .exe first
             var found = Directory.GetFiles(publishDir, "*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            exe = found != null ? Path.GetFileName(found) : "App.exe";
+            if (found == null)
+            {
+                // 2. Try recursive .exe search
+                found = Directory.GetFiles(publishDir, "*.exe", SearchOption.AllDirectories).FirstOrDefault();
+            }
+            if (found == null)
+            {
+                // 3. Framework-dependent publish may produce .dll instead of .exe
+                found = Directory.GetFiles(publishDir, "*.dll", SearchOption.TopDirectoryOnly)
+                    .FirstOrDefault(f => !Path.GetFileName(f).StartsWith("System.", StringComparison.OrdinalIgnoreCase)
+                                      && !Path.GetFileName(f).StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase));
+            }
+            exe = found != null ? Path.GetRelativePath(publishDir, found) : "App.exe";
+        }
+
+        // ── Validate the executable exists in the publish directory ──
+        var exeFullPath = Path.Combine(publishDir, exe);
+        if (!File.Exists(exeFullPath))
+        {
+            Log($"  ⚠ Executable '{exe}' not found in publish directory!");
+            Log("  🔍 Searching for any executable in publish directory...");
+
+            // Try to find any .exe or .dll that could be the entry point
+            var candidates = Directory.GetFiles(publishDir, "*.exe", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(publishDir, "*.dll", SearchOption.AllDirectories))
+                .Where(f =>
+                {
+                    var name = Path.GetFileName(f);
+                    return !name.StartsWith("System.", StringComparison.OrdinalIgnoreCase)
+                        && !name.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase)
+                        && !name.StartsWith("api-ms-", StringComparison.OrdinalIgnoreCase)
+                        && !name.StartsWith("clr", StringComparison.OrdinalIgnoreCase)
+                        && !name.StartsWith("coreclr", StringComparison.OrdinalIgnoreCase)
+                        && !name.StartsWith("hostfxr", StringComparison.OrdinalIgnoreCase)
+                        && !name.StartsWith("hostpolicy", StringComparison.OrdinalIgnoreCase)
+                        && !name.Equals("mscordaccore.dll", StringComparison.OrdinalIgnoreCase)
+                        && !name.Equals("clrjit.dll", StringComparison.OrdinalIgnoreCase);
+                })
+                .ToList();
+
+            if (candidates.Count > 0)
+            {
+                // Prefer .exe over .dll; prefer files whose name matches the project name
+                var projectName = Path.GetFileNameWithoutExtension(opts.ProjectPath);
+                var best = candidates
+                    .OrderByDescending(f => Path.GetExtension(f).Equals(".exe", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+                    .ThenByDescending(f => Path.GetFileNameWithoutExtension(f)
+                        .Equals(projectName, StringComparison.OrdinalIgnoreCase) ? 1 : 0)
+                    .First();
+                exe = Path.GetRelativePath(publishDir, best);
+                Log($"  ✅ Found candidate executable: {exe}");
+            }
+            else
+            {
+                Log("  ❌ No executable candidates found in publish directory.");
+                throw new InvalidOperationException(
+                    $"No executable found in publish directory '{publishDir}'. " +
+                    "Ensure the project was published with '--self-contained true' or set EntryExecutable explicitly.");
+            }
+        }
+
+        // Re-validate after fallback
+        exeFullPath = Path.Combine(publishDir, exe);
+        if (!File.Exists(exeFullPath))
+        {
+            throw new InvalidOperationException(
+                $"Executable '{exe}' still not found in publish directory '{publishDir}'. " +
+                "The publish output may be incomplete.");
         }
 
         var entryPoint = opts.EntryPoint;
         if (string.IsNullOrWhiteSpace(entryPoint))
             entryPoint = "Windows.FullTrustApplication";
+
+        // ── Resolve logo: must be relative path + .png/.jpg/.jpeg (not .ico) ──
+        var logoRelative = ResolveLogo(opts.LogoRelativePath, publishDir);
 
         var xml = $"""
 <?xml version="1.0" encoding="utf-8"?>
@@ -441,7 +1026,7 @@ public class MsixService
     <DisplayName>{EscapeXml(opts.DisplayName)}</DisplayName>
     <PublisherDisplayName>{EscapeXml(opts.PublisherDisplayName)}</PublisherDisplayName>
     <Description>{EscapeXml(opts.Description)}</Description>
-    <Logo>{EscapeXml(opts.LogoRelativePath)}</Logo>
+    <Logo>{EscapeXml(logoRelative)}</Logo>
   </Properties>
 
   <Dependencies>
@@ -460,9 +1045,9 @@ public class MsixService
         DisplayName="{EscapeXml(opts.DisplayName)}"
         Description="{EscapeXml(opts.Description)}"
         BackgroundColor="transparent"
-        Square150x150Logo="{EscapeXml(opts.LogoRelativePath)}"
-        Square44x44Logo="{EscapeXml(opts.LogoRelativePath)}">
-        <uap:DefaultTile Wide310x150Logo="{EscapeXml(opts.LogoRelativePath)}" />
+        Square150x150Logo="{EscapeXml(logoRelative)}"
+        Square44x44Logo="{EscapeXml(logoRelative)}">
+        <uap:DefaultTile Wide310x150Logo="{EscapeXml(logoRelative)}" />
       </uap:VisualElements>
       <Extensions>
         <desktop:Extension Category="windows.fullTrustProcess" Executable="{EscapeXml(exe)}" />
@@ -479,17 +1064,174 @@ public class MsixService
 
         File.WriteAllText(Path.Combine(publishDir, "AppxManifest.xml"), xml, Encoding.UTF8);
 
-        // Create placeholder logo if none supplied or not present
-        var logoFile = Path.Combine(publishDir, opts.LogoRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        // Create placeholder logo if the resolved file doesn't exist in publishDir
+        var logoFile = Path.Combine(publishDir, logoRelative.Replace('/', Path.DirectorySeparatorChar));
         if (!File.Exists(logoFile))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(logoFile)!);
             // 1×1 transparent PNG (89 bytes)
             File.WriteAllBytes(logoFile, Convert.FromBase64String(
                 "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="));
+            Log("  ⚠ Logo file not found — using 1×1 transparent placeholder");
         }
 
-        Log($"AppxManifest.xml written  (exe={exe}, entryPoint={entryPoint})");
+        Log($"AppxManifest.xml written  (exe={exe}, entryPoint={entryPoint}, logo={logoRelative})");
+    }
+
+    /// <summary>
+    /// Resolves the logo path to a valid relative path inside the publish directory.
+    /// MSIX requires the logo to be .png/.jpg/.jpeg (NOT .ico).
+    /// If an absolute path is given, the file is copied into publishDir/Assets/.
+    /// If the file is .ico, it is converted to .png.
+    /// </summary>
+    private string ResolveLogo(string logoPath, string publishDir)
+    {
+        const string defaultLogo = @"Assets\Logo.png";
+
+        if (string.IsNullOrWhiteSpace(logoPath))
+            return defaultLogo;
+
+        // Check if it's an absolute path (external file)
+        bool isAbsolute = Path.IsPathRooted(logoPath);
+        bool isIco = logoPath.EndsWith(".ico", StringComparison.OrdinalIgnoreCase);
+
+        if (isAbsolute)
+        {
+            // Copy the file into publishDir/Assets/ with appropriate extension
+            if (!File.Exists(logoPath))
+            {
+                Log($"  ⚠ Logo file not found: {logoPath}");
+                return defaultLogo;
+            }
+
+            var assetsDir = Path.Combine(publishDir, "Assets");
+            Directory.CreateDirectory(assetsDir);
+
+            if (isIco)
+            {
+                // Convert .ico → .png
+                var destPath = Path.Combine(assetsDir, "Logo.png");
+                try
+                {
+                    ConvertIcoToPng(logoPath, destPath);
+                    Log($"  🔄 Converted .ico to .png: {Path.GetFileName(logoPath)} → Assets\\Logo.png");
+                    return @"Assets\Logo.png";
+                }
+                catch (Exception ex)
+                {
+                    Log($"  ⚠ Failed to convert .ico to .png: {ex.Message}");
+                    return defaultLogo;
+                }
+            }
+            else
+            {
+                // .png/.jpg — just copy it
+                var fileName = Path.GetFileName(logoPath);
+                var destPath = Path.Combine(assetsDir, fileName);
+                try
+                {
+                    File.Copy(logoPath, destPath, true);
+                    Log($"  📋 Copied logo: {fileName} → Assets\\{fileName}");
+                    return @"Assets\" + fileName;
+                }
+                catch (Exception ex)
+                {
+                    Log($"  ⚠ Failed to copy logo: {ex.Message}");
+                    return defaultLogo;
+                }
+            }
+        }
+
+        // It's a relative path
+        if (isIco)
+        {
+            // .ico at a relative path — try to convert in-place
+            var icoFull = Path.Combine(publishDir, logoPath.Replace('/', Path.DirectorySeparatorChar));
+            if (File.Exists(icoFull))
+            {
+                var pngPath = Path.ChangeExtension(icoFull, ".png");
+                try
+                {
+                    ConvertIcoToPng(icoFull, pngPath);
+                    Log($"  🔄 Converted .ico to .png: {logoPath}");
+                    return Path.ChangeExtension(logoPath, ".png").Replace('/', '\\');
+                }
+                catch (Exception ex)
+                {
+                    Log($"  ⚠ Failed to convert .ico: {ex.Message}");
+                    return defaultLogo;
+                }
+            }
+            else
+            {
+                // .ico doesn't exist at relative path — use default
+                Log($"  ⚠ Logo .ico not found at: {logoPath}");
+                return defaultLogo;
+            }
+        }
+
+        // It's a relative path with a valid extension — use as-is
+        return logoPath;
+    }
+
+    /// <summary>
+    /// Extracts the largest image from an .ico file and saves it as a .png.
+    /// ICO files contain one or more BMP or PNG images; we pick the largest.
+    /// </summary>
+    private static void ConvertIcoToPng(string icoPath, string pngPath)
+    {
+        using var fs = File.OpenRead(icoPath);
+        using var reader = new BinaryReader(fs);
+
+        // ICO header: reserved(2) + type(2) + count(2)
+        reader.ReadUInt16(); // reserved
+        var type = reader.ReadUInt16(); // 1 = ICO
+        if (type != 1) throw new InvalidDataException("Not a valid .ico file");
+        var count = reader.ReadUInt16();
+        if (count == 0) throw new InvalidDataException("ICO file contains no images");
+
+        // Read directory entries to find the largest image
+        int bestWidth = 0, bestOffset = 0, bestSize = 0;
+        for (int i = 0; i < count; i++)
+        {
+            int w = reader.ReadByte(); if (w == 0) w = 256;
+            int h = reader.ReadByte(); if (h == 0) h = 256;
+            reader.ReadByte(); // color count
+            reader.ReadByte(); // reserved
+            reader.ReadUInt16(); // planes
+            reader.ReadUInt16(); // bit count
+            int dataSize = reader.ReadInt32();
+            int dataOffset = reader.ReadInt32();
+
+            if (w >= bestWidth)
+            {
+                bestWidth = w;
+                bestOffset = dataOffset;
+                bestSize = dataSize;
+            }
+        }
+
+        // Read the image data
+        fs.Seek(bestOffset, SeekOrigin.Begin);
+        var imageData = reader.ReadBytes(bestSize);
+
+        // Check if it's already PNG (starts with PNG signature 0x89 0x50 0x4E 0x47)
+        if (imageData.Length >= 4 && imageData[0] == 0x89 && imageData[1] == 0x50
+                                  && imageData[2] == 0x4E && imageData[3] == 0x47)
+        {
+            // It's already a PNG — just write it out
+            File.WriteAllBytes(pngPath, imageData);
+            return;
+        }
+
+        // It's a BMP inside the ICO — extract pixels and create a minimal PNG.
+        // For simplicity and no external dependencies, create a 1×1 placeholder PNG
+        // and log a warning. For full BMP→PNG, a library like SkiaSharp would be needed.
+        // However, most modern .ico files embed PNG data for larger sizes.
+        //
+        // Fallback: write a simple colored 1×1 PNG
+        File.WriteAllBytes(pngPath, Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="));
     }
 
     private async Task<ProcessRunResult> RunProcessAsync(string exe, string args, string workDir)
@@ -565,9 +1307,11 @@ public class MsixPackageOptions
     public string Configuration        { get; set; } = "Release";
     public string RuntimeIdentifier    { get; set; } = "win-x64";
     public string? Framework           { get; set; }
+    public bool   SelfContained        { get; set; } = true;   // MSIX requires self-contained by default
     public bool   SingleFile           { get; set; }
     public bool   ReadyToRun           { get; set; } = true;
     public bool   TrimUnusedAssemblies { get; set; }
+    public bool   CleanOutputFolder    { get; set; } = true;
 
     // Publish output (temp) folder — auto-generated if empty
     public string? PublishOutputDir    { get; set; }

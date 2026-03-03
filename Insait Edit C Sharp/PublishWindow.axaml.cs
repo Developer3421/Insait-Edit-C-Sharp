@@ -472,6 +472,7 @@ public partial class PublishWindow : Window
         var trimCheck = this.FindControl<CheckBox>("TrimCheck");
         var compressionCheck = this.FindControl<CheckBox>("CompressionCheck");
         var nativeLibsCheck = this.FindControl<CheckBox>("NativeLibrariesCheck");
+        var cleanOutputCheck = this.FindControl<CheckBox>("CleanOutputCheck");
         var profileCombo = this.FindControl<ComboBox>("PublishProfileComboBox");
         var iconPathBox = this.FindControl<TextBox>("IconPathBox");
 
@@ -523,6 +524,7 @@ public partial class PublishWindow : Window
             TrimUnusedAssemblies = trimCheck?.IsChecked ?? false,
             EnableCompressionInSingleFile = compressionCheck?.IsChecked ?? false,
             IncludeNativeLibrariesForSelfExtract = nativeLibsCheck?.IsChecked ?? false,
+            CleanOutputFolder = cleanOutputCheck?.IsChecked ?? true,
             PublishProfileName = publishProfile,
             ApplicationIcon = string.IsNullOrWhiteSpace(iconPathBox?.Text) ? null : iconPathBox.Text
         };

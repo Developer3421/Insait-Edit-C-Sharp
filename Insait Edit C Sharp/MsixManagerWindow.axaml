@@ -278,7 +278,7 @@
                                         </StackPanel>
                                     </Grid>
                                     <StackPanel Spacing="5">
-                                        <TextBlock Name="BuildLogoLabel" Text="Logo (relative path inside package)" Classes="fl"/>
+                                        <TextBlock Name="BuildLogoLabel" Text="Logo (.png only — MSIX requirement)" Classes="fl"/>
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBox Grid.Column="0" Name="BuildLogoBox" Watermark="Assets\Square150x150Logo.png"/>
                                             <Button Grid.Column="1" Content="Browse…" Classes="action-btn" Margin="8,0,0,0" Name="BrowseLogoBtn"/>
@@ -326,6 +326,9 @@
                                                   ToolTip.Tip="Pre-compile for faster startup"/>
                                         <CheckBox Name="BuildTrimCheck" Content="Trim assemblies"
                                                   Margin="0,0,20,8" ToolTip.Tip="Remove unused code"/>
+                                        <CheckBox Name="BuildCleanOutputCheck" IsChecked="True"
+                                                  Content="🗑 Clean before publish" Margin="0,0,20,8"
+                                                  ToolTip.Tip="Delete all files in the publish folder before building"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
@@ -347,6 +350,52 @@
                                             <TextBox Grid.Column="0" Name="BuildPublishDirBox" Watermark="(auto)"/>
                                             <Button Grid.Column="1" Content="Browse…" Classes="action-btn" Margin="8,0,0,0" Name="BrowsePublishDirBtn"/>
                                         </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Sign after build -->
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Name="BuildSignHeader" Text="🔏  Sign After Build" Classes="sh"/>
+                                    <CheckBox Name="BuildSignAfterBuildCheck" Content="Sign MSIX package after build"
+                                              Margin="0,0,0,4" ToolTip.Tip="Automatically sign the MSIX with a certificate after packaging"/>
+                                    <StackPanel Name="BuildSignOptionsPanel" IsVisible="False" Spacing="12">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Name="BuildSignCertLabel" Text="Certificate (CurrentUser\My)" Classes="fl" VerticalAlignment="Center"/>
+                                            <Button Grid.Column="1" Content="🔄 Refresh" Classes="action-btn" FontSize="11"
+                                                    Name="BuildRefreshCertsBtn"/>
+                                        </Grid>
+                                        <ListBox Name="BuildCertListBox" Background="#FF1A1520"
+                                                 BorderBrush="#FF3E3050" BorderThickness="1"
+                                                 CornerRadius="5" Padding="4" MinHeight="100" MaxHeight="180"
+                                                 SelectionMode="Single">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate x:DataType="local:CertificateViewModel">
+                                                    <StackPanel Margin="4,3" Spacing="2">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <TextBlock Text="🔏" FontSize="11" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding SubjectName}" Foreground="#FFF0E8F4"
+                                                                       FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal" Spacing="12" Margin="20,0,0,0">
+                                                            <TextBlock Text="{Binding Thumbprint}" Foreground="#FF9E90B0" FontSize="9"
+                                                                       FontFamily="Consolas,Courier New"/>
+                                                            <TextBlock Text="{Binding ExpiryDisplay}" Foreground="{Binding ExpiryColor}"
+                                                                       FontSize="9"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Name="BuildSignHashLabel" Text="Hash Algorithm" Classes="fl"/>
+                                            <ComboBox Name="BuildSignHashCombo" HorizontalAlignment="Left" MinWidth="140">
+                                                <ComboBoxItem Content="SHA256" IsSelected="True"/>
+                                                <ComboBoxItem Content="SHA384"/>
+                                                <ComboBoxItem Content="SHA512"/>
+                                            </ComboBox>
+                                        </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -621,6 +670,33 @@
                                     </Border>
                                     <TextBlock Name="NoCertsText" Text="⚠️  No code-signing certificates found in CurrentUser\My store."
                                                FontSize="12" Foreground="#FFBB9A6F" TextWrapping="Wrap" IsVisible="False"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Icon (set before signing) -->
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Name="SignIconHeader" Text="🖼  Package Icon" Classes="sh"/>
+                                    <TextBlock Name="SignIconHint"
+                                               Text="Set or replace the icon inside the MSIX package before signing. MSIX only supports PNG format."
+                                               FontSize="11" Foreground="#FF9E90B0" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Name="SignIconFileLabel" Text="Icon file (.png)" Classes="fl"/>
+                                        <Grid ColumnDefinitions="*,Auto,Auto">
+                                            <TextBox Grid.Column="0" Name="SignIconPathBox" Watermark="Select a .png icon file…"/>
+                                            <Button Grid.Column="1" Content="Browse…" Classes="action-btn" Margin="8,0,0,0"
+                                                    Name="BrowseSignIconBtn"/>
+                                            <Button Grid.Column="2" Content="📥 Apply Icon" Classes="action-btn" Margin="8,0,0,0"
+                                                    Name="ApplySignIconBtn"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    <StackPanel Name="SignIconPreviewPanel" IsVisible="False" Spacing="6">
+                                        <TextBlock Name="SignIconPreviewLabel" Text="Preview:" Classes="fl"/>
+                                        <Border Background="#FF1A1520" CornerRadius="6" Padding="12"
+                                                HorizontalAlignment="Left" BorderBrush="#FF3E3050" BorderThickness="1">
+                                            <Image Name="SignIconPreview" Width="64" Height="64" Stretch="Uniform"/>
+                                        </Border>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
 

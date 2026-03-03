@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -51,10 +52,51 @@ public class PublishService
             OnOutput($"Trimming: Yes\n");
         if (!string.IsNullOrEmpty(profile.ApplicationIcon))
             OnOutput($"Application Icon: {profile.ApplicationIcon}\n");
+        if (profile.CleanOutputFolder)
+            OnOutput($"Clean Output Folder: Yes\n");
         OnOutput("\n");
 
         try
         {
+            // Clean the output folder before publishing if requested
+            if (profile.CleanOutputFolder && !string.IsNullOrEmpty(profile.OutputPath))
+            {
+                if (Directory.Exists(profile.OutputPath))
+                {
+                    OnOutput($"🗑  Cleaning output folder: {profile.OutputPath}\n");
+                    try
+                    {
+                        var files = Directory.GetFiles(profile.OutputPath, "*", SearchOption.AllDirectories);
+                        var dirs = Directory.GetDirectories(profile.OutputPath, "*", SearchOption.AllDirectories)
+                            .OrderByDescending(d => d.Length); // delete deepest first
+
+                        int deletedFiles = 0;
+                        foreach (var file in files)
+                        {
+                            try { File.Delete(file); deletedFiles++; }
+                            catch (Exception ex) { OnOutput($"  ⚠ Could not delete: {Path.GetFileName(file)} — {ex.Message}\n"); }
+                        }
+
+                        int deletedDirs = 0;
+                        foreach (var dir in dirs)
+                        {
+                            try { Directory.Delete(dir, false); deletedDirs++; }
+                            catch { /* non-empty dirs will fail, that's fine */ }
+                        }
+
+                        OnOutput($"  Deleted {deletedFiles} file(s), {deletedDirs} folder(s)\n\n");
+                    }
+                    catch (Exception ex)
+                    {
+                        OnOutput($"  ⚠ Clean failed: {ex.Message}\n\n");
+                    }
+                }
+                else
+                {
+                    OnOutput($"  Output folder does not exist yet — nothing to clean.\n\n");
+                }
+            }
+
             var args = BuildPublishArguments(profile);
 
             var startInfo = new ProcessStartInfo
@@ -129,7 +171,27 @@ public class PublishService
             }
             else
             {
-                OnOutput($"\n========== Publish Failed ==========\n");
+                OnOutput($"\n========== Publish Failed (exit code {exitCode}) ==========\n");
+
+                // Extract and summarize compilation errors from the output
+                var output = _outputBuffer.ToString();
+                var errorLines = output.Split('\n')
+                    .Where(l => l.Contains(" error ", StringComparison.OrdinalIgnoreCase)
+                             || l.Contains(": error ", StringComparison.OrdinalIgnoreCase))
+                    .Select(l => l.Trim())
+                    .Where(l => !string.IsNullOrEmpty(l))
+                    .Distinct()
+                    .ToList();
+
+                if (errorLines.Count > 0)
+                {
+                    OnOutput($"\n🔴 {errorLines.Count} error(s) found:\n");
+                    foreach (var err in errorLines.Take(20))
+                        OnOutput($"  • {err}\n");
+                    if (errorLines.Count > 20)
+                        OnOutput($"  … and {errorLines.Count - 20} more\n");
+                    OnOutput("\n💡 Fix the errors above and try again.\n");
+                }
             }
 
             var result = new PublishResult
@@ -137,7 +199,8 @@ public class PublishService
                 Success = success,
                 ExitCode = exitCode,
                 Output = _outputBuffer.ToString(),
-                OutputPath = profile.OutputPath
+                OutputPath = profile.OutputPath,
+                ErrorMessage = success ? null : $"Publish failed with exit code {exitCode}"
             };
 
             PublishCompleted?.Invoke(this, new PublishCompletedEventArgs(result));
@@ -173,7 +236,8 @@ public class PublishService
     private string BuildPublishArguments(PublishProfile profile)
     {
         var args = new StringBuilder();
-        args.Append($"publish \"{profile.ProjectPath}\"");
+        var projectPath = ResolveProjectPath(profile.ProjectPath);
+        args.Append($"publish \"{projectPath}\"");
         args.Append($" -c {profile.Configuration}");
         args.Append($" -o \"{profile.OutputPath}\"");
 
@@ -422,6 +486,88 @@ public class PublishService
         OutputReceived?.Invoke(this, new PublishOutputEventArgs(message));
     }
 
+    /// <summary>
+    /// If the path points to a .sln/.slnx file, resolve it to the first
+    /// project file found inside. This avoids NETSDK1194 when using
+    /// <c>dotnet publish --output</c> against a solution.
+    /// </summary>
+    private string ResolveProjectPath(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return path;
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+
+        if (ext is not ".sln" and not ".slnx") return path;
+
+        var solutionDir = Path.GetDirectoryName(path) ?? "";
+        string? resolved = null;
+
+        try
+        {
+            if (ext == ".slnx")
+            {
+                // Parse XML-based .slnx
+                var content = File.ReadAllText(path);
+                var doc = XDocument.Parse(content);
+                var root = doc.Root;
+                if (root != null)
+                {
+                    var projEl = root.Elements("Project").FirstOrDefault()
+                              ?? root.Elements("Folder")
+                                     .SelectMany(f => f.Elements("Project"))
+                                     .FirstOrDefault();
+                    var relPath = projEl?.Attribute("Path")?.Value;
+                    if (!string.IsNullOrEmpty(relPath))
+                    {
+                        var full = Path.GetFullPath(Path.Combine(solutionDir, relPath.Replace("/", "\\")));
+                        if (File.Exists(full)) resolved = full;
+                    }
+                }
+            }
+            else // .sln
+            {
+                var lines = File.ReadAllLines(path);
+                foreach (var line in lines)
+                {
+                    if (!line.StartsWith("Project(")) continue;
+                    // Format: Project("{GUID}") = "Name", "Path.csproj", "{GUID}"
+                    var parts = line.Split('"');
+                    // parts[5] is typically the relative project path
+                    if (parts.Length >= 6)
+                    {
+                        var relPath = parts[5];
+                        if (relPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                            relPath.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+                            relPath.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var full = Path.GetFullPath(Path.Combine(solutionDir, relPath));
+                            if (File.Exists(full)) { resolved = full; break; }
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // If parsing fails, fall back to searching for .csproj files
+        }
+
+        // Fallback: scan for .csproj files in the solution directory
+        if (resolved == null)
+        {
+            var csprojFiles = Directory.GetFiles(solutionDir, "*.csproj", SearchOption.AllDirectories);
+            if (csprojFiles.Length > 0)
+                resolved = csprojFiles[0];
+        }
+
+        if (resolved != null)
+        {
+            OnOutput($"📌 Resolved solution to project: {Path.GetFileName(resolved)}\n");
+            return resolved;
+        }
+
+        return path; // last resort — return the original
+    }
+
     private long GetDirectorySize(string path)
     {
         try
@@ -469,6 +615,7 @@ public class PublishProfile
     public bool TrimUnusedAssemblies { get; set; }
     public bool EnableCompressionInSingleFile { get; set; }
     public bool IncludeNativeLibrariesForSelfExtract { get; set; }
+    public bool CleanOutputFolder { get; set; }
     public string? ApplicationIcon { get; set; }
     public Dictionary<string, string> AdditionalProperties { get; set; } = new();
 }

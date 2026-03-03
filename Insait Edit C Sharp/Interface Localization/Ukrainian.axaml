@@ -613,6 +613,8 @@
     <x:String x:Key="Publish.CompressionTooltip">Стискає один файл для зменшення розміру</x:String>
     <x:String x:Key="Publish.NativeLibs">Включити нативні бібліотеки</x:String>
     <x:String x:Key="Publish.NativeLibsTooltip">Включає нативні бібліотеки до одного файлу</x:String>
+    <x:String x:Key="Publish.CleanOutput">🗑 Очистити вихідну теку перед публікацією</x:String>
+    <x:String x:Key="Publish.CleanOutputTooltip">Видаляє всі файли у вихідній теці перед публікацією для чистої збірки</x:String>
     <x:String x:Key="Publish.PublishProfile">Профіль публікації (необов'язково)</x:String>
     <x:String x:Key="Publish.NewProfile">+ Новий профіль</x:String>
     <x:String x:Key="Publish.ProfileHint">Використовуйте наявні профілі публікації з теки Properties/PublishProfiles</x:String>
@@ -631,6 +633,18 @@
     <x:String x:Key="Publish.IconHint">Виберіть файл .ico для вбудовування як іконку додатку в опублікований виконуваний файл</x:String>
     <x:String x:Key="Publish.BrowseIcon">Вибрати файл .ico</x:String>
     <x:String x:Key="Publish.ClearIcon">Очистити іконку</x:String>
+
+    <!-- ── 15b. PublishProgressWindow ────────────────────────────── -->
+    <x:String x:Key="PublishProgress.Title">Публікація...</x:String>
+    <x:String x:Key="PublishProgress.Publishing">Публікація проєкту...</x:String>
+    <x:String x:Key="PublishProgress.Succeeded">Публікація успішна!</x:String>
+    <x:String x:Key="PublishProgress.SucceededTitle">✅ Публікація успішна</x:String>
+    <x:String x:Key="PublishProgress.Failed">Публікація не вдалася</x:String>
+    <x:String x:Key="PublishProgress.FailedTitle">❌ Публікація не вдалася</x:String>
+    <x:String x:Key="PublishProgress.Cancelling">Скасування...</x:String>
+    <x:String x:Key="PublishProgress.OpenFolder">📂 Відкрити теку</x:String>
+    <x:String x:Key="PublishProgress.Cancel">⏹ Скасувати</x:String>
+    <x:String x:Key="PublishProgress.Close">Закрити</x:String>
 
     <!-- ── 16. ProjectPropertiesWindow ────────────────────────────── -->
     <x:String x:Key="ProjectProps.Title">Властивості проєкту</x:String>
@@ -691,6 +705,7 @@
     <x:String x:Key="Msix.SingleFile">Один файл</x:String>
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Обрізка збірок</x:String>
+    <x:String x:Key="Msix.CleanBeforePublish">🗑 Очистити перед публікацією</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Вивід</x:String>
     <x:String x:Key="Msix.MsixOutputPath">Шлях виводу MSIX (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Проміжна папка публікації (порожньо = авто-тимчасова)</x:String>
@@ -753,6 +768,15 @@
     <x:String x:Key="Msix.SignOptionsHeader">⚙  Параметри підпису</x:String>
     <x:String x:Key="Msix.HashAlgorithm">Алгоритм хешування</x:String>
     <x:String x:Key="Msix.HashHint">ℹ️  Рекомендується SHA256. Мітка часу не додаватиметься.</x:String>
+    <!-- Sign page — Icon -->
+    <x:String x:Key="Msix.SignIconHeader">🖼  Іконка пакета</x:String>
+    <x:String x:Key="Msix.SignIconHint">Встановіть або замініть іконку всередині MSIX пакета перед підписом. MSIX підтримує лише формат PNG.</x:String>
+    <x:String x:Key="Msix.SignIconFileLabel">Файл іконки (.png)</x:String>
+    <x:String x:Key="Msix.ApplyIcon">📥 Застосувати іконку</x:String>
+    <x:String x:Key="Msix.Preview">Попередній перегляд:</x:String>
+    <!-- Build page — Sign after build -->
+    <x:String x:Key="Msix.SignAfterBuildHeader">🔏  Підписати після збірки</x:String>
+    <x:String x:Key="Msix.SignAfterBuild">Підписати MSIX пакет після збірки</x:String>
     <!-- Footer -->
     <x:String x:Key="Msix.Ready">Готово</x:String>
     <x:String x:Key="Msix.Cancel">⏹ Скасувати</x:String>

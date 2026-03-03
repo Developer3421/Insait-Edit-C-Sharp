@@ -613,6 +613,8 @@
     <x:String x:Key="Publish.CompressionTooltip">Сжимает один файл для уменьшения размера</x:String>
     <x:String x:Key="Publish.NativeLibs">Включить нативные библиотеки</x:String>
     <x:String x:Key="Publish.NativeLibsTooltip">Включает нативные библиотеки в один файл</x:String>
+    <x:String x:Key="Publish.CleanOutput">🗑 Очистить выходную папку перед публикацией</x:String>
+    <x:String x:Key="Publish.CleanOutputTooltip">Удаляет все файлы в выходной папке перед публикацией для чистой сборки</x:String>
     <x:String x:Key="Publish.PublishProfile">Профиль публикации (необязательно)</x:String>
     <x:String x:Key="Publish.NewProfile">+ Новый профиль</x:String>
     <x:String x:Key="Publish.ProfileHint">Используйте существующие профили публикации из папки Properties/PublishProfiles</x:String>
@@ -631,6 +633,18 @@
     <x:String x:Key="Publish.IconHint">Выберите файл .ico для встраивания в качестве иконки приложения в опубликованный исполняемый файл</x:String>
     <x:String x:Key="Publish.BrowseIcon">Выбрать файл .ico</x:String>
     <x:String x:Key="Publish.ClearIcon">Очистить иконку</x:String>
+
+    <!-- PublishProgressWindow -->
+    <x:String x:Key="PublishProgress.Title">Публикация...</x:String>
+    <x:String x:Key="PublishProgress.Publishing">Публикация проекта...</x:String>
+    <x:String x:Key="PublishProgress.Succeeded">Публикация завершена успешно!</x:String>
+    <x:String x:Key="PublishProgress.SucceededTitle">✅ Публикация завершена</x:String>
+    <x:String x:Key="PublishProgress.Failed">Публикация не удалась</x:String>
+    <x:String x:Key="PublishProgress.FailedTitle">❌ Публикация не удалась</x:String>
+    <x:String x:Key="PublishProgress.Cancelling">Отмена...</x:String>
+    <x:String x:Key="PublishProgress.OpenFolder">📂 Открыть папку</x:String>
+    <x:String x:Key="PublishProgress.Cancel">⏹ Отмена</x:String>
+    <x:String x:Key="PublishProgress.Close">Закрыть</x:String>
 
     <!-- ProjectPropertiesWindow -->
     <x:String x:Key="ProjectProps.Title">Свойства проекта</x:String>
@@ -691,6 +705,7 @@
     <x:String x:Key="Msix.SingleFile">Один файл</x:String>
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Обрезка сборок</x:String>
+    <x:String x:Key="Msix.CleanBeforePublish">🗑 Очистить перед публикацией</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Вывод</x:String>
     <x:String x:Key="Msix.MsixOutputPath">Путь вывода MSIX (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Промежуточная папка публикации (пусто = авто-временная)</x:String>
@@ -753,6 +768,15 @@
     <x:String x:Key="Msix.SignOptionsHeader">⚙  Параметры подписи</x:String>
     <x:String x:Key="Msix.HashAlgorithm">Алгоритм хеширования</x:String>
     <x:String x:Key="Msix.HashHint">ℹ️  Рекомендуется SHA256. Метка времени не будет добавлена.</x:String>
+    <!-- Sign page — Icon -->
+    <x:String x:Key="Msix.SignIconHeader">🖼  Иконка пакета</x:String>
+    <x:String x:Key="Msix.SignIconHint">Установите или замените иконку внутри MSIX-пакета перед подписью. MSIX поддерживает только формат PNG.</x:String>
+    <x:String x:Key="Msix.SignIconFileLabel">Файл иконки (.png)</x:String>
+    <x:String x:Key="Msix.ApplyIcon">📥 Применить иконку</x:String>
+    <x:String x:Key="Msix.Preview">Предпросмотр:</x:String>
+    <!-- Build page — Sign after build -->
+    <x:String x:Key="Msix.SignAfterBuildHeader">🔏  Подписать после сборки</x:String>
+    <x:String x:Key="Msix.SignAfterBuild">Подписать MSIX-пакет после сборки</x:String>
     <!-- Footer -->
     <x:String x:Key="Msix.Ready">Готово</x:String>
     <x:String x:Key="Msix.Cancel">⏹ Отмена</x:String>

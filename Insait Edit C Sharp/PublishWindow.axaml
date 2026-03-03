@@ -179,6 +179,11 @@
                             
                             <CheckBox Content="Include native libraries for self-extract" Name="NativeLibrariesCheck"
                                       ToolTip.Tip="Bundles native libraries into the single file" IsEnabled="{Binding #SingleFileCheck.IsChecked, FallbackValue=False}"/>
+                            
+                            <Border Height="1" Background="#FF3E3050" Margin="0,4"/>
+                            
+                            <CheckBox Content="🗑 Clean output folder before publish" Name="CleanOutputCheck" IsChecked="True"
+                                      ToolTip.Tip="Deletes all files in the output folder before publishing to ensure a clean build"/>
                         </StackPanel>
                     </Border>
 

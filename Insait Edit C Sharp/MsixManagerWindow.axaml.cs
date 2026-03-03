@@ -35,6 +35,10 @@ public partial class MsixManagerWindow : Window
     private List<CertificateViewModel> _userCerts = new();
     private CertificateViewModel?      _selectedCert;
 
+    // Certificate for sign-after-build
+    private List<CertificateViewModel> _buildCerts = new();
+    private CertificateViewModel?      _buildSelectedCert;
+
     // ─────────────────────────────────────────────────────────────
     //  Constructors
     // ─────────────────────────────────────────────────────────────
@@ -100,6 +104,7 @@ public partial class MsixManagerWindow : Window
         SetCheckBox("BuildSingleFileCheck", L("Msix.SingleFile"));
         SetCheckBox("BuildReadyToRunCheck", L("Msix.ReadyToRun"));
         SetCheckBox("BuildTrimCheck",       L("Msix.TrimAssemblies"));
+        SetCheckBox("BuildCleanOutputCheck", L("Msix.CleanBeforePublish"));
         SetText("BuildOutputHeader",   L("Msix.OutputHeader"));
         SetText("BuildOutputPathLabel", L("Msix.MsixOutputPath"));
         SetBtn("BrowseMsixOutputBtn",  L("Msix.Browse"));
@@ -174,9 +179,22 @@ public partial class MsixManagerWindow : Window
         SetText("CertThumbLabel",    L("Msix.CertThumbprint"));
         SetText("CertValidLabel",    L("Msix.CertValidUntil"));
         SetText("NoCertsText",       L("Msix.NoCerts"));
+        SetText("SignIconHeader",    L("Msix.SignIconHeader"));
+        SetText("SignIconHint",      L("Msix.SignIconHint"));
+        SetText("SignIconFileLabel", L("Msix.SignIconFileLabel"));
+        SetBtn("BrowseSignIconBtn",  L("Msix.Browse"));
+        SetBtn("ApplySignIconBtn",   L("Msix.ApplyIcon"));
+        SetText("SignIconPreviewLabel", L("Msix.Preview"));
         SetText("SignOptionsHeader", L("Msix.SignOptionsHeader"));
         SetText("SignHashLabel",     L("Msix.HashAlgorithm"));
         SetText("SignHashHint",      L("Msix.HashHint"));
+
+        // ── Build page — Sign after build ──
+        SetText("BuildSignHeader",   L("Msix.SignAfterBuildHeader"));
+        SetCheckBox("BuildSignAfterBuildCheck", L("Msix.SignAfterBuild"));
+        SetText("BuildSignCertLabel", L("Msix.CertsHeader"));
+        SetBtn("BuildRefreshCertsBtn", L("Msix.Refresh"));
+        SetText("BuildSignHashLabel", L("Msix.HashAlgorithm"));
 
         // ── Footer ──
         SetText("StatusText",       L("Msix.Ready"));
@@ -253,6 +271,15 @@ public partial class MsixManagerWindow : Window
         Bind("RefreshCertsBtn",   (Button b) => b.Click += (_, _) => _ = LoadUserCertificatesAsync());
         Bind("DoSignMsixBtn",     (Button b) => b.Click += DoSignMsix_Click);
         Bind("CertListBox",       (ListBox lb) => lb.SelectionChanged += CertListBox_SelectionChanged);
+
+        // Sign page — icon
+        Bind("BrowseSignIconBtn", (Button b) => b.Click += BrowseSignIcon_Click);
+        Bind("ApplySignIconBtn",  (Button b) => b.Click += ApplySignIcon_Click);
+
+        // Build page — sign after build
+        Bind("BuildSignAfterBuildCheck", (CheckBox cb) => cb.IsCheckedChanged += BuildSignAfterBuild_Changed);
+        Bind("BuildRefreshCertsBtn",     (Button b) => b.Click += (_, _) => _ = LoadBuildCertificatesAsync());
+        Bind("BuildCertListBox",         (ListBox lb) => lb.SelectionChanged += BuildCertListBox_SelectionChanged);
 
         // Service events
         _service.OutputReceived  += (_, e) => Dispatcher.UIThread.Post(() => AppendLog(e.Output));
@@ -401,11 +428,71 @@ public partial class MsixManagerWindow : Window
         if (_isBusy) return;
         var opts = BuildOptions();
         if (opts == null) return;
+
+        // Determine publish dir
+        var publishDir = opts.PublishOutputDir;
+        if (string.IsNullOrWhiteSpace(publishDir))
+            publishDir = IOPath.Combine(IOPath.GetDirectoryName(opts.ProjectPath)!, "bin", "msix_publish");
+
+        // ── Step 1: Publish via PublishService + PublishProgressWindow ──
+        var profile = new PublishProfile
+        {
+            Name              = $"MSIX Publish — {opts.PackageIdentityName}",
+            ProjectPath       = opts.ProjectPath,
+            Configuration     = opts.Configuration,
+            RuntimeIdentifier = opts.RuntimeIdentifier,
+            Framework         = opts.Framework,
+            OutputPath        = publishDir,
+            SelfContained     = opts.SelfContained,
+            SingleFile        = opts.SingleFile,
+            ReadyToRun        = opts.ReadyToRun,
+            TrimUnusedAssemblies = opts.TrimUnusedAssemblies,
+            CleanOutputFolder = opts.CleanOutputFolder,
+        };
+
+        var progressWindow = new PublishProgressWindow(_pubService, profile);
+        progressWindow.Opened += (_, _) => progressWindow.StartPublish();
+        await progressWindow.ShowDialog(this);
+
+        // Check if publish succeeded
+        if (progressWindow.PublishResult == null || !progressWindow.PublishResult.Success)
+        {
+            SetStatus("❌ Publish failed — MSIX build aborted.", false);
+            return;
+        }
+
+        // ── Steps 2 + 3: Generate manifest + MakeAppx pack ──
         _logBuffer.Clear();
         SetLog("");
         ShowPage("output");
-        SetStatus("Building…", null);
-        await _service.PackageAsync(opts);
+        SetStatus("Packaging MSIX…", null);
+        opts.PublishOutputDir = publishDir;
+        var packageResult = await _service.PackageFromPublishedAsync(opts, publishDir);
+
+        // ── Step 4 (optional): Sign MSIX after build ──
+        if (packageResult.Success && this.FindControl<CheckBox>("BuildSignAfterBuildCheck")?.IsChecked == true)
+        {
+            if (_buildSelectedCert == null)
+            {
+                SetStatus("⚠ MSIX built but not signed — no certificate selected.", false);
+                return;
+            }
+
+            var msixPath = packageResult.OutputPath;
+            if (!string.IsNullOrEmpty(msixPath) && IOFile.Exists(msixPath))
+            {
+                var hashCombo = this.FindControl<ComboBox>("BuildSignHashCombo");
+                var hashAlgo  = (hashCombo?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "SHA256";
+
+                SetStatus("Signing MSIX…", null);
+                var signResult = await _service.SignMsixAsync(msixPath, _buildSelectedCert.Thumbprint, hashAlgo);
+
+                if (!signResult.Success)
+                {
+                    SetStatus($"⚠ MSIX built but signing failed: {signResult.ErrorMessage}", false);
+                }
+            }
+        }
     }
 
     private MsixPackageOptions? BuildOptions()
@@ -447,6 +534,7 @@ public partial class MsixManagerWindow : Window
         var singleFile = this.FindControl<CheckBox>("BuildSingleFileCheck")?.IsChecked == true;
         var r2r        = this.FindControl<CheckBox>("BuildReadyToRunCheck")?.IsChecked  != false;
         var trim       = this.FindControl<CheckBox>("BuildTrimCheck")?.IsChecked         == true;
+        var cleanOut   = this.FindControl<CheckBox>("BuildCleanOutputCheck")?.IsChecked  != false;
 
         var msixOutput = GetText("BuildOutputPathBox")?.Trim();
         var publishDir = GetText("BuildPublishDirBox")?.Trim();
@@ -461,9 +549,11 @@ public partial class MsixManagerWindow : Window
             Configuration         = config,
             RuntimeIdentifier     = runtime,
             Framework             = framework,
+            SelfContained         = true,    // MSIX requires self-contained publish
             SingleFile            = singleFile,
             ReadyToRun            = r2r,
             TrimUnusedAssemblies  = trim,
+            CleanOutputFolder     = cleanOut,
             PublishOutputDir      = publishDir,
             PackageIdentityName   = identityName,
             Publisher             = GetText("BuildPublisherBox")?.Trim() ?? "CN=Developer",
@@ -676,12 +766,11 @@ public partial class MsixManagerWindow : Window
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Select Logo / Icon",
+            Title = "Select Logo (PNG only — MSIX requirement)",
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("Image files") { Patterns = new[] { "*.png", "*.ico", "*.jpg", "*.jpeg", "*.bmp" } },
-                new FilePickerFileType("All files")   { Patterns = new[] { "*.*" } }
+                new FilePickerFileType("PNG Images") { Patterns = new[] { "*.png" } },
             }
         });
         if (files.Count > 0) SetText("BuildLogoBox", files[0].Path.LocalPath);
@@ -881,6 +970,125 @@ public partial class MsixManagerWindow : Window
         SetBusy(false);
         SetStatus(result.Success ? $"✅ Signed: {IOPath.GetFileName(msixPath)}"
                                  : $"❌ {result.ErrorMessage}", result.Success);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  Sign page — Icon management
+    // ─────────────────────────────────────────────────────────────
+
+    private async void BrowseSignIcon_Click(object? s, RoutedEventArgs e)
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Select Icon (PNG only — MSIX requirement)",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("PNG Images") { Patterns = new[] { "*.png" } },
+            }
+        });
+        if (files.Count > 0)
+        {
+            var path = files[0].Path.LocalPath;
+            SetText("SignIconPathBox", path);
+
+            // Show preview
+            try
+            {
+                var bitmap = new Avalonia.Media.Imaging.Bitmap(path);
+                var preview = this.FindControl<Image>("SignIconPreview");
+                if (preview != null) preview.Source = bitmap;
+                var panel = this.FindControl<StackPanel>("SignIconPreviewPanel");
+                if (panel != null) panel.IsVisible = true;
+            }
+            catch (Exception)
+            {
+                var panel = this.FindControl<StackPanel>("SignIconPreviewPanel");
+                if (panel != null) panel.IsVisible = false;
+            }
+        }
+    }
+
+    private async void ApplySignIcon_Click(object? s, RoutedEventArgs e)
+    {
+        if (_isBusy) return;
+
+        var msixPath = GetText("SignMsixPathBox")?.Trim();
+        if (string.IsNullOrEmpty(msixPath) || !IOFile.Exists(msixPath))
+        {
+            SetStatus("❌ Please select a valid .msix file first.", false);
+            return;
+        }
+
+        var iconPath = GetText("SignIconPathBox")?.Trim();
+        if (string.IsNullOrEmpty(iconPath) || !IOFile.Exists(iconPath))
+        {
+            SetStatus("❌ Please select a valid .png icon file.", false);
+            return;
+        }
+
+        if (!iconPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+        {
+            SetStatus("❌ MSIX only supports PNG icons. Please select a .png file.", false);
+            return;
+        }
+
+        SetBusy(true);
+        SetStatus("Applying icon to MSIX…", null);
+        _logBuffer.Clear();
+        ShowPage("output");
+
+        var result = await _service.ApplyIconToMsixAsync(msixPath, iconPath);
+
+        SetBusy(false);
+        SetStatus(result.Success
+            ? $"✅ Icon applied to: {IOPath.GetFileName(msixPath)}"
+            : $"❌ {result.ErrorMessage}", result.Success);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  Build page — Sign after build
+    // ─────────────────────────────────────────────────────────────
+
+    private void BuildSignAfterBuild_Changed(object? s, RoutedEventArgs e)
+    {
+        var isChecked = this.FindControl<CheckBox>("BuildSignAfterBuildCheck")?.IsChecked == true;
+        var panel = this.FindControl<StackPanel>("BuildSignOptionsPanel");
+        if (panel != null) panel.IsVisible = isChecked;
+
+        if (isChecked)
+            _ = LoadBuildCertificatesAsync();
+    }
+
+    private async Task LoadBuildCertificatesAsync()
+    {
+        _buildCerts.Clear();
+        var listBox = this.FindControl<ListBox>("BuildCertListBox");
+
+        try
+        {
+            var certs = await Task.Run(() =>
+            {
+                using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser, OpenFlags.ReadOnly);
+                return store.Certificates
+                    .Cast<X509Certificate2>()
+                    .Where(c => c.HasPrivateKey)
+                    .Select(c => new CertificateViewModel(c))
+                    .ToList();
+            });
+
+            _buildCerts = certs;
+            if (listBox != null) listBox.ItemsSource = _buildCerts;
+        }
+        catch (Exception)
+        {
+            // silently fail
+        }
+    }
+
+    private void BuildCertListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        _buildSelectedCert = (sender as ListBox)?.SelectedItem as CertificateViewModel;
     }
 }
 

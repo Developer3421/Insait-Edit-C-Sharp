@@ -613,6 +613,8 @@
     <x:String x:Key="Publish.CompressionTooltip">Komprimiert die Einzeldatei zur Größenreduzierung</x:String>
     <x:String x:Key="Publish.NativeLibs">Native Bibliotheken einschließen</x:String>
     <x:String x:Key="Publish.NativeLibsTooltip">Bündelt native Bibliotheken in die Einzeldatei</x:String>
+    <x:String x:Key="Publish.CleanOutput">🗑 Ausgabeordner vor Veröffentlichung bereinigen</x:String>
+    <x:String x:Key="Publish.CleanOutputTooltip">Löscht alle Dateien im Ausgabeordner vor der Veröffentlichung für einen sauberen Build</x:String>
     <x:String x:Key="Publish.PublishProfile">Veröffentlichungsprofil (optional)</x:String>
     <x:String x:Key="Publish.NewProfile">+ Neues Profil</x:String>
     <x:String x:Key="Publish.ProfileHint">Verwenden Sie vorhandene Veröffentlichungsprofile aus dem Ordner Properties/PublishProfiles</x:String>
@@ -631,6 +633,18 @@
     <x:String x:Key="Publish.IconHint">Wählen Sie eine .ico-Datei zum Einbetten als Anwendungssymbol in die veröffentlichte Datei</x:String>
     <x:String x:Key="Publish.BrowseIcon">.ico-Datei auswählen</x:String>
     <x:String x:Key="Publish.ClearIcon">Symbol löschen</x:String>
+
+    <!-- PublishProgressWindow -->
+    <x:String x:Key="PublishProgress.Title">Veröffentlichung...</x:String>
+    <x:String x:Key="PublishProgress.Publishing">Projekt wird veröffentlicht...</x:String>
+    <x:String x:Key="PublishProgress.Succeeded">Veröffentlichung erfolgreich!</x:String>
+    <x:String x:Key="PublishProgress.SucceededTitle">✅ Veröffentlichung erfolgreich</x:String>
+    <x:String x:Key="PublishProgress.Failed">Veröffentlichung fehlgeschlagen</x:String>
+    <x:String x:Key="PublishProgress.FailedTitle">❌ Veröffentlichung fehlgeschlagen</x:String>
+    <x:String x:Key="PublishProgress.Cancelling">Abbrechen...</x:String>
+    <x:String x:Key="PublishProgress.OpenFolder">📂 Ordner öffnen</x:String>
+    <x:String x:Key="PublishProgress.Cancel">⏹ Abbrechen</x:String>
+    <x:String x:Key="PublishProgress.Close">Schließen</x:String>
 
     <!-- ProjectPropertiesWindow -->
     <x:String x:Key="ProjectProps.Title">Projekteigenschaften</x:String>
@@ -691,6 +705,7 @@
     <x:String x:Key="Msix.SingleFile">Einzeldatei</x:String>
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Assemblies trimmen</x:String>
+    <x:String x:Key="Msix.CleanBeforePublish">🗑 Vor Veröffentlichung bereinigen</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Ausgabe</x:String>
     <x:String x:Key="Msix.MsixOutputPath">MSIX-Ausgabepfad (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Zwischenveröffentlichungsordner (leer = auto-temp)</x:String>
@@ -753,6 +768,15 @@
     <x:String x:Key="Msix.SignOptionsHeader">⚙  Signieroptionen</x:String>
     <x:String x:Key="Msix.HashAlgorithm">Hash-Algorithmus</x:String>
     <x:String x:Key="Msix.HashHint">ℹ️  SHA256 wird empfohlen. Kein Zeitstempel wird hinzugefügt.</x:String>
+    <!-- Sign page — Icon -->
+    <x:String x:Key="Msix.SignIconHeader">🖼  Paketsymbol</x:String>
+    <x:String x:Key="Msix.SignIconHint">Symbol im MSIX-Paket vor dem Signieren setzen oder ersetzen. MSIX unterstützt nur PNG-Format.</x:String>
+    <x:String x:Key="Msix.SignIconFileLabel">Symboldatei (.png)</x:String>
+    <x:String x:Key="Msix.ApplyIcon">📥 Symbol anwenden</x:String>
+    <x:String x:Key="Msix.Preview">Vorschau:</x:String>
+    <!-- Build page — Sign after build -->
+    <x:String x:Key="Msix.SignAfterBuildHeader">🔏  Nach Build signieren</x:String>
+    <x:String x:Key="Msix.SignAfterBuild">MSIX-Paket nach dem Build signieren</x:String>
     <!-- Footer -->
     <x:String x:Key="Msix.Ready">Bereit</x:String>
     <x:String x:Key="Msix.Cancel">⏹ Abbrechen</x:String>

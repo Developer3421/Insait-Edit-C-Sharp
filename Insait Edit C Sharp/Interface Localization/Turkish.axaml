@@ -602,6 +602,8 @@
     <x:String x:Key="Publish.Trim">Kullanılmayan derlemeleri kırp</x:String>
     <x:String x:Key="Publish.Compression">Tek dosyada sıkıştırma</x:String>
     <x:String x:Key="Publish.NativeLibs">Yerel kütüphaneleri dahil et</x:String>
+    <x:String x:Key="Publish.CleanOutput">🗑 Yayınlamadan önce çıktı klasörünü temizle</x:String>
+    <x:String x:Key="Publish.CleanOutputTooltip">Temiz bir derleme için yayınlamadan önce çıktı klasöründeki tüm dosyaları siler</x:String>
     <x:String x:Key="Publish.QuickPresets">Hızlı Ön Ayarlar</x:String>
     <x:String x:Key="Publish.EstimatedSize">Tahmini çıktı boyutu yayınlamadan sonra görünecek</x:String>
     <x:String x:Key="Publish.Cancel">İptal</x:String>
@@ -611,6 +613,18 @@
     <x:String x:Key="Publish.IconHint">Yayınlanan yürütülebilir dosyaya uygulama simgesi olarak gömmek için bir .ico dosyası seçin</x:String>
     <x:String x:Key="Publish.BrowseIcon">.ico dosyası seç</x:String>
     <x:String x:Key="Publish.ClearIcon">Simgeyi temizle</x:String>
+
+    <!-- PublishProgressWindow -->
+    <x:String x:Key="PublishProgress.Title">Yayınlanıyor...</x:String>
+    <x:String x:Key="PublishProgress.Publishing">Proje yayınlanıyor...</x:String>
+    <x:String x:Key="PublishProgress.Succeeded">Yayınlama başarılı!</x:String>
+    <x:String x:Key="PublishProgress.SucceededTitle">✅ Yayınlama Başarılı</x:String>
+    <x:String x:Key="PublishProgress.Failed">Yayınlama başarısız</x:String>
+    <x:String x:Key="PublishProgress.FailedTitle">❌ Yayınlama Başarısız</x:String>
+    <x:String x:Key="PublishProgress.Cancelling">İptal ediliyor...</x:String>
+    <x:String x:Key="PublishProgress.OpenFolder">📂 Klasörü Aç</x:String>
+    <x:String x:Key="PublishProgress.Cancel">⏹ İptal</x:String>
+    <x:String x:Key="PublishProgress.Close">Kapat</x:String>
 
     <!-- ProjectPropertiesWindow -->
     <x:String x:Key="ProjectProps.Title">Proje Özellikleri</x:String>
@@ -671,6 +685,7 @@
     <x:String x:Key="Msix.SingleFile">Tek dosya</x:String>
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Derlemeleri kırp</x:String>
+    <x:String x:Key="Msix.CleanBeforePublish">🗑 Yayınlamadan önce temizle</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Çıktı</x:String>
     <x:String x:Key="Msix.MsixOutputPath">MSIX Çıktı Yolu (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Ara yayımlama klasörü (boş = otomatik-geçici)</x:String>
@@ -733,6 +748,15 @@
     <x:String x:Key="Msix.SignOptionsHeader">⚙  İmzalama Seçenekleri</x:String>
     <x:String x:Key="Msix.HashAlgorithm">Hash Algoritması</x:String>
     <x:String x:Key="Msix.HashHint">ℹ️  SHA256 önerilir. Zaman damgası eklenmeyecektir.</x:String>
+    <!-- Sign page — Icon -->
+    <x:String x:Key="Msix.SignIconHeader">🖼  Paket Simgesi</x:String>
+    <x:String x:Key="Msix.SignIconHint">İmzalamadan önce MSIX paketindeki simgeyi ayarlayın veya değiştirin. MSIX yalnızca PNG formatını destekler.</x:String>
+    <x:String x:Key="Msix.SignIconFileLabel">Simge dosyası (.png)</x:String>
+    <x:String x:Key="Msix.ApplyIcon">📥 Simge Uygula</x:String>
+    <x:String x:Key="Msix.Preview">Önizleme:</x:String>
+    <!-- Build page — Sign after build -->
+    <x:String x:Key="Msix.SignAfterBuildHeader">🔏  Derlemeden Sonra İmzala</x:String>
+    <x:String x:Key="Msix.SignAfterBuild">Derlemeden sonra MSIX paketini imzala</x:String>
     <!-- Footer -->
     <x:String x:Key="Msix.Ready">Hazır</x:String>
     <x:String x:Key="Msix.Cancel">⏹ İptal</x:String>
