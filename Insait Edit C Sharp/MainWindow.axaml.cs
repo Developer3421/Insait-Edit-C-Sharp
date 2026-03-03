@@ -881,6 +881,17 @@ public partial class MainWindow : Window
         var ctxProps = this.FindControl<MenuItem>("ContextMenuProperties");
         if (ctxProps != null) ctxProps.Header = L("Context.Properties");
 
+        // ── Run Config Name (Default label) ──────────────────────
+        var runConfigName = this.FindControl<TextBlock>("RunConfigNameText");
+        if (runConfigName != null)
+        {
+            // Only update if still showing a "Default"-like value (not a real config name)
+            var cur = runConfigName.Text ?? "";
+            if (cur == "Default" || cur == "За замовчуванням" || cur == "Stандартная" ||
+                cur == "Standard" || cur == "Varsayılan" || cur == "По умолчанию")
+                runConfigName.Text = L("RunConfig.Default");
+        }
+
         // ── Welcome Screen ───────────────────────────────────────
         ApplyWelcomeScreenLocalization(L);
     }

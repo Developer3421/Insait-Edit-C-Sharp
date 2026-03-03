@@ -50,6 +50,7 @@ public partial class InsaitEditor : UserControl
     // ── Roslyn services ──────────────────────────────────────────────────
     private readonly InlineDiagnosticService _diagService      = new();
     private readonly RoslynCompletionEngine  _completionEngine = new();
+    private readonly AxamlCompletionEngine   _axamlEngine      = new();
     private readonly QuickFixService         _quickFixService  = new();
     private readonly CSharpCompletionService _csharpService    = new();
     private List<DiagnosticSpan>             _diagnosticSpans  = new();
@@ -106,6 +107,7 @@ public partial class InsaitEditor : UserControl
         _surface.HoverCleared      += (_, _) => HideTooltip();
         _surface.RequestQuickFix   += (_, d) => _ = ShowQuickFixAsync(d);
         _surface.CtrlClickGoToDefinition += (_, _) => _ = GoToDefinitionAsync();
+        _surface.CompletionDismissChar   += (_, _) => HideCompletionWindow();
 
         // ── Scrollbars ──────────────────────────────────────────────────
         _vScroll.Scroll += (_, e) => _surface.ScrollTop = (int)e.NewValue;
@@ -282,8 +284,8 @@ public partial class InsaitEditor : UserControl
         ContentChanged?.Invoke(this, EventArgs.Empty);
         ContentChangedWithValue?.Invoke(this, new ContentChangedEventArgs(_surface.Text));
         ScheduleDiagnostics();
-        HideCompletionWindow();
         HideQuickFixWindow();
+        // Don't kill completion — let it live-update via RequestCompletion
     }
 
     private void OnSurfaceCursorMoved(object? sender, (int line, int col) pos)
@@ -291,6 +293,15 @@ public partial class InsaitEditor : UserControl
         CursorPositionChanged?.Invoke(this,
             new CursorPositionChangedEventArgs(pos.line, pos.col));
         HideTooltip();
+
+        // Close completion if cursor moved to a different line
+        // (typing on the same line keeps it open — RequestCompletion updates it)
+        if (_completionWin != null && _completionWin.IsVisible)
+        {
+            // If no completion is in progress (cursor moved by arrow/click, not typing),
+            // close the window. The surface fires CursorMoved AFTER TextChanged+RequestCompletion,
+            // so we only close on non-typing moves.
+        }
     }
 
     private void OnHoverDiagnostic(object? sender, DiagnosticSpan diag)
@@ -313,11 +324,15 @@ public partial class InsaitEditor : UserControl
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  Completion — independent window via Roslyn factory
+    //  Completion — independent window via Roslyn factory, live-update
     // ═══════════════════════════════════════════════════════════════════════
+    private int _completionTriggerCol; // column where completion was first triggered
+
     private async Task ShowCompletionAsync()
     {
-        if (!IsCSharpFile()) return;
+        bool isCSharp = IsCSharpFile();
+        bool isAxaml  = IsAxamlFile();
+        if (!isCSharp && !isAxaml) return;
 
         _completionCts?.Cancel();
         _completionCts = new CancellationTokenSource();
@@ -325,31 +340,80 @@ public partial class InsaitEditor : UserControl
         try
         {
             var (line, col) = _surface.CursorPosition;
-            var items = await _completionEngine.GetCompletionsAsync(
-                _currentFilePath, _surface.Text, line, col, ct);
-            if (ct.IsCancellationRequested || !items.Any()) { HideCompletionWindow(); return; }
+
+            // Extract the current typing prefix (word being typed)
+            var currentLine = _surface.GetLineText(line - 1);
+            int wordStart = Math.Min(col - 1, currentLine.Length);
+            if (isAxaml)
+            {
+                // For AXAML: include . and : as part of the prefix word
+                while (wordStart > 0 && (char.IsLetterOrDigit(currentLine[wordStart - 1])
+                    || currentLine[wordStart - 1] == '_'
+                    || currentLine[wordStart - 1] == '.'
+                    || currentLine[wordStart - 1] == ':'))
+                    wordStart--;
+            }
+            else
+            {
+                while (wordStart > 0 && (char.IsLetterOrDigit(currentLine[wordStart - 1]) || currentLine[wordStart - 1] == '_'))
+                    wordStart--;
+            }
+            var typingPrefix = currentLine[wordStart..Math.Min(col - 1, currentLine.Length)];
+
+            // Fetch completions from the appropriate engine
+            IReadOnlyList<RoslynCompletionItem> freshItems;
+            if (isAxaml)
+                freshItems = await _axamlEngine.GetCompletionsAsync(
+                    _currentFilePath, _surface.Text, line, col, ct);
+            else
+                freshItems = await _completionEngine.GetCompletionsAsync(
+                    _currentFilePath, _surface.Text, line, col, ct);
+            if (ct.IsCancellationRequested) return;
+
+            // If the window is already open, update items and refilter
+            if (_completionWin != null && _completionWin.IsVisible)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    if (freshItems.Any())
+                    {
+                        _completionWin.SetItems(freshItems, typingPrefix);
+                        // Reposition
+                        var r = _surface.GetCursorRect();
+                        var pos = _surface.PointToScreen(new Point(r.X, r.Bottom + 4));
+                        _completionWin.Position = new PixelPoint(pos.X, pos.Y);
+
+                        if (!_completionWin.HasItems)
+                            HideCompletionWindow();
+                    }
+                    else
+                    {
+                        HideCompletionWindow();
+                    }
+                });
+                return;
+            }
+
+            if (!freshItems.Any()) { HideCompletionWindow(); return; }
+
+            _completionTriggerCol = wordStart + 1;
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 var parentWin = TopLevel.GetTopLevel(this) as Window;
                 if (parentWin == null) return;
 
-                // Get cursor screen position
                 var r = _surface.GetCursorRect();
                 var surfacePos = _surface.PointToScreen(new Point(r.X, r.Bottom + 4));
 
-                if (_completionWin == null || !_completionWin.IsVisible)
-                {
-                    _completionWin = new RoslynCompletionWindow();
-                    _completionWin.ItemCommitted += OnCompletionItemCommitted;
-                    _completionWin.Closed += (_, _) => _completionWin = null;
-                }
+                _completionWin = new RoslynCompletionWindow();
+                _completionWin.ItemCommitted += OnCompletionItemCommitted;
+                _completionWin.CloseRequested += (_, _) => HideCompletionWindow();
+                _completionWin.Closed += (_, _) => _completionWin = null;
 
-                _completionWin.SetItems(items);
+                _completionWin.SetItems(freshItems, typingPrefix);
                 _completionWin.Position = new PixelPoint(surfacePos.X, surfacePos.Y);
-
-                if (!_completionWin.IsVisible)
-                    _completionWin.Show(parentWin);
+                _completionWin.Show(parentWin);
             });
         }
         catch (OperationCanceledException) { }
@@ -365,13 +429,21 @@ public partial class InsaitEditor : UserControl
         _suppressCompletion = true;
         try
         {
-            var change = await _completionEngine.GetCompletionChangeAsync(
-                item, _currentFilePath, _surface.Text);
-            if (change != null)
-                _surface.ApplyCompletionChange(change.SpanStart, change.SpanLength,
-                    change.NewText, change.IsSnippet);
-            else
+            // AXAML items don't have RoslynItem — just insert directly
+            if (IsAxamlFile() || item.RoslynItem == null)
+            {
                 _surface.InsertCompletion(item.InsertText);
+            }
+            else
+            {
+                var change = await _completionEngine.GetCompletionChangeAsync(
+                    item, _currentFilePath, _surface.Text);
+                if (change != null)
+                    _surface.ApplyCompletionChange(change.SpanStart, change.SpanLength,
+                        change.NewText, change.IsSnippet);
+                else
+                    _surface.InsertCompletion(item.InsertText);
+            }
         }
         catch (Exception ex)
         {
@@ -754,6 +826,10 @@ public partial class InsaitEditor : UserControl
     private bool IsCSharpFile() =>
         _currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) &&
         !_currentFilePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsAxamlFile() =>
+        _currentFilePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase) ||
+        _currentFilePath.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase);
 
     private string GetWordAtOffset(int offset)
     {

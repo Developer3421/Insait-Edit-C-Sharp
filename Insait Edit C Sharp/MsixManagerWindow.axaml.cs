@@ -55,15 +55,135 @@ public partial class MsixManagerWindow : Window
     {
         var L = (Func<string, string>)LocalizationService.Get;
         Title = L("Msix.Title");
-        SetBtn("StartBuildBtn",   L("Msix.StartBuild"));
-        SetBtn("CloseBtn",        L("Msix.Close"));
-        SetBtn("CloseWindowBtn",  L("Msix.Close"));
-        SetNavBtn("NavBuildMsixBtn",  L("Msix.BuildMsix"));
-        SetNavBtn("NavOpenMsixBtn",   L("Msix.OpenMsix"));
-        SetNavBtn("NavIdentityBtn",   L("Msix.Identity"));
-        SetNavBtn("NavEntryBtn",      L("Msix.EntryPoint"));
-        SetNavBtn("NavManifestBtn",   L("Msix.ManifestXml"));
-        SetNavBtn("NavLogBtn",        L("Msix.BuildLog"));
+
+        // Title bar
+        SetText("TitleBarText", L("Msix.Title"));
+
+        // Nav section headers
+        SetText("NavActionsHeader",  L("Msix.NavActions"));
+        SetText("NavPackageHeader",  L("Msix.NavPackage"));
+        SetText("NavOutputHeader",   L("Msix.NavOutput"));
+        SetText("NavSigningHeader",  L("Msix.NavSigning"));
+
+        // Nav items
+        SetText("NavBuildText",    L("Msix.BuildMsix"));
+        SetText("NavOpenText",     L("Msix.OpenMsix"));
+        SetText("NavIdentityText", L("Msix.Identity"));
+        SetText("NavEntryText",    L("Msix.EntryPoint"));
+        SetText("NavManifestText", L("Msix.ManifestXml"));
+        SetText("NavBuildLogText", L("Msix.BuildLog"));
+        SetText("NavSignText",     L("Msix.SignMsix"));
+
+        // ── Build page ──
+        SetText("BuildPageTitle",      L("Msix.BuildPageTitle"));
+        SetText("BuildPageSubtitle",   L("Msix.BuildPageSubtitle"));
+        SetText("BuildProjectHeader",  L("Msix.BuildProjectHeader"));
+        SetText("BuildProjectFileLabel", L("Msix.BuildProjectFile"));
+        SetBtn("BrowseProjectBtn",     L("Msix.Browse"));
+        SetText("BuildConfigLabel",    L("Msix.Configuration"));
+        SetText("BuildRuntimeLabel",   L("Msix.TargetRuntime"));
+        SetText("BuildFrameworkLabel", L("Msix.TargetFramework"));
+        SetText("BuildIdentityHeader", L("Msix.PackageIdentity"));
+        SetText("BuildIdNameLabel",    L("Msix.PackageIdName"));
+        SetText("BuildVersionLabel",   L("Msix.Version"));
+        SetText("BuildDisplayNameLabel", L("Msix.DisplayName"));
+        SetText("BuildPublisherLabel", L("Msix.PublisherDN"));
+        SetText("BuildPubDisplayLabel", L("Msix.PublisherDisplayName"));
+        SetText("BuildDescLabel",      L("Msix.Description"));
+        SetText("BuildLogoLabel",      L("Msix.LogoPath"));
+        SetText("BuildEntryHeader",    L("Msix.EntryPointHeader"));
+        SetBtn("DetectExeBtn",         L("Msix.AutoDetect"));
+        SetText("BuildExeLabel",       L("Msix.Executable"));
+        SetText("BuildEntryClassLabel", L("Msix.EntryPointClass"));
+        SetText("BuildEntryHint",      L("Msix.EntryPointHint"));
+        SetText("BuildPublishHeader",  L("Msix.PublishOptions"));
+        SetCheckBox("BuildSingleFileCheck", L("Msix.SingleFile"));
+        SetCheckBox("BuildReadyToRunCheck", L("Msix.ReadyToRun"));
+        SetCheckBox("BuildTrimCheck",       L("Msix.TrimAssemblies"));
+        SetText("BuildOutputHeader",   L("Msix.OutputHeader"));
+        SetText("BuildOutputPathLabel", L("Msix.MsixOutputPath"));
+        SetBtn("BrowseMsixOutputBtn",  L("Msix.Browse"));
+        SetText("BuildPublishDirLabel", L("Msix.IntermediateFolder"));
+        SetBtn("BrowsePublishDirBtn",   L("Msix.Browse"));
+
+        // ── Open page ──
+        SetText("OpenPageTitle",    L("Msix.OpenPageTitle"));
+        SetText("OpenPageSubtitle", L("Msix.OpenPageSubtitle"));
+        SetText("OpenFileHeader",   L("Msix.PackageFile"));
+        SetBtn("BrowseOpenMsixBtn", L("Msix.Browse"));
+        SetBtn("OpenMsixBtn",       L("Msix.OpenPackageBtn"));
+        SetText("OpenLoadedHeader", L("Msix.LoadedPackage"));
+        SetText("OpenNameLabel",    L("Msix.LabelName"));
+        SetText("OpenVersionLabel", L("Msix.LabelVersion"));
+        SetText("OpenPublisherLabel", L("Msix.LabelPublisher"));
+        SetText("OpenExeLabel",     L("Msix.LabelExecutable"));
+        SetBtn("EditOpenedIdentityBtn", L("Msix.EditIdentity"));
+        SetBtn("EditOpenedEntryBtn",    L("Msix.EditEntryPoint"));
+        SetBtn("ViewOpenedManifestBtn", L("Msix.ViewManifest"));
+
+        // ── Identity page ──
+        SetText("IdPageTitle",      L("Msix.IdPageTitle"));
+        SetText("IdPageSubtitle",   L("Msix.IdPageSubtitle"));
+        SetText("IdNameLabel",      L("Msix.PackageName"));
+        SetText("IdVersionLabel",   L("Msix.VersionLabel"));
+        SetText("IdPublisherLabel", L("Msix.PublisherDNShort"));
+        SetText("IdArchLabel",      L("Msix.Architecture"));
+        SetText("IdDisplayNameLabel", L("Msix.DisplayName"));
+        SetText("IdPubDisplayLabel", L("Msix.PublisherDisplayName"));
+        SetText("IdDescLabel",      L("Msix.Description"));
+        SetText("IdLogoLabel",      L("Msix.LogoRelPath"));
+        SetBtn("SaveIdentityBtn",   L("Msix.SaveChanges"));
+
+        // ── Entry Point page ──
+        SetText("EntryPageTitle",       L("Msix.EntryPageTitle"));
+        SetText("EntryPageSubtitle",    L("Msix.EntryPageSubtitle"));
+        SetText("EntryExeFoundLabel",   L("Msix.ExeFoundLabel"));
+        SetBtn("ScanExeBtn",           L("Msix.Scan"));
+        SetBtn("UseSelectedExeBtn",    L("Msix.UseSelectedExe"));
+        SetText("EntrySelectedExeLabel", L("Msix.SelectedExe"));
+        SetText("EntryClassLabel",      L("Msix.EntryPointClass"));
+        SetBtn("SaveEntryBtn",         L("Msix.SaveEntryPoint"));
+        SetText("EntryRefTitle",       L("Msix.EntryRefTitle"));
+        SetText("EntryRefFullTrust",   L("Msix.EntryRefFullTrust"));
+        SetText("EntryRefWinUI",       L("Msix.EntryRefWinUI"));
+
+        // ── Manifest page ──
+        SetText("ManifestPageTitle",    L("Msix.ManifestTitle"));
+        SetText("ManifestPageSubtitle", L("Msix.ManifestSubtitle"));
+        SetBtn("SaveManifestBtn",      L("Msix.SaveManifest"));
+        SetBtn("CopyManifestBtn",      L("Msix.Copy"));
+
+        // ── Build Log page ──
+        SetText("LogPageTitle",    L("Msix.LogTitle"));
+        SetText("LogPageSubtitle", L("Msix.LogSubtitle"));
+        SetBtn("ClearLogBtn",     L("Msix.ClearLog"));
+        SetBtn("CopyLogBtn",      L("Msix.Copy"));
+        SetBtn("OpenOutputFolderBtn", L("Msix.OpenOutputFolder"));
+
+        // ── Sign page ──
+        SetText("SignPageTitle",      L("Msix.SignPageTitle"));
+        SetText("SignPageSubtitle",   L("Msix.SignPageSubtitle"));
+        SetText("SignFileHeader",     L("Msix.SignFileHeader"));
+        SetText("SignFileLabel",      L("Msix.SignFilePath"));
+        SetBtn("BrowseSignMsixBtn",  L("Msix.Browse"));
+        SetText("SignCertsHeader",    L("Msix.CertsHeader"));
+        SetBtn("RefreshCertsBtn",    L("Msix.Refresh"));
+        SetText("SignSelectCertLabel", L("Msix.SelectCert"));
+        SetText("CertSubjectLabel",  L("Msix.CertSubject"));
+        SetText("CertIssuerLabel",   L("Msix.CertIssuer"));
+        SetText("CertThumbLabel",    L("Msix.CertThumbprint"));
+        SetText("CertValidLabel",    L("Msix.CertValidUntil"));
+        SetText("NoCertsText",       L("Msix.NoCerts"));
+        SetText("SignOptionsHeader", L("Msix.SignOptionsHeader"));
+        SetText("SignHashLabel",     L("Msix.HashAlgorithm"));
+        SetText("SignHashHint",      L("Msix.HashHint"));
+
+        // ── Footer ──
+        SetText("StatusText",       L("Msix.Ready"));
+        SetBtn("CancelBuildBtn",    L("Msix.Cancel"));
+        SetBtn("CloseWindowBtn",    L("Msix.Close"));
+        SetBtn("DoSignMsixBtn",     L("Msix.SignMsixBtn"));
+        SetBtn("StartBuildBtn",     L("Msix.StartBuild"));
     }
 
     private void SetBtn(string name, string text)
@@ -72,10 +192,11 @@ public partial class MsixManagerWindow : Window
         if (btn != null) btn.Content = text;
     }
 
-    private void SetNavBtn(string name, string text)
+
+    private void SetCheckBox(string name, string text)
     {
-        var btn = this.FindControl<Button>(name);
-        if (btn != null) btn.Content = text;
+        var cb = this.FindControl<CheckBox>(name);
+        if (cb != null) cb.Content = text;
     }
 
     private void InitializeComponent() =>

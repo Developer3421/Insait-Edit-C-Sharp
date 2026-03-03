@@ -6,6 +6,7 @@
          РУССКАЯ ЛОКАЛИЗАЦИЯ — Все 21 окно и попапы
          ══════════════════════════════════════════════════════════════ -->
 
+    <!-- ── 1. MainWindow ─────────────────────────────────────────── -->
     <x:String x:Key="App.Title">Insait Edit - C# IDE</x:String>
     <x:String x:Key="TitleBar.Menu">Меню</x:String>
     <x:String x:Key="TitleBar.Build">Сборка</x:String>
@@ -316,6 +317,9 @@
     <x:String x:Key="Welcome.SearchRecent">🔍  Поиск последних проектов...</x:String>
     <x:String x:Key="Welcome.ClearAll">Очистить всё</x:String>
     <x:String x:Key="Welcome.RecentProjects">Последние проекты</x:String>
+    <!-- Added aliases / keys required by XAML usages -->
+    <x:String x:Key="RecentProjects">Последние проекты</x:String>
+    <x:String x:Key="DefaultTitle">Быстрое исправление</x:String>
 
     <!-- ── WelcomeScreen (стартовый экран в IDE) ────────────────── -->
     <x:String x:Key="WelcomeScreen.Subtitle">C# IDE · На базе Insait Code Engine</x:String>
@@ -554,26 +558,41 @@
 
     <!-- RunConfigurationsWindow -->
     <x:String x:Key="RunConfig.Title">Конфигурации запуска/отладки</x:String>
-    <x:String x:Key="RunConfig.Name">Имя</x:String>
-    <x:String x:Key="RunConfig.Project">Проект</x:String>
-    <x:String x:Key="RunConfig.BuildConfig">Конфигурация сборки</x:String>
-    <x:String x:Key="RunConfig.TargetFramework">Целевой фреймворк</x:String>
-    <x:String x:Key="RunConfig.LaunchProfile">Профиль запуска (необязательно)</x:String>
-    <x:String x:Key="RunConfig.WorkingDir">Рабочая папка</x:String>
-    <x:String x:Key="RunConfig.Arguments">Аргументы программы</x:String>
-    <x:String x:Key="RunConfig.EnvVars">Переменные окружения</x:String>
-    <x:String x:Key="RunConfig.RunOptions">Параметры запуска</x:String>
-    <x:String x:Key="RunConfig.AllowParallel">Разрешить параллельный запуск</x:String>
-    <x:String x:Key="RunConfig.BuildBeforeRun">Сборка перед запуском</x:String>
-    <x:String x:Key="RunConfig.ActivateToolWindow">Активировать окно инструментов при выводе</x:String>
+    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Поиск конфигураций...</x:String>
+    <x:String x:Key="RunConfig.Add">Добавить конфигурацию</x:String>
+    <x:String x:Key="RunConfig.Remove">Удалить конфигурацию</x:String>
+    <x:String x:Key="RunConfig.Duplicate">Дублировать конфигурацию</x:String>
     <x:String x:Key="RunConfig.Run">▶ Запуск</x:String>
     <x:String x:Key="RunConfig.Debug">🐛 Отладка</x:String>
     <x:String x:Key="RunConfig.Apply">Применить</x:String>
     <x:String x:Key="RunConfig.Cancel">Отмена</x:String>
     <x:String x:Key="RunConfig.OK">OK</x:String>
+    <x:String x:Key="RunConfig.ManageCompound">⚡ Управление</x:String>
+    <x:String x:Key="RunConfig.Single">ОДИНОЧНЫЕ</x:String>
+    <x:String x:Key="RunConfig.Compound">СОСТАВНЫЕ</x:String>
+    <x:String x:Key="RunConfig.Name">Имя</x:String>
+    <x:String x:Key="RunConfig.NamePlaceholder">Имя конфигурации</x:String>
+    <x:String x:Key="RunConfig.Project">Проект</x:String>
+    <x:String x:Key="RunConfig.BuildConfig">Конфигурация сборки</x:String>
+    <x:String x:Key="RunConfig.TargetFramework">Целевой фреймворк</x:String>
+    <x:String x:Key="RunConfig.LaunchProfile">Профиль запуска (необязательно)</x:String>
+    <x:String x:Key="RunConfig.WorkingDir">Рабочая папка</x:String>
+    <x:String x:Key="RunConfig.WorkingDirPlaceholder">Путь к рабочей папке</x:String>
+    <x:String x:Key="RunConfig.Arguments">Аргументы программы</x:String>
+    <x:String x:Key="RunConfig.ArgumentsPlaceholder">--arg1 значение1 --arg2 значение2</x:String>
+    <x:String x:Key="RunConfig.EnvVars">Переменные окружения</x:String>
+    <x:String x:Key="RunConfig.AddEnvVar">+ Добавить</x:String>
+    <x:String x:Key="RunConfig.NoEnvVars">Переменные окружения не определены</x:String>
+    <x:String x:Key="RunConfig.RunOptions">Параметры запуска</x:String>
+    <x:String x:Key="RunConfig.AllowParallel">Разрешить параллельный запуск</x:String>
+    <x:String x:Key="RunConfig.BuildBeforeRun">Сборка перед запуском</x:String>
+    <x:String x:Key="RunConfig.ActivateToolWindow">Активировать окно инструментов при выводе</x:String>
+    <x:String x:Key="RunConfig.Projects">проектов</x:String>
+    <x:String x:Key="RunConfig.Default">По умолчанию</x:String>
 
     <!-- PublishWindow -->
     <x:String x:Key="Publish.Title">Публикация проекта</x:String>
+    <x:String x:Key="Publish.TitleBar">Публикация проекта</x:String>
     <x:String x:Key="Publish.Project">Проект</x:String>
     <x:String x:Key="Publish.DeploymentMode">Режим развёртывания</x:String>
     <x:String x:Key="Publish.FrameworkDependent">Зависимый от фреймворка (требуется .NET на целевой машине)</x:String>
@@ -582,13 +601,28 @@
     <x:String x:Key="Publish.TargetRuntime">Целевая платформа</x:String>
     <x:String x:Key="Publish.TargetFramework">Целевой фреймворк</x:String>
     <x:String x:Key="Publish.OutputFolder">Папка вывода</x:String>
+    <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
     <x:String x:Key="Publish.Options">Параметры публикации</x:String>
     <x:String x:Key="Publish.SingleFile">Один файл</x:String>
+    <x:String x:Key="Publish.SingleFileTooltip">Объединяет приложение в один исполняемый файл</x:String>
     <x:String x:Key="Publish.ReadyToRun">Включить компиляцию ReadyToRun</x:String>
+    <x:String x:Key="Publish.ReadyToRunTooltip">Предварительная компиляция сборок в нативный код для быстрого запуска</x:String>
     <x:String x:Key="Publish.Trim">Обрезать неиспользуемые сборки</x:String>
+    <x:String x:Key="Publish.TrimTooltip">Удаляет неиспользуемый код для уменьшения размера (может повлиять на рефлексию)</x:String>
     <x:String x:Key="Publish.Compression">Сжатие в одном файле</x:String>
+    <x:String x:Key="Publish.CompressionTooltip">Сжимает один файл для уменьшения размера</x:String>
     <x:String x:Key="Publish.NativeLibs">Включить нативные библиотеки</x:String>
+    <x:String x:Key="Publish.NativeLibsTooltip">Включает нативные библиотеки в один файл</x:String>
+    <x:String x:Key="Publish.PublishProfile">Профиль публикации (необязательно)</x:String>
+    <x:String x:Key="Publish.NewProfile">+ Новый профиль</x:String>
+    <x:String x:Key="Publish.ProfileHint">Используйте существующие профили публикации из папки Properties/PublishProfiles</x:String>
     <x:String x:Key="Publish.QuickPresets">Быстрые настройки</x:String>
+    <x:String x:Key="Publish.PresetWinX64">🪟 Windows x64</x:String>
+    <x:String x:Key="Publish.PresetWinArm64">🪟 Windows ARM64</x:String>
+    <x:String x:Key="Publish.PresetLinuxX64">🐧 Linux x64</x:String>
+    <x:String x:Key="Publish.PresetMacX64">🍎 macOS x64</x:String>
+    <x:String x:Key="Publish.PresetMacArm64">🍎 macOS ARM64</x:String>
+    <x:String x:Key="Publish.PresetPortable">📱 Портативный</x:String>
     <x:String x:Key="Publish.EstimatedSize">Ожидаемый размер появится после публикации</x:String>
     <x:String x:Key="Publish.Cancel">Отмена</x:String>
     <x:String x:Key="Publish.Publish">📦 Опубликовать</x:String>
@@ -614,14 +648,111 @@
 
     <!-- MsixManagerWindow -->
     <x:String x:Key="Msix.Title">Менеджер пакетов MSIX</x:String>
+    <!-- Nav -->
+    <x:String x:Key="Msix.NavActions">ДЕЙСТВИЯ</x:String>
+    <x:String x:Key="Msix.NavPackage">ПАКЕТ</x:String>
+    <x:String x:Key="Msix.NavOutput">ВЫВОД</x:String>
+    <x:String x:Key="Msix.NavSigning">ПОДПИСЬ</x:String>
     <x:String x:Key="Msix.BuildMsix">Сборка MSIX</x:String>
     <x:String x:Key="Msix.OpenMsix">Открыть MSIX</x:String>
     <x:String x:Key="Msix.Identity">Идентификация</x:String>
     <x:String x:Key="Msix.EntryPoint">Точка входа</x:String>
     <x:String x:Key="Msix.ManifestXml">Манифест XML</x:String>
     <x:String x:Key="Msix.BuildLog">Журнал сборки</x:String>
+    <x:String x:Key="Msix.SignMsix">Подписать MSIX</x:String>
+    <!-- Build page -->
+    <x:String x:Key="Msix.BuildPageTitle">Сборка пакета MSIX</x:String>
+    <x:String x:Key="Msix.BuildPageSubtitle">Опубликуйте свой .NET проект и упакуйте его в профессиональный MSIX установщик</x:String>
+    <x:String x:Key="Msix.BuildProjectHeader">📁  Проект</x:String>
+    <x:String x:Key="Msix.BuildProjectFile">Файл проекта (.csproj / .fsproj)</x:String>
+    <x:String x:Key="Msix.Browse">Обзор…</x:String>
+    <x:String x:Key="Msix.Configuration">Конфигурация</x:String>
+    <x:String x:Key="Msix.TargetRuntime">Целевая среда выполнения</x:String>
+    <x:String x:Key="Msix.TargetFramework">Целевая платформа (автоопределение, если пусто)</x:String>
+    <x:String x:Key="Msix.PackageIdentity">🪪  Идентификация пакета</x:String>
+    <x:String x:Key="Msix.PackageIdName">Имя идентификатора пакета</x:String>
+    <x:String x:Key="Msix.Version">Версия (Major.Minor.Build.Rev)</x:String>
+    <x:String x:Key="Msix.DisplayName">Отображаемое имя</x:String>
+    <x:String x:Key="Msix.PublisherDN">Издатель (формат DN)</x:String>
+    <x:String x:Key="Msix.PublisherDisplayName">Отображаемое имя издателя</x:String>
+    <x:String x:Key="Msix.Description">Описание</x:String>
+    <x:String x:Key="Msix.LogoPath">Логотип (относительный путь в пакете)</x:String>
+    <x:String x:Key="Msix.EntryPointHeader">▶  Точка входа</x:String>
+    <x:String x:Key="Msix.AutoDetect">🔍 Автоопределение</x:String>
+    <x:String x:Key="Msix.Executable">Исполняемый файл (.exe)</x:String>
+    <x:String x:Key="Msix.EntryPointClass">Класс точки входа</x:String>
+    <x:String x:Key="Msix.EntryPointHint">💡 Используйте 'Windows.FullTrustApplication' для стандартных .NET приложений (WinForms, WPF, Avalonia, Console).</x:String>
+    <x:String x:Key="Msix.PublishOptions">⚙  Параметры публикации</x:String>
+    <x:String x:Key="Msix.SingleFile">Один файл</x:String>
+    <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
+    <x:String x:Key="Msix.TrimAssemblies">Обрезка сборок</x:String>
+    <x:String x:Key="Msix.OutputHeader">📂  Вывод</x:String>
+    <x:String x:Key="Msix.MsixOutputPath">Путь вывода MSIX (.msix)</x:String>
+    <x:String x:Key="Msix.IntermediateFolder">Промежуточная папка публикации (пусто = авто-временная)</x:String>
+    <!-- Open page -->
+    <x:String x:Key="Msix.OpenPageTitle">Открыть пакет MSIX</x:String>
+    <x:String x:Key="Msix.OpenPageSubtitle">Загрузите существующий .msix / .appx для просмотра или редактирования метаданных</x:String>
+    <x:String x:Key="Msix.PackageFile">📂  Файл пакета</x:String>
+    <x:String x:Key="Msix.OpenPackageBtn">📂  Открыть пакет</x:String>
+    <x:String x:Key="Msix.LoadedPackage">📦  Загруженный пакет</x:String>
+    <x:String x:Key="Msix.LabelName">Имя:</x:String>
+    <x:String x:Key="Msix.LabelVersion">Версия:</x:String>
+    <x:String x:Key="Msix.LabelPublisher">Издатель:</x:String>
+    <x:String x:Key="Msix.LabelExecutable">Исполняемый файл:</x:String>
+    <x:String x:Key="Msix.EditIdentity">✏️ Редактировать идентификацию</x:String>
+    <x:String x:Key="Msix.EditEntryPoint">▶ Редактировать точку входа</x:String>
+    <x:String x:Key="Msix.ViewManifest">📄 Просмотреть манифест</x:String>
+    <!-- Identity page -->
+    <x:String x:Key="Msix.IdPageTitle">Идентификация пакета</x:String>
+    <x:String x:Key="Msix.IdPageSubtitle">Редактирование полей идентификации AppxManifest.xml для загруженного MSIX</x:String>
+    <x:String x:Key="Msix.PackageName">Имя пакета</x:String>
+    <x:String x:Key="Msix.VersionLabel">Версия</x:String>
+    <x:String x:Key="Msix.PublisherDNShort">Издатель (DN)</x:String>
+    <x:String x:Key="Msix.Architecture">Архитектура</x:String>
+    <x:String x:Key="Msix.LogoRelPath">Логотип (относительный путь)</x:String>
+    <x:String x:Key="Msix.SaveChanges">💾 Сохранить изменения в MSIX</x:String>
+    <!-- Entry Point page -->
+    <x:String x:Key="Msix.EntryPageTitle">Точка входа</x:String>
+    <x:String x:Key="Msix.EntryPageSubtitle">Выберите первый исполняемый файл и класс точки входа для пакета</x:String>
+    <x:String x:Key="Msix.ExeFoundLabel">Исполняемые файлы, найденные в пакете:</x:String>
+    <x:String x:Key="Msix.Scan">🔍 Сканировать</x:String>
+    <x:String x:Key="Msix.UseSelectedExe">✅ Использовать выбранный как исполняемый файл</x:String>
+    <x:String x:Key="Msix.SelectedExe">Выбранный исполняемый файл</x:String>
+    <x:String x:Key="Msix.SaveEntryPoint">💾 Сохранить точку входа в MSIX</x:String>
+    <x:String x:Key="Msix.EntryRefTitle">ℹ️  Справка по точкам входа</x:String>
+    <x:String x:Key="Msix.EntryRefFullTrust">Windows.FullTrustApplication — стандартные .NET приложения (WPF, WinForms, Avalonia, Console).</x:String>
+    <x:String x:Key="Msix.EntryRefWinUI">Microsoft.UI.Xaml.Application — приложения WinUI 3, упакованные с Windows App SDK.</x:String>
+    <!-- Manifest page -->
+    <x:String x:Key="Msix.ManifestTitle">AppxManifest.xml</x:String>
+    <x:String x:Key="Msix.ManifestSubtitle">Просмотр и прямое редактирование необработанного XML манифеста</x:String>
+    <x:String x:Key="Msix.SaveManifest">💾 Сохранить манифест</x:String>
+    <x:String x:Key="Msix.Copy">📋 Копировать</x:String>
+    <!-- Build Log page -->
+    <x:String x:Key="Msix.LogTitle">Журнал сборки</x:String>
+    <x:String x:Key="Msix.LogSubtitle">Вывод в реальном времени от dotnet publish и MakeAppx</x:String>
+    <x:String x:Key="Msix.ClearLog">🗑 Очистить</x:String>
+    <x:String x:Key="Msix.OpenOutputFolder">📂 Открыть папку вывода</x:String>
+    <!-- Sign page -->
+    <x:String x:Key="Msix.SignPageTitle">Подписать пакет MSIX</x:String>
+    <x:String x:Key="Msix.SignPageSubtitle">Подпишите .msix сертификатом X.509 из хранилища сертификатов текущего пользователя (My)</x:String>
+    <x:String x:Key="Msix.SignFileHeader">📦  Файл MSIX</x:String>
+    <x:String x:Key="Msix.SignFilePath">Путь к файлу .msix</x:String>
+    <x:String x:Key="Msix.CertsHeader">🔐  Сертификаты пользователя  (CurrentUser\My)</x:String>
+    <x:String x:Key="Msix.Refresh">🔄 Обновить</x:String>
+    <x:String x:Key="Msix.SelectCert">Выберите сертификат для подписи кода:</x:String>
+    <x:String x:Key="Msix.CertSubject">Субъект:</x:String>
+    <x:String x:Key="Msix.CertIssuer">Издатель:</x:String>
+    <x:String x:Key="Msix.CertThumbprint">Отпечаток:</x:String>
+    <x:String x:Key="Msix.CertValidUntil">Действителен до:</x:String>
+    <x:String x:Key="Msix.NoCerts">⚠️  Сертификаты для подписи кода не найдены в хранилище CurrentUser\My.</x:String>
+    <x:String x:Key="Msix.SignOptionsHeader">⚙  Параметры подписи</x:String>
+    <x:String x:Key="Msix.HashAlgorithm">Алгоритм хеширования</x:String>
+    <x:String x:Key="Msix.HashHint">ℹ️  Рекомендуется SHA256. Метка времени не будет добавлена.</x:String>
+    <!-- Footer -->
     <x:String x:Key="Msix.Ready">Готово</x:String>
+    <x:String x:Key="Msix.Cancel">⏹ Отмена</x:String>
     <x:String x:Key="Msix.Close">Закрыть</x:String>
+    <x:String x:Key="Msix.SignMsixBtn">🔏 Подписать MSIX</x:String>
     <x:String x:Key="Msix.StartBuild">🔨 Собрать MSIX</x:String>
 
     <!-- NuGetPanelControl -->
@@ -746,17 +877,6 @@
     <x:String x:Key="AxamlPreview.TitleFormat">Предпросмотр AXAML — {0}</x:String>
     <x:String x:Key="AxamlPreview.UnknownError">Неизвестная ошибка</x:String>
 
-    <!-- RunConfig extra -->
-    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Поиск конфигураций...</x:String>
-    <x:String x:Key="RunConfig.Single">ОДИНОЧНЫЙ</x:String>
-    <x:String x:Key="RunConfig.Compound">СОСТАВНОЙ</x:String>
-    <x:String x:Key="RunConfig.ManageCompound">⚡ Управление</x:String>
-    <x:String x:Key="RunConfig.Add">Добавить конфигурацию</x:String>
-    <x:String x:Key="RunConfig.Remove">Удалить конфигурацию</x:String>
-    <x:String x:Key="RunConfig.Duplicate">Дублировать конфигурацию</x:String>
-    <x:String x:Key="RunConfig.NoEnvVars">Переменные среды не определены</x:String>
-    <x:String x:Key="RunConfig.AddEnvVar">+ Добавить</x:String>
-    <x:String x:Key="RunConfig.Projects">проектов</x:String>
 
     <!-- NuGet extra -->
     <x:String x:Key="NuGet.NanoFramework">🔌 Популярные пакеты nanoFramework</x:String>

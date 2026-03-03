@@ -78,7 +78,7 @@
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
                         <TextBlock Text="⚡" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="Run/Debug Configurations" FontSize="13" FontWeight="SemiBold" 
-                                   Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
+                                   Foreground="#FFF0E8F4" VerticalAlignment="Center" Name="TitleBarText"/>
                     </StackPanel>
                     <Button Grid.Column="1" Background="Transparent" Foreground="#FF9E90B0"
                             BorderThickness="0" Width="36" Height="36" Name="CloseButton">
@@ -102,7 +102,7 @@
                                 <!-- Single section header -->
                                 <Border Padding="8,6,8,2">
                                     <TextBlock Text="SINGLE" FontSize="10" FontWeight="SemiBold"
-                                               Foreground="#FF736886" LetterSpacing="2"/>
+                                               Foreground="#FF736886" LetterSpacing="2" Name="SingleHeader"/>
                                 </Border>
                                 <ListBox Name="ConfigurationsList" Background="Transparent"
                                          SelectionChanged="ConfigurationsList_SelectionChanged">
@@ -120,7 +120,7 @@
                                 <Border Padding="8,10,8,2">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <TextBlock Grid.Column="0" Text="COMPOUND" FontSize="10" FontWeight="SemiBold"
-                                                   Foreground="#FF736886" LetterSpacing="2" VerticalAlignment="Center"/>
+                                                   Foreground="#FF736886" LetterSpacing="2" VerticalAlignment="Center" Name="CompoundHeader"/>
                                         <Button Grid.Column="1" Content="⚡ Manage" Classes="action-button"
                                                 FontSize="10" Padding="6,2" Name="ManageCompoundButton"
                                                 ToolTip.Tip="Open Compound Run Configuration editor"/>
@@ -160,40 +160,40 @@
                     <StackPanel Margin="16" Spacing="16" Name="ConfigDetailsPanel">
                         <!-- Name -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Name" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                            <TextBlock Text="Name" FontWeight="SemiBold" Foreground="#FFF0E8F4" Name="NameLabel"/>
                             <TextBox Name="ConfigNameBox" Watermark="Configuration name"/>
                         </StackPanel>
 
                         <!-- Project -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                            <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFF0E8F4" Name="ProjectLabel"/>
                             <ComboBox Name="ProjectComboBox" HorizontalAlignment="Stretch"/>
                         </StackPanel>
 
                         <!-- Configuration (Debug/Release) -->
                         <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto">
                             <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,8,0">
-                                <TextBlock Text="Build Configuration" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                                <TextBlock Text="Build Configuration" FontWeight="SemiBold" Foreground="#FFF0E8F4" Name="BuildConfigLabel"/>
                                 <ComboBox Name="BuildConfigComboBox" HorizontalAlignment="Stretch">
                                     <ComboBoxItem Content="Debug"/>
                                     <ComboBoxItem Content="Release"/>
                                 </ComboBox>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0">
-                                <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                                <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFF0E8F4" Name="FrameworkLabel"/>
                                 <ComboBox Name="FrameworkComboBox" HorizontalAlignment="Stretch"/>
                             </StackPanel>
                         </Grid>
 
                         <!-- Launch Profile -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Launch Profile (Optional)" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                            <TextBlock Text="Launch Profile (Optional)" FontWeight="SemiBold" Foreground="#FFF0E8F4" Name="LaunchProfileLabel"/>
                             <ComboBox Name="LaunchProfileComboBox" HorizontalAlignment="Stretch"/>
                         </StackPanel>
 
                         <!-- Working Directory -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Working Directory" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                            <TextBlock Text="Working Directory" FontWeight="SemiBold" Foreground="#FFF0E8F4" Name="WorkingDirLabel"/>
                             <Grid ColumnDefinitions="*,Auto">
                                 <TextBox Grid.Column="0" Name="WorkingDirBox" Watermark="Working directory path"/>
                                 <Button Grid.Column="1" Content="📁" Classes="action-button" Margin="8,0,0,0" Width="40" Name="BrowseWorkingDirButton"/>
@@ -202,19 +202,19 @@
 
                         <!-- Command Line Arguments -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Program Arguments" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                            <TextBlock Text="Program Arguments" FontWeight="SemiBold" Foreground="#FFF0E8F4" Name="ArgumentsLabel"/>
                             <TextBox Name="ArgumentsBox" Watermark="--arg1 value1 --arg2 value2" Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
                         </StackPanel>
 
                         <!-- Environment Variables -->
                         <StackPanel Spacing="6">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Text="Environment Variables" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                                <TextBlock Text="Environment Variables" FontWeight="SemiBold" Foreground="#FFF0E8F4" Name="EnvVarsLabel"/>
                                 <Button Grid.Column="1" Content="+ Add" Classes="action-button" FontSize="11" Name="AddEnvVarButton"/>
                             </Grid>
                             <Border Background="#FF2A2230" CornerRadius="6" Padding="8" MinHeight="60">
                                 <StackPanel Name="EnvVarsPanel" Spacing="4">
-                                    <TextBlock Text="No environment variables defined" FontSize="11" Foreground="#FF9E90B0" FontStyle="Italic"/>
+                                    <TextBlock Text="No environment variables defined" FontSize="11" Foreground="#FF9E90B0" FontStyle="Italic" Name="NoEnvVarsText"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -222,7 +222,7 @@
                         <!-- Options -->
                         <Border Background="#FF2A2230" CornerRadius="6" Padding="12">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Run Options" FontWeight="SemiBold" Foreground="#FFFFC09F" Margin="0,0,0,4"/>
+                                <TextBlock Text="Run Options" FontWeight="SemiBold" Foreground="#FFFFC09F" Margin="0,0,0,4" Name="RunOptionsLabel"/>
                                 <CheckBox Content="Allow parallel run" Name="AllowParallelRunCheck"/>
                                 <CheckBox Content="Build before run" IsChecked="True" Name="BuildBeforeRunCheck"/>
                                 <CheckBox Content="Activate tool window on output" IsChecked="True" Name="ActivateToolWindowCheck"/>

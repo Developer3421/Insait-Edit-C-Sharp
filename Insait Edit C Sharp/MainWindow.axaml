@@ -393,7 +393,7 @@
                                     Cursor="Hand">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <TextBlock Text="▶" FontSize="9" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Default" FontSize="11" Name="RunConfigNameText" VerticalAlignment="Center" MaxWidth="130" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Name="RunConfigNameText" Text="Default" FontSize="11" VerticalAlignment="Center" MaxWidth="130" TextTrimming="CharacterEllipsis"/>
                                     <TextBlock Text="▾" FontSize="11" Foreground="#FFFFC09F" VerticalAlignment="Center" Margin="2,0,0,0"/>
                                 </StackPanel>
                             </Button>

@@ -554,23 +554,37 @@
 
     <!-- RunConfigurationsWindow -->
     <x:String x:Key="RunConfig.Title">Çalıştırma/Hata Ayıklama Yapılandırmaları</x:String>
-    <x:String x:Key="RunConfig.Name">Ad</x:String>
-    <x:String x:Key="RunConfig.Project">Proje</x:String>
-    <x:String x:Key="RunConfig.BuildConfig">Derleme Yapılandırması</x:String>
-    <x:String x:Key="RunConfig.TargetFramework">Hedef Çerçeve</x:String>
-    <x:String x:Key="RunConfig.LaunchProfile">Başlatma Profili (İsteğe bağlı)</x:String>
-    <x:String x:Key="RunConfig.WorkingDir">Çalışma Dizini</x:String>
-    <x:String x:Key="RunConfig.Arguments">Program Argümanları</x:String>
-    <x:String x:Key="RunConfig.EnvVars">Ortam Değişkenleri</x:String>
-    <x:String x:Key="RunConfig.RunOptions">Çalıştırma Seçenekleri</x:String>
-    <x:String x:Key="RunConfig.AllowParallel">Paralel çalıştırmaya izin ver</x:String>
-    <x:String x:Key="RunConfig.BuildBeforeRun">Çalıştırmadan önce derle</x:String>
-    <x:String x:Key="RunConfig.ActivateToolWindow">Çıktıda araç penceresini etkinleştir</x:String>
+    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Yapılandırma ara...</x:String>
+    <x:String x:Key="RunConfig.Add">Yapılandırma Ekle</x:String>
+    <x:String x:Key="RunConfig.Remove">Yapılandırmayı Kaldır</x:String>
+    <x:String x:Key="RunConfig.Duplicate">Yapılandırmayı Çoğalt</x:String>
     <x:String x:Key="RunConfig.Run">▶ Çalıştır</x:String>
     <x:String x:Key="RunConfig.Debug">🐛 Hata Ayıkla</x:String>
     <x:String x:Key="RunConfig.Apply">Uygula</x:String>
     <x:String x:Key="RunConfig.Cancel">İptal</x:String>
     <x:String x:Key="RunConfig.OK">Tamam</x:String>
+    <x:String x:Key="RunConfig.ManageCompound">⚡ Yönet</x:String>
+    <x:String x:Key="RunConfig.Single">TEKİL</x:String>
+    <x:String x:Key="RunConfig.Compound">BİLEŞİK</x:String>
+    <x:String x:Key="RunConfig.Name">Ad</x:String>
+    <x:String x:Key="RunConfig.NamePlaceholder">Yapılandırma adı</x:String>
+    <x:String x:Key="RunConfig.Project">Proje</x:String>
+    <x:String x:Key="RunConfig.BuildConfig">Derleme Yapılandırması</x:String>
+    <x:String x:Key="RunConfig.TargetFramework">Hedef Çerçeve</x:String>
+    <x:String x:Key="RunConfig.LaunchProfile">Başlatma Profili (İsteğe bağlı)</x:String>
+    <x:String x:Key="RunConfig.WorkingDir">Çalışma Dizini</x:String>
+    <x:String x:Key="RunConfig.WorkingDirPlaceholder">Çalışma dizini yolu</x:String>
+    <x:String x:Key="RunConfig.Arguments">Program Argümanları</x:String>
+    <x:String x:Key="RunConfig.ArgumentsPlaceholder">--arg1 değer1 --arg2 değer2</x:String>
+    <x:String x:Key="RunConfig.EnvVars">Ortam Değişkenleri</x:String>
+    <x:String x:Key="RunConfig.AddEnvVar">+ Ekle</x:String>
+    <x:String x:Key="RunConfig.NoEnvVars">Ortam değişkeni tanımlı değil</x:String>
+    <x:String x:Key="RunConfig.RunOptions">Çalıştırma Seçenekleri</x:String>
+    <x:String x:Key="RunConfig.AllowParallel">Paralel çalıştırmaya izin ver</x:String>
+    <x:String x:Key="RunConfig.BuildBeforeRun">Çalıştırmadan önce derle</x:String>
+    <x:String x:Key="RunConfig.ActivateToolWindow">Çıktıda araç penceresini etkinleştir</x:String>
+    <x:String x:Key="RunConfig.Projects">proje</x:String>
+    <x:String x:Key="RunConfig.Default">Varsayılan</x:String>
 
     <!-- PublishWindow -->
     <x:String x:Key="Publish.Title">Projeyi Yayınla</x:String>
@@ -614,14 +628,111 @@
 
     <!-- MsixManagerWindow -->
     <x:String x:Key="Msix.Title">MSIX Paket Yöneticisi</x:String>
+    <!-- Nav -->
+    <x:String x:Key="Msix.NavActions">İŞLEMLER</x:String>
+    <x:String x:Key="Msix.NavPackage">PAKET</x:String>
+    <x:String x:Key="Msix.NavOutput">ÇIKTI</x:String>
+    <x:String x:Key="Msix.NavSigning">İMZALAMA</x:String>
     <x:String x:Key="Msix.BuildMsix">MSIX Derle</x:String>
     <x:String x:Key="Msix.OpenMsix">MSIX Aç</x:String>
     <x:String x:Key="Msix.Identity">Kimlik</x:String>
     <x:String x:Key="Msix.EntryPoint">Giriş Noktası</x:String>
     <x:String x:Key="Msix.ManifestXml">Manifest XML</x:String>
     <x:String x:Key="Msix.BuildLog">Derleme Günlüğü</x:String>
+    <x:String x:Key="Msix.SignMsix">MSIX İmzala</x:String>
+    <!-- Build page -->
+    <x:String x:Key="Msix.BuildPageTitle">MSIX Paketi Derle</x:String>
+    <x:String x:Key="Msix.BuildPageSubtitle">.NET projenizi yayımlayın ve profesyonel bir MSIX yükleyicisine paketleyin</x:String>
+    <x:String x:Key="Msix.BuildProjectHeader">📁  Proje</x:String>
+    <x:String x:Key="Msix.BuildProjectFile">Proje Dosyası (.csproj / .fsproj)</x:String>
+    <x:String x:Key="Msix.Browse">Göz At…</x:String>
+    <x:String x:Key="Msix.Configuration">Yapılandırma</x:String>
+    <x:String x:Key="Msix.TargetRuntime">Hedef Çalışma Zamanı</x:String>
+    <x:String x:Key="Msix.TargetFramework">Hedef Çerçeve (boşsa otomatik algılanır)</x:String>
+    <x:String x:Key="Msix.PackageIdentity">🪪  Paket Kimliği</x:String>
+    <x:String x:Key="Msix.PackageIdName">Paket Kimlik Adı</x:String>
+    <x:String x:Key="Msix.Version">Sürüm (Major.Minor.Build.Rev)</x:String>
+    <x:String x:Key="Msix.DisplayName">Görünen Ad</x:String>
+    <x:String x:Key="Msix.PublisherDN">Yayımcı (DN formatı)</x:String>
+    <x:String x:Key="Msix.PublisherDisplayName">Yayımcı Görünen Adı</x:String>
+    <x:String x:Key="Msix.Description">Açıklama</x:String>
+    <x:String x:Key="Msix.LogoPath">Logo (paketteki göreceli yol)</x:String>
+    <x:String x:Key="Msix.EntryPointHeader">▶  Giriş Noktası</x:String>
+    <x:String x:Key="Msix.AutoDetect">🔍 Otomatik Algıla</x:String>
+    <x:String x:Key="Msix.Executable">Çalıştırılabilir Dosya (.exe)</x:String>
+    <x:String x:Key="Msix.EntryPointClass">Giriş Noktası Sınıfı</x:String>
+    <x:String x:Key="Msix.EntryPointHint">💡 Standart .NET uygulamaları için 'Windows.FullTrustApplication' kullanın (WinForms, WPF, Avalonia, Console).</x:String>
+    <x:String x:Key="Msix.PublishOptions">⚙  Yayımlama Seçenekleri</x:String>
+    <x:String x:Key="Msix.SingleFile">Tek dosya</x:String>
+    <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
+    <x:String x:Key="Msix.TrimAssemblies">Derlemeleri kırp</x:String>
+    <x:String x:Key="Msix.OutputHeader">📂  Çıktı</x:String>
+    <x:String x:Key="Msix.MsixOutputPath">MSIX Çıktı Yolu (.msix)</x:String>
+    <x:String x:Key="Msix.IntermediateFolder">Ara yayımlama klasörü (boş = otomatik-geçici)</x:String>
+    <!-- Open page -->
+    <x:String x:Key="Msix.OpenPageTitle">MSIX Paketini Aç</x:String>
+    <x:String x:Key="Msix.OpenPageSubtitle">Mevcut bir .msix / .appx dosyasını meta verilerini incelemek veya düzenlemek için yükleyin</x:String>
+    <x:String x:Key="Msix.PackageFile">📂  Paket Dosyası</x:String>
+    <x:String x:Key="Msix.OpenPackageBtn">📂  Paketi Aç</x:String>
+    <x:String x:Key="Msix.LoadedPackage">📦  Yüklenen Paket</x:String>
+    <x:String x:Key="Msix.LabelName">Ad:</x:String>
+    <x:String x:Key="Msix.LabelVersion">Sürüm:</x:String>
+    <x:String x:Key="Msix.LabelPublisher">Yayımcı:</x:String>
+    <x:String x:Key="Msix.LabelExecutable">Çalıştırılabilir:</x:String>
+    <x:String x:Key="Msix.EditIdentity">✏️ Kimliği Düzenle</x:String>
+    <x:String x:Key="Msix.EditEntryPoint">▶ Giriş Noktasını Düzenle</x:String>
+    <x:String x:Key="Msix.ViewManifest">📄 Manifesti Görüntüle</x:String>
+    <!-- Identity page -->
+    <x:String x:Key="Msix.IdPageTitle">Paket Kimliği</x:String>
+    <x:String x:Key="Msix.IdPageSubtitle">Yüklenen MSIX için AppxManifest.xml kimlik alanlarını düzenleyin</x:String>
+    <x:String x:Key="Msix.PackageName">Paket Adı</x:String>
+    <x:String x:Key="Msix.VersionLabel">Sürüm</x:String>
+    <x:String x:Key="Msix.PublisherDNShort">Yayımcı (DN)</x:String>
+    <x:String x:Key="Msix.Architecture">Mimari</x:String>
+    <x:String x:Key="Msix.LogoRelPath">Logo (göreceli yol)</x:String>
+    <x:String x:Key="Msix.SaveChanges">💾 Değişiklikleri MSIX'e Kaydet</x:String>
+    <!-- Entry Point page -->
+    <x:String x:Key="Msix.EntryPageTitle">Giriş Noktası</x:String>
+    <x:String x:Key="Msix.EntryPageSubtitle">Paket için ilk çalıştırılabilir dosyayı ve giriş noktası sınıfını seçin</x:String>
+    <x:String x:Key="Msix.ExeFoundLabel">Pakette bulunan çalıştırılabilir dosyalar:</x:String>
+    <x:String x:Key="Msix.Scan">🔍 Tara</x:String>
+    <x:String x:Key="Msix.UseSelectedExe">✅ Seçileni Giriş Çalıştırılabiliri Olarak Kullan</x:String>
+    <x:String x:Key="Msix.SelectedExe">Seçilen Çalıştırılabilir</x:String>
+    <x:String x:Key="Msix.SaveEntryPoint">💾 Giriş Noktasını MSIX'e Kaydet</x:String>
+    <x:String x:Key="Msix.EntryRefTitle">ℹ️  Giriş Noktası Referansı</x:String>
+    <x:String x:Key="Msix.EntryRefFullTrust">Windows.FullTrustApplication — standart .NET uygulamaları (WPF, WinForms, Avalonia, Console).</x:String>
+    <x:String x:Key="Msix.EntryRefWinUI">Microsoft.UI.Xaml.Application — Windows App SDK ile paketlenmiş WinUI 3 uygulamaları.</x:String>
+    <!-- Manifest page -->
+    <x:String x:Key="Msix.ManifestTitle">AppxManifest.xml</x:String>
+    <x:String x:Key="Msix.ManifestSubtitle">Ham manifest XML'ini doğrudan görüntüleyin ve düzenleyin</x:String>
+    <x:String x:Key="Msix.SaveManifest">💾 Manifesti Kaydet</x:String>
+    <x:String x:Key="Msix.Copy">📋 Kopyala</x:String>
+    <!-- Build Log page -->
+    <x:String x:Key="Msix.LogTitle">Derleme Günlüğü</x:String>
+    <x:String x:Key="Msix.LogSubtitle">dotnet publish ve MakeAppx'ten gerçek zamanlı çıktı</x:String>
+    <x:String x:Key="Msix.ClearLog">🗑 Temizle</x:String>
+    <x:String x:Key="Msix.OpenOutputFolder">📂 Çıktı Klasörünü Aç</x:String>
+    <!-- Sign page -->
+    <x:String x:Key="Msix.SignPageTitle">MSIX Paketini İmzala</x:String>
+    <x:String x:Key="Msix.SignPageSubtitle">.msix dosyanızı geçerli kullanıcı sertifika deposundan (My) bir X.509 sertifikasıyla imzalayın</x:String>
+    <x:String x:Key="Msix.SignFileHeader">📦  MSIX Dosyası</x:String>
+    <x:String x:Key="Msix.SignFilePath">.msix dosyasının yolu</x:String>
+    <x:String x:Key="Msix.CertsHeader">🔐  Kullanıcı Sertifikaları  (CurrentUser\My)</x:String>
+    <x:String x:Key="Msix.Refresh">🔄 Yenile</x:String>
+    <x:String x:Key="Msix.SelectCert">Bir kod imzalama sertifikası seçin:</x:String>
+    <x:String x:Key="Msix.CertSubject">Konu:</x:String>
+    <x:String x:Key="Msix.CertIssuer">Veren:</x:String>
+    <x:String x:Key="Msix.CertThumbprint">Parmak İzi:</x:String>
+    <x:String x:Key="Msix.CertValidUntil">Geçerlilik:</x:String>
+    <x:String x:Key="Msix.NoCerts">⚠️  CurrentUser\My deposunda kod imzalama sertifikası bulunamadı.</x:String>
+    <x:String x:Key="Msix.SignOptionsHeader">⚙  İmzalama Seçenekleri</x:String>
+    <x:String x:Key="Msix.HashAlgorithm">Hash Algoritması</x:String>
+    <x:String x:Key="Msix.HashHint">ℹ️  SHA256 önerilir. Zaman damgası eklenmeyecektir.</x:String>
+    <!-- Footer -->
     <x:String x:Key="Msix.Ready">Hazır</x:String>
+    <x:String x:Key="Msix.Cancel">⏹ İptal</x:String>
     <x:String x:Key="Msix.Close">Kapat</x:String>
+    <x:String x:Key="Msix.SignMsixBtn">🔏 MSIX İmzala</x:String>
     <x:String x:Key="Msix.StartBuild">🔨 MSIX Derle</x:String>
 
     <!-- NuGetPanelControl -->
@@ -746,17 +857,6 @@
     <x:String x:Key="AxamlPreview.TitleFormat">AXAML Önizleme — {0}</x:String>
     <x:String x:Key="AxamlPreview.UnknownError">Bilinmeyen hata</x:String>
 
-    <!-- RunConfig extra -->
-    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Yapılandırma ara...</x:String>
-    <x:String x:Key="RunConfig.Single">TEKİL</x:String>
-    <x:String x:Key="RunConfig.Compound">BİLEŞİK</x:String>
-    <x:String x:Key="RunConfig.ManageCompound">⚡ Yönet</x:String>
-    <x:String x:Key="RunConfig.Add">Yapılandırma Ekle</x:String>
-    <x:String x:Key="RunConfig.Remove">Yapılandırmayı Kaldır</x:String>
-    <x:String x:Key="RunConfig.Duplicate">Yapılandırmayı Çoğalt</x:String>
-    <x:String x:Key="RunConfig.NoEnvVars">Ortam değişkeni tanımlı değil</x:String>
-    <x:String x:Key="RunConfig.AddEnvVar">+ Ekle</x:String>
-    <x:String x:Key="RunConfig.Projects">proje</x:String>
 
     <!-- NuGet extra -->
     <x:String x:Key="NuGet.NanoFramework">🔌 Popüler nanoFramework Paketleri</x:String>

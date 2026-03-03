@@ -37,6 +37,9 @@ public partial class RoslynCompletionWindow : Window
     /// <summary>Fired when an item is committed (click / Enter / Tab).</summary>
     public event EventHandler<RoslynCompletionItem>? ItemCommitted;
 
+    /// <summary>Fired when the user clicks the close button.</summary>
+    public event EventHandler? CloseRequested;
+
     public RoslynCompletionWindow()
     {
         AvaloniaXamlLoader.Load(this);
@@ -44,6 +47,10 @@ public partial class RoslynCompletionWindow : Window
         _headerText = this.FindControl<TextBlock>("HeaderText")!;
         _footerText = this.FindControl<TextBlock>("FooterText")!;
         Focusable = false;
+
+        var closeBtn = this.FindControl<Button>("CloseCompletionBtn");
+        if (closeBtn != null)
+            closeBtn.Click += (_, _) => { CloseRequested?.Invoke(this, EventArgs.Empty); SafeClose(); };
     }
 
     // ── Public API ──────────────────────────────────────────────────────
@@ -116,9 +123,22 @@ public partial class RoslynCompletionWindow : Window
 
         IEnumerable<RoslynCompletionItem> filtered = _items;
         if (!string.IsNullOrEmpty(prefix))
-            filtered = _items.Where(i =>
-                (i.FilterText ?? i.Label).StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
-                (i.FilterText ?? i.Label).Contains(prefix, StringComparison.OrdinalIgnoreCase));
+        {
+            // Primary filter: show only items that START with the prefix
+            var startsWithItems = _items.Where(i =>
+                (i.FilterText ?? i.Label).StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
+            
+            if (startsWithItems.Count > 0)
+            {
+                filtered = startsWithItems;
+            }
+            else
+            {
+                // Fallback: show items that contain the prefix (fuzzy match)
+                filtered = _items.Where(i =>
+                    (i.FilterText ?? i.Label).Contains(prefix, StringComparison.OrdinalIgnoreCase));
+            }
+        }
 
         _rows = filtered.Select(BuildRow).ToList();
         _itemsList.ItemsSource = _rows;

@@ -317,6 +317,9 @@
     <x:String x:Key="Welcome.SearchRecent">🔍  Пошук останніх проєктів...</x:String>
     <x:String x:Key="Welcome.ClearAll">Очистити все</x:String>
     <x:String x:Key="Welcome.RecentProjects">Останні проєкти</x:String>
+    <!-- Added aliases / keys required by XAML usages -->
+    <x:String x:Key="RecentProjects">Останні проєкти</x:String>
+    <x:String x:Key="DefaultTitle">Швидке виправлення</x:String>
 
     <!-- ── WelcomeScreen (стартовий екран в IDE) ────────────────── -->
     <x:String x:Key="WelcomeScreen.Subtitle">C# IDE · На базі Insait Code Engine</x:String>
@@ -555,26 +558,41 @@
 
     <!-- ── 14. RunConfigurationsWindow ────────────────────────────── -->
     <x:String x:Key="RunConfig.Title">Конфігурації запуску/налагодження</x:String>
-    <x:String x:Key="RunConfig.Name">Назва</x:String>
-    <x:String x:Key="RunConfig.Project">Проєкт</x:String>
-    <x:String x:Key="RunConfig.BuildConfig">Конфігурація збірки</x:String>
-    <x:String x:Key="RunConfig.TargetFramework">Цільовий фреймворк</x:String>
-    <x:String x:Key="RunConfig.LaunchProfile">Профіль запуску (необов'язково)</x:String>
-    <x:String x:Key="RunConfig.WorkingDir">Робоча тека</x:String>
-    <x:String x:Key="RunConfig.Arguments">Аргументи програми</x:String>
-    <x:String x:Key="RunConfig.EnvVars">Змінні середовища</x:String>
-    <x:String x:Key="RunConfig.RunOptions">Параметри запуску</x:String>
-    <x:String x:Key="RunConfig.AllowParallel">Дозволити паралельний запуск</x:String>
-    <x:String x:Key="RunConfig.BuildBeforeRun">Збірка перед запуском</x:String>
-    <x:String x:Key="RunConfig.ActivateToolWindow">Активувати вікно інструментів при виведенні</x:String>
+    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Пошук конфігурацій...</x:String>
+    <x:String x:Key="RunConfig.Add">Додати конфігурацію</x:String>
+    <x:String x:Key="RunConfig.Remove">Видалити конфігурацію</x:String>
+    <x:String x:Key="RunConfig.Duplicate">Дублювати конфігурацію</x:String>
     <x:String x:Key="RunConfig.Run">▶ Запуск</x:String>
     <x:String x:Key="RunConfig.Debug">🐛 Налагодження</x:String>
     <x:String x:Key="RunConfig.Apply">Застосувати</x:String>
     <x:String x:Key="RunConfig.Cancel">Скасувати</x:String>
     <x:String x:Key="RunConfig.OK">OK</x:String>
+    <x:String x:Key="RunConfig.ManageCompound">⚡ Керувати</x:String>
+    <x:String x:Key="RunConfig.Single">ОДИНОЧНІ</x:String>
+    <x:String x:Key="RunConfig.Compound">СКЛАДЕНІ</x:String>
+    <x:String x:Key="RunConfig.Name">Назва</x:String>
+    <x:String x:Key="RunConfig.NamePlaceholder">Назва конфігурації</x:String>
+    <x:String x:Key="RunConfig.Project">Проєкт</x:String>
+    <x:String x:Key="RunConfig.BuildConfig">Конфігурація збірки</x:String>
+    <x:String x:Key="RunConfig.TargetFramework">Цільовий фреймворк</x:String>
+    <x:String x:Key="RunConfig.LaunchProfile">Профіль запуску (необов'язково)</x:String>
+    <x:String x:Key="RunConfig.WorkingDir">Робоча тека</x:String>
+    <x:String x:Key="RunConfig.WorkingDirPlaceholder">Шлях до робочої теки</x:String>
+    <x:String x:Key="RunConfig.Arguments">Аргументи програми</x:String>
+    <x:String x:Key="RunConfig.ArgumentsPlaceholder">--arg1 значення1 --arg2 значення2</x:String>
+    <x:String x:Key="RunConfig.EnvVars">Змінні середовища</x:String>
+    <x:String x:Key="RunConfig.AddEnvVar">+ Додати</x:String>
+    <x:String x:Key="RunConfig.NoEnvVars">Змінні середовища не задані</x:String>
+    <x:String x:Key="RunConfig.RunOptions">Параметри запуску</x:String>
+    <x:String x:Key="RunConfig.AllowParallel">Дозволити паралельний запуск</x:String>
+    <x:String x:Key="RunConfig.BuildBeforeRun">Збірка перед запуском</x:String>
+    <x:String x:Key="RunConfig.ActivateToolWindow">Активувати вікно інструментів при виведенні</x:String>
+    <x:String x:Key="RunConfig.Projects">проєктів</x:String>
+    <x:String x:Key="RunConfig.Default">За замовчуванням</x:String>
 
     <!-- ── 15. PublishWindow ─────────────────────────────────────── -->
     <x:String x:Key="Publish.Title">Публікація проєкту</x:String>
+    <x:String x:Key="Publish.TitleBar">Публікація проєкту</x:String>
     <x:String x:Key="Publish.Project">Проєкт</x:String>
     <x:String x:Key="Publish.DeploymentMode">Режим розгортання</x:String>
     <x:String x:Key="Publish.FrameworkDependent">Залежний від фреймворку (потрібен .NET на цільовій машині)</x:String>
@@ -583,13 +601,28 @@
     <x:String x:Key="Publish.TargetRuntime">Цільова платформа</x:String>
     <x:String x:Key="Publish.TargetFramework">Цільовий фреймворк</x:String>
     <x:String x:Key="Publish.OutputFolder">Вихідна тека</x:String>
+    <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
     <x:String x:Key="Publish.Options">Параметри публікації</x:String>
     <x:String x:Key="Publish.SingleFile">Один файл</x:String>
+    <x:String x:Key="Publish.SingleFileTooltip">Збирає додаток в один виконуваний файл</x:String>
     <x:String x:Key="Publish.ReadyToRun">Увімкнути компіляцію ReadyToRun</x:String>
+    <x:String x:Key="Publish.ReadyToRunTooltip">Попередня компіляція збірок у нативний код для швидшого запуску</x:String>
     <x:String x:Key="Publish.Trim">Обрізати невикористані збірки</x:String>
+    <x:String x:Key="Publish.TrimTooltip">Видаляє невикористаний код для зменшення розміру (може вплинути на рефлексію)</x:String>
     <x:String x:Key="Publish.Compression">Стиснення в одному файлі</x:String>
+    <x:String x:Key="Publish.CompressionTooltip">Стискає один файл для зменшення розміру</x:String>
     <x:String x:Key="Publish.NativeLibs">Включити нативні бібліотеки</x:String>
+    <x:String x:Key="Publish.NativeLibsTooltip">Включає нативні бібліотеки до одного файлу</x:String>
+    <x:String x:Key="Publish.PublishProfile">Профіль публікації (необов'язково)</x:String>
+    <x:String x:Key="Publish.NewProfile">+ Новий профіль</x:String>
+    <x:String x:Key="Publish.ProfileHint">Використовуйте наявні профілі публікації з теки Properties/PublishProfiles</x:String>
     <x:String x:Key="Publish.QuickPresets">Швидкі налаштування</x:String>
+    <x:String x:Key="Publish.PresetWinX64">🪟 Windows x64</x:String>
+    <x:String x:Key="Publish.PresetWinArm64">🪟 Windows ARM64</x:String>
+    <x:String x:Key="Publish.PresetLinuxX64">🐧 Linux x64</x:String>
+    <x:String x:Key="Publish.PresetMacX64">🍎 macOS x64</x:String>
+    <x:String x:Key="Publish.PresetMacArm64">🍎 macOS ARM64</x:String>
+    <x:String x:Key="Publish.PresetPortable">📱 Портативний</x:String>
     <x:String x:Key="Publish.EstimatedSize">Очікуваний розмір з'явиться після публікації</x:String>
     <x:String x:Key="Publish.Cancel">Скасувати</x:String>
     <x:String x:Key="Publish.Publish">📦 Опублікувати</x:String>
@@ -615,14 +648,111 @@
 
     <!-- ── 17. MsixManagerWindow ─────────────────────────────────── -->
     <x:String x:Key="Msix.Title">Менеджер пакетів MSIX</x:String>
+    <!-- Nav -->
+    <x:String x:Key="Msix.NavActions">ДІЇ</x:String>
+    <x:String x:Key="Msix.NavPackage">ПАКЕТ</x:String>
+    <x:String x:Key="Msix.NavOutput">ВИВІД</x:String>
+    <x:String x:Key="Msix.NavSigning">ПІДПИС</x:String>
     <x:String x:Key="Msix.BuildMsix">Збірка MSIX</x:String>
     <x:String x:Key="Msix.OpenMsix">Відкрити MSIX</x:String>
     <x:String x:Key="Msix.Identity">Ідентифікація</x:String>
     <x:String x:Key="Msix.EntryPoint">Точка входу</x:String>
     <x:String x:Key="Msix.ManifestXml">Маніфест XML</x:String>
     <x:String x:Key="Msix.BuildLog">Журнал збірки</x:String>
+    <x:String x:Key="Msix.SignMsix">Підписати MSIX</x:String>
+    <!-- Build page -->
+    <x:String x:Key="Msix.BuildPageTitle">Збірка пакету MSIX</x:String>
+    <x:String x:Key="Msix.BuildPageSubtitle">Опублікуйте свій .NET проєкт і упакуйте його в професійний MSIX інсталятор</x:String>
+    <x:String x:Key="Msix.BuildProjectHeader">📁  Проєкт</x:String>
+    <x:String x:Key="Msix.BuildProjectFile">Файл проєкту (.csproj / .fsproj)</x:String>
+    <x:String x:Key="Msix.Browse">Огляд…</x:String>
+    <x:String x:Key="Msix.Configuration">Конфігурація</x:String>
+    <x:String x:Key="Msix.TargetRuntime">Цільове середовище виконання</x:String>
+    <x:String x:Key="Msix.TargetFramework">Цільова платформа (автовизначення, якщо порожньо)</x:String>
+    <x:String x:Key="Msix.PackageIdentity">🪪  Ідентифікація пакету</x:String>
+    <x:String x:Key="Msix.PackageIdName">Ім'я ідентифікатора пакету</x:String>
+    <x:String x:Key="Msix.Version">Версія (Major.Minor.Build.Rev)</x:String>
+    <x:String x:Key="Msix.DisplayName">Відображуване ім'я</x:String>
+    <x:String x:Key="Msix.PublisherDN">Видавець (формат DN)</x:String>
+    <x:String x:Key="Msix.PublisherDisplayName">Відображуване ім'я видавця</x:String>
+    <x:String x:Key="Msix.Description">Опис</x:String>
+    <x:String x:Key="Msix.LogoPath">Логотип (відносний шлях у пакеті)</x:String>
+    <x:String x:Key="Msix.EntryPointHeader">▶  Точка входу</x:String>
+    <x:String x:Key="Msix.AutoDetect">🔍 Автовизначення</x:String>
+    <x:String x:Key="Msix.Executable">Виконуваний файл (.exe)</x:String>
+    <x:String x:Key="Msix.EntryPointClass">Клас точки входу</x:String>
+    <x:String x:Key="Msix.EntryPointHint">💡 Використовуйте 'Windows.FullTrustApplication' для стандартних .NET додатків (WinForms, WPF, Avalonia, Console).</x:String>
+    <x:String x:Key="Msix.PublishOptions">⚙  Параметри публікації</x:String>
+    <x:String x:Key="Msix.SingleFile">Один файл</x:String>
+    <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
+    <x:String x:Key="Msix.TrimAssemblies">Обрізка збірок</x:String>
+    <x:String x:Key="Msix.OutputHeader">📂  Вивід</x:String>
+    <x:String x:Key="Msix.MsixOutputPath">Шлях виводу MSIX (.msix)</x:String>
+    <x:String x:Key="Msix.IntermediateFolder">Проміжна папка публікації (порожньо = авто-тимчасова)</x:String>
+    <!-- Open page -->
+    <x:String x:Key="Msix.OpenPageTitle">Відкрити пакет MSIX</x:String>
+    <x:String x:Key="Msix.OpenPageSubtitle">Завантажте існуючий .msix / .appx для перегляду або редагування метаданих</x:String>
+    <x:String x:Key="Msix.PackageFile">📂  Файл пакету</x:String>
+    <x:String x:Key="Msix.OpenPackageBtn">📂  Відкрити пакет</x:String>
+    <x:String x:Key="Msix.LoadedPackage">📦  Завантажений пакет</x:String>
+    <x:String x:Key="Msix.LabelName">Ім'я:</x:String>
+    <x:String x:Key="Msix.LabelVersion">Версія:</x:String>
+    <x:String x:Key="Msix.LabelPublisher">Видавець:</x:String>
+    <x:String x:Key="Msix.LabelExecutable">Виконуваний файл:</x:String>
+    <x:String x:Key="Msix.EditIdentity">✏️ Редагувати ідентифікацію</x:String>
+    <x:String x:Key="Msix.EditEntryPoint">▶ Редагувати точку входу</x:String>
+    <x:String x:Key="Msix.ViewManifest">📄 Переглянути маніфест</x:String>
+    <!-- Identity page -->
+    <x:String x:Key="Msix.IdPageTitle">Ідентифікація пакету</x:String>
+    <x:String x:Key="Msix.IdPageSubtitle">Редагування полів ідентифікації AppxManifest.xml для завантаженого MSIX</x:String>
+    <x:String x:Key="Msix.PackageName">Ім'я пакету</x:String>
+    <x:String x:Key="Msix.VersionLabel">Версія</x:String>
+    <x:String x:Key="Msix.PublisherDNShort">Видавець (DN)</x:String>
+    <x:String x:Key="Msix.Architecture">Архітектура</x:String>
+    <x:String x:Key="Msix.LogoRelPath">Логотип (відносний шлях)</x:String>
+    <x:String x:Key="Msix.SaveChanges">💾 Зберегти зміни в MSIX</x:String>
+    <!-- Entry Point page -->
+    <x:String x:Key="Msix.EntryPageTitle">Точка входу</x:String>
+    <x:String x:Key="Msix.EntryPageSubtitle">Виберіть перший виконуваний файл та клас точки входу для пакету</x:String>
+    <x:String x:Key="Msix.ExeFoundLabel">Виконувані файли знайдені в пакеті:</x:String>
+    <x:String x:Key="Msix.Scan">🔍 Сканувати</x:String>
+    <x:String x:Key="Msix.UseSelectedExe">✅ Використати обраний як виконуваний файл</x:String>
+    <x:String x:Key="Msix.SelectedExe">Обраний виконуваний файл</x:String>
+    <x:String x:Key="Msix.SaveEntryPoint">💾 Зберегти точку входу в MSIX</x:String>
+    <x:String x:Key="Msix.EntryRefTitle">ℹ️  Довідка по точках входу</x:String>
+    <x:String x:Key="Msix.EntryRefFullTrust">Windows.FullTrustApplication — стандартні .NET додатки (WPF, WinForms, Avalonia, Console).</x:String>
+    <x:String x:Key="Msix.EntryRefWinUI">Microsoft.UI.Xaml.Application — додатки WinUI 3, упаковані з Windows App SDK.</x:String>
+    <!-- Manifest page -->
+    <x:String x:Key="Msix.ManifestTitle">AppxManifest.xml</x:String>
+    <x:String x:Key="Msix.ManifestSubtitle">Перегляд та пряме редагування необробленого XML маніфесту</x:String>
+    <x:String x:Key="Msix.SaveManifest">💾 Зберегти маніфест</x:String>
+    <x:String x:Key="Msix.Copy">📋 Копіювати</x:String>
+    <!-- Build Log page -->
+    <x:String x:Key="Msix.LogTitle">Журнал збірки</x:String>
+    <x:String x:Key="Msix.LogSubtitle">Вивід у реальному часі від dotnet publish та MakeAppx</x:String>
+    <x:String x:Key="Msix.ClearLog">🗑 Очистити</x:String>
+    <x:String x:Key="Msix.OpenOutputFolder">📂 Відкрити папку виводу</x:String>
+    <!-- Sign page -->
+    <x:String x:Key="Msix.SignPageTitle">Підписати пакет MSIX</x:String>
+    <x:String x:Key="Msix.SignPageSubtitle">Підпишіть .msix сертифікатом X.509 зі сховища сертифікатів поточного користувача (My)</x:String>
+    <x:String x:Key="Msix.SignFileHeader">📦  Файл MSIX</x:String>
+    <x:String x:Key="Msix.SignFilePath">Шлях до файлу .msix</x:String>
+    <x:String x:Key="Msix.CertsHeader">🔐  Сертифікати користувача  (CurrentUser\My)</x:String>
+    <x:String x:Key="Msix.Refresh">🔄 Оновити</x:String>
+    <x:String x:Key="Msix.SelectCert">Виберіть сертифікат для підпису коду:</x:String>
+    <x:String x:Key="Msix.CertSubject">Суб'єкт:</x:String>
+    <x:String x:Key="Msix.CertIssuer">Видавець:</x:String>
+    <x:String x:Key="Msix.CertThumbprint">Відбиток:</x:String>
+    <x:String x:Key="Msix.CertValidUntil">Дійсний до:</x:String>
+    <x:String x:Key="Msix.NoCerts">⚠️  Сертифікати для підпису коду не знайдені в сховищі CurrentUser\My.</x:String>
+    <x:String x:Key="Msix.SignOptionsHeader">⚙  Параметри підпису</x:String>
+    <x:String x:Key="Msix.HashAlgorithm">Алгоритм хешування</x:String>
+    <x:String x:Key="Msix.HashHint">ℹ️  Рекомендується SHA256. Мітка часу не додаватиметься.</x:String>
+    <!-- Footer -->
     <x:String x:Key="Msix.Ready">Готово</x:String>
+    <x:String x:Key="Msix.Cancel">⏹ Скасувати</x:String>
     <x:String x:Key="Msix.Close">Закрити</x:String>
+    <x:String x:Key="Msix.SignMsixBtn">🔏 Підписати MSIX</x:String>
     <x:String x:Key="Msix.StartBuild">🔨 Зібрати MSIX</x:String>
 
     <!-- ── 18. NuGetPanelControl ─────────────────────────────────── -->
@@ -747,17 +877,6 @@
     <x:String x:Key="AxamlPreview.TitleFormat">Перегляд AXAML — {0}</x:String>
     <x:String x:Key="AxamlPreview.UnknownError">Невідома помилка</x:String>
 
-    <!-- ── RunConfig extra ────────────────────────────────────────── -->
-    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Пошук конфігурацій...</x:String>
-    <x:String x:Key="RunConfig.Single">ОДИНОЧНИЙ</x:String>
-    <x:String x:Key="RunConfig.Compound">СКЛАДЕНИЙ</x:String>
-    <x:String x:Key="RunConfig.ManageCompound">⚡ Керувати</x:String>
-    <x:String x:Key="RunConfig.Add">Додати конфігурацію</x:String>
-    <x:String x:Key="RunConfig.Remove">Видалити конфігурацію</x:String>
-    <x:String x:Key="RunConfig.Duplicate">Дублювати конфігурацію</x:String>
-    <x:String x:Key="RunConfig.NoEnvVars">Змінні середовища не задані</x:String>
-    <x:String x:Key="RunConfig.AddEnvVar">+ Додати</x:String>
-    <x:String x:Key="RunConfig.Projects">проєктів</x:String>
 
     <!-- ── NuGet extra ────────────────────────────────────────────── -->
     <x:String x:Key="NuGet.NanoFramework">🔌 Популярні пакети nanoFramework</x:String>

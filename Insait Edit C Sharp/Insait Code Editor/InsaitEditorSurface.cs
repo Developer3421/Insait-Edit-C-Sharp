@@ -79,6 +79,10 @@ internal sealed class InsaitEditorSurface : Control
     public double MaxLineWidth => _lines.Count > 0 ? _lines.Max(l => l.Length) * _charWidth : 0;
     public double ViewportWidth => Math.Max(0, Bounds.Width - _gutterWidth - 12);
 
+    /// <summary>Returns the text of a line (0-based index). Empty string if out of range.</summary>
+    public string GetLineText(int lineIndex) =>
+        lineIndex >= 0 && lineIndex < _lines.Count ? _lines[lineIndex] : string.Empty;
+
     // ── Roslyn Highlighting ──────────────────────────────────────────────
     private List<ClassifiedSpan>     _classifiedSpans = new();
     private AdhocWorkspace?          _workspace;
@@ -117,6 +121,8 @@ internal sealed class InsaitEditorSurface : Control
     public event EventHandler<DiagnosticSpan>? RequestQuickFix;
     /// <summary>Fired on Ctrl+Click — cursor position is set, caller should invoke Go to Definition.</summary>
     public event EventHandler?                 CtrlClickGoToDefinition;
+    /// <summary>Fired when a non-identifier character is typed (space, ;, etc.) — completion should close.</summary>
+    public event EventHandler?                 CompletionDismissChar;
 
     // ══════════════════════════════════════════════════════════════════════
     //  Constructor
@@ -601,7 +607,10 @@ internal sealed class InsaitEditorSurface : Control
             char next = _cursorCol < line.Length ? line[_cursorCol] : '\0';
             if (next != paired) InsertTextAtCursorNoCursor(paired.ToString());
         }
-        if (char.IsLetter(ch) || ch == '.') RequestCompletion?.Invoke(this, EventArgs.Empty);
+        if (char.IsLetter(ch) || ch == '.' || ch == '_') RequestCompletion?.Invoke(this, EventArgs.Empty);
+        else if (IsAxamlFile(FilePath) && (ch == '<' || ch == '{' || ch == ' ' || ch == ':' || ch == '/'))
+            RequestCompletion?.Invoke(this, EventArgs.Empty);
+        else if (!char.IsDigit(ch)) CompletionDismissChar?.Invoke(this, EventArgs.Empty);
         if (ch is '(' or ',') RequestSignature?.Invoke(this, EventArgs.Empty);
         base.OnTextInput(e);
     }
@@ -968,6 +977,14 @@ internal sealed class InsaitEditorSurface : Control
         return path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
             && !path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
             && !path.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Whether the current file is an AXAML/XAML file (eligible for XAML completion).</summary>
+    private static bool IsAxamlFile(string? path)
+    {
+        if (string.IsNullOrEmpty(path)) return false;
+        return path.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Whether the current file is XML/XAML.</summary>

@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.Controls.RoslynQuickFixWindow"
-        Title=""
+        Title="Quick Fix"
         SystemDecorations="None"
         Background="Transparent"
         CanResize="False"
@@ -22,7 +22,7 @@
             <DropShadowEffect Color="#CC3E1060" BlurRadius="20" OffsetX="0" OffsetY="6" Opacity="0.8"/>
         </Border.Effect>
 
-        <Grid RowDefinitions="Auto,*">
+        <Grid RowDefinitions="Auto,*,Auto,Auto">
             <!-- Header -->
             <Border Grid.Row="0" Padding="10,5" Background="#18DCC4FF" CornerRadius="6,6,0,0">
                 <StackPanel Orientation="Horizontal" Spacing="6">
@@ -32,12 +32,12 @@
                 </StackPanel>
             </Border>
 
-            <!-- Fix items -->
+            <!-- Fix items list -->
             <ListBox Grid.Row="1" x:Name="FixList"
                      Background="Transparent"
                      BorderThickness="0"
-                     MinWidth="320" MaxWidth="560"
-                     MaxHeight="240"
+                     MinWidth="340" MaxWidth="560"
+                     MaxHeight="200"
                      Padding="2,2"
                      Focusable="False"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -58,6 +58,31 @@
                     </Style>
                 </ListBox.Styles>
             </ListBox>
+
+            <!-- Description/explanation panel -->
+            <Border Grid.Row="2" x:Name="DescriptionPanel"
+                    Background="#12DCC4FF"
+                    Padding="10,6"
+                    IsVisible="False"
+                    BorderBrush="#FF3E3050"
+                    BorderThickness="0,1,0,0">
+                <StackPanel Spacing="3" MaxWidth="500">
+                    <TextBlock x:Name="DescTitle" Text=""
+                               FontSize="11" FontWeight="SemiBold"
+                               Foreground="#FFDCC4FF"
+                               FontFamily="Cascadia Code, Consolas, monospace"/>
+                    <TextBlock x:Name="DescDetail" Text=""
+                               FontSize="10" Foreground="#FFB0A0C0"
+                               FontFamily="Cascadia Code, Consolas, monospace"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Footer -->
+            <Border Grid.Row="3" Padding="10,4" Background="#10DCC4FF" CornerRadius="0,0,6,6">
+                <TextBlock Text="Enter ⏎ apply   Esc ✕ dismiss"
+                           FontSize="9" Foreground="#60DCC4FF"/>
+            </Border>
         </Grid>
     </Border>
 </Window>

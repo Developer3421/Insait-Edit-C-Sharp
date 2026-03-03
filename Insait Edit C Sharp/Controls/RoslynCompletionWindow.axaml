@@ -25,11 +25,34 @@
         <Grid RowDefinitions="Auto,*,Auto">
             <!-- Header -->
             <Border Grid.Row="0" Padding="10,5" Background="#15DCC4FF" CornerRadius="6,6,0,0">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="✦" FontSize="11" Foreground="#FF8B5CF6"/>
-                    <TextBlock x:Name="HeaderText" Text="Roslyn IntelliSense"
-                               FontSize="10" FontWeight="SemiBold" Foreground="#FF9E90B0"/>
-                </StackPanel>
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="✦" FontSize="11" Foreground="#FF8B5CF6"/>
+                        <TextBlock x:Name="HeaderText" Text="Roslyn IntelliSense"
+                                   FontSize="10" FontWeight="SemiBold" Foreground="#FF9E90B0"/>
+                    </StackPanel>
+                    <Button x:Name="CloseCompletionBtn"
+                            Grid.Column="1"
+                            Content="✕"
+                            FontSize="10"
+                            Width="20" Height="20"
+                            Padding="0"
+                            Background="Transparent"
+                            Foreground="#FF9E90B0"
+                            BorderThickness="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            Focusable="False"
+                            ToolTip.Tip="Close (Esc)">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#30F38BA8"/>
+                                <Setter Property="Foreground" Value="#FFF38BA8"/>
+                            </Style>
+                        </Button.Styles>
+                    </Button>
+                </Grid>
             </Border>
 
             <!-- Items list -->

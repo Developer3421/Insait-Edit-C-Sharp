@@ -74,6 +74,9 @@ public partial class WelcomeWindow : Window
         if (searchBox != null) searchBox.Watermark = L("Welcome.SearchRecent");
         var clearBtn = this.FindControl<Button>("ClearAllButton");
         if (clearBtn != null) clearBtn.Content = L("Welcome.ClearAll");
+
+        var recentHeader = this.FindControl<TextBlock>("RecentProjectsHeader");
+        if (recentHeader != null) recentHeader.Text = L("Welcome.RecentProjects");
     }
 
     private void LoadRecentProjects()

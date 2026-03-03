@@ -6,6 +6,7 @@
          DEUTSCHE LOKALISIERUNG — Alle 21 Fenster & Popups
          ══════════════════════════════════════════════════════════════ -->
 
+    <!-- ── 1. MainWindow ─────────────────────────────────────────── -->
     <x:String x:Key="App.Title">Insait Edit - C# IDE</x:String>
     <x:String x:Key="TitleBar.Menu">Menü</x:String>
     <x:String x:Key="TitleBar.Build">Erstellen</x:String>
@@ -316,6 +317,9 @@
     <x:String x:Key="Welcome.SearchRecent">🔍  Letzte Projekte durchsuchen...</x:String>
     <x:String x:Key="Welcome.ClearAll">Alle löschen</x:String>
     <x:String x:Key="Welcome.RecentProjects">Letzte Projekte</x:String>
+    <!-- Added aliases / keys required by XAML usages -->
+    <x:String x:Key="RecentProjects">Letzte Projekte</x:String>
+    <x:String x:Key="DefaultTitle">Schnellkorrektur</x:String>
 
     <!-- ── WelcomeScreen (IDE-Startbildschirm) ──────────────────── -->
     <x:String x:Key="WelcomeScreen.Subtitle">C# IDE · Powered by Insait Code Engine</x:String>
@@ -554,26 +558,41 @@
 
     <!-- RunConfigurationsWindow -->
     <x:String x:Key="RunConfig.Title">Ausführungs-/Debug-Konfigurationen</x:String>
-    <x:String x:Key="RunConfig.Name">Name</x:String>
-    <x:String x:Key="RunConfig.Project">Projekt</x:String>
-    <x:String x:Key="RunConfig.BuildConfig">Build-Konfiguration</x:String>
-    <x:String x:Key="RunConfig.TargetFramework">Zielframework</x:String>
-    <x:String x:Key="RunConfig.LaunchProfile">Startprofil (optional)</x:String>
-    <x:String x:Key="RunConfig.WorkingDir">Arbeitsverzeichnis</x:String>
-    <x:String x:Key="RunConfig.Arguments">Programmargumente</x:String>
-    <x:String x:Key="RunConfig.EnvVars">Umgebungsvariablen</x:String>
-    <x:String x:Key="RunConfig.RunOptions">Ausführungsoptionen</x:String>
-    <x:String x:Key="RunConfig.AllowParallel">Parallele Ausführung erlauben</x:String>
-    <x:String x:Key="RunConfig.BuildBeforeRun">Vor Ausführung erstellen</x:String>
-    <x:String x:Key="RunConfig.ActivateToolWindow">Toolfenster bei Ausgabe aktivieren</x:String>
+    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Konfigurationen suchen...</x:String>
+    <x:String x:Key="RunConfig.Add">Konfiguration hinzufügen</x:String>
+    <x:String x:Key="RunConfig.Remove">Konfiguration entfernen</x:String>
+    <x:String x:Key="RunConfig.Duplicate">Konfiguration duplizieren</x:String>
     <x:String x:Key="RunConfig.Run">▶ Ausführen</x:String>
     <x:String x:Key="RunConfig.Debug">🐛 Debuggen</x:String>
     <x:String x:Key="RunConfig.Apply">Übernehmen</x:String>
     <x:String x:Key="RunConfig.Cancel">Abbrechen</x:String>
     <x:String x:Key="RunConfig.OK">OK</x:String>
+    <x:String x:Key="RunConfig.ManageCompound">⚡ Verwalten</x:String>
+    <x:String x:Key="RunConfig.Single">EINZELN</x:String>
+    <x:String x:Key="RunConfig.Compound">ZUSAMMENGESETZT</x:String>
+    <x:String x:Key="RunConfig.Name">Name</x:String>
+    <x:String x:Key="RunConfig.NamePlaceholder">Konfigurationsname</x:String>
+    <x:String x:Key="RunConfig.Project">Projekt</x:String>
+    <x:String x:Key="RunConfig.BuildConfig">Build-Konfiguration</x:String>
+    <x:String x:Key="RunConfig.TargetFramework">Zielframework</x:String>
+    <x:String x:Key="RunConfig.LaunchProfile">Startprofil (optional)</x:String>
+    <x:String x:Key="RunConfig.WorkingDir">Arbeitsverzeichnis</x:String>
+    <x:String x:Key="RunConfig.WorkingDirPlaceholder">Pfad zum Arbeitsverzeichnis</x:String>
+    <x:String x:Key="RunConfig.Arguments">Programmargumente</x:String>
+    <x:String x:Key="RunConfig.ArgumentsPlaceholder">--arg1 wert1 --arg2 wert2</x:String>
+    <x:String x:Key="RunConfig.EnvVars">Umgebungsvariablen</x:String>
+    <x:String x:Key="RunConfig.AddEnvVar">+ Hinzufügen</x:String>
+    <x:String x:Key="RunConfig.NoEnvVars">Keine Umgebungsvariablen definiert</x:String>
+    <x:String x:Key="RunConfig.RunOptions">Ausführungsoptionen</x:String>
+    <x:String x:Key="RunConfig.AllowParallel">Parallele Ausführung erlauben</x:String>
+    <x:String x:Key="RunConfig.BuildBeforeRun">Vor Ausführung erstellen</x:String>
+    <x:String x:Key="RunConfig.ActivateToolWindow">Toolfenster bei Ausgabe aktivieren</x:String>
+    <x:String x:Key="RunConfig.Projects">Projekte</x:String>
+    <x:String x:Key="RunConfig.Default">Standard</x:String>
 
     <!-- PublishWindow -->
     <x:String x:Key="Publish.Title">Projekt veröffentlichen</x:String>
+    <x:String x:Key="Publish.TitleBar">Projekt veröffentlichen</x:String>
     <x:String x:Key="Publish.Project">Projekt</x:String>
     <x:String x:Key="Publish.DeploymentMode">Bereitstellungsmodus</x:String>
     <x:String x:Key="Publish.FrameworkDependent">Framework-abhängig (.NET-Runtime erforderlich)</x:String>
@@ -582,13 +601,28 @@
     <x:String x:Key="Publish.TargetRuntime">Ziellaufzeit</x:String>
     <x:String x:Key="Publish.TargetFramework">Zielframework</x:String>
     <x:String x:Key="Publish.OutputFolder">Ausgabeordner</x:String>
+    <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
     <x:String x:Key="Publish.Options">Veröffentlichungsoptionen</x:String>
     <x:String x:Key="Publish.SingleFile">Einzeldatei erstellen</x:String>
+    <x:String x:Key="Publish.SingleFileTooltip">Bündelt die Anwendung in eine einzige ausführbare Datei</x:String>
     <x:String x:Key="Publish.ReadyToRun">ReadyToRun-Kompilierung aktivieren</x:String>
+    <x:String x:Key="Publish.ReadyToRunTooltip">Vorkompiliert Assemblys in nativen Code für schnelleren Start</x:String>
     <x:String x:Key="Publish.Trim">Unbenutzte Assemblys trimmen</x:String>
+    <x:String x:Key="Publish.TrimTooltip">Entfernt ungenutzten Code zur Größenreduzierung (kann Reflektion beeinflussen)</x:String>
     <x:String x:Key="Publish.Compression">Komprimierung in Einzeldatei</x:String>
+    <x:String x:Key="Publish.CompressionTooltip">Komprimiert die Einzeldatei zur Größenreduzierung</x:String>
     <x:String x:Key="Publish.NativeLibs">Native Bibliotheken einschließen</x:String>
+    <x:String x:Key="Publish.NativeLibsTooltip">Bündelt native Bibliotheken in die Einzeldatei</x:String>
+    <x:String x:Key="Publish.PublishProfile">Veröffentlichungsprofil (optional)</x:String>
+    <x:String x:Key="Publish.NewProfile">+ Neues Profil</x:String>
+    <x:String x:Key="Publish.ProfileHint">Verwenden Sie vorhandene Veröffentlichungsprofile aus dem Ordner Properties/PublishProfiles</x:String>
     <x:String x:Key="Publish.QuickPresets">Schnellvoreinstellungen</x:String>
+    <x:String x:Key="Publish.PresetWinX64">🪟 Windows x64</x:String>
+    <x:String x:Key="Publish.PresetWinArm64">🪟 Windows ARM64</x:String>
+    <x:String x:Key="Publish.PresetLinuxX64">🐧 Linux x64</x:String>
+    <x:String x:Key="Publish.PresetMacX64">🍎 macOS x64</x:String>
+    <x:String x:Key="Publish.PresetMacArm64">🍎 macOS ARM64</x:String>
+    <x:String x:Key="Publish.PresetPortable">📱 Portabel</x:String>
     <x:String x:Key="Publish.EstimatedSize">Geschätzte Ausgabegröße nach Veröffentlichung</x:String>
     <x:String x:Key="Publish.Cancel">Abbrechen</x:String>
     <x:String x:Key="Publish.Publish">📦 Veröffentlichen</x:String>
@@ -614,14 +648,111 @@
 
     <!-- MsixManagerWindow -->
     <x:String x:Key="Msix.Title">MSIX-Paketmanager</x:String>
+    <!-- Nav -->
+    <x:String x:Key="Msix.NavActions">AKTIONEN</x:String>
+    <x:String x:Key="Msix.NavPackage">PAKET</x:String>
+    <x:String x:Key="Msix.NavOutput">AUSGABE</x:String>
+    <x:String x:Key="Msix.NavSigning">SIGNIERUNG</x:String>
     <x:String x:Key="Msix.BuildMsix">MSIX erstellen</x:String>
     <x:String x:Key="Msix.OpenMsix">MSIX öffnen</x:String>
     <x:String x:Key="Msix.Identity">Identität</x:String>
     <x:String x:Key="Msix.EntryPoint">Einstiegspunkt</x:String>
     <x:String x:Key="Msix.ManifestXml">Manifest-XML</x:String>
     <x:String x:Key="Msix.BuildLog">Build-Protokoll</x:String>
+    <x:String x:Key="Msix.SignMsix">MSIX signieren</x:String>
+    <!-- Build page -->
+    <x:String x:Key="Msix.BuildPageTitle">MSIX-Paket erstellen</x:String>
+    <x:String x:Key="Msix.BuildPageSubtitle">Veröffentlichen Sie Ihr .NET-Projekt und verpacken Sie es in einen professionellen MSIX-Installer</x:String>
+    <x:String x:Key="Msix.BuildProjectHeader">📁  Projekt</x:String>
+    <x:String x:Key="Msix.BuildProjectFile">Projektdatei (.csproj / .fsproj)</x:String>
+    <x:String x:Key="Msix.Browse">Durchsuchen…</x:String>
+    <x:String x:Key="Msix.Configuration">Konfiguration</x:String>
+    <x:String x:Key="Msix.TargetRuntime">Ziellaufzeit</x:String>
+    <x:String x:Key="Msix.TargetFramework">Zielframework (automatisch erkannt, wenn leer)</x:String>
+    <x:String x:Key="Msix.PackageIdentity">🪪  Paketidentität</x:String>
+    <x:String x:Key="Msix.PackageIdName">Paketidentitätsname</x:String>
+    <x:String x:Key="Msix.Version">Version (Major.Minor.Build.Rev)</x:String>
+    <x:String x:Key="Msix.DisplayName">Anzeigename</x:String>
+    <x:String x:Key="Msix.PublisherDN">Herausgeber (DN-Format)</x:String>
+    <x:String x:Key="Msix.PublisherDisplayName">Anzeigename des Herausgebers</x:String>
+    <x:String x:Key="Msix.Description">Beschreibung</x:String>
+    <x:String x:Key="Msix.LogoPath">Logo (relativer Pfad im Paket)</x:String>
+    <x:String x:Key="Msix.EntryPointHeader">▶  Einstiegspunkt</x:String>
+    <x:String x:Key="Msix.AutoDetect">🔍 Automatisch erkennen</x:String>
+    <x:String x:Key="Msix.Executable">Ausführbare Datei (.exe)</x:String>
+    <x:String x:Key="Msix.EntryPointClass">Einstiegspunktklasse</x:String>
+    <x:String x:Key="Msix.EntryPointHint">💡 Verwenden Sie 'Windows.FullTrustApplication' für Standard-.NET-Apps (WinForms, WPF, Avalonia, Console).</x:String>
+    <x:String x:Key="Msix.PublishOptions">⚙  Veröffentlichungsoptionen</x:String>
+    <x:String x:Key="Msix.SingleFile">Einzeldatei</x:String>
+    <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
+    <x:String x:Key="Msix.TrimAssemblies">Assemblies trimmen</x:String>
+    <x:String x:Key="Msix.OutputHeader">📂  Ausgabe</x:String>
+    <x:String x:Key="Msix.MsixOutputPath">MSIX-Ausgabepfad (.msix)</x:String>
+    <x:String x:Key="Msix.IntermediateFolder">Zwischenveröffentlichungsordner (leer = auto-temp)</x:String>
+    <!-- Open page -->
+    <x:String x:Key="Msix.OpenPageTitle">MSIX-Paket öffnen</x:String>
+    <x:String x:Key="Msix.OpenPageSubtitle">Laden Sie eine vorhandene .msix / .appx-Datei zum Überprüfen oder Bearbeiten der Metadaten</x:String>
+    <x:String x:Key="Msix.PackageFile">📂  Paketdatei</x:String>
+    <x:String x:Key="Msix.OpenPackageBtn">📂  Paket öffnen</x:String>
+    <x:String x:Key="Msix.LoadedPackage">📦  Geladenes Paket</x:String>
+    <x:String x:Key="Msix.LabelName">Name:</x:String>
+    <x:String x:Key="Msix.LabelVersion">Version:</x:String>
+    <x:String x:Key="Msix.LabelPublisher">Herausgeber:</x:String>
+    <x:String x:Key="Msix.LabelExecutable">Ausführbare Datei:</x:String>
+    <x:String x:Key="Msix.EditIdentity">✏️ Identität bearbeiten</x:String>
+    <x:String x:Key="Msix.EditEntryPoint">▶ Einstiegspunkt bearbeiten</x:String>
+    <x:String x:Key="Msix.ViewManifest">📄 Manifest anzeigen</x:String>
+    <!-- Identity page -->
+    <x:String x:Key="Msix.IdPageTitle">Paketidentität</x:String>
+    <x:String x:Key="Msix.IdPageSubtitle">AppxManifest.xml-Identitätsfelder für ein geladenes MSIX bearbeiten</x:String>
+    <x:String x:Key="Msix.PackageName">Paketname</x:String>
+    <x:String x:Key="Msix.VersionLabel">Version</x:String>
+    <x:String x:Key="Msix.PublisherDNShort">Herausgeber (DN)</x:String>
+    <x:String x:Key="Msix.Architecture">Architektur</x:String>
+    <x:String x:Key="Msix.LogoRelPath">Logo (relativer Pfad)</x:String>
+    <x:String x:Key="Msix.SaveChanges">💾 Änderungen in MSIX speichern</x:String>
+    <!-- Entry Point page -->
+    <x:String x:Key="Msix.EntryPageTitle">Einstiegspunkt</x:String>
+    <x:String x:Key="Msix.EntryPageSubtitle">Wählen Sie die erste ausführbare Datei und Einstiegspunktklasse für das Paket</x:String>
+    <x:String x:Key="Msix.ExeFoundLabel">Im Paket gefundene ausführbare Dateien:</x:String>
+    <x:String x:Key="Msix.Scan">🔍 Scannen</x:String>
+    <x:String x:Key="Msix.UseSelectedExe">✅ Ausgewählte als Einstiegspunkt verwenden</x:String>
+    <x:String x:Key="Msix.SelectedExe">Ausgewählte ausführbare Datei</x:String>
+    <x:String x:Key="Msix.SaveEntryPoint">💾 Einstiegspunkt in MSIX speichern</x:String>
+    <x:String x:Key="Msix.EntryRefTitle">ℹ️  Einstiegspunkt-Referenz</x:String>
+    <x:String x:Key="Msix.EntryRefFullTrust">Windows.FullTrustApplication — Standard-.NET-Apps (WPF, WinForms, Avalonia, Console).</x:String>
+    <x:String x:Key="Msix.EntryRefWinUI">Microsoft.UI.Xaml.Application — WinUI 3-Apps, verpackt mit Windows App SDK.</x:String>
+    <!-- Manifest page -->
+    <x:String x:Key="Msix.ManifestTitle">AppxManifest.xml</x:String>
+    <x:String x:Key="Msix.ManifestSubtitle">Raw-Manifest-XML direkt anzeigen und bearbeiten</x:String>
+    <x:String x:Key="Msix.SaveManifest">💾 Manifest speichern</x:String>
+    <x:String x:Key="Msix.Copy">📋 Kopieren</x:String>
+    <!-- Build Log page -->
+    <x:String x:Key="Msix.LogTitle">Build-Protokoll</x:String>
+    <x:String x:Key="Msix.LogSubtitle">Echtzeitausgabe von dotnet publish und MakeAppx</x:String>
+    <x:String x:Key="Msix.ClearLog">🗑 Löschen</x:String>
+    <x:String x:Key="Msix.OpenOutputFolder">📂 Ausgabeordner öffnen</x:String>
+    <!-- Sign page -->
+    <x:String x:Key="Msix.SignPageTitle">MSIX-Paket signieren</x:String>
+    <x:String x:Key="Msix.SignPageSubtitle">Signieren Sie Ihre .msix mit einem X.509-Zertifikat aus dem Zertifikatspeicher des aktuellen Benutzers (My)</x:String>
+    <x:String x:Key="Msix.SignFileHeader">📦  MSIX-Datei</x:String>
+    <x:String x:Key="Msix.SignFilePath">Pfad zur .msix-Datei</x:String>
+    <x:String x:Key="Msix.CertsHeader">🔐  Benutzerzertifikate  (CurrentUser\My)</x:String>
+    <x:String x:Key="Msix.Refresh">🔄 Aktualisieren</x:String>
+    <x:String x:Key="Msix.SelectCert">Wählen Sie ein Code-Signing-Zertifikat:</x:String>
+    <x:String x:Key="Msix.CertSubject">Betreff:</x:String>
+    <x:String x:Key="Msix.CertIssuer">Aussteller:</x:String>
+    <x:String x:Key="Msix.CertThumbprint">Fingerabdruck:</x:String>
+    <x:String x:Key="Msix.CertValidUntil">Gültig bis:</x:String>
+    <x:String x:Key="Msix.NoCerts">⚠️  Keine Code-Signing-Zertifikate im Speicher CurrentUser\My gefunden.</x:String>
+    <x:String x:Key="Msix.SignOptionsHeader">⚙  Signieroptionen</x:String>
+    <x:String x:Key="Msix.HashAlgorithm">Hash-Algorithmus</x:String>
+    <x:String x:Key="Msix.HashHint">ℹ️  SHA256 wird empfohlen. Kein Zeitstempel wird hinzugefügt.</x:String>
+    <!-- Footer -->
     <x:String x:Key="Msix.Ready">Bereit</x:String>
+    <x:String x:Key="Msix.Cancel">⏹ Abbrechen</x:String>
     <x:String x:Key="Msix.Close">Schließen</x:String>
+    <x:String x:Key="Msix.SignMsixBtn">🔏 MSIX signieren</x:String>
     <x:String x:Key="Msix.StartBuild">🔨 MSIX erstellen</x:String>
 
     <!-- NuGetPanelControl -->
@@ -746,17 +877,6 @@
     <x:String x:Key="AxamlPreview.TitleFormat">AXAML-Vorschau — {0}</x:String>
     <x:String x:Key="AxamlPreview.UnknownError">Unbekannter Fehler</x:String>
 
-    <!-- RunConfig extra -->
-    <x:String x:Key="RunConfig.SearchPlaceholder">🔍 Konfigurationen suchen...</x:String>
-    <x:String x:Key="RunConfig.Single">EINZELN</x:String>
-    <x:String x:Key="RunConfig.Compound">ZUSAMMENGESETZT</x:String>
-    <x:String x:Key="RunConfig.ManageCompound">⚡ Verwalten</x:String>
-    <x:String x:Key="RunConfig.Add">Konfiguration hinzufügen</x:String>
-    <x:String x:Key="RunConfig.Remove">Konfiguration entfernen</x:String>
-    <x:String x:Key="RunConfig.Duplicate">Konfiguration duplizieren</x:String>
-    <x:String x:Key="RunConfig.NoEnvVars">Keine Umgebungsvariablen definiert</x:String>
-    <x:String x:Key="RunConfig.AddEnvVar">+ Hinzufügen</x:String>
-    <x:String x:Key="RunConfig.Projects">Projekte</x:String>
 
     <!-- NuGet extra -->
     <x:String x:Key="NuGet.NanoFramework">🔌 Beliebte nanoFramework-Pakete</x:String>

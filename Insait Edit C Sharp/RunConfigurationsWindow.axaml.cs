@@ -46,14 +46,62 @@ public partial class RunConfigurationsWindow : Window
     {
         var L = (Func<string, string>)LocalizationService.Get;
         Title = L("RunConfig.Title");
+
+        // Title bar text
+        SetText("TitleBarText", L("RunConfig.Title"));
+
+        // Search
         var searchBox = this.FindControl<TextBox>("SearchBox");
         if (searchBox != null) searchBox.Watermark = L("RunConfig.SearchPlaceholder");
+
+        // Left panel section headers
+        SetText("SingleHeader", L("RunConfig.Single"));
+        SetText("CompoundHeader", L("RunConfig.Compound"));
+
+        // Toolbar buttons
         var addBtn = this.FindControl<Button>("AddConfigButton");
         if (addBtn != null) ToolTip.SetTip(addBtn, L("RunConfig.Add"));
         var removeBtn = this.FindControl<Button>("RemoveConfigButton");
         if (removeBtn != null) ToolTip.SetTip(removeBtn, L("RunConfig.Remove"));
         var dupBtn = this.FindControl<Button>("DuplicateConfigButton");
         if (dupBtn != null) ToolTip.SetTip(dupBtn, L("RunConfig.Duplicate"));
+
+        // Compound manage button
+        var manageBtn = this.FindControl<Button>("ManageCompoundButton");
+        if (manageBtn != null) manageBtn.Content = L("RunConfig.ManageCompound");
+
+        // Right panel labels
+        SetText("NameLabel", L("RunConfig.Name"));
+        var nameBox = this.FindControl<TextBox>("ConfigNameBox");
+        if (nameBox != null) nameBox.Watermark = L("RunConfig.NamePlaceholder");
+
+        SetText("ProjectLabel", L("RunConfig.Project"));
+        SetText("BuildConfigLabel", L("RunConfig.BuildConfig"));
+        SetText("FrameworkLabel", L("RunConfig.TargetFramework"));
+        SetText("LaunchProfileLabel", L("RunConfig.LaunchProfile"));
+        SetText("WorkingDirLabel", L("RunConfig.WorkingDir"));
+
+        var workingDirBox = this.FindControl<TextBox>("WorkingDirBox");
+        if (workingDirBox != null) workingDirBox.Watermark = L("RunConfig.WorkingDirPlaceholder");
+
+        SetText("ArgumentsLabel", L("RunConfig.Arguments"));
+        var argsBox = this.FindControl<TextBox>("ArgumentsBox");
+        if (argsBox != null) argsBox.Watermark = L("RunConfig.ArgumentsPlaceholder");
+
+        SetText("EnvVarsLabel", L("RunConfig.EnvVars"));
+        var addEnvBtn = this.FindControl<Button>("AddEnvVarButton");
+        if (addEnvBtn != null) addEnvBtn.Content = L("RunConfig.AddEnvVar");
+        SetText("NoEnvVarsText", L("RunConfig.NoEnvVars"));
+
+        SetText("RunOptionsLabel", L("RunConfig.RunOptions"));
+        var allowParallelCheck = this.FindControl<CheckBox>("AllowParallelRunCheck");
+        if (allowParallelCheck != null) allowParallelCheck.Content = L("RunConfig.AllowParallel");
+        var buildBeforeRunCheck = this.FindControl<CheckBox>("BuildBeforeRunCheck");
+        if (buildBeforeRunCheck != null) buildBeforeRunCheck.Content = L("RunConfig.BuildBeforeRun");
+        var activateToolCheck = this.FindControl<CheckBox>("ActivateToolWindowCheck");
+        if (activateToolCheck != null) activateToolCheck.Content = L("RunConfig.ActivateToolWindow");
+
+        // Footer buttons
         var runBtn = this.FindControl<Button>("RunButton");
         if (runBtn != null) runBtn.Content = L("RunConfig.Run");
         var debugBtn = this.FindControl<Button>("DebugButton");
@@ -64,8 +112,12 @@ public partial class RunConfigurationsWindow : Window
         if (cancelBtn != null) cancelBtn.Content = L("RunConfig.Cancel");
         var okBtn = this.FindControl<Button>("OkButton");
         if (okBtn != null) okBtn.Content = L("RunConfig.OK");
-        var manageBtn = this.FindControl<Button>("ManageCompoundButton");
-        if (manageBtn != null) manageBtn.Content = L("RunConfig.ManageCompound");
+    }
+
+    private void SetText(string name, string text)
+    {
+        var tb = this.FindControl<TextBlock>(name);
+        if (tb != null) tb.Text = text;
     }
 
     private void InitializeComponent()
