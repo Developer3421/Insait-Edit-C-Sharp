@@ -1,0 +1,328 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:services="clr-namespace:Insait_Edit_C_Sharp.Services"
+             mc:Ignorable="d" d:DesignWidth="280" d:DesignHeight="700"
+             x:Class="Insait_Edit_C_Sharp.Controls.AccountPanelControl">
+    
+    <UserControl.Resources>
+        <!-- Colors - Fluent Orange-Purple Theme -->
+        <SolidColorBrush x:Key="AccountBgBrush" Color="#FF2A2230"/>
+        <SolidColorBrush x:Key="AccountSurfaceBrush" Color="#FF1F1A24"/>
+        <SolidColorBrush x:Key="AccountBorderBrush" Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="AccountTextBrush" Color="#FFF0E8F4"/>
+        <SolidColorBrush x:Key="AccountTextMutedBrush" Color="#FF9E90B0"/>
+        <SolidColorBrush x:Key="AccountAccentBrush" Color="#FF9B7DCF"/>
+        <SolidColorBrush x:Key="AccountYellowBrush" Color="#FFBB9A6F"/>
+        <SolidColorBrush x:Key="AccountHoverBrush" Color="#FF3E3050"/>
+    </UserControl.Resources>
+    
+    <UserControl.Styles>
+        <!-- Primary Button Style -->
+        <Style Selector="Button.account-primary">
+            <Setter Property="Background" Value="{StaticResource AccountAccentBrush}"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.account-primary:pointerover">
+            <Setter Property="Background" Value="#FFB09AE0"/>
+        </Style>
+        <Style Selector="Button.account-primary:pressed">
+            <Setter Property="Background" Value="#FF8060C0"/>
+        </Style>
+        
+        <!-- Secondary Button Style -->
+        <Style Selector="Button.account-secondary">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource AccountTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccountBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.account-secondary:pointerover">
+            <Setter Property="Background" Value="{StaticResource AccountHoverBrush}"/>
+        </Style>
+        
+        <!-- Repository Item Style -->
+        <Style Selector="Border.repo-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Border.repo-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource AccountHoverBrush}"/>
+        </Style>
+        
+        <!-- Section Header Style -->
+        <Style Selector="TextBlock.section-header">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource AccountTextMutedBrush}"/>
+            <Setter Property="Margin" Value="0,16,0,8"/>
+            <Setter Property="LetterSpacing" Value="1"/>
+        </Style>
+        
+        <!-- Icon Button Style -->
+        <Style Selector="Button.icon-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="Button.icon-btn:pointerover">
+            <Setter Property="Background" Value="{StaticResource AccountHoverBrush}"/>
+        </Style>
+        <!-- TextBox: dark background to prevent white-on-white -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{StaticResource AccountBgBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AccountTextBrush}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource AccountTextBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource AccountBgBrush}"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid RowDefinitions="Auto,*" Background="{StaticResource AccountSurfaceBrush}">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="12,10" Background="#12DCC4FF" BorderBrush="{StaticResource AccountBorderBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="ACCOUNT" FontSize="11" FontWeight="SemiBold" 
+                           Foreground="{StaticResource AccountTextMutedBrush}" VerticalAlignment="Center"
+                           LetterSpacing="1"/>
+                <Button Grid.Column="1" Classes="icon-btn" ToolTip.Tip="Refresh" Name="RefreshButton" Click="Refresh_Click">
+                    <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                </Button>
+            </Grid>
+        </Border>
+        
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Name="ContentGrid">
+                
+                <!-- Not Logged In View -->
+                <StackPanel Name="NotLoggedInPanel" Margin="16" Spacing="16" IsVisible="True">
+                    <Border Background="#20548AF7" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="🔗" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Sign in with GitHub" FontSize="16" FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Connect your GitHub account to access your repositories."
+                                       FontSize="12" Foreground="{StaticResource AccountTextMutedBrush}"
+                                       TextWrapping="Wrap" TextAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Button Classes="account-primary" Content="Sign in with GitHub" 
+                            Name="SignInButton" Click="SignIn_Click" HorizontalAlignment="Stretch"/>
+                    
+                    <!-- Device Code Panel (shown during OAuth flow) -->
+                    <StackPanel Name="DeviceCodePanel" Spacing="8" IsVisible="False">
+                        <Border Background="#30BB9A6F" CornerRadius="8" Padding="12">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Enter this code on GitHub:" FontSize="12" 
+                                           Foreground="{StaticResource AccountTextBrush}" TextAlignment="Center"/>
+                                <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="12,8">
+                                    <TextBlock Name="DeviceCodeText" Text="XXXX-XXXX" FontSize="24" FontWeight="Bold"
+                                               Foreground="{StaticResource AccountYellowBrush}" 
+                                               HorizontalAlignment="Center" FontFamily="Consolas"/>
+                                </Border>
+                                <TextBlock Text="A browser window should have opened. If not, go to github.com/login/device"
+                                           FontSize="10" Foreground="{StaticResource AccountTextMutedBrush}"
+                                           TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    
+                    <TextBlock Text="Click 'Sign in' to open GitHub in your browser."
+                               FontSize="11" Foreground="{StaticResource AccountTextMutedBrush}"
+                               TextAlignment="Center" TextWrapping="Wrap"/>
+                    
+                    <!-- Token Input Panel (alternative method) -->
+                    <StackPanel Name="TokenInputPanel" Spacing="8" IsVisible="False">
+                        <Separator Background="{StaticResource AccountBorderBrush}" Height="1" Margin="0,8"/>
+                        <TextBlock Text="Or use Personal Access Token:" FontSize="12" 
+                                   Foreground="{StaticResource AccountTextBrush}" FontWeight="SemiBold"/>
+                        <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8,6">
+                            <TextBox Name="TokenInputBox" Watermark="ghp_xxxxxxxxxxxx"
+                                     BorderThickness="0"
+                                     PasswordChar="●"
+                                     FontSize="12"/>
+                        </Border>
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                            <Button Grid.Column="0" Classes="account-primary" Content="Login with Token" 
+                                    Click="SignIn_Click" HorizontalAlignment="Stretch" Margin="0,0,4,0"/>
+                            <Button Grid.Column="1" Classes="account-secondary" Content="Get Token" 
+                                    Click="GetToken_Click" ToolTip.Tip="Open GitHub to create a token"/>
+                        </Grid>
+                    </StackPanel>
+                    
+                    <Button Classes="account-secondary" Content="Use Token Instead"
+                            Name="ShowTokenButton" Click="ShowToken_Click" HorizontalAlignment="Stretch"
+                            ToolTip.Tip="Sign in with Personal Access Token"/>
+                </StackPanel>
+                
+                <!-- Logged In View -->
+                <StackPanel Name="LoggedInPanel" Margin="12" Spacing="0" IsVisible="False">
+                    
+                    <!-- User Profile Card -->
+                    <Border Background="#309B7DCF" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Grid ColumnDefinitions="48,*">
+                            <!-- Avatar -->
+                            <Border Width="48" Height="48" CornerRadius="24" ClipToBounds="True"
+                                    Background="{StaticResource AccountBorderBrush}">
+                                <Grid>
+                                    <TextBlock Text="👤" FontSize="24" FontFamily="Segoe UI Emoji"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Name="DefaultAvatarIcon"/>
+                                    <Image Name="AvatarImage" Width="48" Height="48" Stretch="UniformToFill"/>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- User Info -->
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Name="UserNameText" Text="Username" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{StaticResource AccountTextBrush}"/>
+                                <TextBlock Name="UserLoginText" Text="@login" FontSize="12"
+                                           Foreground="{StaticResource AccountTextMutedBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Quick Stats -->
+                    <Grid ColumnDefinitions="*,*,*" Margin="0,0,0,8">
+                        <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8" Margin="0,0,4,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Name="ReposCountText" Text="0" FontSize="16" FontWeight="Bold"
+                                           Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Public Repos" FontSize="10" 
+                                           Foreground="{StaticResource AccountTextMutedBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8" Margin="2,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Name="FollowersCountText" Text="0" FontSize="16" FontWeight="Bold"
+                                           Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Followers" FontSize="10" 
+                                           Foreground="{StaticResource AccountTextMutedBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8" Margin="4,0,0,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Name="FollowingCountText" Text="0" FontSize="16" FontWeight="Bold"
+                                           Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Following" FontSize="10" 
+                                           Foreground="{StaticResource AccountTextMutedBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    
+                    <!-- Repositories Section -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="section-header" Text="YOUR REPOSITORIES"/>
+                        <Button Grid.Column="1" Classes="icon-btn" ToolTip.Tip="View on GitHub" 
+                                Name="ViewOnGitHubButton" Click="ViewOnGitHub_Click" VerticalAlignment="Bottom" Margin="0,0,0,4">
+                            <TextBlock Text="🌐" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                        </Button>
+                    </Grid>
+                    
+                    <!-- Search Box -->
+                    <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8,6" Margin="0,0,0,8">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Text="🔍" FontSize="12" FontFamily="Segoe UI Emoji" 
+                                       VerticalAlignment="Center" Margin="0,0,8,0"
+                                       Foreground="{StaticResource AccountTextMutedBrush}"/>
+                            <TextBox Grid.Column="1" Name="RepoSearchBox" Watermark="Search repositories..."
+                                     BorderThickness="0"
+                                     FontSize="12" TextChanged="RepoSearch_TextChanged"/>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Repository List -->
+                    <ItemsControl Name="RepositoriesListBox">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="services:GitHubRepository" x:CompileBindings="False">
+                                <Border Classes="repo-item" PointerPressed="RepoItem_PointerPressed">
+                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                        <!-- Repo Name & Visibility -->
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="📁" FontSize="12" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="#FFBCBEC4" VerticalAlignment="Center"/>
+                                            <Border Background="#30DCC4FF" CornerRadius="4" Padding="4,1" 
+                                                    IsVisible="{Binding IsPrivate}" VerticalAlignment="Center">
+                                                <TextBlock Text="Private" FontSize="9" Foreground="#FF6F737A"/>
+                                            </Border>
+                                        </StackPanel>
+                                        
+                                        <!-- Language Badge -->
+                                        <Border Grid.Column="1" Background="#309B7DCF" CornerRadius="4" Padding="6,2"
+                                                IsVisible="{Binding Language, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                            <TextBlock Text="{Binding Language}" FontSize="10" Foreground="#FF548AF7"/>
+                                        </Border>
+                                        
+                                        <!-- Description -->
+                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" 
+                                                   FontSize="11" Foreground="#FF6F737A" TextTrimming="CharacterEllipsis"
+                                                   Margin="18,4,0,0" MaxLines="2"/>
+                                        
+                                        <!-- Stats -->
+                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" 
+                                                    Spacing="12" Margin="18,6,0,0">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="⭐" FontSize="10" FontFamily="Segoe UI Emoji"/>
+                                                <TextBlock Text="{Binding Stars}" FontSize="10" Foreground="#FF6F737A"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="🍴" FontSize="10" FontFamily="Segoe UI Emoji"/>
+                                                <TextBlock Text="{Binding Forks}" FontSize="10" Foreground="#FF6F737A"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <!-- Load More Button -->
+                    <Button Classes="account-secondary" Content="Load more repositories" 
+                            Name="LoadMoreButton" Click="LoadMore_Click" HorizontalAlignment="Stretch"
+                            Margin="0,8,0,0"/>
+                    
+                    <!-- Sign Out Button -->
+                    <Button Classes="account-secondary" Name="SignOutButton" Click="SignOut_Click" 
+                            HorizontalAlignment="Stretch" Margin="0,16,0,0">
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="🚪" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="Sign out"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                
+                <!-- Loading Overlay -->
+                <Border Name="LoadingOverlay" Background="#CC1E1F22" IsVisible="False" ZIndex="100">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                        <TextBlock Text="⏳" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
+                        <TextBlock Name="LoadingText" Text="Loading..." FontSize="14"
+                                   Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
+

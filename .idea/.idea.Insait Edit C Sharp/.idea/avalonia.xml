@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="$USER_HOME$/Downloads/roslynpad-main (1)/roslynpad-main/samples/RoslynPadAvaloniaReplSample/App.axaml" value="$USER_HOME$/Downloads/roslynpad-main (1)/roslynpad-main/samples/RoslynPadAvaloniaReplSample/RoslynPadAvaloniaReplSample.csproj" />
+        <entry key="$USER_HOME$/Downloads/roslynpad-main (1)/roslynpad-main/samples/RoslynPadAvaloniaReplSample/MainWindow.axaml" value="$USER_HOME$/Downloads/roslynpad-main (1)/roslynpad-main/samples/RoslynPadAvaloniaReplSample/RoslynPadAvaloniaReplSample.csproj" />
+        <entry key="Insait Edit C Sharp/AddNewItemWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/AddProjectToSolutionWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/App.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/AxamlLiveHost.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/AxamlPreviewWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/CloneRepositoryWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/CompoundRunWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/AccountPanelControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/AvaloniaEditor.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/CompletionWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/CopilotCliControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/DiagnosticsPanel.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/GitPanelControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/GoToDefinitionWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/NuGetPanelControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/RenameSymbolDialog.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/RoslynCompletionWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/RoslynPadEditControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/RoslynQuickFixWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/RoslynToolsWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Esp/Controls/DevicePanelControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Esp/Windows/LedPanelDesignerWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Esp/Windows/NewNanoProjectWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/GeminiLanguageNameWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/GeminiModelWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/GeminiSettingsWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/GitWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/ImageViewerWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Insait Code Editor/InsaitEditor.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Interface Localization/English.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Interface Localization/German.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Interface Localization/Russian.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Interface Localization/Turkish.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Interface Localization/Ukrainian.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/MainWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/MenuWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/MsixManagerWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/NewProjectWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/NewSolutionWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/PreviewErrorWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/ProjectPropertiesWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/PublishProgressWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/PublishWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/RunConfigurationsWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/WelcomeWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

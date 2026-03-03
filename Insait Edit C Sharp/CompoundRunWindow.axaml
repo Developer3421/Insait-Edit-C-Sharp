@@ -1,0 +1,259 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="using:Insait_Edit_C_Sharp.Services"
+        x:Class="Insait_Edit_C_Sharp.CompoundRunWindow"
+        Title="Compound Run Configurations"
+        Width="900"
+        Height="640"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="None"
+        Background="#FF1F1A24">
+
+    <Window.Styles>
+        <Style Selector="Button.action-button">
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.action-button:pointerover">
+            <Setter Property="Background" Value="#FF4A3D58"/>
+        </Style>
+        <Style Selector="Button.primary-button">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary-button:pointerover">
+            <Setter Property="Background" Value="#FFFFD4B8"/>
+        </Style>
+        <Style Selector="Button.danger-button">
+            <Setter Property="Background" Value="#FFF38BA8"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="#20DCC4FF"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="#50FFC09F"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF352840"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8">
+        <Grid RowDefinitions="36,*,Auto">
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0" Background="#FF2D2438" CornerRadius="8,8,0,0" Name="TitleBar">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
+                        <TextBlock Text="⚡" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="Compound Run Configurations" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
+                        <Border Background="#FF4A3D58" CornerRadius="4" Padding="6,2">
+                            <TextBlock Text="Run multiple projects simultaneously" FontSize="11"
+                                       Foreground="#FF9E90B0" VerticalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    <Button Grid.Column="1" Background="Transparent" Foreground="#FF9E90B0"
+                            BorderThickness="0" Width="36" Height="36" Name="CloseButton">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1" ColumnDefinitions="280,*">
+
+                <!-- Left Panel: Compound Configs List -->
+                <Border Grid.Column="0" Background="#FF221C2C" BorderBrush="#FF3E3050" BorderThickness="0,0,1,0">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <!-- Header -->
+                        <Border Grid.Row="0" Padding="12,10" BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Compound Configurations" FontWeight="SemiBold"
+                                           Foreground="#FFFFC09F" FontSize="12"/>
+                                <TextBlock Text="Each compound config runs multiple projects at once"
+                                           FontSize="10" Foreground="#FF9E90B0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Compound List -->
+                        <ListBox Grid.Row="1" Name="CompoundList" Background="Transparent"
+                                 SelectionChanged="CompoundList_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="services:CompoundRunConfiguration" x:CompileBindings="False">
+                                    <StackPanel Spacing="4" Margin="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="⚡" FontSize="14" Foreground="#FFFFC09F"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock FontSize="10" Foreground="#FF9E90B0" Margin="20,0,0,0">
+                                            <Run Text="{Binding Configurations.Count}"/>
+                                            <Run Text=" project(s)"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- Add/Remove Buttons -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="8">
+                            <Button Content="+" Classes="action-button" Width="36" Height="32"
+                                    ToolTip.Tip="New Compound Configuration" Name="AddCompoundButton"/>
+                            <Button Content="−" Classes="action-button" Width="36" Height="32"
+                                    ToolTip.Tip="Remove Compound Configuration" Name="RemoveCompoundButton"/>
+                            <Button Content="📋" Classes="action-button" Width="36" Height="32"
+                                    ToolTip.Tip="Duplicate" Name="DuplicateCompoundButton"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Right Panel: Compound Config Details -->
+                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto" Name="DetailsScrollViewer">
+                    <StackPanel Margin="20" Spacing="18" Name="DetailsPanel">
+
+                        <!-- Empty state -->
+                        <Border Name="EmptyStatePanel" IsVisible="True" Padding="40">
+                            <StackPanel HorizontalAlignment="Center" Spacing="12">
+                                <TextBlock Text="⚡" FontSize="48" HorizontalAlignment="Center"
+                                           Foreground="#FF3E3050"/>
+                                <TextBlock Text="No compound configuration selected"
+                                           Foreground="#FF9E90B0" HorizontalAlignment="Center"
+                                           FontSize="14"/>
+                                <TextBlock Text="Click '+' to create a new compound configuration"
+                                           Foreground="#FF736886" HorizontalAlignment="Center"
+                                           FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Config Details (shown when a compound is selected) -->
+                        <StackPanel Name="ConfigDetailsPanel" IsVisible="False" Spacing="18">
+
+                            <!-- Name -->
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="Configuration Name" FontWeight="SemiBold"
+                                           Foreground="#FFF0E8F4" FontSize="12"/>
+                                <TextBox Name="CompoundNameBox" Watermark="e.g. Full Stack, Backend + Frontend"/>
+                            </StackPanel>
+
+                            <!-- Projects to Run -->
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="Projects to Launch" FontWeight="SemiBold"
+                                                   Foreground="#FFF0E8F4" FontSize="12"/>
+                                        <TextBlock Text="All selected projects will be launched simultaneously"
+                                                   FontSize="10" Foreground="#FF9E90B0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Available Configs List (checkboxes) -->
+                                <Border Background="#FF2A2230" CornerRadius="8" Padding="4"
+                                        MinHeight="160" MaxHeight="280">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Name="AvailableConfigsPanel" Spacing="2"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Execution Options -->
+                            <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Execution Options" FontWeight="SemiBold"
+                                               Foreground="#FFFFC09F" FontSize="12"/>
+
+                                    <CheckBox Name="StartSequentiallyCheck"
+                                              Content="Start projects sequentially (one after another)"
+                                              IsCheckedChanged="StartSequentially_Changed"/>
+
+                                    <StackPanel Name="SequentialOptions" Spacing="10" Margin="20,0,0,0">
+                                        <CheckBox Name="StopOnFailureCheck"
+                                                  Content="Stop on first failure"
+                                                  IsEnabled="False"/>
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="Delay between starts (ms)"
+                                                       Foreground="#FFF0E8F4" FontSize="12"/>
+                                            <TextBox Name="DelayBox" Watermark="0"
+                                                     IsEnabled="False"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Preview -->
+                            <Border Background="#FF1A1520" CornerRadius="8" Padding="16" Name="PreviewPanel">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Launch Preview" FontWeight="SemiBold"
+                                               Foreground="#FFA6E3A1" FontSize="12"/>
+                                    <StackPanel Name="PreviewItemsPanel" Spacing="6"/>
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#FF2A2230" Padding="16,12">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                        <Button Content="▶▶ Run All" Classes="primary-button" Name="RunAllButton"
+                                ToolTip.Tip="Build and run all projects in this compound configuration"/>
+                        <Button Content="■ Stop All" Classes="danger-button" Name="StopAllButton"
+                                IsVisible="False"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                        <Button Content="Apply" Classes="action-button" Name="ApplyButton"/>
+                        <Button Content="Cancel" Classes="action-button" Name="CancelButton"/>
+                        <Button Content="OK" Classes="primary-button" Name="OkButton"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>
+

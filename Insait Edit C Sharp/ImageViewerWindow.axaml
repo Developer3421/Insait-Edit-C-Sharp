@@ -1,0 +1,123 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        x:Class="Insait_Edit_C_Sharp.ImageViewerWindow"
+        Title="Image Viewer"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        Width="900"
+        Height="700"
+        MinWidth="400"
+        MinHeight="300"
+        CanResize="True"
+        UseLayoutRounding="True"
+        FontFamily="Segoe UI, Arial, Tahoma"
+        Background="#FF1F1A24">
+
+    <Grid RowDefinitions="36,Auto,*,Auto">
+        <!-- Title Bar -->
+        <Border Grid.Row="0" Background="#FF1A1520" Padding="8,0"
+                PointerPressed="TitleBar_PointerPressed">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="🖼️" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                    <TextBlock Name="TitleText" Text="Image Viewer" FontSize="12" 
+                               Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                    <Button Classes="win-btn" Width="36" Height="30" Click="Minimize_Click"
+                            Background="Transparent" BorderThickness="0">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/MinButton.png" Width="24" Height="24"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="win-btn" Width="36" Height="30" Click="MaximizeRestore_Click"
+                            Background="Transparent" BorderThickness="0">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/MaxButton.png" Width="24" Height="24"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="win-btn close-btn" Width="36" Height="30" Click="Close_Click"
+                            Background="Transparent" BorderThickness="0">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="24" Height="24"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="1" Background="#FF2A2230" Padding="8,4" 
+                BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <Button Name="ZoomInBtn" Classes="tool-btn" ToolTip.Tip="Zoom In (Ctrl++)" Click="ZoomIn_Click"
+                        Background="Transparent" BorderThickness="0" Padding="8,4" CornerRadius="4">
+                    <TextBlock Text="🔍+" FontSize="14" Foreground="#FFF0E8F4"/>
+                </Button>
+                <Button Name="ZoomOutBtn" Classes="tool-btn" ToolTip.Tip="Zoom Out (Ctrl+-)" Click="ZoomOut_Click"
+                        Background="Transparent" BorderThickness="0" Padding="8,4" CornerRadius="4">
+                    <TextBlock Text="🔍−" FontSize="14" Foreground="#FFF0E8F4"/>
+                </Button>
+                <Button Name="FitToWindowBtn" Classes="tool-btn" ToolTip.Tip="Fit to Window" Click="FitToWindow_Click"
+                        Background="Transparent" BorderThickness="0" Padding="8,4" CornerRadius="4">
+                    <TextBlock Text="⬜" FontSize="14" Foreground="#FFF0E8F4"/>
+                </Button>
+                <Button Name="ActualSizeBtn" Classes="tool-btn" ToolTip.Tip="Actual Size (1:1)" Click="ActualSize_Click"
+                        Background="Transparent" BorderThickness="0" Padding="8,4" CornerRadius="4">
+                    <TextBlock Text="1:1" FontSize="12" FontWeight="Bold" Foreground="#FFF0E8F4"/>
+                </Button>
+                <Border Width="1" Background="#FF3E3050" Margin="4,2"/>
+                <TextBlock Name="ZoomLevelText" Text="100%" FontSize="12" Foreground="#FF9E90B0" 
+                           VerticalAlignment="Center" Margin="8,0"/>
+                <Border Width="1" Background="#FF3E3050" Margin="4,2"/>
+                <Button Name="OpenExternalBtn" Classes="tool-btn" ToolTip.Tip="Open in system viewer" Click="OpenExternal_Click"
+                        Background="Transparent" BorderThickness="0" Padding="8,4" CornerRadius="4">
+                    <TextBlock Text="🔗" FontSize="14" Foreground="#FFF0E8F4"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Image Display Area -->
+        <Border Grid.Row="2" Background="#FF1A1520" ClipToBounds="True">
+            <ScrollViewer Name="ImageScrollViewer" 
+                          HorizontalScrollBarVisibility="Auto" 
+                          VerticalScrollBarVisibility="Auto"
+                          Background="#FF1A1520">
+                <Panel Name="ImagePanel" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Image Name="ImageDisplay" 
+                           Stretch="None"
+                           RenderTransformOrigin="0.5,0.5"
+                           PointerWheelChanged="Image_PointerWheelChanged"/>
+                </Panel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3" Background="#FF2A2230" Padding="12,4"
+                BorderBrush="#FF3E3050" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                <TextBlock Name="FileNameText" Grid.Column="0" Text="" FontSize="11" 
+                           Foreground="#FF9E90B0" VerticalAlignment="Center"/>
+                <TextBlock Name="DimensionsText" Grid.Column="1" Text="" FontSize="11" 
+                           Foreground="#FF9E90B0" VerticalAlignment="Center" Margin="16,0"/>
+                <TextBlock Name="FileSizeText" Grid.Column="2" Text="" FontSize="11" 
+                           Foreground="#FF9E90B0" VerticalAlignment="Center" Margin="16,0"/>
+                <TextBlock Name="FileTypeText" Grid.Column="3" Text="" FontSize="11" 
+                           Foreground="#FF9E90B0" VerticalAlignment="Center" Margin="16,0"/>
+            </Grid>
+        </Border>
+    </Grid>
+
+    <Window.Styles>
+        <Style Selector="Button.win-btn:pointerover">
+            <Setter Property="Background" Value="#20DCC4FF"/>
+        </Style>
+        <Style Selector="Button.close-btn:pointerover">
+            <Setter Property="Background" Value="#30DCC4FF"/>
+        </Style>
+        <Style Selector="Button.tool-btn:pointerover">
+            <Setter Property="Background" Value="#20DCC4FF"/>
+        </Style>
+    </Window.Styles>
+</Window>
+

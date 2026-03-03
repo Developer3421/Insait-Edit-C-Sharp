@@ -1,0 +1,100 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
+        x:Class="Insait_Edit_C_Sharp.MenuWindow"
+        Title="Menu"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="600"
+        Height="500"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="#FF1F1A24">
+
+    <Window.Styles>
+        <!-- Menu Category Button -->
+        <Style Selector="Button.menu-category">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.menu-category:pointerover">
+            <Setter Property="Background" Value="#20DCC4FF"/>
+        </Style>
+        <Style Selector="Button.menu-category.active">
+            <Setter Property="Background" Value="#30FFC09F"/>
+        </Style>
+        
+        <!-- Menu Item Button -->
+        <Style Selector="Button.menu-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.menu-item:pointerover">
+            <Setter Property="Background" Value="#20DCC4FF"/>
+        </Style>
+        
+        <!-- Emoji icons style - preserve natural colors -->
+        <Style Selector="Button TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8">
+        <Grid RowDefinitions="36,*">
+            <!-- Custom Title Bar -->
+            <Border Grid.Row="0" Background="#FF2D2438" CornerRadius="8,8,0,0"
+                    Name="TitleBar" PointerPressed="TitleBar_PointerPressed">
+                <Grid ColumnDefinitions="*,Auto">
+                    <!-- Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+                        <TextBlock Text="☰" FontSize="14" Foreground="#FFFFC09F" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Menu" FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    
+                    <!-- Close Button -->
+                    <Button Grid.Column="1" Name="CloseButton" Click="CloseButton_Click"
+                            Background="Transparent" BorderThickness="0"
+                            Width="36" Height="36" Padding="0" Cursor="Hand">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Border>
+            
+            <!-- Main Content -->
+            <Grid Grid.Row="1" ColumnDefinitions="160,*">
+                <!-- Left Sidebar - Categories -->
+                <Border Grid.Column="0" Background="#FF2A2230" BorderBrush="#FF3E3050" BorderThickness="0,0,1,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Name="CategoriesPanel" Margin="0,8,0,8">
+                            <!-- Categories will be added programmatically -->
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Right Content Area -->
+                <Border Grid.Column="1" Padding="16">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Name="ContentPanel" Spacing="4">
+                            <!-- Content will be added programmatically -->
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

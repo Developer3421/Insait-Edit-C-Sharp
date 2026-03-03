@@ -1,0 +1,448 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="700"
+             x:Class="Insait_Edit_C_Sharp.Controls.NuGetPanelControl">
+    
+    <UserControl.Resources>
+        <!-- Colors - Fluent Orange-Purple Theme -->
+        <SolidColorBrush x:Key="NuGetBgBrush" Color="#FF2A2230"/>
+        <SolidColorBrush x:Key="NuGetSurfaceBrush" Color="#FF1F1A24"/>
+        <SolidColorBrush x:Key="NuGetBorderBrush" Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="NuGetTextBrush" Color="#FFF0E8F4"/>
+        <SolidColorBrush x:Key="NuGetTextMutedBrush" Color="#FF9E90B0"/>
+        <SolidColorBrush x:Key="NuGetAccentBrush" Color="#FF9B7DCF"/>
+        <SolidColorBrush x:Key="NuGetGreenBrush" Color="#FF6AAB73"/>
+        <SolidColorBrush x:Key="NuGetRedBrush" Color="#FFEF5350"/>
+        <SolidColorBrush x:Key="NuGetYellowBrush" Color="#FFBB9A6F"/>
+        <SolidColorBrush x:Key="NuGetPurpleBrush" Color="#FF9B7DCF"/>
+        <SolidColorBrush x:Key="NuGetHoverBrush" Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="NuGetSelectedBrush" Color="#FF352840"/>
+        <SolidColorBrush x:Key="NuGetOrangeBrush" Color="#FFFFC09F"/>
+        <SolidColorBrush x:Key="NuGetBlueBrush" Color="#FF548AF7"/>
+        
+        <!-- Emoji font family for consistent cross-platform rendering -->
+        <FontFamily x:Key="EmojiFont">Segoe UI Emoji, Noto Color Emoji, Apple Color Emoji, Segoe UI Symbol</FontFamily>
+    </UserControl.Resources>
+    
+    <UserControl.Styles>
+        <!-- Tab Button Style -->
+        <Style Selector="Button.nuget-tab">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource NuGetTextMutedBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CornerRadius" Value="0"/>
+        </Style>
+        <Style Selector="Button.nuget-tab:pointerover">
+            <Setter Property="Background" Value="{StaticResource NuGetHoverBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource NuGetTextBrush}"/>
+        </Style>
+        <Style Selector="Button.nuget-tab.active">
+            <Setter Property="BorderBrush" Value="{StaticResource NuGetAccentBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource NuGetTextBrush}"/>
+        </Style>
+        
+        <!-- Primary Button Style -->
+        <Style Selector="Button.nuget-primary">
+            <Setter Property="Background" Value="{StaticResource NuGetAccentBrush}"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.nuget-primary:pointerover">
+            <Setter Property="Background" Value="#FFB09AE0"/>
+        </Style>
+        <Style Selector="Button.nuget-primary:pressed">
+            <Setter Property="Background" Value="#FF8060C0"/>
+        </Style>
+        
+        <!-- Danger Button Style -->
+        <Style Selector="Button.nuget-danger">
+            <Setter Property="Background" Value="#40EF5350"/>
+            <Setter Property="Foreground" Value="{StaticResource NuGetRedBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource NuGetRedBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Button.nuget-danger:pointerover">
+            <Setter Property="Background" Value="#60EF5350"/>
+        </Style>
+        
+        <!-- Secondary Button Style -->
+        <Style Selector="Button.nuget-secondary">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource NuGetTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource NuGetBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Button.nuget-secondary:pointerover">
+            <Setter Property="Background" Value="{StaticResource NuGetHoverBrush}"/>
+        </Style>
+        
+        <!-- Update Button Style -->
+        <Style Selector="Button.nuget-update">
+            <Setter Property="Background" Value="{StaticResource NuGetGreenBrush}"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.nuget-update:pointerover">
+            <Setter Property="Background" Value="#FF7BC485"/>
+        </Style>
+        
+        <!-- Package Item Style -->
+        <Style Selector="Border.package-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Border.package-item:pointerover">
+            <Setter Property="Background" Value="{StaticResource NuGetHoverBrush}"/>
+        </Style>
+        
+        <!-- Icon Button Style -->
+        <Style Selector="Button.icon-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="Button.icon-btn:pointerover">
+            <Setter Property="Background" Value="{StaticResource NuGetHoverBrush}"/>
+        </Style>
+        
+        <!-- Emoji text style -->
+        <Style Selector="TextBlock.emoji">
+            <Setter Property="FontFamily" Value="{StaticResource EmojiFont}"/>
+        </Style>
+        
+        <!-- TextBox high-contrast style for dark backgrounds -->
+        <Style Selector="TextBox">
+            <Setter Property="Foreground" Value="{StaticResource NuGetTextBrush}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource NuGetTextBrush}"/>
+            <Setter Property="SelectionBrush" Value="{StaticResource NuGetAccentBrush}"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF"/>
+            <Setter Property="Background" Value="{StaticResource NuGetBgBrush}"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource NuGetBgBrush}"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource NuGetAccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="{StaticResource NuGetTextMutedBrush}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+    </UserControl.Styles>
+    
+    <Grid RowDefinitions="Auto,Auto,*" Background="{StaticResource NuGetSurfaceBrush}">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="12,10" Background="#12CBA6F7" BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Name="HeaderTitleText" Text="NUGET PACKAGES" FontSize="11" FontWeight="SemiBold" 
+                           Foreground="{StaticResource NuGetTextMutedBrush}" VerticalAlignment="Center"
+                           LetterSpacing="1"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                    <Button Classes="icon-btn" ToolTip.Tip="Popular nanoFramework Packages" Name="EspSuggestionsButton" 
+                            Click="EspSuggestionsButton_Click" IsVisible="False">
+                        <TextBlock Text="📌" FontSize="14" Classes="emoji"/>
+                    </Button>
+                    <Button Classes="icon-btn" ToolTip.Tip="Refresh" Name="RefreshButton" Click="RefreshButton_Click">
+                        <TextBlock Text="🔄" FontSize="14" Classes="emoji"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Tab Bar -->
+        <Border Grid.Row="1" Background="#10000000" BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+                <Button Classes="nuget-tab active" Name="BrowseTab" Click="BrowseTab_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="🔍" FontSize="12" Classes="emoji"/>
+                        <TextBlock Text="Browse"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="nuget-tab" Name="InstalledTab" Click="InstalledTab_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="📦" FontSize="12" Classes="emoji"/>
+                        <TextBlock Text="Installed"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="nuget-tab" Name="UpdatesTab" Click="UpdatesTab_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="⬆️" FontSize="12" Classes="emoji"/>
+                        <TextBlock Text="Updates" Name="UpdatesTabText"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+        
+        <!-- Content Area -->
+        <Grid Grid.Row="2">
+            <!-- Browse Panel -->
+            <Grid Name="BrowsePanel" RowDefinitions="Auto,*" IsVisible="True">
+                <!-- Search Box -->
+                <Border Grid.Row="0" Margin="8,8,8,4" Padding="0" Background="#12CBA6F7" CornerRadius="6">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Name="SearchBox" Watermark="Search NuGet packages..." 
+                                 BorderThickness="1"
+                                 BorderBrush="{StaticResource NuGetBorderBrush}"
+                                 CornerRadius="6" Padding="10,8"
+                                 KeyDown="SearchBox_KeyDown"/>
+                        <Button Grid.Column="1" Classes="icon-btn" Margin="0,0,4,0" Click="SearchButton_Click">
+                            <TextBlock Text="🔎" FontSize="14" FontFamily="{StaticResource EmojiFont}"/>
+                        </Button>
+                    </Grid>
+                </Border>
+                
+                <!-- Search Results -->
+                <ScrollViewer Grid.Row="1" Margin="4,0">
+                    <StackPanel Name="SearchResultsPanel" Margin="4">
+                        <!-- Placeholder -->
+                        <TextBlock Text="Search for NuGet packages above" FontSize="12" 
+                                   Foreground="{StaticResource NuGetTextMutedBrush}" 
+                                   FontStyle="Italic" Margin="8,16"
+                                   Name="SearchPlaceholder"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+            
+            <!-- Installed Panel -->
+            <Grid Name="InstalledPanel" RowDefinitions="Auto,*" IsVisible="False">
+                <!-- Project Info -->
+                <Border Grid.Row="0" Margin="8" Padding="10" Background="#12CBA6F7" CornerRadius="6">
+                    <StackPanel>
+                        <TextBlock Text="Project:" FontSize="11" Foreground="{StaticResource NuGetTextMutedBrush}"/>
+                        <TextBlock Name="ProjectNameText" Text="No project loaded" FontSize="12" 
+                                   Foreground="{StaticResource NuGetTextBrush}" 
+                                   TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Installed Packages List -->
+                <ScrollViewer Grid.Row="1" Margin="4,0">
+                    <StackPanel Name="InstalledPackagesPanel" Margin="4">
+                        <TextBlock Text="No packages installed" FontSize="12" 
+                                   Foreground="{StaticResource NuGetTextMutedBrush}" 
+                                   FontStyle="Italic" Margin="8,16"
+                                   Name="InstalledPlaceholder"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+            
+            <!-- Updates Panel -->
+            <Grid Name="UpdatesPanel" RowDefinitions="Auto,*" IsVisible="False">
+                <!-- Updates Header -->
+                <Border Grid.Row="0" Margin="8" Padding="10" Background="#12CBA6F7" CornerRadius="6">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel>
+                            <TextBlock Name="UpdatesCountText" Text="0 updates available" FontSize="12" 
+                                       Foreground="{StaticResource NuGetTextBrush}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="nuget-update" Content="Update All" 
+                                Name="UpdateAllButton" Click="UpdateAllButton_Click"
+                                IsVisible="False"/>
+                    </Grid>
+                </Border>
+                
+                <!-- Updates List -->
+                <ScrollViewer Grid.Row="1" Margin="4,0">
+                    <StackPanel Name="UpdatesPackagesPanel" Margin="4">
+                        <TextBlock Text="All packages are up to date" FontSize="12" 
+                                   Foreground="{StaticResource NuGetTextMutedBrush}" 
+                                   FontStyle="Italic" Margin="8,16"
+                                   Name="UpdatesPlaceholder"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+            
+            <!-- Loading Overlay -->
+            <Border Name="LoadingOverlay" IsVisible="False" Background="#80000000" 
+                    CornerRadius="0" ZIndex="100">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+                    <ProgressBar IsIndeterminate="True" Width="120"/>
+                    <TextBlock Name="LoadingText" Text="Loading..." FontSize="12" 
+                               Foreground="{StaticResource NuGetTextBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Package Details Popup -->
+            <Border Name="PackageDetailsPanel" IsVisible="False" Background="{StaticResource NuGetSurfaceBrush}" 
+                    BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,1,0,0" ZIndex="50">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Details Header -->
+                    <Border Grid.Row="0" Padding="12,10" Background="#12CBA6F7">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Button Grid.Column="0" Classes="icon-btn" Click="CloseDetailsButton_Click" Margin="0,0,8,0">
+                                <TextBlock Text="←" FontSize="16" Foreground="{StaticResource NuGetTextBrush}"/>
+                            </Button>
+                            <TextBlock Grid.Column="1" Text="Package Details" FontSize="12" FontWeight="SemiBold" 
+                                       Foreground="{StaticResource NuGetTextBrush}" VerticalAlignment="Center"
+                                       Name="PackageDetailsHeaderText"/>
+                            <Button Grid.Column="2" Classes="icon-btn" Name="NuGetOrgLinkButton" Click="NuGetOrgLink_Click" 
+                                    ToolTip.Tip="View on nuget.org">
+                                <TextBlock Text="🌐" FontSize="14" FontFamily="{StaticResource EmojiFont}"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    
+                    <!-- Details Content -->
+                    <ScrollViewer Grid.Row="1" Margin="12">
+                        <StackPanel Spacing="14">
+                            <!-- Package Icon and Name -->
+                            <Grid ColumnDefinitions="48,*">
+                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="8" Background="#12CBA6F7" ClipToBounds="True">
+                                    <Panel>
+                                        <TextBlock Text="📦" FontSize="22" FontFamily="{StaticResource EmojiFont}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Name="DetailDefaultIcon"/>
+                                        <Image Name="DetailIconImage" Stretch="Uniform" Width="48" Height="48"/>
+                                    </Panel>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Name="DetailTitleText" Text="Package Name" FontSize="16" FontWeight="SemiBold" 
+                                                   Foreground="{StaticResource NuGetTextBrush}"/>
+                                        <Border Name="DetailVerifiedBadge" Background="#309B7DCF" CornerRadius="4" 
+                                                Padding="6,2" VerticalAlignment="Center" IsVisible="False">
+                                            <TextBlock Text="✓ Verified" FontSize="9" Foreground="{StaticResource NuGetAccentBrush}"
+                                                       Name="VerifiedBadgeText"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Name="DetailAuthorText" Text="by Author" FontSize="11" 
+                                               Foreground="{StaticResource NuGetTextMutedBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                            
+                            <!-- Version Selector -->
+                            <Border Background="{StaticResource NuGetBgBrush}" CornerRadius="6" Padding="10,8">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="VERSION" FontSize="10" FontWeight="SemiBold" 
+                                               Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
+                                               Name="VersionLabelText"/>
+                                    <ComboBox Name="VersionComboBox" MinWidth="150" 
+                                              Background="#FF1F1A24" BorderBrush="{StaticResource NuGetBorderBrush}"
+                                              HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Stats Grid -->
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto">
+                                <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource NuGetBgBrush}" CornerRadius="6" Padding="10,8" Margin="0,0,3,0">
+                                    <StackPanel>
+                                        <TextBlock Text="DOWNLOADS" FontSize="9" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
+                                                   Name="DownloadsLabelText"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+                                            <TextBlock Text="📥" FontSize="13" FontFamily="{StaticResource EmojiFont}"/>
+                                            <TextBlock Name="DetailDownloadsText" Text="—" FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource NuGetTextBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource NuGetBgBrush}" CornerRadius="6" Padding="10,8" Margin="3,0,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="PUBLISHED" FontSize="9" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
+                                                   Name="PublishedLabelText"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+                                            <TextBlock Text="📅" FontSize="13" FontFamily="{StaticResource EmojiFont}"/>
+                                            <TextBlock Name="DetailPublishedText" Text="—" FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource NuGetTextBrush}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                            
+                            <!-- Description -->
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="DESCRIPTION" FontSize="10" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
+                                           Name="DescriptionLabelText"/>
+                                <TextBlock Name="DetailDescriptionText" Text="No description available" 
+                                           FontSize="12" Foreground="{StaticResource NuGetTextBrush}"
+                                           TextWrapping="Wrap" LineHeight="20"/>
+                            </StackPanel>
+                            
+                            <!-- Dependencies -->
+                            <StackPanel Spacing="4" Name="DependenciesPanel" IsVisible="False">
+                                <TextBlock Text="DEPENDENCIES" FontSize="10" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
+                                           Name="DependenciesLabelText"/>
+                                <StackPanel Name="DependenciesListPanel" Spacing="2"/>
+                            </StackPanel>
+                            
+                            <!-- Tags -->
+                            <StackPanel Spacing="4" Name="TagsPanel">
+                                <TextBlock Text="TAGS" FontSize="10" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
+                                           Name="TagsLabelText"/>
+                                <WrapPanel Name="TagsWrapPanel" Orientation="Horizontal"/>
+                            </StackPanel>
+                            
+                            <!-- Links -->
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="LINKS" FontSize="10" FontWeight="SemiBold" 
+                                           Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
+                                           Name="LinksLabelText"/>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Classes="nuget-secondary" Name="ProjectLinkButton" Click="ProjectLinkButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="🔗" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
+                                            <TextBlock Text="Project" Name="ProjectLinkText"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                    
+                    <!-- Install/Uninstall Button -->
+                    <Border Grid.Row="2" Padding="12" Background="#10000000" BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,1,0,0">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <TextBlock Name="DetailInstalledVersionText" FontSize="11" VerticalAlignment="Center"
+                                       Foreground="{StaticResource NuGetTextMutedBrush}" IsVisible="False"/>
+                            <Button Grid.Column="1" Classes="nuget-danger" Name="UninstallButton" Click="UninstallButton_Click" 
+                                    Margin="0,0,8,0" IsVisible="False">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🗑️" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
+                                    <TextBlock Text="Uninstall" Name="UninstallButtonText"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="2" Classes="nuget-primary" Name="InstallButton" Click="InstallButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="📦" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
+                                    <TextBlock Text="Install" Name="InstallButtonText"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
+
