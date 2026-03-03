@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using Insait_Edit_C_Sharp.Services;
 using System;
 using System.Collections.Generic;
@@ -76,6 +78,18 @@ public partial class PublishWindow : Window
         if (browseOutputButton != null)
         {
             browseOutputButton.Click += BrowseOutput_Click;
+        }
+
+        var browseIconButton = this.FindControl<Button>("BrowseIconButton");
+        if (browseIconButton != null)
+        {
+            browseIconButton.Click += BrowseIcon_Click;
+        }
+
+        var clearIconButton = this.FindControl<Button>("ClearIconButton");
+        if (clearIconButton != null)
+        {
+            clearIconButton.Click += ClearIcon_Click;
         }
 
         // Quick preset buttons
@@ -346,7 +360,7 @@ public partial class PublishWindow : Window
 
     private async void BrowseOutput_Click(object? sender, RoutedEventArgs e)
     {
-        var dialog = await StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions
+        var dialog = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = "Select Output Folder",
             AllowMultiple = false
@@ -359,6 +373,79 @@ public partial class PublishWindow : Window
             {
                 outputBox.Text = dialog[0].Path.LocalPath;
             }
+        }
+    }
+
+    private async void BrowseIcon_Click(object? sender, RoutedEventArgs e)
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Select Application Icon (.ico)",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("Icon files") { Patterns = new[] { "*.ico" } },
+                new FilePickerFileType("All files")  { Patterns = new[] { "*.*" } }
+            }
+        });
+
+        if (files.Count > 0)
+        {
+            var iconPath = files[0].Path.LocalPath;
+            var iconBox = this.FindControl<TextBox>("IconPathBox");
+            if (iconBox != null)
+                iconBox.Text = iconPath;
+
+            UpdateIconPreview(iconPath);
+        }
+    }
+
+    private void ClearIcon_Click(object? sender, RoutedEventArgs e)
+    {
+        var iconBox = this.FindControl<TextBox>("IconPathBox");
+        if (iconBox != null)
+            iconBox.Text = "";
+
+        UpdateIconPreview(null);
+    }
+
+    private void UpdateIconPreview(string? iconPath)
+    {
+        var previewImage = this.FindControl<Image>("IconPreviewImage");
+        var placeholder = this.FindControl<TextBlock>("IconPlaceholder");
+
+        if (!string.IsNullOrEmpty(iconPath) && File.Exists(iconPath))
+        {
+            try
+            {
+                using var stream = File.OpenRead(iconPath);
+                var bitmap = new Bitmap(stream);
+                if (previewImage != null)
+                {
+                    previewImage.Source = bitmap;
+                    previewImage.IsVisible = true;
+                }
+                if (placeholder != null)
+                    placeholder.IsVisible = false;
+            }
+            catch
+            {
+                // If the .ico can't be loaded as bitmap, just show the path
+                if (previewImage != null)
+                    previewImage.IsVisible = false;
+                if (placeholder != null)
+                    placeholder.IsVisible = true;
+            }
+        }
+        else
+        {
+            if (previewImage != null)
+            {
+                previewImage.Source = null;
+                previewImage.IsVisible = false;
+            }
+            if (placeholder != null)
+                placeholder.IsVisible = true;
         }
     }
 
@@ -386,6 +473,7 @@ public partial class PublishWindow : Window
         var compressionCheck = this.FindControl<CheckBox>("CompressionCheck");
         var nativeLibsCheck = this.FindControl<CheckBox>("NativeLibrariesCheck");
         var profileCombo = this.FindControl<ComboBox>("PublishProfileComboBox");
+        var iconPathBox = this.FindControl<TextBox>("IconPathBox");
 
         if (projectCombo == null || projectCombo.SelectedIndex < 0 || projectCombo.SelectedIndex >= _projects.Count)
         {
@@ -435,7 +523,8 @@ public partial class PublishWindow : Window
             TrimUnusedAssemblies = trimCheck?.IsChecked ?? false,
             EnableCompressionInSingleFile = compressionCheck?.IsChecked ?? false,
             IncludeNativeLibrariesForSelfExtract = nativeLibsCheck?.IsChecked ?? false,
-            PublishProfileName = publishProfile
+            PublishProfileName = publishProfile,
+            ApplicationIcon = string.IsNullOrWhiteSpace(iconPathBox?.Text) ? null : iconPathBox.Text
         };
     }
 }

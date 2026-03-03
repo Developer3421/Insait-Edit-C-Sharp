@@ -224,6 +224,11 @@ public class PublishService
             args.Append($" -p:PublishProfile=\"{profile.PublishProfileName}\"");
         }
 
+        if (!string.IsNullOrEmpty(profile.ApplicationIcon))
+        {
+            args.Append($" -p:ApplicationIcon=\"{profile.ApplicationIcon}\"");
+        }
+
         // Additional properties
         foreach (var prop in profile.AdditionalProperties)
         {
@@ -462,6 +467,7 @@ public class PublishProfile
     public bool TrimUnusedAssemblies { get; set; }
     public bool EnableCompressionInSingleFile { get; set; }
     public bool IncludeNativeLibrariesForSelfExtract { get; set; }
+    public string? ApplicationIcon { get; set; }
     public Dictionary<string, string> AdditionalProperties { get; set; } = new();
 }
 

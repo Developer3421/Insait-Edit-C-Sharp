@@ -130,6 +130,37 @@
                         </Grid>
                     </StackPanel>
 
+                    <!-- Application Icon -->
+                    <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Application Icon (.ico)" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <!-- Icon preview -->
+                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="8"
+                                        Background="#FF352840" BorderBrush="#FF3E3050" BorderThickness="1"
+                                        Margin="0,0,12,0" Name="IconPreviewBorder">
+                                    <Panel>
+                                        <TextBlock Text="🖼️" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Name="IconPlaceholder"/>
+                                        <Image Name="IconPreviewImage" Width="40" Height="40" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               IsVisible="False"/>
+                                    </Panel>
+                                </Border>
+                                <TextBox Grid.Column="1" Name="IconPathBox" Watermark="(none — uses default icon)"
+                                         IsReadOnly="True" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                    <Button Content="📁" Classes="action-button" Margin="8,0,0,0" Width="40" 
+                                            Name="BrowseIconButton" ToolTip.Tip="Browse for .ico file"/>
+                                    <Button Content="✕" Classes="action-button" Margin="4,0,0,0" Width="32"
+                                            Name="ClearIconButton" ToolTip.Tip="Clear icon" FontSize="11"/>
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="Select an .ico file to embed as the application icon in the published executable"
+                                       FontSize="11" Foreground="#FF9E90B0" FontStyle="Italic"/>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Publish Options -->
                     <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12" x:CompileBindings="False">
