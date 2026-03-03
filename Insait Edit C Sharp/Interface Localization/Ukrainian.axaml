@@ -626,6 +626,11 @@
     <x:String x:Key="Publish.EstimatedSize">Очікуваний розмір з'явиться після публікації</x:String>
     <x:String x:Key="Publish.Cancel">Скасувати</x:String>
     <x:String x:Key="Publish.Publish">📦 Опублікувати</x:String>
+    <x:String x:Key="Publish.ApplicationIcon">Іконка додатку (.ico)</x:String>
+    <x:String x:Key="Publish.IconPlaceholder">(немає — використовується стандартна іконка)</x:String>
+    <x:String x:Key="Publish.IconHint">Виберіть файл .ico для вбудовування як іконку додатку в опублікований виконуваний файл</x:String>
+    <x:String x:Key="Publish.BrowseIcon">Вибрати файл .ico</x:String>
+    <x:String x:Key="Publish.ClearIcon">Очистити іконку</x:String>
 
     <!-- ── 16. ProjectPropertiesWindow ────────────────────────────── -->
     <x:String x:Key="ProjectProps.Title">Властивості проєкту</x:String>

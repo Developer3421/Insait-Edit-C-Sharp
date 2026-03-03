@@ -626,6 +626,11 @@
     <x:String x:Key="Publish.EstimatedSize">Estimated output size will appear after publish</x:String>
     <x:String x:Key="Publish.Cancel">Cancel</x:String>
     <x:String x:Key="Publish.Publish">📦 Publish</x:String>
+    <x:String x:Key="Publish.ApplicationIcon">Application Icon (.ico)</x:String>
+    <x:String x:Key="Publish.IconPlaceholder">(none — uses default icon)</x:String>
+    <x:String x:Key="Publish.IconHint">Select an .ico file to embed as the application icon in the published executable</x:String>
+    <x:String x:Key="Publish.BrowseIcon">Browse for .ico file</x:String>
+    <x:String x:Key="Publish.ClearIcon">Clear icon</x:String>
 
     <!-- ── 16. ProjectPropertiesWindow ────────────────────────────── -->
     <x:String x:Key="ProjectProps.Title">Project Properties</x:String>

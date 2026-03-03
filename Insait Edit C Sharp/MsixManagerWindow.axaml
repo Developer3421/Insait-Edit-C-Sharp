@@ -279,7 +279,10 @@
                                     </Grid>
                                     <StackPanel Spacing="5">
                                         <TextBlock Name="BuildLogoLabel" Text="Logo (relative path inside package)" Classes="fl"/>
-                                        <TextBox Name="BuildLogoBox" Watermark="Assets\Square150x150Logo.png"/>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBox Grid.Column="0" Name="BuildLogoBox" Watermark="Assets\Square150x150Logo.png"/>
+                                            <Button Grid.Column="1" Content="Browse…" Classes="action-btn" Margin="8,0,0,0" Name="BrowseLogoBtn"/>
+                                        </Grid>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>

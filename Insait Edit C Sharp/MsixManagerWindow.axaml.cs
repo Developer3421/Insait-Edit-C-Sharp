@@ -221,6 +221,7 @@ public partial class MsixManagerWindow : Window
         Bind("BrowseProjectBtn",   (Button b) => b.Click += BrowseProject_Click);
         Bind("BrowseMsixOutputBtn",(Button b) => b.Click += BrowseMsixOutput_Click);
         Bind("BrowsePublishDirBtn",(Button b) => b.Click += BrowsePublishDir_Click);
+        Bind("BrowseLogoBtn",      (Button b) => b.Click += BrowseLogo_Click);
         Bind("DetectExeBtn",       (Button b) => b.Click += DetectExe_Click);
 
         // Open MSIX page
@@ -669,6 +670,21 @@ public partial class MsixManagerWindow : Window
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         { Title = "Select Publish Folder", AllowMultiple = false });
         if (folders.Count > 0) SetText("BuildPublishDirBox", folders[0].Path.LocalPath);
+    }
+
+    private async void BrowseLogo_Click(object? s, RoutedEventArgs e)
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Select Logo / Icon",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("Image files") { Patterns = new[] { "*.png", "*.ico", "*.jpg", "*.jpeg", "*.bmp" } },
+                new FilePickerFileType("All files")   { Patterns = new[] { "*.*" } }
+            }
+        });
+        if (files.Count > 0) SetText("BuildLogoBox", files[0].Path.LocalPath);
     }
 
     private async void DetectExe_Click(object? s, RoutedEventArgs e)

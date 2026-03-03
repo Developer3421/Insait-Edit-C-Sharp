@@ -606,6 +606,11 @@
     <x:String x:Key="Publish.EstimatedSize">Tahmini çıktı boyutu yayınlamadan sonra görünecek</x:String>
     <x:String x:Key="Publish.Cancel">İptal</x:String>
     <x:String x:Key="Publish.Publish">📦 Yayınla</x:String>
+    <x:String x:Key="Publish.ApplicationIcon">Uygulama Simgesi (.ico)</x:String>
+    <x:String x:Key="Publish.IconPlaceholder">(yok — varsayılan simge kullanılır)</x:String>
+    <x:String x:Key="Publish.IconHint">Yayınlanan yürütülebilir dosyaya uygulama simgesi olarak gömmek için bir .ico dosyası seçin</x:String>
+    <x:String x:Key="Publish.BrowseIcon">.ico dosyası seç</x:String>
+    <x:String x:Key="Publish.ClearIcon">Simgeyi temizle</x:String>
 
     <!-- ProjectPropertiesWindow -->
     <x:String x:Key="ProjectProps.Title">Proje Özellikleri</x:String>

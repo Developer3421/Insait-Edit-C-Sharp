@@ -49,6 +49,8 @@ public class PublishService
             OnOutput($"ReadyToRun: Yes\n");
         if (profile.TrimUnusedAssemblies)
             OnOutput($"Trimming: Yes\n");
+        if (!string.IsNullOrEmpty(profile.ApplicationIcon))
+            OnOutput($"Application Icon: {profile.ApplicationIcon}\n");
         OnOutput("\n");
 
         try

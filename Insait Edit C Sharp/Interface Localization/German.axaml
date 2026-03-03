@@ -626,6 +626,11 @@
     <x:String x:Key="Publish.EstimatedSize">Geschätzte Ausgabegröße nach Veröffentlichung</x:String>
     <x:String x:Key="Publish.Cancel">Abbrechen</x:String>
     <x:String x:Key="Publish.Publish">📦 Veröffentlichen</x:String>
+    <x:String x:Key="Publish.ApplicationIcon">Anwendungssymbol (.ico)</x:String>
+    <x:String x:Key="Publish.IconPlaceholder">(keins — Standardsymbol wird verwendet)</x:String>
+    <x:String x:Key="Publish.IconHint">Wählen Sie eine .ico-Datei zum Einbetten als Anwendungssymbol in die veröffentlichte Datei</x:String>
+    <x:String x:Key="Publish.BrowseIcon">.ico-Datei auswählen</x:String>
+    <x:String x:Key="Publish.ClearIcon">Symbol löschen</x:String>
 
     <!-- ProjectPropertiesWindow -->
     <x:String x:Key="ProjectProps.Title">Projekteigenschaften</x:String>
