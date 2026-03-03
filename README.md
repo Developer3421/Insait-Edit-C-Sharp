@@ -197,8 +197,7 @@ dotnet publish -c Release -r win-x64 --self-contained
 - [ ] Plugin / extension system
 - [ ] Integrated debugger with breakpoints & variable inspection
 - [ ] Multi-project solution explorer
-- [ ] Themes marketplace
-- [ ] VB.NET & C++ language support
+
 
 ---
 
