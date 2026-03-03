@@ -38,7 +38,7 @@
 - **Roslyn-powered IntelliSense** — smart code completion, signature help, and parameter info for C#
 - **F# support** — completion engine for F# projects
 - **AXAML completion** — IntelliSense for Avalonia XAML files
-- **Syntax highlighting** — Amber Fluent color scheme with TextMate grammar support
+- **Syntax highlighting**
 - **Code snippets** — built-in C# snippet provider
 
 ### 🔍 Code Analysis & Refactoring
@@ -242,7 +242,6 @@ This project is proprietary software. All rights reserved.
 - **Roslyn-basiertes IntelliSense** — intelligente Codevervollständigung, Signaturhilfe und Parameterinformationen für C#
 - **F#-Unterstützung** — Vervollständigungs-Engine für F#-Projekte
 - **AXAML-Vervollständigung** — IntelliSense für Avalonia-XAML-Dateien
-- **Syntaxhervorhebung** — Amber-Fluent-Farbschema mit TextMate-Grammatik-Unterstützung
 - **Code-Snippets** — integrierter C#-Snippet-Anbieter
 
 ### 🔍 Codeanalyse & Refactoring
