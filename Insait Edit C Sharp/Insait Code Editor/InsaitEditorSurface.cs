@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -22,12 +23,12 @@ using Insait_Edit_C_Sharp.Services;
 namespace Insait_Edit_C_Sharp.InsaitCodeEditor;
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  InsaitEditorSurface — кастомний Control що малює:
-//    • gutter з іконками діагностик та номерами рядків
-//    • текст з Roslyn Classification підсвічуванням
-//    • squiggly underlines для помилок / warnings
-//    • курсор + виділення
-//  Обробляє клавіатуру, мишу, undo/redo, автодужки, clipboard.
+//  InsaitEditorSurface — custom Control that renders:
+//    • gutter with diagnostic icons and line numbers
+//    • text with Roslyn Classification syntax highlighting
+//    • squiggly underlines for errors / warnings
+//    • cursor + selection
+//  Handles keyboard, mouse, undo/redo, auto-brackets, clipboard.
 // ═══════════════════════════════════════════════════════════════════════════
 
 internal sealed class InsaitEditorSurface : Control
@@ -147,7 +148,18 @@ internal sealed class InsaitEditorSurface : Control
     {
         try
         {
-            var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
+            var set = new HashSet<Assembly>(MefHostServices.DefaultAssemblies);
+            foreach (var name in new[]
+            {
+                "Microsoft.CodeAnalysis.Features",
+                "Microsoft.CodeAnalysis.CSharp.Features",
+                "Microsoft.CodeAnalysis.Workspaces.Common",
+                "Microsoft.CodeAnalysis.CSharp.Workspaces",
+            })
+            {
+                try { set.Add(Assembly.Load(name)); } catch { }
+            }
+            var host = MefHostServices.Create(set);
             _workspace = new AdhocWorkspace(host);
         }
         catch { /* workspace optional */ }
@@ -1138,8 +1150,8 @@ internal sealed class InsaitEditorSurface : Control
             parseOptions: new CSharpParseOptions(LanguageVersion.Latest), metadataReferences: _refs);
         var sol = _workspace!.CurrentSolution.AddProject(pi);
 
-        // Add the active document
-        sol = sol.AddDocument(DocumentInfo.Create(did, Path.GetFileName(path),
+        // Add the active document — use full path as name to avoid collisions.
+        sol = sol.AddDocument(DocumentInfo.Create(did, path,
             loader: TextLoader.From(TextAndVersion.Create(SourceText.From(text), VersionStamp.Create())), filePath: path));
 
         // Add other project .cs files as context (for cross-file namespace resolution)
@@ -1152,7 +1164,7 @@ internal sealed class InsaitEditorSurface : Control
             {
                 var auxDid = DocumentId.CreateNewId(pid);
                 var auxText = File.ReadAllText(csFile);
-                sol = sol.AddDocument(DocumentInfo.Create(auxDid, Path.GetFileName(csFile),
+                sol = sol.AddDocument(DocumentInfo.Create(auxDid, csFile,
                     loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
                     filePath: csFile));
             }

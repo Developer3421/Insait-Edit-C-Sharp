@@ -235,9 +235,11 @@ public sealed class InlineDiagnosticService : IDisposable
             metadataReferences: _refs);
 
         var sol = _workspace.CurrentSolution.AddProject(info);
+        // Use the full path as document name to avoid collisions when multiple
+        // files share the same short filename (e.g. Program.cs in sub-projects).
         var docInfo = DocumentInfo.Create(
             documentId,
-            Path.GetFileName(filePath),
+            filePath,
             loader: TextLoader.From(TextAndVersion.Create(SourceText.From(sourceCode), VersionStamp.Create())),
             filePath: filePath);
 
@@ -253,7 +255,7 @@ public sealed class InlineDiagnosticService : IDisposable
             {
                 var auxDid = DocumentId.CreateNewId(projectId);
                 var auxText = File.ReadAllText(csFile);
-                sol = sol.AddDocument(DocumentInfo.Create(auxDid, Path.GetFileName(csFile),
+                sol = sol.AddDocument(DocumentInfo.Create(auxDid, csFile,
                     loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
                     filePath: csFile));
             }

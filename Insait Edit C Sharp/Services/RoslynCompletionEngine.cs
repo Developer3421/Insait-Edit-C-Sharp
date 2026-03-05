@@ -352,17 +352,19 @@ public sealed class RoslynCompletionEngine : IDisposable
 
         var solution = _workspace.CurrentSolution.AddProject(projectInfo);
 
-        // Add the active document
+        // Add the active document — use the full path as document name to avoid
+        // collisions when multiple files share the same filename (e.g. Program.cs).
         var docInfo = DocumentInfo.Create(
             documentId,
-            name: Path.GetFileName(filePath),
+            name: filePath,
             loader: TextLoader.From(TextAndVersion.Create(
                 SourceText.From(sourceCode), VersionStamp.Create())),
             filePath: filePath);
 
         solution = solution.AddDocument(docInfo);
 
-        // Add other project .cs files as context (for cross-file namespace resolution)
+        // Add other project .cs files as context (for cross-file namespace resolution).
+        // Use full path as document name so that files with the same filename don't collide.
         var contextFiles = GetProjectCsFiles();
         foreach (var csFile in contextFiles)
         {
@@ -372,7 +374,7 @@ public sealed class RoslynCompletionEngine : IDisposable
             {
                 var auxDid = DocumentId.CreateNewId(projectId);
                 var auxText = File.ReadAllText(csFile);
-                solution = solution.AddDocument(DocumentInfo.Create(auxDid, Path.GetFileName(csFile),
+                solution = solution.AddDocument(DocumentInfo.Create(auxDid, csFile,
                     loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
                     filePath: csFile));
             }
@@ -445,10 +447,21 @@ public sealed class RoslynCompletionEngine : IDisposable
     /// </summary>
     private static IEnumerable<Assembly> BuildMefAssemblies()
     {
-        // Use only the default Roslyn MEF assemblies.
-        // Do NOT load Features/CSharp.Features — MEF scanning them causes
-        // ReflectionTypeLoadException when assembly versions are mixed.
-        return MefHostServices.DefaultAssemblies;
+        var set = new HashSet<Assembly>(MefHostServices.DefaultAssemblies);
+        // Load Features assemblies so that CompletionService.GetService() returns
+        // a real completion provider instead of null. Swallow any load failures
+        // gracefully — the editor falls back to no completions rather than crashing.
+        foreach (var name in new[]
+        {
+            "Microsoft.CodeAnalysis.Features",
+            "Microsoft.CodeAnalysis.CSharp.Features",
+            "Microsoft.CodeAnalysis.Workspaces.Common",
+            "Microsoft.CodeAnalysis.CSharp.Workspaces",
+        })
+        {
+            try { set.Add(Assembly.Load(name)); } catch { /* ignore missing / version mismatch */ }
+        }
+        return set;
     }
 
     // ── default metadata references ────────────────────────────────────────

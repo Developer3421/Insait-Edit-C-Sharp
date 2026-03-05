@@ -168,10 +168,11 @@ public sealed class RoslynWorkspaceService : IDisposable
 
         var solution = _workspace.CurrentSolution.AddProject(projectInfo);
 
-        // Add the active document
+        // Add the active document — use the full path as document name to avoid
+        // collisions when multiple files share the same filename.
         var docInfo = DocumentInfo.Create(
             documentId,
-            name: Path.GetFileName(filePath),
+            name: filePath,
             loader: TextLoader.From(TextAndVersion.Create(
                 SourceText.From(sourceCode), VersionStamp.Create())),
             filePath: filePath);
@@ -179,7 +180,8 @@ public sealed class RoslynWorkspaceService : IDisposable
         solution = solution.AddDocument(docInfo);
         _documentIds[filePath] = documentId;
 
-        // Add other project .cs files as context
+        // Add other project .cs files as context.
+        // Use full path as document name so files with the same short name don't collide.
         var contextFiles = GetProjectCsFiles();
         foreach (var csFile in contextFiles)
         {
@@ -189,7 +191,7 @@ public sealed class RoslynWorkspaceService : IDisposable
             {
                 var auxDid = DocumentId.CreateNewId(projectId);
                 var auxText = File.ReadAllText(csFile);
-                solution = solution.AddDocument(DocumentInfo.Create(auxDid, Path.GetFileName(csFile),
+                solution = solution.AddDocument(DocumentInfo.Create(auxDid, csFile,
                     loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
                     filePath: csFile));
                 _documentIds[csFile] = auxDid;
