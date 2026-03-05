@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
+using Avalonia.VisualTree;
 
 namespace Insait_Edit_C_Sharp;
 
@@ -2641,10 +2642,38 @@ public partial class MainWindow : Window
         }
     }
 
+    private SettingsPanelControl? _settingsPanelControl;
+
     private void Settings_Click(object? sender, RoutedEventArgs e)
     {
-        // TODO: Show settings
-        _viewModel.StatusText = "Settings coming soon...";
+        EnsureSidePanelVisible();
+        SwitchSidePanel("settings");
+        
+        // Initialize Settings panel if not done yet
+        if (_settingsPanelControl == null)
+        {
+            InitializeSettingsPanel();
+        }
+        
+        // Reload settings each time panel is shown
+        _settingsPanelControl?.LoadSettings();
+    }
+
+    private void InitializeSettingsPanel()
+    {
+        var settingsPanelContainer = this.FindControl<Border>("SettingsSidePanel");
+        if (settingsPanelContainer == null) return;
+        
+        _settingsPanelControl = new SettingsPanelControl();
+        
+        // Subscribe to events
+        _settingsPanelControl.StatusChanged += (s, status) =>
+        {
+            _viewModel.StatusText = status;
+        };
+        
+        // Add to container
+        settingsPanelContainer.Child = _settingsPanelControl;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -3495,7 +3524,152 @@ public partial class MainWindow : Window
 
     private void AnalyzeProject_Click(object? sender, RoutedEventArgs e)   => _ = AnalyzeProjectAsync();
     private void RefreshAnalysis_Click(object? sender, RoutedEventArgs e)  => _ = AnalyzeProjectAsync();
-    private void ClearProblems_Click(object? sender, RoutedEventArgs e)    { _viewModel.Problems.Clear(); _viewModel.StatusText = "Problems cleared"; }
+    private void ClearProblems_Click(object? sender, RoutedEventArgs e)    { _viewModel.Problems.Clear(); _viewModel.StatusText = "Problems cleared"; UpdateTabDiagnosticIndicators(); }
+
+    /// <summary>Whether the Problems tab shows all errors (true) or only current file (false).</summary>
+    private bool _problemsShowAll = true;
+
+    private async void CopyProblems_Click(object? sender, RoutedEventArgs e)
+    {
+        var items = GetFilteredProblems();
+        if (items.Count == 0) return;
+
+        var sb = new System.Text.StringBuilder();
+        foreach (var item in items)
+        {
+            var sev = item.Severity switch
+            {
+                DiagnosticSeverity.Error => "Error",
+                DiagnosticSeverity.Warning => "Warning",
+                DiagnosticSeverity.Info => "Info",
+                _ => "Hint",
+            };
+            sb.AppendLine($"{sev} {item.Code}: {item.Message} [{item.Location}]");
+        }
+
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard != null)
+                await clipboard.SetTextAsync(sb.ToString());
+            _viewModel.StatusText = $"Copied {items.Count} diagnostics to clipboard";
+        }
+        catch { _viewModel.StatusText = "Failed to copy to clipboard"; }
+    }
+
+    private async void CopySingleProblem_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn)
+        {
+            // Walk up to the ListBoxItem to get the DataContext
+            var item = (btn.DataContext as DiagnosticItem)
+                       ?? (btn.Parent as Grid)?.DataContext as DiagnosticItem;
+            if (item == null) return;
+
+            var sev = item.Severity switch
+            {
+                DiagnosticSeverity.Error => "Error",
+                DiagnosticSeverity.Warning => "Warning",
+                DiagnosticSeverity.Info => "Info",
+                _ => "Hint",
+            };
+            var text = $"{sev} {item.Code}: {item.Message} [{item.Location}]";
+
+            try
+            {
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard != null)
+                    await clipboard.SetTextAsync(text);
+                _viewModel.StatusText = $"Copied: {item.Code}";
+            }
+            catch { }
+        }
+    }
+
+    private void ProblemsTabAll_Click(object? sender, RoutedEventArgs e)
+    {
+        _problemsShowAll = true;
+        UpdateProblemsTabStyles();
+        ApplyProblemsFilter();
+    }
+
+    private void ProblemsTabCurrentFile_Click(object? sender, RoutedEventArgs e)
+    {
+        _problemsShowAll = false;
+        UpdateProblemsTabStyles();
+        ApplyProblemsFilter();
+    }
+
+    private void UpdateProblemsTabStyles()
+    {
+        var tabAll = this.FindControl<Button>("ProblemsTabAll");
+        var tabCurrent = this.FindControl<Button>("ProblemsTabCurrentFile");
+        var label = this.FindControl<TextBlock>("ProblemsCurrentFileLabel");
+
+        if (tabAll != null)
+        {
+            tabAll.Background = _problemsShowAll
+                ? new SolidColorBrush(Color.Parse("#FF3E3050"))
+                : Brushes.Transparent;
+            tabAll.Foreground = _problemsShowAll
+                ? new SolidColorBrush(Color.Parse("#FFF0E8F4"))
+                : new SolidColorBrush(Color.Parse("#FF9E90B0"));
+        }
+        if (tabCurrent != null)
+        {
+            tabCurrent.Background = !_problemsShowAll
+                ? new SolidColorBrush(Color.Parse("#FF3E3050"))
+                : Brushes.Transparent;
+            tabCurrent.Foreground = !_problemsShowAll
+                ? new SolidColorBrush(Color.Parse("#FFF0E8F4"))
+                : new SolidColorBrush(Color.Parse("#FF9E90B0"));
+        }
+        if (label != null)
+        {
+            var currentPath = _viewModel.ActiveTab?.FilePath;
+            label.Text = string.IsNullOrEmpty(currentPath) ? "" : Path.GetFileName(currentPath);
+        }
+    }
+
+    private List<DiagnosticItem> GetFilteredProblems()
+    {
+        if (_problemsShowAll)
+            return _viewModel.Problems.ToList();
+
+        var currentPath = _viewModel.ActiveTab?.FilePath;
+        if (string.IsNullOrEmpty(currentPath))
+            return _viewModel.Problems.ToList();
+
+        return _viewModel.Problems
+            .Where(p => string.Equals(p.FilePath, currentPath, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private void ApplyProblemsFilter()
+    {
+        var listBox = this.FindControl<ListBox>("ProblemsListBox");
+        if (listBox == null) return;
+
+        if (_problemsShowAll)
+        {
+            listBox.ItemsSource = _viewModel.Problems;
+        }
+        else
+        {
+            var currentPath = _viewModel.ActiveTab?.FilePath;
+            if (string.IsNullOrEmpty(currentPath))
+            {
+                listBox.ItemsSource = _viewModel.Problems;
+            }
+            else
+            {
+                var filtered = _viewModel.Problems
+                    .Where(p => string.Equals(p.FilePath, currentPath, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                listBox.ItemsSource = filtered;
+            }
+        }
+    }
 
     private void ProblemsListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -3503,7 +3677,13 @@ public partial class MainWindow : Window
         {
             if (!string.IsNullOrEmpty(diagnostic.FilePath) && File.Exists(diagnostic.FilePath))
             {
+                // Open file (creates tab if needed, switches to existing tab)
                 OpenFileInEditor(diagnostic.FilePath);
+                
+                // Update tab visual styles (active class + error/warning classes)
+                UpdateTabButtonStyles();
+                
+                // Navigate to error line/column
                 _insaitEditor?.GoToLine(diagnostic.Line, diagnostic.Column);
                 _viewModel.StatusText = $"{diagnostic.SeverityIcon} {diagnostic.Code}: {diagnostic.Message}";
             }
@@ -3512,6 +3692,144 @@ public partial class MainWindow : Window
 
     private void ExplorerNewFile_Click(object? sender, RoutedEventArgs e)   => AddNewItem_Click(sender, e);
     private void ExplorerNewFolder_Click(object? sender, RoutedEventArgs e) => AddNewFolder_Click(sender, e);
+
+    // ═══════════════════════════════════════════════════════════
+    //  Tab diagnostic indicators & visual styles
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Updates HasErrors/HasWarnings/ErrorCount/WarningCount on all open tabs
+    /// based on the current Problems collection.
+    /// </summary>
+    private void UpdateTabDiagnosticIndicators()
+    {
+        // Build a lookup: filePath → (errorCount, warningCount)
+        var diagnosticsByFile = new Dictionary<string, (int errors, int warnings)>(
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var problem in _viewModel.Problems)
+        {
+            if (string.IsNullOrEmpty(problem.FilePath)) continue;
+            
+            if (!diagnosticsByFile.TryGetValue(problem.FilePath, out var counts))
+                counts = (0, 0);
+
+            if (problem.Severity == DiagnosticSeverity.Error)
+                counts.errors++;
+            else if (problem.Severity == DiagnosticSeverity.Warning)
+                counts.warnings++;
+
+            diagnosticsByFile[problem.FilePath] = counts;
+        }
+
+        // Apply to each tab
+        foreach (var tab in _viewModel.Tabs)
+        {
+            if (diagnosticsByFile.TryGetValue(tab.FilePath, out var c))
+            {
+                tab.ErrorCount = c.errors;
+                tab.WarningCount = c.warnings;
+                tab.HasErrors = c.errors > 0;
+                tab.HasWarnings = c.warnings > 0;
+            }
+            else
+            {
+                tab.ErrorCount = 0;
+                tab.WarningCount = 0;
+                tab.HasErrors = false;
+                tab.HasWarnings = false;
+            }
+        }
+
+        // Update CSS classes on tab buttons
+        UpdateTabButtonStyles();
+    }
+
+    /// <summary>
+    /// Updates CSS classes (active, has-errors, has-warnings) on all tab Button elements.
+    /// </summary>
+    private void UpdateTabButtonStyles()
+    {
+        var editorGrid = this.FindControl<Grid>("EditorGrid");
+        if (editorGrid == null) return;
+
+        Button? activeBtn = null;
+        foreach (var btn in editorGrid.GetVisualDescendants().OfType<Button>())
+        {
+            if (!btn.Classes.Contains("tab-button")) continue;
+            if (btn.Tag is not EditorTab tab) continue;
+            ApplyTabButtonClasses(btn, tab);
+            if (tab == _viewModel.ActiveTab)
+                activeBtn = btn;
+        }
+
+        // Scroll the active tab into view
+        if (activeBtn != null)
+            ScrollActiveTabIntoView(activeBtn);
+    }
+
+    /// <summary>
+    /// Scrolls the tab bar horizontally so the active tab button is fully visible.
+    /// </summary>
+    private void ScrollActiveTabIntoView(Button activeBtn)
+    {
+        var scroller = this.FindControl<ScrollViewer>("TabScrollViewer");
+        if (scroller == null) return;
+
+        // Wait for layout to complete before measuring positions
+        Dispatcher.UIThread.Post(() =>
+        {
+            try
+            {
+                // Get the button's bounds relative to the ScrollViewer's content
+                var transform = activeBtn.TransformToVisual(scroller);
+                if (transform == null) return;
+
+                var btnBoundsInScroller = transform.Value.Transform(new Point(0, 0));
+                var btnLeft  = btnBoundsInScroller.X;
+                var btnRight = btnLeft + activeBtn.Bounds.Width;
+
+                var viewportLeft  = scroller.Offset.X;
+                var viewportRight = scroller.Offset.X + scroller.Viewport.Width;
+
+                // Add a small margin so the tab doesn't sit exactly at the edge
+                const double margin = 20;
+
+                if (btnLeft < viewportLeft + margin)
+                {
+                    // Tab is to the left of the visible area — scroll left
+                    scroller.Offset = new Vector(Math.Max(0, btnLeft - margin), 0);
+                }
+                else if (btnRight > viewportRight - margin)
+                {
+                    // Tab is to the right — scroll right
+                    scroller.Offset = new Vector(btnRight - scroller.Viewport.Width + margin, 0);
+                }
+            }
+            catch { /* layout not ready yet — skip */ }
+        }, Avalonia.Threading.DispatcherPriority.Loaded);
+    }
+
+    private void ApplyTabButtonClasses(Button btn, EditorTab tab)
+    {
+        // Active state
+        if (tab == _viewModel.ActiveTab)
+            { if (!btn.Classes.Contains("active")) btn.Classes.Add("active"); }
+        else
+            btn.Classes.Remove("active");
+
+        // Error state
+        if (tab.HasErrors)
+            { if (!btn.Classes.Contains("has-errors")) btn.Classes.Add("has-errors"); }
+        else
+            btn.Classes.Remove("has-errors");
+
+        // Warning state
+        if (tab.HasWarnings && !tab.HasErrors)
+            { if (!btn.Classes.Contains("has-warnings")) btn.Classes.Add("has-warnings"); }
+        else
+            btn.Classes.Remove("has-warnings");
+    }
 
     #endregion
 

@@ -36,6 +36,8 @@ public partial class MainWindow
                     _viewModel.StatusText = $"Analysis complete: {e.Diagnostics.Count} issue(s)";
                 else
                     _viewModel.StatusText = $"Analysis failed: {e.ErrorMessage}";
+                    
+                UpdateTabDiagnosticIndicators();
             });
         };
 
@@ -187,6 +189,9 @@ public partial class MainWindow
 
         // Push content with language hint
         editor.SetContent(tab.Content, tab.Language);
+        
+        // Update tab visual styles (active + error/warning indicators)
+        UpdateTabButtonStyles();
     }
 
     // ═══════════════════════════════════════════════════════════

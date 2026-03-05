@@ -101,6 +101,12 @@ internal sealed class InsaitEditorSurface : Control
     private static readonly Color BreakpointColor       = Color.Parse("#FFF38BA8");
     private static readonly Color BreakpointActiveColor = Color.Parse("#FFFF5555");
 
+    // ── Live Template Session ──────────────────────────────────────────
+    private LiveTemplateSession? _templateSession;
+
+    /// <summary>Whether a live template session is currently active.</summary>
+    public bool IsTemplateSessionActive => _templateSession?.IsActive == true;
+
     // ── Undo / Redo ──────────────────────────────────────────────────────
     public readonly UndoRedoManager UndoRedoMgr = new();
     public bool CanUndo => UndoRedoMgr.CanUndo;
@@ -124,6 +130,10 @@ internal sealed class InsaitEditorSurface : Control
     public event EventHandler?                 CtrlClickGoToDefinition;
     /// <summary>Fired when a non-identifier character is typed (space, ;, etc.) — completion should close.</summary>
     public event EventHandler?                 CompletionDismissChar;
+    /// <summary>Fired when a live template session starts — caller can update UI state.</summary>
+    public event EventHandler?                 TemplateSessionStarted;
+    /// <summary>Fired when the live template session ends.</summary>
+    public event EventHandler?                 TemplateSessionEnded;
 
     // ══════════════════════════════════════════════════════════════════════
     //  Constructor
@@ -335,6 +345,171 @@ internal sealed class InsaitEditorSurface : Control
     }
 
     // ══════════════════════════════════════════════════════════════════════
+    //  Live Template Session — expand template and navigate tab-stops
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Starts a live template session: replaces the trigger word at the cursor
+    /// with the expanded template body and activates tab-stop navigation.
+    /// </summary>
+    /// <param name="spanStart">Start offset of the trigger word to replace.</param>
+    /// <param name="spanLength">Length of the trigger word to replace.</param>
+    /// <param name="templateBody">Template body with VS-style placeholders ($1, ${1:text}, $0).</param>
+    public void StartLiveTemplate(int spanStart, int spanLength, string templateBody)
+    {
+        // End any existing session
+        EndTemplateSession();
+
+        spanStart  = Math.Clamp(spanStart, 0, _fullText.Length);
+        spanLength = Math.Clamp(spanLength, 0, _fullText.Length - spanStart);
+
+        // Determine current-line indent
+        int lineIdx = 0, off = 0;
+        for (int i = 0; i < _lines.Count; i++)
+        {
+            if (off + _lines[i].Length >= spanStart) { lineIdx = i; break; }
+            off += _lines[i].Length + 1;
+        }
+        var lineText = _lines[lineIdx];
+        var indent = new string(' ', lineText.Length - lineText.TrimStart().Length);
+
+        // Create and expand the template session
+        _templateSession = new LiveTemplateSession();
+        var expandedText = _templateSession.Expand(templateBody, spanStart, indent);
+
+        // Remove trigger word and insert expanded text
+        var removed = _fullText.Substring(spanStart, spanLength);
+        RecordUndo(spanStart, removed, expandedText);
+        var sb = new StringBuilder(_fullText);
+        sb.Remove(spanStart, spanLength);
+        sb.Insert(spanStart, expandedText);
+        _fullText = sb.ToString();
+        RebuildLines();
+
+        // Navigate to the first tab-stop and select its text
+        SelectCurrentTabStop();
+
+        ScheduleHighlight(); EnsureCursorVisible();
+        TextChanged?.Invoke(this, EventArgs.Empty);
+        CursorMoved?.Invoke(this, CursorPosition);
+        TemplateSessionStarted?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Advances to the next tab-stop in the active template session.
+    /// Returns true if the session is still active, false if it ended.
+    /// </summary>
+    public bool TemplateTabNext()
+    {
+        if (_templateSession == null || !_templateSession.IsActive) return false;
+
+        if (_templateSession.MoveNext())
+        {
+            SelectCurrentTabStop();
+            InvalidateVisual();
+            return true;
+        }
+
+        // Session ended — place cursor at $0 position
+        var finalOffset = _templateSession.GetCursorOffset();
+        EndTemplateSession();
+        SetCursorFromOffset(Math.Clamp(finalOffset, 0, _fullText.Length));
+        ClearSelection();
+        EnsureCursorVisible();
+        InvalidateVisual();
+        return false;
+    }
+
+    /// <summary>
+    /// Moves to the previous tab-stop in the active template session.
+    /// Returns true if moved successfully.
+    /// </summary>
+    public bool TemplateTabPrevious()
+    {
+        if (_templateSession == null || !_templateSession.IsActive) return false;
+
+        if (_templateSession.MovePrevious())
+        {
+            SelectCurrentTabStop();
+            InvalidateVisual();
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Ends the current live template session (e.g. on Escape or typing outside).
+    /// </summary>
+    public void EndTemplateSession()
+    {
+        if (_templateSession != null)
+        {
+            _templateSession.End();
+            _templateSession = null;
+            TemplateSessionEnded?.Invoke(this, EventArgs.Empty);
+            InvalidateVisual();
+        }
+    }
+
+    /// <summary>
+    /// Returns the active template session (for rendering highlights), or null.
+    /// </summary>
+    public LiveTemplateSession? GetTemplateSession() => _templateSession;
+
+    /// <summary>
+    /// Selects the text of the current tab-stop in the active session.
+    /// </summary>
+    private void SelectCurrentTabStop()
+    {
+        if (_templateSession?.CurrentStop == null) return;
+
+        var (selOffset, selLength) = _templateSession.GetCurrentSelection();
+        SetCursorFromOffset(Math.Clamp(selOffset, 0, _fullText.Length));
+
+        if (selLength > 0)
+        {
+            // Select the placeholder text
+            int startOff = Math.Clamp(selOffset, 0, _fullText.Length);
+            int endOff   = Math.Clamp(selOffset + selLength, 0, _fullText.Length);
+
+            // Convert offsets to line/col for selection
+            OffsetToLineCol(startOff, out int sl, out int sc);
+            OffsetToLineCol(endOff,   out int el, out int ec);
+
+            _selStartLine = sl; _selStartCol = sc;
+            _selEndLine   = el; _selEndCol   = ec;
+            _cursorLine   = el; _cursorCol   = ec;
+        }
+        else
+        {
+            ClearSelection();
+        }
+
+        EnsureCursorVisible();
+        CursorMoved?.Invoke(this, CursorPosition);
+    }
+
+    /// <summary>
+    /// Converts an absolute offset to (line, col) — both 0-based.
+    /// </summary>
+    private void OffsetToLineCol(int offset, out int line, out int col)
+    {
+        int o = 0;
+        for (int i = 0; i < _lines.Count; i++)
+        {
+            if (o + _lines[i].Length >= offset || i == _lines.Count - 1)
+            {
+                line = i;
+                col  = offset - o;
+                return;
+            }
+            o += _lines[i].Length + 1;
+        }
+        line = _lines.Count - 1;
+        col  = _lines[line].Length;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
     //  Render
     // ══════════════════════════════════════════════════════════════════════
     public override void Render(DrawingContext ctx)
@@ -431,6 +606,9 @@ internal sealed class InsaitEditorSurface : Control
 
             DrawLine(ctx, typeface, li, y);
             DrawDiagnosticUnderlines(ctx, li, y);
+
+            // Live template tab-stop highlights
+            DrawTemplateHighlights(ctx, li, y);
         }
 
         // cursor
@@ -560,6 +738,51 @@ internal sealed class InsaitEditorSurface : Control
         ctx.DrawGeometry(null, pen, geo);
     }
 
+    /// <summary>
+    /// Draws highlight rectangles for live template tab-stops on the given line.
+    /// Active group is highlighted with a brighter color; inactive stops get a subtle border.
+    /// </summary>
+    private void DrawTemplateHighlights(DrawingContext ctx, int li, double y)
+    {
+        if (_templateSession == null || !_templateSession.IsActive) return;
+
+        int lineOff = LineOffset(li);
+        int lineEnd = lineOff + _lines[li].Length;
+        int activeGroup = _templateSession.CurrentGroupNumber;
+
+        foreach (var stop in _templateSession.Stops)
+        {
+            // Skip $0 (final cursor) — no visual highlight for it
+            if (stop.Number == 0) continue;
+
+            int stopEnd = stop.Offset + stop.Length;
+            // Check if this stop overlaps the current line
+            if (stop.Offset >= lineEnd || stopEnd <= lineOff) continue;
+
+            int sc = Math.Max(stop.Offset - lineOff, 0);
+            int ec = Math.Min(stopEnd - lineOff, _lines[li].Length);
+            double x1 = _gutterWidth + (sc - _scrollLeft) * _charWidth;
+            double x2 = _gutterWidth + (ec - _scrollLeft) * _charWidth;
+
+            if (stop.Number == activeGroup)
+            {
+                // Active tab-stop: highlight background + border
+                var activeBg = new SolidColorBrush(Color.Parse("#30A0D0FF"));
+                var activeBorder = new Pen(new SolidColorBrush(Color.Parse("#80A0D0FF")), 1.5);
+                var rect = new Rect(x1, y, Math.Max(x2 - x1, _charWidth), _lineHeight);
+                ctx.FillRectangle(activeBg, rect);
+                ctx.DrawRectangle(null, activeBorder, rect);
+            }
+            else
+            {
+                // Inactive tab-stop: subtle dashed border
+                var inactiveBorder = new Pen(new SolidColorBrush(Color.Parse("#40808080")), 1.0);
+                var rect = new Rect(x1, y, Math.Max(x2 - x1, _charWidth), _lineHeight);
+                ctx.DrawRectangle(null, inactiveBorder, rect);
+            }
+        }
+    }
+
     // ══════════════════════════════════════════════════════════════════════
     //  Keyboard
     // ══════════════════════════════════════════════════════════════════════
@@ -585,8 +808,32 @@ internal sealed class InsaitEditorSurface : Control
 
             case Key.Back:   if (!IsReadOnly) DeleteBack();    e.Handled = true; break;
             case Key.Delete: if (!IsReadOnly) DeleteForward(); e.Handled = true; break;
-            case Key.Return: if (!IsReadOnly) InsertNewLine(); e.Handled = true; break;
-            case Key.Tab:    if (!IsReadOnly) InsertTab(shift); e.Handled = true; break;
+            case Key.Return:
+                if (!IsReadOnly)
+                {
+                    // Enter ends the template session and inserts a newline
+                    if (IsTemplateSessionActive) EndTemplateSession();
+                    InsertNewLine();
+                }
+                e.Handled = true; break;
+            case Key.Tab:
+                if (!IsReadOnly)
+                {
+                    // Live template tab-stop navigation takes priority
+                    if (IsTemplateSessionActive)
+                    {
+                        if (shift) TemplateTabPrevious();
+                        else       TemplateTabNext();
+                    }
+                    else
+                    {
+                        InsertTab(shift);
+                    }
+                }
+                e.Handled = true; break;
+            case Key.Escape:
+                if (IsTemplateSessionActive) { EndTemplateSession(); e.Handled = true; break; }
+                break;
 
             case Key.Z when ctrl && !shift: Undo(); e.Handled = true; break;
             case Key.Z when ctrl &&  shift: Redo(); e.Handled = true; break;
@@ -608,6 +855,19 @@ internal sealed class InsaitEditorSurface : Control
     protected override void OnTextInput(TextInputEventArgs e)
     {
         if (IsReadOnly || string.IsNullOrEmpty(e.Text)) { base.OnTextInput(e); return; }
+
+        // If a template session is active, check if cursor is within a tab-stop
+        // and end the session if it's not (user typed outside the template area)
+        if (IsTemplateSessionActive)
+        {
+            int curOff = GetCursorOffset();
+            var session = _templateSession!;
+            bool insideTemplate = curOff >= session.InsertionOffset &&
+                                  curOff <= session.InsertionOffset + session.TotalLength;
+            if (!insideTemplate)
+                EndTemplateSession();
+        }
+
         if (HasSelection) DeleteSelection();
 
         char ch = e.Text![0];
@@ -658,6 +918,10 @@ internal sealed class InsaitEditorSurface : Control
         }
 
         PositionFromPoint(pt, out int li, out int ci);
+
+        // End live template session on mouse click — user navigated away
+        if (IsTemplateSessionActive) EndTemplateSession();
+
         _cursorLine = li; _cursorCol = ci;
         _selStartLine = li; _selStartCol = ci;
         _selEndLine = -1; _selEndCol = -1;

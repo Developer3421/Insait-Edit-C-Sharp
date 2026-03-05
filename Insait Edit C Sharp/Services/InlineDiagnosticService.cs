@@ -32,29 +32,37 @@ public sealed class InlineDiagnosticService : IDisposable
     private string?     _trackedFilePath;
 
     private readonly QuickFixService       _quickFixService;
+    private readonly NuGetReferenceResolver _nugetResolver = new();
     private CancellationTokenSource?       _cts;
 
     // ── project context ──────────────────────────────────────────────────
     private string? _projectDir;
     private List<string>? _projectCsFiles;
+    private List<MetadataReference>? _nugetRefs;
 
-    // ── Avalonia-noise suppression (same logic as CodeAnalysisService) ─────
-    private static readonly HashSet<string> _suppressedCodes = new(StringComparer.OrdinalIgnoreCase)
+    // ── Noise suppression ─────────────────────────────────────────────────
+    // Only suppress codes that are genuinely irrelevant noise.
+    // With NuGet references loaded, most type-not-found errors are now legitimate.
+    private static readonly HashSet<string> _alwaysSuppressedCodes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CS1591", // Missing XML comment
+        "CS8019", // Unnecessary using directive
+    };
+    
+    // Codes to suppress ONLY when NuGet references were NOT loaded (fallback mode).
+    // When we have proper references, these errors are legitimate.
+    private static readonly HashSet<string> _fallbackSuppressedCodes = new(StringComparer.OrdinalIgnoreCase)
     {
         "CS0103", "CS0246", "CS0234", "CS1061", "CS0117",
         "CS0121", "CS7036", "CS0012",
+        "CS0616", "CS0433", "CS0518", "CS1729",
+        "CS0535", "CS0122", "CS0305", "CS1503",
+        "CS0029", "CS0311",
     };
-    private static readonly string[] _suppressedPatterns =
-    {
-        "InitializeComponent","Avalonia","AvaloniaProperty","StyledProperty",
-        "DirectProperty","FindControl","GetObservable","axaml","AXAML",
-        "IStyleable","StyledElement","TemplatedControl","UserControl","Window",
-        "Panel","Grid","StackPanel","DockPanel","Canvas","Border","Button",
-        "TextBlock","TextBox","ListBox","ComboBox","CheckBox","RadioButton",
-        "TreeView","TabControl","ScrollViewer","ItemsControl","ContentControl",
-        "MenuItem","Menu","ContextMenu","Image","Popup","ToolTip","Expander",
-        "Slider","ProgressBar","DataGrid",
-    };
+    
+    /// <summary>Whether NuGet references were successfully loaded for the current project.</summary>
+    private bool _hasNuGetRefs;
+    
 
     public event EventHandler<InlineDiagnosticsUpdatedEventArgs>? DiagnosticsUpdated;
 
@@ -170,6 +178,7 @@ public sealed class InlineDiagnosticService : IDisposable
 
     /// <summary>
     /// Sets the project directory for cross-file diagnostics context.
+    /// Also resolves NuGet package references for accurate diagnostics.
     /// </summary>
     public void SetProjectContext(string? projectDir)
     {
@@ -178,6 +187,14 @@ public sealed class InlineDiagnosticService : IDisposable
         _projectDir = projectDir;
         _projectCsFiles = null;
         _trackedFilePath = null; // force rebuild
+        
+        // Resolve NuGet package references
+        _nugetResolver.InvalidateCache();
+        _nugetRefs = _nugetResolver.Resolve(projectDir);
+        _hasNuGetRefs = _nugetRefs.Count > 0;
+        
+        System.Diagnostics.Debug.WriteLine(
+            $"[InlineDiag] Project context: {projectDir}, NuGet refs: {_nugetRefs.Count}, fallback mode: {!_hasNuGetRefs}");
     }
 
     private List<string> GetProjectCsFiles()
@@ -226,13 +243,26 @@ public sealed class InlineDiagnosticService : IDisposable
         var projectId  = ProjectId.CreateNewId();
         var documentId = DocumentId.CreateNewId(projectId);
 
+        // Combine default refs + NuGet package refs
+        var allRefs = new List<MetadataReference>(_refs);
+        if (_nugetRefs != null && _nugetRefs.Count > 0)
+        {
+            var existingPaths = new HashSet<string>(
+                _refs.Select(r => r.Display ?? ""), StringComparer.OrdinalIgnoreCase);
+            foreach (var nugetRef in _nugetRefs)
+            {
+                if (nugetRef.Display != null && existingPaths.Add(nugetRef.Display))
+                    allRefs.Add(nugetRef);
+            }
+        }
+
         var info = ProjectInfo.Create(
             projectId, VersionStamp.Create(),
             "InlineDiag", "InlineDiag", LanguageNames.CSharp,
             compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable),
             parseOptions: new CSharpParseOptions(LanguageVersion.Latest),
-            metadataReferences: _refs);
+            metadataReferences: allRefs);
 
         var sol = _workspace.CurrentSolution.AddProject(info);
         // Use the full path as document name to avoid collisions when multiple
@@ -269,23 +299,19 @@ public sealed class InlineDiagnosticService : IDisposable
         _trackedFilePath = filePath;
     }
 
-    // ── Suppression (matches CodeAnalysisService logic) ───────────────────
+    // ── Suppression ────────────────────────────────────────────────────────
 
-    private static bool ShouldSuppress(Diagnostic d)
+    private bool ShouldSuppress(Diagnostic d)
     {
-        var filePath = d.Location.SourceTree?.FilePath;
-        if (!string.IsNullOrEmpty(filePath) &&
-            filePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase) &&
-            _suppressedCodes.Contains(d.Id))
+        // Always suppress noise codes
+        if (_alwaysSuppressedCodes.Contains(d.Id))
             return true;
-
-        if (!_suppressedCodes.Contains(d.Id)) return false;
-
-        var msg = d.GetMessage();
-        foreach (var p in _suppressedPatterns)
-            if (msg.Contains(p, StringComparison.OrdinalIgnoreCase))
-                return true;
-
+        
+        // When NuGet refs are NOT loaded, suppress type-not-found errors
+        // (they're almost certainly false positives from missing assemblies)
+        if (!_hasNuGetRefs && _fallbackSuppressedCodes.Contains(d.Id))
+            return true;
+        
         return false;
     }
 

@@ -759,6 +759,7 @@ public partial class MainWindow
             _viewModel.ActiveTab = tab;
             ShowTabInEditor(tab);
             UpdateAxamlPreviewButton();
+            UpdateTabButtonStyles();
         }
     }
     private async void CloseTabButton_Click(object? sender, RoutedEventArgs e)
@@ -778,6 +779,7 @@ public partial class MainWindow
         }
         UpdateWelcomeScreenVisibility();
         UpdateAxamlPreviewButton();
+        UpdateTabButtonStyles();
     }
 
     // AI Chat

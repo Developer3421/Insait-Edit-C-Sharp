@@ -366,8 +366,30 @@ public partial class InsaitEditor : UserControl
                 freshItems = await _axamlEngine.GetCompletionsAsync(
                     _currentFilePath, _surface.Text, line, col, ct);
             else
-                freshItems = await _completionEngine.GetCompletionsAsync(
+            {
+                var roslynItems = await _completionEngine.GetCompletionsAsync(
                     _currentFilePath, _surface.Text, line, col, ct);
+
+                // Merge live template items for C# files
+                if (!string.IsNullOrEmpty(typingPrefix))
+                {
+                    var templateItems = RoslynLiveTemplateService.ToCompletionItems(typingPrefix);
+                    if (templateItems.Count > 0)
+                    {
+                        var merged = new List<RoslynCompletionItem>(roslynItems);
+                        merged.AddRange(templateItems);
+                        freshItems = merged;
+                    }
+                    else
+                    {
+                        freshItems = roslynItems;
+                    }
+                }
+                else
+                {
+                    freshItems = roslynItems;
+                }
+            }
             if (ct.IsCancellationRequested) return;
 
             // If the window is already open, update items and refilter
@@ -429,6 +451,34 @@ public partial class InsaitEditor : UserControl
         _suppressCompletion = true;
         try
         {
+            // Check if this is a live template item (from RoslynLiveTemplateService)
+            if (item.Kind == "Snippet" && item.RoslynItem == null)
+            {
+                // Find the template by shortcut
+                var template = RoslynLiveTemplateService.FindByShortcut(item.Label);
+                if (template != null)
+                {
+                    // Calculate the span to replace (the typed trigger word)
+                    var (line, col) = _surface.CursorPosition;
+                    var currentLine = _surface.GetLineText(line - 1);
+                    int wordEnd = Math.Min(col - 1, currentLine.Length);
+                    int wordStart = wordEnd;
+                    while (wordStart > 0 && (char.IsLetterOrDigit(currentLine[wordStart - 1]) || currentLine[wordStart - 1] == '_'))
+                        wordStart--;
+
+                    // Convert to absolute offset
+                    int lineOffset = 0;
+                    for (int i = 0; i < line - 1 && i < _surface.TotalLines; i++)
+                        lineOffset += _surface.GetLineText(i).Length + 1;
+
+                    int spanStart = lineOffset + wordStart;
+                    int spanLength = wordEnd - wordStart;
+
+                    _surface.StartLiveTemplate(spanStart, spanLength, template.Body);
+                    return;
+                }
+            }
+
             // AXAML items don't have RoslynItem — just insert directly
             if (IsAxamlFile() || item.RoslynItem == null)
             {

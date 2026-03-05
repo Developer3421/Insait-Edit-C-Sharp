@@ -171,23 +171,62 @@
 
         <!-- Tab style -->
         <Style Selector="Button.tab-button">
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="MinWidth" Value="90"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{StaticResource AppTextMutedBrush}"/>
-            <Setter Property="BorderThickness" Value="0,2,0,0"/>
+            <Setter Property="BorderThickness" Value="0,0,0,3"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="16,0,12,0"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="CornerRadius" Value="0"/>
         </Style>
         <Style Selector="Button.tab-button:pointerover">
-            <Setter Property="Background" Value="#20FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#50FFC09F"/>
+            <Setter Property="Background" Value="#10FFFFFF"/>
         </Style>
         <Style Selector="Button.tab-button.active">
             <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+        <!-- Error/warning tabs: coloured bottom border + subtle tint -->
+        <Style Selector="Button.tab-button.has-errors">
+            <Setter Property="BorderBrush" Value="#FFF38BA8"/>
+            <Setter Property="Background" Value="#10F38BA8"/>
+        </Style>
+        <Style Selector="Button.tab-button.has-errors.active">
+            <Setter Property="BorderBrush" Value="#FFF38BA8"/>
+            <Setter Property="Background" Value="#1AF38BA8"/>
+        </Style>
+        <Style Selector="Button.tab-button.has-warnings:not(.has-errors)">
+            <Setter Property="BorderBrush" Value="#FFF5A623"/>
+            <Setter Property="Background" Value="#10F5A623"/>
+        </Style>
+        <Style Selector="Button.tab-button.has-warnings.active:not(.has-errors)">
+            <Setter Property="BorderBrush" Value="#FFF5A623"/>
+            <Setter Property="Background" Value="#1AF5A623"/>
+        </Style>
+
+        <!-- Thin scrollbar for the tab bar -->
+        <Style Selector="ScrollViewer.tab-scroller ScrollBar">
+            <Setter Property="Opacity" Value="0.4"/>
+        </Style>
+        <Style Selector="ScrollViewer.tab-scroller ScrollBar:pointerover">
+            <Setter Property="Opacity" Value="0.85"/>
+        </Style>
+        <Style Selector="ScrollViewer.tab-scroller ScrollBar /template/ Thumb">
+            <Setter Property="MinHeight" Value="3"/>
+            <Setter Property="Height" Value="3"/>
+            <Setter Property="Background" Value="#55FFFFFF"/>
+            <Setter Property="CornerRadius" Value="1.5"/>
+        </Style>
+        <Style Selector="ScrollViewer.tab-scroller ScrollBar /template/ Thumb:pointerover">
+            <Setter Property="Background" Value="#95FFFFFF"/>
+            <Setter Property="Height" Value="4"/>
+        </Style>
+        <Style Selector="ScrollViewer.tab-scroller ScrollBar /template/ RepeatButton">
+            <Setter Property="IsVisible" Value="False"/>
         </Style>
         
         <!-- TreeView style -->
@@ -981,6 +1020,11 @@
                 <Border Name="AccountSidePanel" IsVisible="False">
                     <!-- AccountPanelControl will be added programmatically -->
                 </Border>
+                
+                <!-- Settings Panel (hidden by default) -->
+                <Border Name="SettingsSidePanel" IsVisible="False">
+                    <!-- SettingsPanelControl will be added programmatically -->
+                </Border>
                 </Grid>
             </Border>
             
@@ -1013,13 +1057,16 @@
                     <RowDefinition Height="200" MinHeight="0"/>
                 </Grid.RowDefinitions>
                 <!-- Tab Bar -->
-                <Border Grid.Row="0" Background="#20000000" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1">
+                <Border Grid.Row="0" Background="#181825" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,0,1"
+                        MinHeight="46">
                     <Grid ColumnDefinitions="*,Auto">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-                        <ItemsControl ItemsSource="{Binding Tabs}" Height="36">
+                    <ScrollViewer Name="TabScrollViewer"
+                                  Classes="tab-scroller"
+                                  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Tabs}" Height="44">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="0"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
@@ -1027,19 +1074,28 @@
                                     <Button Classes="tab-button" 
                                             Tag="{Binding}"
                                             Click="TabButton_Click">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="{Binding Language}" FontSize="10" 
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding Language}" FontSize="10" Opacity="0.55"
                                                        Foreground="{StaticResource AccentGreenBrush}" 
                                                        VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding DisplayFileName}" VerticalAlignment="Center"/>
-                                            <Button Width="16" Height="16" 
+                                            <TextBlock Text="{Binding DisplayFileName}" FontSize="13"
+                                                       FontWeight="Regular"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding DiagnosticIndicator}" FontSize="10"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding DiagnosticIndicator, 
+                                                           Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                            <Button Width="20" Height="20" 
                                                     Background="Transparent" 
                                                     BorderThickness="0" 
                                                     Padding="0" 
                                                     Cursor="Hand"
+                                                    CornerRadius="3"
                                                     Tag="{Binding}"
                                                     Click="CloseTabButton_Click">
-                                                <TextBlock Text="✕" FontSize="10" Foreground="{StaticResource AppTextMutedBrush}"/>
+                                                <TextBlock Text="✕" FontSize="11" 
+                                                           Foreground="{StaticResource AppTextMutedBrush}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Button>
                                         </StackPanel>
                                     </Button>
@@ -1348,8 +1404,10 @@
                             
                             <!-- Problems Panel (hidden by default) -->
                             <Border Name="ProblemsPanel" Background="#FF221C2C" IsVisible="False">
-                                <Grid RowDefinitions="Auto,*">
-                                    <Border Grid.Row="0" Background="#FF2A2230" Padding="8,4">
+                                <Grid RowDefinitions="Auto,Auto,*">
+                                    <!-- Header row with counts and actions -->
+                                    <Border Grid.Row="0" Background="#FF2A2230" Padding="8,4"
+                                            BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
@@ -1366,6 +1424,9 @@
                                                 </StackPanel>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                                                <Button Classes="tool-action-button" ToolTip.Tip="Copy all errors to clipboard" Name="CopyProblemsButton" Click="CopyProblems_Click">
+                                                    <TextBlock Text="📋" FontSize="11"/>
+                                                </Button>
                                                 <Button Classes="tool-action-button" ToolTip.Tip="Refresh Analysis" Name="RefreshAnalysisButton" Click="RefreshAnalysis_Click">
                                                     <TextBlock Text="🔄" FontSize="11"/>
                                                 </Button>
@@ -1375,13 +1436,34 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
-                                    <ListBox Grid.Row="1" Name="ProblemsListBox" 
+                                    
+                                    <!-- Tab bar: All Errors / Current File -->
+                                    <Border Grid.Row="1" Background="#FF2A2230" Padding="8,2"
+                                            BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <Button Name="ProblemsTabAll" Content="📂 All Errors" FontSize="11"
+                                                    Height="24" Padding="10,2"
+                                                    Background="#FF3E3050" Foreground="{StaticResource AppTextBrush}"
+                                                    BorderThickness="0" CornerRadius="4"
+                                                    Click="ProblemsTabAll_Click"/>
+                                            <Button Name="ProblemsTabCurrentFile" Content="📄 Current File" FontSize="11"
+                                                    Height="24" Padding="10,2"
+                                                    Background="Transparent" Foreground="{StaticResource AppTextMutedBrush}"
+                                                    BorderThickness="0" CornerRadius="4"
+                                                    Click="ProblemsTabCurrentFile_Click"/>
+                                            <TextBlock Name="ProblemsCurrentFileLabel" Text="" FontSize="10"
+                                                       Foreground="{StaticResource AppTextMutedBrush}"
+                                                       VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <ListBox Grid.Row="2" Name="ProblemsListBox" 
                                              ItemsSource="{Binding Problems}"
                                              Background="Transparent"
                                              SelectionChanged="ProblemsListBox_SelectionChanged">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate x:DataType="vm:DiagnosticItem" x:CompileBindings="False">
-                                                <Grid ColumnDefinitions="24,Auto,*,Auto" Margin="4,2" Background="Transparent">
+                                                <Grid ColumnDefinitions="24,Auto,*,Auto,Auto" Margin="4,2" Background="Transparent">
                                                     <!-- Severity Icon -->
                                                     <TextBlock Grid.Column="0" Text="{Binding SeverityIcon}" FontSize="12" VerticalAlignment="Center"/>
                                                     <!-- Code -->
@@ -1400,6 +1482,13 @@
                                                                VerticalAlignment="Center"
                                                                FontFamily="Consolas"
                                                                Margin="8,0,4,0"/>
+                                                    <!-- Copy single error button -->
+                                                    <Button Grid.Column="4" Content="📋" FontSize="9"
+                                                            Width="22" Height="20" Padding="0"
+                                                            Background="Transparent" Foreground="{StaticResource AppTextMutedBrush}"
+                                                            BorderThickness="0" CornerRadius="3"
+                                                            ToolTip.Tip="Copy error"
+                                                            Click="CopySingleProblem_Click"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
@@ -1418,7 +1507,7 @@
                                         </ListBox.Styles>
                                     </ListBox>
                                     <!-- Empty state -->
-                                    <TextBlock Grid.Row="1" Text="No problems detected. Press Analyze to check for issues." 
+                                    <TextBlock Grid.Row="2" Text="No problems detected. Press Analyze to check for issues." 
                                                FontSize="12" Foreground="{StaticResource AppTextMutedBrush}" 
                                                Margin="16,12" FontStyle="Italic"
                                                  IsVisible="{Binding !HasProblems}"

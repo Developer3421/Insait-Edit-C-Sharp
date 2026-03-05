@@ -154,6 +154,60 @@ public static class SettingsDbService
         }
     }
 
+    // ---------- generic setting API ----------
+
+    /// <summary>
+    /// Loads an arbitrary setting by key. Returns <see langword="null"/> if not found or on error.
+    /// </summary>
+    public static string? LoadSetting(string key)
+    {
+        try
+        {
+            var password = GetOrCreatePassword();
+            if (password == null) return null;
+
+            using var db = OpenDb(password);
+            var col = db.GetCollection<SettingEntry>(Collection);
+            var entry = col.FindOne(x => x.Key == key);
+            return entry?.Value;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SettingsDb] LoadSetting({key}) failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Saves an arbitrary setting by key.
+    /// </summary>
+    public static void SaveSetting(string key, string value)
+    {
+        try
+        {
+            var password = GetOrCreatePassword();
+            if (password == null) return;
+
+            using var db = OpenDb(password);
+            var col = db.GetCollection<SettingEntry>(Collection);
+
+            var existing = col.FindOne(x => x.Key == key);
+            if (existing != null)
+            {
+                existing.Value = value;
+                col.Update(existing);
+            }
+            else
+            {
+                col.Insert(new SettingEntry { Key = key, Value = value });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SettingsDb] SaveSetting({key}) failed: {ex.Message}");
+        }
+    }
+
     /// <summary>Exposes the AppData directory path so other services can create sibling DBs.</summary>
     public static string AppDataDir => _appDataDir;
 

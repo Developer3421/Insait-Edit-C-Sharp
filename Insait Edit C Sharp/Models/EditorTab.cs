@@ -19,6 +19,10 @@ public class EditorTab : INotifyPropertyChanged
     private int _cursorLine = 1;
     private int _cursorColumn = 1;
     private DateTime _lastModified = DateTime.Now;
+    private bool _hasErrors;
+    private bool _hasWarnings;
+    private int _errorCount;
+    private int _warningCount;
 
     public string Id 
     { 
@@ -90,6 +94,64 @@ public class EditorTab : INotifyPropertyChanged
     /// Gets the display name for the tab (with * if dirty)
     /// </summary>
     public string DisplayFileName => IsDirty ? $"● {FileName}" : FileName;
+    
+    /// <summary>Whether this file has errors in the Problems list.</summary>
+    public bool HasErrors
+    {
+        get => _hasErrors;
+        set
+        {
+            if (SetProperty(ref _hasErrors, value))
+                OnPropertyChanged(nameof(DiagnosticIndicator));
+        }
+    }
+    
+    /// <summary>Whether this file has warnings in the Problems list.</summary>
+    public bool HasWarnings
+    {
+        get => _hasWarnings;
+        set
+        {
+            if (SetProperty(ref _hasWarnings, value))
+                OnPropertyChanged(nameof(DiagnosticIndicator));
+        }
+    }
+    
+    /// <summary>Number of errors.</summary>
+    public int ErrorCount
+    {
+        get => _errorCount;
+        set
+        {
+            if (SetProperty(ref _errorCount, value))
+                OnPropertyChanged(nameof(DiagnosticIndicator));
+        }
+    }
+    
+    /// <summary>Number of warnings.</summary>
+    public int WarningCount
+    {
+        get => _warningCount;
+        set
+        {
+            if (SetProperty(ref _warningCount, value))
+                OnPropertyChanged(nameof(DiagnosticIndicator));
+        }
+    }
+    
+    /// <summary>
+    /// Compact diagnostic indicator text for display on the tab.
+    /// Shows "⛔3" for errors, "⚠2" for warnings, or "" if clean.
+    /// </summary>
+    public string DiagnosticIndicator
+    {
+        get
+        {
+            if (_errorCount > 0) return $"⛔{_errorCount}";
+            if (_warningCount > 0) return $"⚠{_warningCount}";
+            return string.Empty;
+        }
+    }
     
     #region INotifyPropertyChanged
     

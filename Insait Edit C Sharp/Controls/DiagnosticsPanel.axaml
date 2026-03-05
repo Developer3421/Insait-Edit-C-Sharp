@@ -12,9 +12,11 @@
         <SolidColorBrush x:Key="DpError"   Color="#FFF38BA8"/>
         <SolidColorBrush x:Key="DpWarning" Color="#FFF5A623"/>
         <SolidColorBrush x:Key="DpInfo"    Color="#FF89B4FA"/>
+        <SolidColorBrush x:Key="DpTabActive" Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="DpTabInactive" Color="Transparent"/>
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
         <!-- Header -->
         <Border Grid.Row="0" Background="{StaticResource DpSurface}"
                 BorderBrush="{StaticResource DpBorder}"
@@ -40,6 +42,12 @@
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                    <Button x:Name="CopyAllButton" Content="📋" FontSize="12"
+                            Width="28" Height="28" Padding="0"
+                            Background="Transparent" Foreground="{StaticResource DpText}"
+                            BorderThickness="0" CornerRadius="4"
+                            ToolTip.Tip="Copy all errors to clipboard"
+                            Click="OnCopyAll"/>
                     <Button x:Name="RefreshButton" Content="⟳" FontSize="13"
                             Width="28" Height="28" Padding="0"
                             Background="Transparent" Foreground="{StaticResource DpText}"
@@ -56,8 +64,31 @@
             </Grid>
         </Border>
 
+        <!-- Tab bar: All / Current File -->
+        <Border Grid.Row="1" Background="{StaticResource DpSurface}"
+                BorderBrush="{StaticResource DpBorder}"
+                BorderThickness="0,0,0,1" Padding="8,2">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <Button x:Name="TabAll" Content="📂 All Errors" FontSize="11"
+                        Height="26" Padding="10,3"
+                        Background="{StaticResource DpTabActive}"
+                        Foreground="{StaticResource DpText}"
+                        BorderThickness="0" CornerRadius="4"
+                        Click="OnTabAll"/>
+                <Button x:Name="TabCurrentFile" Content="📄 Current File" FontSize="11"
+                        Height="26" Padding="10,3"
+                        Background="{StaticResource DpTabInactive}"
+                        Foreground="{StaticResource DpMuted}"
+                        BorderThickness="0" CornerRadius="4"
+                        Click="OnTabCurrentFile"/>
+                <TextBlock x:Name="CurrentFileLabel" Text="" FontSize="10"
+                           Foreground="{StaticResource DpMuted}"
+                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+            </StackPanel>
+        </Border>
+
         <!-- Diagnostics list -->
-        <ListBox Grid.Row="1" x:Name="DiagList"
+        <ListBox Grid.Row="2" x:Name="DiagList"
                  Background="{StaticResource DpBg}"
                  Foreground="{StaticResource DpText}"
                  BorderThickness="0"

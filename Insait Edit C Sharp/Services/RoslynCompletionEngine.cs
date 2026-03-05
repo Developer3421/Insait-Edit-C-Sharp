@@ -273,10 +273,12 @@ public sealed class RoslynCompletionEngine : IDisposable
     // ── project context ───────────────────────────────────────────────────
     private string? _projectDir;
     private List<string>? _projectCsFiles;
+    private readonly NuGetReferenceResolver _nugetResolver = new();
+    private List<MetadataReference>? _nugetRefs;
 
     /// <summary>
     /// Sets the project directory so all .cs files are loaded into the workspace
-    /// for full cross-file completion.
+    /// for full cross-file completion. Also resolves NuGet package references.
     /// </summary>
     public void SetProjectContext(string? projectDir)
     {
@@ -285,6 +287,13 @@ public sealed class RoslynCompletionEngine : IDisposable
         _projectDir = projectDir;
         _projectCsFiles = null;
         _trackedFilePath = null; // force rebuild
+        
+        // Resolve NuGet package references for better completion
+        _nugetResolver.InvalidateCache();
+        _nugetRefs = _nugetResolver.Resolve(projectDir);
+        
+        System.Diagnostics.Debug.WriteLine(
+            $"[RoslynCompletion] Project context: {projectDir}, NuGet refs: {_nugetRefs.Count}");
     }
 
     private List<string> GetProjectCsFiles()
@@ -339,6 +348,19 @@ public sealed class RoslynCompletionEngine : IDisposable
         var projectId  = ProjectId.CreateNewId();
         var documentId = DocumentId.CreateNewId(projectId);
 
+        // Combine default refs + NuGet package refs
+        var allRefs = new List<MetadataReference>(_defaultRefs);
+        if (_nugetRefs != null && _nugetRefs.Count > 0)
+        {
+            var existingPaths = new HashSet<string>(
+                _defaultRefs.Select(r => r.Display ?? ""), StringComparer.OrdinalIgnoreCase);
+            foreach (var nugetRef in _nugetRefs)
+            {
+                if (nugetRef.Display != null && existingPaths.Add(nugetRef.Display))
+                    allRefs.Add(nugetRef);
+            }
+        }
+
         var projectInfo = ProjectInfo.Create(
             projectId,
             VersionStamp.Create(),
@@ -348,7 +370,7 @@ public sealed class RoslynCompletionEngine : IDisposable
             compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable),
             parseOptions: new CSharpParseOptions(LanguageVersion.Latest),
-            metadataReferences: _defaultRefs);
+            metadataReferences: allRefs);
 
         var solution = _workspace.CurrentSolution.AddProject(projectInfo);
 

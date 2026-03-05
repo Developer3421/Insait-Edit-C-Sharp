@@ -23,68 +23,39 @@ public class CodeAnalysisService
 
     private CancellationTokenSource? _analysisCts;
     private readonly List<MetadataReference> _defaultReferences;
+    private readonly NuGetReferenceResolver _nugetResolver = new();
     
-    // Codes to suppress for Avalonia/XAML-generated code
-    private static readonly HashSet<string> _suppressedCodes = new(StringComparer.OrdinalIgnoreCase)
+    // Codes that are ALWAYS suppressed (genuinely irrelevant noise)
+    private static readonly HashSet<string> _alwaysSuppressedCodes = new(StringComparer.OrdinalIgnoreCase)
     {
-        "CS0103", // The name 'X' does not exist in the current context (e.g., InitializeComponent)
+        "CS1591", // Missing XML comment for publicly visible type or member
+        "CS8019", // Unnecessary using directive
+    };
+    
+    // Codes to suppress ONLY when NuGet references were NOT loaded (fallback mode).
+    // When we have proper package references, these errors are legitimate.
+    private static readonly HashSet<string> _fallbackSuppressedCodes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CS0103", // The name 'X' does not exist in the current context
         "CS0246", // The type or namespace name 'X' could not be found
         "CS0234", // The type or namespace name 'X' does not exist in namespace 'Y'
-        "CS1061", // 'X' does not contain a definition for 'Y' (e.g., FindControl, Get methods)
+        "CS1061", // 'X' does not contain a definition for 'Y'
         "CS0117", // 'X' does not contain a definition for 'Y'
         "CS0121", // Ambiguous call
         "CS7036", // No argument given that corresponds to required parameter
         "CS0012", // The type 'X' is defined in an assembly that is not referenced
+        "CS0616", // 'X' is not an attribute class
+        "CS0433", // The type 'X' exists in both assemblies
+        "CS0518", // Predefined type 'System.X' is not defined or imported
+        "CS1729", // 'X' does not contain a constructor that takes N arguments
+        "CS0535", // 'X' does not implement interface member 'Y'
+        "CS0122", // 'X' is inaccessible due to its protection level
+        "CS0305", // Using the generic type requires N type arguments
+        "CS1503", // Argument N: cannot convert from 'X' to 'Y'
+        "CS0029", // Cannot implicitly convert type 'X' to 'Y'
+        "CS0311", // The type 'X' cannot be used as type parameter
     };
     
-    // Patterns to suppress in messages
-    private static readonly string[] _suppressedPatterns = new[]
-    {
-        "InitializeComponent",
-        "Avalonia",
-        "AvaloniaProperty",
-        "StyledProperty",
-        "DirectProperty",
-        "FindControl",
-        "GetObservable",
-        "axaml",
-        "AXAML",
-        "IStyleable",
-        "StyledElement",
-        "TemplatedControl",
-        "UserControl",
-        "Window",
-        "Control",
-        "Panel",
-        "Grid",
-        "StackPanel",
-        "DockPanel",
-        "Canvas",
-        "Border",
-        "Button",
-        "TextBlock",
-        "TextBox",
-        "ListBox",
-        "ComboBox",
-        "CheckBox",
-        "RadioButton",
-        "TreeView",
-        "TabControl",
-        "ScrollViewer",
-        "ItemsControl",
-        "ContentControl",
-        "MenuItem",
-        "Menu",
-        "ContextMenu",
-        "Image",
-        "Path",
-        "Popup",
-        "ToolTip",
-        "Expander",
-        "Slider",
-        "ProgressBar",
-        "DataGrid",
-    };
 
     public CodeAnalysisService()
     {
@@ -92,38 +63,19 @@ public class CodeAnalysisService
     }
     
     /// <summary>
-    /// Check if a diagnostic should be suppressed (Avalonia-related)
+    /// Check if a diagnostic should be suppressed.
+    /// When NuGet references are loaded, only genuine noise is suppressed.
+    /// When refs are missing (fallback mode), type-not-found errors are also suppressed.
     /// </summary>
-    private bool ShouldSuppressDiagnostic(Diagnostic diagnostic)
+    private static bool ShouldSuppressDiagnostic(Diagnostic diagnostic, bool hasNuGetRefs)
     {
-        // Check if the file is an Avalonia code-behind file
-        var filePath = diagnostic.Location.SourceTree?.FilePath;
-        if (!string.IsNullOrEmpty(filePath))
-        {
-            // Suppress most errors for .axaml.cs files since they rely on generated code
-            if (filePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase))
-            {
-                if (_suppressedCodes.Contains(diagnostic.Id))
-                {
-                    return true;
-                }
-            }
-        }
+        // Always suppress noise codes
+        if (_alwaysSuppressedCodes.Contains(diagnostic.Id))
+            return true;
         
-        // Check if the diagnostic code should be suppressed
-        if (_suppressedCodes.Contains(diagnostic.Id))
-        {
-            var message = diagnostic.GetMessage();
-            
-            // Check if the message contains any Avalonia-related patterns
-            foreach (var pattern in _suppressedPatterns)
-            {
-                if (message.Contains(pattern, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-        }
+        // When NuGet refs are NOT loaded, suppress type-not-found errors
+        if (!hasNuGetRefs && _fallbackSuppressedCodes.Contains(diagnostic.Id))
+            return true;
         
         return false;
     }
@@ -188,57 +140,47 @@ public class CodeAnalysisService
     }
     
     /// <summary>
-    /// Load additional references from project output directory (includes Avalonia DLLs)
+    /// Load additional references from NuGet packages and project output directory.
+    /// Returns (references, hasNuGetRefs) where hasNuGetRefs indicates if NuGet packages were found.
     /// </summary>
-    private List<MetadataReference> GetProjectReferences(string projectPath)
+    private (List<MetadataReference> refs, bool hasNuGetRefs) GetProjectReferences(string projectPath)
     {
         var references = new List<MetadataReference>();
+        var addedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
-        try
+        // Add default refs paths to avoid duplicates
+        foreach (var r in _defaultReferences)
+            if (r.Display != null)
+                addedPaths.Add(r.Display);
+
+        string? projectDir = null;
+        
+        if (File.Exists(projectPath))
         {
-            string? projectDir = null;
-            
-            if (File.Exists(projectPath) && projectPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
-            {
-                projectDir = Path.GetDirectoryName(projectPath);
-            }
-            else if (Directory.Exists(projectPath))
-            {
-                projectDir = projectPath;
-            }
-            
-            if (projectDir == null) return references;
-            
-            // Look for DLLs in bin/Debug and bin/Release folders
-            var binDir = Path.Combine(projectDir, "bin");
-            if (Directory.Exists(binDir))
-            {
-                var dllFiles = Directory.GetFiles(binDir, "*.dll", SearchOption.AllDirectories)
-                    .Where(f => !f.Contains("ref" + Path.DirectorySeparatorChar)); // Exclude ref assemblies
-                
-                foreach (var dllFile in dllFiles)
-                {
-                    try
-                    {
-                        // Only add Avalonia-related and common framework DLLs
-                        var fileName = Path.GetFileName(dllFile);
-                        if (fileName.StartsWith("Avalonia", StringComparison.OrdinalIgnoreCase) ||
-                            fileName.StartsWith("System.", StringComparison.OrdinalIgnoreCase) ||
-                            fileName.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase))
-                        {
-                            references.Add(MetadataReference.CreateFromFile(dllFile));
-                        }
-                    }
-                    catch { }
-                }
-            }
+            projectDir = Path.GetDirectoryName(projectPath);
         }
-        catch (Exception ex)
+        else if (Directory.Exists(projectPath))
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading project references: {ex.Message}");
+            projectDir = projectPath;
         }
         
-        return references;
+        if (projectDir == null)
+            return (references, false);
+        
+        // Use NuGetReferenceResolver to get package references
+        var nugetRefs = _nugetResolver.Resolve(projectDir);
+        bool hasNuGetRefs = nugetRefs.Count > 0;
+        
+        foreach (var nugetRef in nugetRefs)
+        {
+            if (nugetRef.Display != null && addedPaths.Add(nugetRef.Display))
+                references.Add(nugetRef);
+        }
+        
+        System.Diagnostics.Debug.WriteLine(
+            $"[CodeAnalysis] Project references: {references.Count} NuGet refs loaded, fallback mode: {!hasNuGetRefs}");
+        
+        return (references, hasNuGetRefs);
     }
 
     /// <summary>
@@ -247,6 +189,10 @@ public class CodeAnalysisService
     public async Task<List<DiagnosticItem>> AnalyzeFileAsync(string filePath, string? content = null)
     {
         var diagnostics = new List<DiagnosticItem>();
+
+        // Only analyze .cs files
+        if (!filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+            return diagnostics;
 
         try
         {
@@ -265,8 +211,8 @@ public class CodeAnalysisService
 
             foreach (var diagnostic in roslynDiagnostics)
             {
-                // Skip suppressed Avalonia-related diagnostics
-                if (ShouldSuppressDiagnostic(diagnostic))
+                // Skip suppressed diagnostics (fallback mode — no NuGet refs for single file)
+                if (ShouldSuppressDiagnostic(diagnostic, false))
                     continue;
                     
                 var lineSpan = diagnostic.Location.GetLineSpan();
@@ -313,8 +259,30 @@ public class CodeAnalysisService
             
             if (File.Exists(projectPath))
             {
-                // Single file
-                csFiles = new[] { projectPath };
+                var ext = Path.GetExtension(projectPath).ToLowerInvariant();
+                if (ext is ".sln" or ".slnx" or ".csproj" or ".fsproj" or ".vbproj" or ".nfproj")
+                {
+                    // Solution or project file — resolve to directory and search for .cs files
+                    var dir = Path.GetDirectoryName(projectPath);
+                    if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+                        return allDiagnostics;
+                    
+                    csFiles = Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories)
+                        .Where(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) &&
+                                   !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar) &&
+                                   !f.Contains(Path.DirectorySeparatorChar + ".vs" + Path.DirectorySeparatorChar))
+                        .ToArray();
+                }
+                else if (ext == ".cs")
+                {
+                    // Single .cs file
+                    csFiles = new[] { projectPath };
+                }
+                else
+                {
+                    // Not a supported file type for analysis
+                    return allDiagnostics;
+                }
             }
             else if (Directory.Exists(projectPath))
             {
@@ -379,8 +347,8 @@ public class CodeAnalysisService
 
             OnProgress("Running code analysis...", totalFiles, totalFiles);
 
-            // Get project-specific references (including Avalonia DLLs from bin folder)
-            var projectReferences = GetProjectReferences(projectPath);
+            // Get project-specific references (NuGet packages + bin/ folder)
+            var (projectReferences, hasNuGetRefs) = GetProjectReferences(projectPath);
             var allReferences = _defaultReferences.Concat(projectReferences).ToList();
 
             // Create compilation with all syntax trees
@@ -402,8 +370,8 @@ public class CodeAnalysisService
                 if (diagnostic.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden)
                     continue;
                 
-                // Skip suppressed Avalonia-related diagnostics
-                if (ShouldSuppressDiagnostic(diagnostic))
+                // Skip suppressed diagnostics (context-aware based on NuGet refs)
+                if (ShouldSuppressDiagnostic(diagnostic, hasNuGetRefs))
                     continue;
 
                 var location = diagnostic.Location;

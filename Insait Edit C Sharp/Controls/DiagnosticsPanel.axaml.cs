@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
@@ -14,7 +16,7 @@ namespace Insait_Edit_C_Sharp.Controls;
 
 /// <summary>
 /// Diagnostics panel — displays errors, warnings, and info from Roslyn analysis.
-/// Clicking an item fires NavigateToDiagnostic for the editor to navigate to.
+/// Shows "All Errors" and "Current File" tabs. Errors are easily copyable.
 /// </summary>
 public partial class DiagnosticsPanel : UserControl
 {
@@ -22,8 +24,17 @@ public partial class DiagnosticsPanel : UserControl
     private TextBlock _warningCountText = null!;
     private TextBlock _infoCountText = null!;
     private ListBox _diagList = null!;
+    private Button _tabAll = null!;
+    private Button _tabCurrentFile = null!;
+    private TextBlock _currentFileLabel = null!;
 
     private readonly ObservableCollection<DiagnosticItem> _items = new();
+
+    /// <summary>Current active tab: true = All, false = Current File</summary>
+    private bool _showAll = true;
+
+    /// <summary>Path of the currently open file in the editor.</summary>
+    private string? _currentFilePath;
 
     /// <summary>Fired when user clicks a diagnostic — navigate to file:line:col.</summary>
     public event EventHandler<DiagnosticNavigationEventArgs>? NavigateToDiagnostic;
@@ -39,10 +50,30 @@ public partial class DiagnosticsPanel : UserControl
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
-        _errorCountText = this.FindControl<TextBlock>("ErrorCountText")!;
+        _errorCountText   = this.FindControl<TextBlock>("ErrorCountText")!;
         _warningCountText = this.FindControl<TextBlock>("WarningCountText")!;
-        _infoCountText = this.FindControl<TextBlock>("InfoCountText")!;
-        _diagList = this.FindControl<ListBox>("DiagList")!;
+        _infoCountText    = this.FindControl<TextBlock>("InfoCountText")!;
+        _diagList         = this.FindControl<ListBox>("DiagList")!;
+        _tabAll           = this.FindControl<Button>("TabAll")!;
+        _tabCurrentFile   = this.FindControl<Button>("TabCurrentFile")!;
+        _currentFileLabel = this.FindControl<TextBlock>("CurrentFileLabel")!;
+    }
+
+    /// <summary>
+    /// Sets the path of the currently active file in the editor.
+    /// Updates the "Current File" tab display.
+    /// </summary>
+    public void SetCurrentFile(string? filePath)
+    {
+        _currentFilePath = filePath;
+        _currentFileLabel.Text = string.IsNullOrEmpty(filePath)
+            ? ""
+            : System.IO.Path.GetFileName(filePath);
+
+        if (!_showAll)
+            RebuildList();
+
+        UpdateCounts();
     }
 
     /// <summary>
@@ -100,11 +131,28 @@ public partial class DiagnosticsPanel : UserControl
         UpdateCounts();
     }
 
+    private IEnumerable<DiagnosticItem> GetVisibleItems()
+    {
+        IEnumerable<DiagnosticItem> source = _items;
+
+        if (!_showAll && !string.IsNullOrEmpty(_currentFilePath))
+        {
+            source = source.Where(i =>
+                string.Equals(i.FilePath, _currentFilePath, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return source
+            .OrderBy(d => d.Severity)
+            .ThenBy(d => d.FileName)
+            .ThenBy(d => d.Line);
+    }
+
     private void UpdateCounts()
     {
-        _errorCountText.Text = _items.Count(i => i.Severity == DiagnosticSeverity.Error).ToString();
-        _warningCountText.Text = _items.Count(i => i.Severity == DiagnosticSeverity.Warning).ToString();
-        _infoCountText.Text = _items.Count(i => i.Severity == DiagnosticSeverity.Info ||
+        var source = GetVisibleItems().ToList();
+        _errorCountText.Text = source.Count(i => i.Severity == DiagnosticSeverity.Error).ToString();
+        _warningCountText.Text = source.Count(i => i.Severity == DiagnosticSeverity.Warning).ToString();
+        _infoCountText.Text = source.Count(i => i.Severity == DiagnosticSeverity.Info ||
                                                   i.Severity == DiagnosticSeverity.Hint).ToString();
     }
 
@@ -112,16 +160,23 @@ public partial class DiagnosticsPanel : UserControl
     {
         _diagList.Items.Clear();
 
-        // Sort: errors first, then warnings, then info
-        var sorted = _items
-            .OrderBy(d => d.Severity)
-            .ThenBy(d => d.FileName)
-            .ThenBy(d => d.Line);
-
-        foreach (var item in sorted)
+        foreach (var item in GetVisibleItems())
         {
             _diagList.Items.Add(BuildRow(item));
         }
+    }
+
+    private void UpdateTabStyles()
+    {
+        var activeBg  = new SolidColorBrush(Color.Parse("#FF3E3050"));
+        var inactiveBg = Brushes.Transparent;
+        var activeFg  = new SolidColorBrush(Color.Parse("#FFF0E8F4"));
+        var inactiveFg = new SolidColorBrush(Color.Parse("#FF9E90B0"));
+
+        _tabAll.Background = _showAll ? activeBg : inactiveBg;
+        _tabAll.Foreground = _showAll ? activeFg : inactiveFg;
+        _tabCurrentFile.Background = !_showAll ? activeBg : inactiveBg;
+        _tabCurrentFile.Foreground = !_showAll ? activeFg : inactiveFg;
     }
 
     private Border BuildRow(DiagnosticItem item)
@@ -148,7 +203,7 @@ public partial class DiagnosticsPanel : UserControl
             FontSize = 11,
             FontWeight = FontWeight.SemiBold,
             Foreground = new SolidColorBrush(severityColor),
-            Width = 60,
+            Width = 70,
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(4, 0),
         };
@@ -173,19 +228,41 @@ public partial class DiagnosticsPanel : UserControl
             HorizontalAlignment = HorizontalAlignment.Right,
         };
 
+        // Copy button for individual error
+        var copyBtn = new Button
+        {
+            Content = "📋",
+            FontSize = 10,
+            Width = 24,
+            Height = 22,
+            Padding = new Thickness(0),
+            Background = Brushes.Transparent,
+            Foreground = new SolidColorBrush(Color.Parse("#FF9E90B0")),
+            BorderThickness = new Thickness(0),
+            CornerRadius = new CornerRadius(3),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(4, 0, 0, 0),
+            Tag = item,
+        };
+        ToolTip.SetTip(copyBtn, "Copy error to clipboard");
+        copyBtn.Click += OnCopySingleDiag;
+
         var grid = new Grid { Margin = new Thickness(4, 1) };
-        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // icon
+        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // code
+        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));   // message
+        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // location
+        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // copy btn
         Grid.SetColumn(icon, 0);
         Grid.SetColumn(code, 1);
         Grid.SetColumn(message, 2);
         Grid.SetColumn(location, 3);
+        Grid.SetColumn(copyBtn, 4);
         grid.Children.Add(icon);
         grid.Children.Add(code);
         grid.Children.Add(message);
         grid.Children.Add(location);
+        grid.Children.Add(copyBtn);
 
         var row = new Border
         {
@@ -193,7 +270,7 @@ public partial class DiagnosticsPanel : UserControl
             Padding = new Thickness(8, 4),
             Tag = item,
             Child = grid,
-            Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+            Cursor = new Cursor(StandardCursorType.Hand),
         };
 
         row.PointerPressed += (s, e) =>
@@ -206,6 +283,67 @@ public partial class DiagnosticsPanel : UserControl
         };
 
         return row;
+    }
+
+    private static string FormatDiagnosticForClipboard(DiagnosticItem item)
+    {
+        var severity = item.Severity switch
+        {
+            DiagnosticSeverity.Error => "Error",
+            DiagnosticSeverity.Warning => "Warning",
+            DiagnosticSeverity.Info => "Info",
+            _ => "Hint",
+        };
+        return $"{severity} {item.Code}: {item.Message} [{item.Location}]";
+    }
+
+    private async void OnCopySingleDiag(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is DiagnosticItem di)
+        {
+            var text = FormatDiagnosticForClipboard(di);
+            try
+            {
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if (clipboard != null)
+                    await clipboard.SetTextAsync(text);
+            }
+            catch { /* clipboard may not be available */ }
+        }
+    }
+
+    private async void OnCopyAll(object? sender, RoutedEventArgs e)
+    {
+        var visible = GetVisibleItems().ToList();
+        if (visible.Count == 0) return;
+
+        var sb = new StringBuilder();
+        foreach (var item in visible)
+            sb.AppendLine(FormatDiagnosticForClipboard(item));
+
+        try
+        {
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard != null)
+                await clipboard.SetTextAsync(sb.ToString());
+        }
+        catch { /* clipboard may not be available */ }
+    }
+
+    private void OnTabAll(object? sender, RoutedEventArgs e)
+    {
+        _showAll = true;
+        UpdateTabStyles();
+        RebuildList();
+        UpdateCounts();
+    }
+
+    private void OnTabCurrentFile(object? sender, RoutedEventArgs e)
+    {
+        _showAll = false;
+        UpdateTabStyles();
+        RebuildList();
+        UpdateCounts();
     }
 
     private void OnDiagSelected(object? sender, SelectionChangedEventArgs e)
