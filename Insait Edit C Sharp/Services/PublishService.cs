@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -101,7 +102,7 @@ public class PublishService
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = args,
                 WorkingDirectory = Path.GetDirectoryName(profile.ProjectPath) ?? "",
                 UseShellExecute = false,

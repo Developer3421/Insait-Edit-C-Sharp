@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -548,7 +549,7 @@ public class RunConfigurationService
 
         var startInfo = new ProcessStartInfo
         {
-            FileName = "dotnet",
+            FileName = SettingsPanelControl.ResolveDotNetExe(),
             Arguments = args.ToString(),
             WorkingDirectory = config.WorkingDirectory,
             UseShellExecute = false,
@@ -907,7 +908,7 @@ public class RunConfigurationService
 
                 startInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = args.ToString(),
                     WorkingDirectory = config.WorkingDirectory,
                     UseShellExecute = false,

@@ -750,7 +750,7 @@ public partial class GitWindow : Window
         {
             var psi = new System.Diagnostics.ProcessStartInfo
             {
-                FileName = "gh", Arguments = args,
+                FileName = SettingsPanelControl.ResolveGhExe(), Arguments = args,
                 UseShellExecute = false,
                 RedirectStandardOutput = true, RedirectStandardError = true,
                 CreateNoWindow = true,

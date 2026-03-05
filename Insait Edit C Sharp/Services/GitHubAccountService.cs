@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -72,7 +73,7 @@ public class GitHubAccountService
             // This will open browser for authentication
             var startInfo = new ProcessStartInfo
             {
-                FileName = "gh",
+                FileName = SettingsPanelControl.ResolveGhExe(),
                 Arguments = "auth login --web",
                 UseShellExecute = true
             };
@@ -355,7 +356,7 @@ public class GitHubAccountService
         {
             var startInfo = new ProcessStartInfo
             {
-                FileName = "gh",
+                FileName = SettingsPanelControl.ResolveGhExe(),
                 Arguments = arguments,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,

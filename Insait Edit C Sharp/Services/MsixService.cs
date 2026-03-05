@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -716,6 +717,10 @@ public class MsixService
 
     private static string? FindSignTool()
     {
+        // 0. Check user settings first
+        var fromSettings = SettingsPanelControl.ResolveSignToolExe();
+        if (fromSettings != null) return fromSettings;
+
         // 1. PATH
         try
         {
@@ -781,7 +786,7 @@ public class MsixService
             sb.Append(" -p:PublishTrimmed=true");
 
         Log($"dotnet {sb}");
-        return await RunProcessAsync("dotnet", sb.ToString(),
+        return await RunProcessAsync(SettingsPanelControl.ResolveDotNetExe(), sb.ToString(),
             Path.GetDirectoryName(opts.ProjectPath) ?? "");
     }
 

@@ -752,6 +752,11 @@ public class TerminalControl : UserControl
     /// </summary>
     private static string? ResolveFullGhPath()
     {
+        // Check user settings first
+        var fromSettings = SettingsPanelControl.ResolveGhExe();
+        if (fromSettings != "gh" && File.Exists(fromSettings))
+            return fromSettings;
+
         // Search in PATH
         var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";
         foreach (var path in pathEnv.Split(';'))
@@ -1152,6 +1157,11 @@ public class TerminalControl : UserControl
     
     private string FindGhExecutable()
     {
+        // Check user settings first
+        var fromSettings = SettingsPanelControl.ResolveGhExe();
+        if (fromSettings != "gh" && File.Exists(fromSettings))
+            return fromSettings;
+
         // Try common locations for GitHub CLI
         var possiblePaths = new[]
         {

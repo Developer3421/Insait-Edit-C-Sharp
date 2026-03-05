@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -63,7 +64,7 @@ public class BuildService
             // Use dotnet build command
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = $"build \"{targetFile}\" --configuration {configuration} --no-restore",
                 WorkingDirectory = Path.GetDirectoryName(targetFile) ?? projectPath,
                 UseShellExecute = false,
@@ -280,7 +281,7 @@ public class BuildService
                 
                 var startInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"run --project \"{targetFile}\" --configuration {configuration} --no-build",
                     WorkingDirectory = projectDir ?? projectPath,
                     UseShellExecute = false,
@@ -372,7 +373,7 @@ public class BuildService
         {
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = $"clean \"{targetFile}\" --configuration {configuration}",
                 WorkingDirectory = Path.GetDirectoryName(targetFile) ?? projectPath,
                 UseShellExecute = false,
@@ -431,7 +432,7 @@ public class BuildService
         {
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = $"restore \"{targetFile}\"",
                 WorkingDirectory = Path.GetDirectoryName(targetFile) ?? projectPath,
                 UseShellExecute = false,

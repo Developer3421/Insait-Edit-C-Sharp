@@ -66,6 +66,63 @@ public partial class SettingsPanelControl : UserControl
     /// </summary>
     public static string GetMSBuildPath()    => SettingsDbService.LoadSetting(KeyMSBuild)   ?? "";
 
+    /// <summary>
+    /// Resolves the dotnet executable path from saved SDK path.
+    /// If the SDK path is set (e.g. C:\Program Files\dotnet\sdk\9.0.100),
+    /// walks up to find dotnet.exe. Falls back to "dotnet" (PATH lookup).
+    /// </summary>
+    public static string ResolveDotNetExe()
+    {
+        var sdk = GetDotNetSdkPath();
+        if (!string.IsNullOrWhiteSpace(sdk))
+        {
+            // Walk up from sdk version folder to find dotnet.exe
+            var dir = sdk;
+            for (int i = 0; i < 4; i++)
+            {
+                var candidate = Path.Combine(dir, "dotnet.exe");
+                if (File.Exists(candidate)) return candidate;
+                var parent = Path.GetDirectoryName(dir);
+                if (string.IsNullOrEmpty(parent) || parent == dir) break;
+                dir = parent;
+            }
+        }
+        return "dotnet";
+    }
+
+    /// <summary>
+    /// Resolves gh.exe from saved settings. Falls back to "gh" (PATH lookup).
+    /// </summary>
+    public static string ResolveGhExe()
+    {
+        var gh = GetGitHubCliPath();
+        if (!string.IsNullOrWhiteSpace(gh) && File.Exists(gh))
+            return gh;
+        return "gh";
+    }
+
+    /// <summary>
+    /// Resolves signtool.exe from saved settings. Falls back to null (auto-detect).
+    /// </summary>
+    public static string? ResolveSignToolExe()
+    {
+        var st = GetSignToolPath();
+        if (!string.IsNullOrWhiteSpace(st) && File.Exists(st))
+            return st;
+        return null;
+    }
+
+    /// <summary>
+    /// Resolves MSBuild.exe from saved settings. Falls back to null (auto-detect).
+    /// </summary>
+    public static string? ResolveMSBuildExe()
+    {
+        var mb = GetMSBuildPath();
+        if (!string.IsNullOrWhiteSpace(mb) && File.Exists(mb))
+            return mb;
+        return null;
+    }
+
     // ──────────────────────────────────────────────────────
     //  Event handlers
     // ──────────────────────────────────────────────────────

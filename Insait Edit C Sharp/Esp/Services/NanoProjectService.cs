@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Esp.Models;
 
 namespace Insait_Edit_C_Sharp.Esp.Services;
@@ -191,7 +192,7 @@ public class NanoProjectService
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"sln \"{solutionPath}\" add \"{project.ProjectFilePath}\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,

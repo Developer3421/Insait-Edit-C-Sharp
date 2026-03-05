@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Esp.Services;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -392,7 +393,7 @@ public class NuGetService
             {
                 StartInfo = new System.Diagnostics.ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"add \"{resolvedPath}\" package {packageId} {versionArg}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -448,7 +449,7 @@ public class NuGetService
             {
                 StartInfo = new System.Diagnostics.ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"remove \"{resolvedPath}\" package {packageId}",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,

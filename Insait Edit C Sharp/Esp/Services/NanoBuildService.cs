@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Esp.Services;
 
@@ -147,7 +148,7 @@ public class NanoBuildService
                 {
                     startInfo = new ProcessStartInfo
                     {
-                        FileName = "dotnet",
+                        FileName = SettingsPanelControl.ResolveDotNetExe(),
                         Arguments = $"msbuild \"{targetFile}\" {propsBuilder} /v:minimal",
                         WorkingDirectory = Path.GetDirectoryName(targetFile) ?? projectPath,
                         UseShellExecute = false,
@@ -165,7 +166,7 @@ public class NanoBuildService
                 // Modern SDK-style .csproj: use dotnet build directly
                 startInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"build \"{targetFile}\" -c {configuration} -v minimal",
                     WorkingDirectory = Path.GetDirectoryName(targetFile) ?? projectPath,
                     UseShellExecute = false,
@@ -724,7 +725,7 @@ public class NanoBuildService
             
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = $"restore \"{targetFile}\"{configArg}",
                 WorkingDirectory = workingDir,
                 UseShellExecute = false,
@@ -1135,7 +1136,7 @@ public class NanoBuildService
                 // Run as dotnet <dll>
                 startInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"\"{mdProcessorPath}\" {arguments}",
                     WorkingDirectory = outputDir,
                     UseShellExecute = false,
@@ -1279,7 +1280,7 @@ public class NanoBuildService
             // Run dotnet build with the now-patched .csproj
             var psi = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = $"build \"{projectFile}\" -v minimal",
                 WorkingDirectory = projectDir,
                 UseShellExecute = false,
@@ -1836,7 +1837,7 @@ public class NanoBuildService
         {
             var psi = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = "nuget locals global-packages --list",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
@@ -2023,7 +2024,7 @@ public class NanoBuildService
             
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = "tool install -g nanoFramework.Tools.MetadataProcessor.Console",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
@@ -2099,7 +2100,7 @@ public class NanoBuildService
             
             var startInfo = new ProcessStartInfo
             {
-                FileName = "dotnet",
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
                 Arguments = $"restore \"{tempProjPath}\" --packages \"{toolsDir}\"",
                 WorkingDirectory = toolsDir,
                 UseShellExecute = false,
@@ -2372,6 +2373,10 @@ public class NanoBuildService
     /// </summary>
     private string? FindMSBuild()
     {
+        // 0. Check user settings first
+        var fromSettings = SettingsPanelControl.ResolveMSBuildExe();
+        if (fromSettings != null) return fromSettings;
+
         // 1. Try vswhere.exe first (most reliable method)
         var msbuildViaVsWhere = FindMSBuildViaVsWhere();
         if (!string.IsNullOrEmpty(msbuildViaVsWhere)) return msbuildViaVsWhere;

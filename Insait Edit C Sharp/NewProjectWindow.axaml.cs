@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp;
@@ -289,7 +290,7 @@ public partial class NewProjectWindow : Window
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"{langArg}",
                     WorkingDirectory = location,
                     UseShellExecute = false,

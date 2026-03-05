@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -127,7 +128,8 @@ public class SolutionService
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    // settings-resolved
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"",
                     WorkingDirectory = location,
                     UseShellExecute = false,
@@ -559,7 +561,8 @@ public class SolutionService
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    // settings-resolved
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"sln \"{solutionPath}\" list",
                     WorkingDirectory = solutionDir,
                     UseShellExecute = false,
@@ -656,7 +659,8 @@ public class SolutionService
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    // settings-resolved
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = $"add \"{projectPath}\" reference \"{referenceProjectPath}\"",
                     WorkingDirectory = projectDir,
                     UseShellExecute = false,
@@ -696,7 +700,8 @@ public class SolutionService
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    // settings-resolved
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = args,
                     WorkingDirectory = projectDir,
                     UseShellExecute = false,

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -1234,6 +1235,11 @@ public class CopilotCliService
 
     private async Task<string?> FindGhPathAsync()
     {
+        // Check user settings first
+        var fromSettings = SettingsPanelControl.ResolveGhExe();
+        if (fromSettings != "gh" && File.Exists(fromSettings))
+            return fromSettings;
+
         var possiblePaths = new[]
         {
             "gh",

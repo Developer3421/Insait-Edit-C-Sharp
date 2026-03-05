@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Esp.Models;
 
 namespace Insait_Edit_C_Sharp.Esp.Services;
@@ -63,7 +64,7 @@ public class NanoDeployService
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "dotnet",
+                    FileName = SettingsPanelControl.ResolveDotNetExe(),
                     Arguments = "tool install -g nanoff",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,

@@ -1853,23 +1853,27 @@ public partial class MainWindow : Window
         var explorerPanel = this.FindControl<Grid>("ExplorerPanel");
         var nugetPanel = this.FindControl<Border>("NuGetSidePanel");
         var accountPanel = this.FindControl<Border>("AccountSidePanel");
+        var settingsPanel = this.FindControl<Border>("SettingsSidePanel");
         
         // Get all sidebar buttons
         var explorerButton = this.FindControl<Button>("ExplorerButton");
         var gitButton = this.FindControl<Button>("GitButton");
         var nugetButton = this.FindControl<Button>("NuGetButton");
         var accountButton = this.FindControl<Button>("AccountButton");
+        var settingsButton = this.FindControl<Button>("SettingsButton");
         
         // Hide all panels
         if (explorerPanel != null) explorerPanel.IsVisible = false;
         if (nugetPanel != null) nugetPanel.IsVisible = false;
         if (accountPanel != null) accountPanel.IsVisible = false;
+        if (settingsPanel != null) settingsPanel.IsVisible = false;
         
         // Remove active class from all buttons
         explorerButton?.Classes.Remove("active");
         gitButton?.Classes.Remove("active");
         nugetButton?.Classes.Remove("active");
         accountButton?.Classes.Remove("active");
+        settingsButton?.Classes.Remove("active");
         
         // Show selected panel and activate button
         switch (panelName)
@@ -1885,6 +1889,10 @@ public partial class MainWindow : Window
             case "account":
                 if (accountPanel != null) accountPanel.IsVisible = true;
                 accountButton?.Classes.Add("active");
+                break;
+            case "settings":
+                if (settingsPanel != null) settingsPanel.IsVisible = true;
+                settingsButton?.Classes.Add("active");
                 break;
         }
     }
@@ -2646,14 +2654,14 @@ public partial class MainWindow : Window
 
     private void Settings_Click(object? sender, RoutedEventArgs e)
     {
-        EnsureSidePanelVisible();
-        SwitchSidePanel("settings");
-        
-        // Initialize Settings panel if not done yet
+        // Initialize Settings panel if not done yet (BEFORE switching)
         if (_settingsPanelControl == null)
         {
             InitializeSettingsPanel();
         }
+
+        EnsureSidePanelVisible();
+        SwitchSidePanel("settings");
         
         // Reload settings each time panel is shown
         _settingsPanelControl?.LoadSettings();
