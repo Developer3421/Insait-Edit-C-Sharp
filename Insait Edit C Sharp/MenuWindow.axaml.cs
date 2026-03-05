@@ -190,6 +190,7 @@ public partial class MenuWindow : Window
         AddHeader(panel, LocalizationService.Get("Menu.Code"));
         AddMenuItem(panel, LocalizationService.Get("Menu.FormatDocument"), "Ctrl+Shift+F", () => _mainWindow.ExecuteMenuAction("FormatDocument"));
         AddMenuItem(panel, LocalizationService.Get("Menu.ToggleComment"), "Ctrl+/", () => _mainWindow.ExecuteMenuAction("ToggleComment"));
+        AddMenuItem(panel, LocalizationService.Get("AutoFix.OpenWindow"), "Ctrl+Shift+A", () => _mainWindow.ExecuteMenuAction("OpenAutoFix"));
     }
 
     private void CreateViewContent(StackPanel panel)

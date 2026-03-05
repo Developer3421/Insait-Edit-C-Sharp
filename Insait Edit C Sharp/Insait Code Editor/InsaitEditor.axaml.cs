@@ -42,6 +42,7 @@ public partial class InsaitEditor : UserControl
     // ── Independent windows (created on demand, reused) ──────────────────
     private RoslynCompletionWindow? _completionWin;
     private RoslynQuickFixWindow?   _quickFixWin;
+    private AutoFixWindow?          _autoFixWin;
 
     // ── Editor state ─────────────────────────────────────────────────────
     private string _currentFilePath = "untitled.cs";
@@ -153,6 +154,7 @@ public partial class InsaitEditor : UserControl
         var sep1       = new Separator();
         var miComplete = new MenuItem { Header = "✦  Trigger IntelliSense   Ctrl+Space" };
         var miQuickFix = new MenuItem { Header = "💡  Quick Fix             Alt+Enter" };
+        var miAutoFix  = new MenuItem { Header = "🔧  Auto Fix          Ctrl+Shift+A" };
         var miFormat   = new MenuItem { Header = "🔧  Format Document    Ctrl+Shift+I" };
         var sep2       = new Separator();
         var miCut      = new MenuItem { Header = "✂  Cut                     Ctrl+X" };
@@ -170,12 +172,13 @@ public partial class InsaitEditor : UserControl
             if (d != null) _ = ShowQuickFixAsync(d);
         };
         miFormat.Click   += (_, _) => FormatDocument();
+        miAutoFix.Click  += (_, _) => OpenAutoFixWindow();
         miCut.Click      += (_, _) => _surface.DoCut();
         miCopy.Click     += (_, _) => _surface.DoCopy();
         miPaste.Click    += (_, _) => _surface.DoPaste();
 
         foreach (var mi in new object[] { miGoTo, miRefs, miRename, miHover, sep1,
-                                          miComplete, miQuickFix, miFormat, sep2,
+                                          miComplete, miQuickFix, miAutoFix, miFormat, sep2,
                                           miCut, miCopy, miPaste })
             menu.Items.Add(mi);
 
@@ -587,6 +590,60 @@ public partial class InsaitEditor : UserControl
     }
 
     // ═══════════════════════════════════════════════════════════════════════
+    //  Auto Fix Window — full Roslyn quick-fix pipeline
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Opens the Auto Fix window with Diagnostics → CodeFixProvider → CodeAction pipeline.
+    /// </summary>
+    public void OpenAutoFixWindow()
+    {
+        if (_autoFixWin != null && _autoFixWin.IsVisible)
+        {
+            _autoFixWin.Activate();
+            return;
+        }
+
+        var parentWin = TopLevel.GetTopLevel(this) as Window;
+        if (parentWin == null) return;
+
+        _autoFixWin = new AutoFixWindow(_currentFilePath, _surface.Text);
+
+        _autoFixWin.FixApplied += (_, args) =>
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _surface.SetText(args.NewSource);
+                _isDirty = true;
+                ContentChanged?.Invoke(this, EventArgs.Empty);
+                ContentChangedWithValue?.Invoke(this,
+                    new ContentChangedEventArgs(args.NewSource));
+            });
+        };
+
+        _autoFixWin.InsertTextRequested += (_, text) =>
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                var offset = _surface.GetCursorOffset();
+                _surface.InsertTextAt(offset, text);
+            });
+        };
+
+        _autoFixWin.NavigateToLineRequested += (_, line) =>
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _surface.GoToLine(line);
+            });
+        };
+
+        _autoFixWin.Closed += (_, _) => _autoFixWin = null;
+
+        _autoFixWin.ShowDialog(parentWin);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     //  Signature Help (lightweight Canvas overlay — stays inline)
     // ═══════════════════════════════════════════════════════════════════════
     private async Task ShowSignatureHelpAsync()
@@ -852,6 +909,11 @@ public partial class InsaitEditor : UserControl
         if (e.Key == Key.I && e.KeyModifiers.HasFlag(KeyModifiers.Control)
                            && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
         { FormatDocument(); e.Handled = true; return; }
+
+        // Ctrl+Shift+A → open Auto Fix window
+        if (e.Key == Key.A && e.KeyModifiers.HasFlag(KeyModifiers.Control)
+                           && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        { OpenAutoFixWindow(); e.Handled = true; return; }
 
         if (e.Key == Key.F12)
         { _ = GoToDefinitionAsync(); e.Handled = true; return; }

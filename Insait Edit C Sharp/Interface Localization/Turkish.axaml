@@ -961,4 +961,25 @@
     <x:String x:Key="Lang.Russian">Русский</x:String>
     <x:String x:Key="Lang.Turkish">Türkçe</x:String>
 
+    <!-- ── Auto Fix Window ───────────────────────────────────────── -->
+    <x:String x:Key="AutoFix.Title">Otomatik Düzeltme — Roslyn Hızlı Düzeltmeler</x:String>
+    <x:String x:Key="AutoFix.TabDiagnostics">Tanılamalar ve Düzeltmeler</x:String>
+    <x:String x:Key="AutoFix.TabTemplates">Kod Şablonları</x:String>
+    <x:String x:Key="AutoFix.TabKeywords">Anahtar Kelimeler</x:String>
+    <x:String x:Key="AutoFix.FixAll">Tümünü Düzelt</x:String>
+    <x:String x:Key="AutoFix.Refresh">Yenile</x:String>
+    <x:String x:Key="AutoFix.Insert">Ekle</x:String>
+    <x:String x:Key="AutoFix.Close">Kapat</x:String>
+    <x:String x:Key="AutoFix.Ready">Hazır</x:String>
+    <x:String x:Key="AutoFix.Analyzing">Analiz ediliyor…</x:String>
+    <x:String x:Key="AutoFix.FoundDiagnostics">Düzeltmeli {0} tanılama bulundu</x:String>
+    <x:String x:Key="AutoFix.NoDiagnostics">Kullanılabilir düzeltmeli tanılama yok</x:String>
+    <x:String x:Key="AutoFix.Applying">Düzeltme uygulanıyor…</x:String>
+    <x:String x:Key="AutoFix.Applied">Uygulandı: {0}</x:String>
+    <x:String x:Key="AutoFix.ApplyingAll">Tüm düzeltmeler uygulanıyor…</x:String>
+    <x:String x:Key="AutoFix.AppliedCount">{0} düzeltme uygulandı</x:String>
+    <x:String x:Key="AutoFix.CannotApply">Bu düzeltme otomatik olarak uygulanamaz</x:String>
+    <x:String x:Key="AutoFix.Inserted">Eklendi: {0}</x:String>
+    <x:String x:Key="AutoFix.OpenWindow">Otomatik Düzeltme</x:String>
+
 </ResourceDictionary>

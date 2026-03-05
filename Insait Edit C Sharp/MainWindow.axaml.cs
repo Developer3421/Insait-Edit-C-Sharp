@@ -1353,6 +1353,9 @@ public partial class MainWindow : Window
             case "ToggleComment":
                 // TODO: Implement toggle comment
                 break;
+            case "OpenAutoFix":
+                _insaitEditor?.OpenAutoFixWindow();
+                break;
             case "PreviewAxaml":
                 await OpenAxamlPreviewAsync();
                 break;

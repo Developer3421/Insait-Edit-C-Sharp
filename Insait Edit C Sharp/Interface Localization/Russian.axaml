@@ -981,4 +981,25 @@
     <x:String x:Key="Lang.Russian">Русский</x:String>
     <x:String x:Key="Lang.Turkish">Türkçe</x:String>
 
+    <!-- ── Auto Fix Window ───────────────────────────────────────── -->
+    <x:String x:Key="AutoFix.Title">Автоисправление — Roslyn Quick Fixes</x:String>
+    <x:String x:Key="AutoFix.TabDiagnostics">Диагностика и исправления</x:String>
+    <x:String x:Key="AutoFix.TabTemplates">Шаблоны кода</x:String>
+    <x:String x:Key="AutoFix.TabKeywords">Ключевые слова</x:String>
+    <x:String x:Key="AutoFix.FixAll">Исправить всё</x:String>
+    <x:String x:Key="AutoFix.Refresh">Обновить</x:String>
+    <x:String x:Key="AutoFix.Insert">Вставить</x:String>
+    <x:String x:Key="AutoFix.Close">Закрыть</x:String>
+    <x:String x:Key="AutoFix.Ready">Готово</x:String>
+    <x:String x:Key="AutoFix.Analyzing">Анализ…</x:String>
+    <x:String x:Key="AutoFix.FoundDiagnostics">Найдено {0} диагностик(и) с исправлениями</x:String>
+    <x:String x:Key="AutoFix.NoDiagnostics">Нет диагностик с доступными исправлениями</x:String>
+    <x:String x:Key="AutoFix.Applying">Применение исправления…</x:String>
+    <x:String x:Key="AutoFix.Applied">Применено: {0}</x:String>
+    <x:String x:Key="AutoFix.ApplyingAll">Применение всех исправлений…</x:String>
+    <x:String x:Key="AutoFix.AppliedCount">Применено {0} исправлений</x:String>
+    <x:String x:Key="AutoFix.CannotApply">Невозможно применить это исправление автоматически</x:String>
+    <x:String x:Key="AutoFix.Inserted">Вставлено: {0}</x:String>
+    <x:String x:Key="AutoFix.OpenWindow">Автоисправление</x:String>
+
 </ResourceDictionary>

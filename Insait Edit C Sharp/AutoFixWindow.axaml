@@ -1,0 +1,336 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.AutoFixWindow"
+        Title="Auto Fix — Roslyn Quick Fixes"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="860"
+        Height="640"
+        CanResize="True"
+        MinWidth="600"
+        MinHeight="400"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Window.Resources>
+        <Color x:Key="BgPrimary">#FF1F1A24</Color>
+        <Color x:Key="BgSecondary">#FF2A2230</Color>
+        <Color x:Key="BgTertiary">#FF352840</Color>
+        <Color x:Key="BorderColor">#FF3E3050</Color>
+        <Color x:Key="TextPrimary">#FFF0E8F4</Color>
+        <Color x:Key="TextSecondary">#FF9E90B0</Color>
+        <Color x:Key="AccentOrange">#FFFFC09F</Color>
+        <Color x:Key="AccentPurple">#FFDCC4FF</Color>
+        <Color x:Key="AccentGreen">#FFA6E3A1</Color>
+        <Color x:Key="ErrorRed">#FFF38BA8</Color>
+        <Color x:Key="WarningYellow">#FFF5A623</Color>
+        <Color x:Key="InfoBlue">#FF89B4FA</Color>
+
+        <SolidColorBrush x:Key="BgPrimaryBrush" Color="{StaticResource BgPrimary}"/>
+        <SolidColorBrush x:Key="BgSecondaryBrush" Color="{StaticResource BgSecondary}"/>
+        <SolidColorBrush x:Key="BgTertiaryBrush" Color="{StaticResource BgTertiary}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="{StaticResource AccentOrange}"/>
+        <SolidColorBrush x:Key="AccentPurpleBrush" Color="{StaticResource AccentPurple}"/>
+        <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}"/>
+    </Window.Resources>
+
+    <Window.Styles>
+        <!-- Title bar buttons -->
+        <Style Selector="Button.window-control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.window-control:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <Style Selector="Button.window-control.close:pointerover">
+            <Setter Property="Background" Value="#40F38BA8"/>
+        </Style>
+
+        <!-- Tab buttons -->
+        <Style Selector="Button.tab-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.tab-btn:pointerover">
+            <Setter Property="Background" Value="#18FFFFFF"/>
+        </Style>
+        <Style Selector="Button.tab-btn.selected">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+
+        <!-- Action buttons -->
+        <Style Selector="Button.action-btn">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.action-btn:pointerover">
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+
+        <!-- Primary button -->
+        <Style Selector="Button.primary-btn">
+            <Setter Property="Background" Value="{StaticResource AccentOrangeBrush}"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.primary-btn:pointerover">
+            <Setter Property="Background" Value="#FFFFD4B8"/>
+        </Style>
+        <Style Selector="Button.primary-btn:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+
+        <!-- TextBox -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
+        </Style>
+
+        <!-- ListBox -->
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Background="{StaticResource BgPrimaryBrush}"
+            BorderBrush="{StaticResource AccentOrangeBrush}"
+            BorderThickness="1"
+            CornerRadius="10">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+            <!-- ═══ Title Bar ═══ -->
+            <Border Grid.Row="0"
+                    Background="#FF2A2230"
+                    CornerRadius="10,10,0,0"
+                    PointerPressed="TitleBar_PointerPressed">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="14,0">
+                        <TextBlock Text="🔧" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TitleBarText"
+                                   Text="Auto Fix — Roslyn Quick Fixes"
+                                   FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Classes="window-control close"
+                                Click="CloseButton_Click">
+                            <TextBlock Text="✕" FontSize="14"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ═══ Tab Bar ═══ -->
+            <Border Grid.Row="1" Background="#FF2A2230" Padding="8,0"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal" Spacing="0">
+                    <Button x:Name="TabDiagnostics" Classes="tab-btn selected"
+                            Click="Tab_Click" Tag="diagnostics">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="⛔" FontSize="11"/>
+                            <TextBlock x:Name="TabDiagText" Text="Diagnostics &amp; Fixes" FontSize="12"/>
+                            <Border Background="#40F38BA8" CornerRadius="8" Padding="6,1" Margin="4,0,0,0">
+                                <TextBlock x:Name="DiagCountBadge" Text="0" FontSize="10"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                            </Border>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="TabTemplates" Classes="tab-btn"
+                            Click="Tab_Click" Tag="templates">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="📋" FontSize="11"/>
+                            <TextBlock x:Name="TabTemplText" Text="Code Templates" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="TabKeywords" Classes="tab-btn"
+                            Click="Tab_Click" Tag="keywords">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="🔑" FontSize="11"/>
+                            <TextBlock x:Name="TabKeywordsText" Text="Keywords" FontSize="12"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- ═══ Content Area ═══ -->
+            <Grid Grid.Row="2">
+                <!-- ── Panel 1: Diagnostics & Fixes ── -->
+                <Grid x:Name="DiagnosticsPanel" RowDefinitions="Auto,*,Auto" IsVisible="True">
+                    <!-- Search / filter -->
+                    <Border Grid.Row="0" Padding="12,8" Background="#18DCC4FF">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox x:Name="DiagSearchBox"
+                                     Watermark="🔍 Filter diagnostics…"
+                                     TextChanged="DiagSearch_Changed"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0">
+                                <Button x:Name="BtnFixAll" Classes="primary-btn"
+                                        Click="FixAll_Click" IsEnabled="False">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="🔧" FontSize="11"/>
+                                        <TextBlock x:Name="FixAllText" Text="Fix All" FontSize="11"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="BtnRefresh" Classes="action-btn"
+                                        Click="Refresh_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="🔄" FontSize="11"/>
+                                        <TextBlock x:Name="RefreshText" Text="Refresh" FontSize="11"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Diagnostics list -->
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="DiagnosticsStack" Spacing="2" Margin="6,4"/>
+                    </ScrollViewer>
+
+                    <!-- Detail / preview pane -->
+                    <Border Grid.Row="2" x:Name="FixPreviewPane"
+                            Background="#FF2A2230" Padding="12,8"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0"
+                            MinHeight="80" MaxHeight="180" IsVisible="False">
+                        <Grid RowDefinitions="Auto,*">
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                                <TextBlock x:Name="PreviewTitle" Text="Fix Preview"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{StaticResource AccentPurpleBrush}"/>
+                                <TextBlock x:Name="PreviewProvider" Text=""
+                                           FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </StackPanel>
+                            <ScrollViewer Grid.Row="1" Margin="0,4,0,0">
+                                <TextBlock x:Name="PreviewCode" TextWrapping="Wrap"
+                                           FontSize="11"
+                                           FontFamily="Cascadia Code, Consolas, monospace"
+                                           Foreground="{StaticResource AccentGreenBrush}"/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- ── Panel 2: Code Templates ── -->
+                <Grid x:Name="TemplatesPanel" RowDefinitions="Auto,*" IsVisible="False">
+                    <Border Grid.Row="0" Padding="12,8" Background="#18DCC4FF">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox x:Name="TemplateSearchBox"
+                                     Watermark="🔍 Search templates…"
+                                     TextChanged="TemplateSearch_Changed"/>
+                            <Button Grid.Column="1" x:Name="BtnInsertTemplate" Classes="primary-btn"
+                                    Click="InsertTemplate_Click" IsEnabled="False" Margin="8,0,0,0">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="✏" FontSize="11"/>
+                                    <TextBlock x:Name="InsertTemplateText" Text="Insert" FontSize="11"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="TemplatesStack" Spacing="2" Margin="6,4"/>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- ── Panel 3: Keywords ── -->
+                <Grid x:Name="KeywordsPanel" RowDefinitions="Auto,*" IsVisible="False">
+                    <Border Grid.Row="0" Padding="12,8" Background="#18DCC4FF">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox x:Name="KeywordSearchBox"
+                                     Watermark="🔍 Search keywords…"
+                                     TextChanged="KeywordSearch_Changed"/>
+                            <Button Grid.Column="1" x:Name="BtnInsertKeyword" Classes="primary-btn"
+                                    Click="InsertKeyword_Click" IsEnabled="False" Margin="8,0,0,0">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="🔑" FontSize="11"/>
+                                    <TextBlock x:Name="InsertKeywordText" Text="Insert" FontSize="11"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="KeywordsStack" Spacing="2" Margin="6,4"/>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+
+            <!-- ═══ Status Bar ═══ -->
+            <Border Grid.Row="3" Background="#FF2A2230" Padding="12,6"
+                    CornerRadius="0,0,10,10"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock x:Name="StatusText" Text="Ready"
+                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontFamily="Cascadia Code, Consolas, monospace"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                        <TextBlock x:Name="FileNameText" Text=""
+                                   FontSize="10" Foreground="{StaticResource AccentPurpleBrush}"
+                                   FontFamily="Cascadia Code, Consolas, monospace"/>
+                        <Button x:Name="BtnClose" Classes="action-btn" Click="CloseButton_Click">
+                            <TextBlock x:Name="CloseBtnText" Text="Close" FontSize="11"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+
