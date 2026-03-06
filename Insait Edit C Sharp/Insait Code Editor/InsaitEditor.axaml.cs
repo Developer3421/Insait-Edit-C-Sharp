@@ -565,7 +565,9 @@ public partial class InsaitEditor : UserControl
         switch (fix.Kind)
         {
             case QuickFixKind.AddUsing when !string.IsNullOrEmpty(fix.NamespaceName):
-                _surface.InsertTextAt(0, $"using {fix.NamespaceName};\n");
+                var usingLine = $"using {fix.NamespaceName};";
+                if (!_surface.Text.Contains(usingLine, StringComparison.Ordinal))
+                    _surface.InsertTextAt(0, usingLine + "\n");
                 break;
             case QuickFixKind.InsertCode when !string.IsNullOrEmpty(fix.InsertText):
                 _surface.InsertTextAt(fix.InsertOffset > 0 ? fix.InsertOffset : diag.EndOffset, fix.InsertText);
@@ -574,6 +576,13 @@ public partial class InsaitEditor : UserControl
                 _surface.RemoveTextRange(diag.StartOffset, diag.EndOffset);
                 break;
             case QuickFixKind.InstallNuGet when !string.IsNullOrEmpty(fix.NuGetPackage):
+                // Also insert using if a namespace is provided
+                if (!string.IsNullOrEmpty(fix.NamespaceName))
+                {
+                    var nugetUsing = $"using {fix.NamespaceName};";
+                    if (!_surface.Text.Contains(nugetUsing, StringComparison.Ordinal))
+                        _surface.InsertTextAt(0, nugetUsing + "\n");
+                }
                 NuGetInstallRequested?.Invoke(this, new NuGetInstallRequestedEventArgs(fix.NuGetPackage));
                 break;
             default:
@@ -581,6 +590,9 @@ public partial class InsaitEditor : UserControl
                     _surface.InsertTextAt(diag.StartOffset, fix.InsertText);
                 break;
         }
+
+        // Re-run diagnostics after applying the fix to clear stale errors
+        ScheduleDiagnostics();
     }
 
     private void HideQuickFixWindow()

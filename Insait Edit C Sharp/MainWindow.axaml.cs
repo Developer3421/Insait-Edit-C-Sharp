@@ -487,6 +487,139 @@ public partial class MainWindow : Window
         _insaitEditor!.UndoRedoManager.StateChanged += OnUndoRedoStateChanged;
         _insaitEditor!.GoToDefinitionRequested += OnGoToDefinitionRequested;
         _insaitEditor!.RenameCompleted         += OnRenameCompleted;
+        _insaitEditor!.NuGetInstallRequested   += OnNuGetInstallRequested;
+    }
+
+    /// <summary>
+    /// Handles NuGet package install request from quick-fix suggestions.
+    /// Finds the .csproj file and runs "dotnet add package" in a background process.
+    /// </summary>
+    private async void OnNuGetInstallRequested(object? sender, NuGetInstallRequestedEventArgs e)
+    {
+        var packageName = e.PackageName;
+        if (string.IsNullOrWhiteSpace(packageName)) return;
+
+        // Find the project file (.csproj) for the currently open file
+        var projectFile = FindProjectFileForNuGet();
+        if (string.IsNullOrEmpty(projectFile))
+        {
+            _viewModel.StatusText = $"⚠ Cannot install '{packageName}': no .csproj found";
+            return;
+        }
+
+        _viewModel.StatusText = $"📦 Installing NuGet package '{packageName}'...";
+
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $"add \"{projectFile}\" package {packageName}",
+                WorkingDirectory = Path.GetDirectoryName(projectFile),
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+            };
+
+            using var process = Process.Start(psi);
+            if (process == null)
+            {
+                _viewModel.StatusText = $"⚠ Failed to start dotnet process for '{packageName}'";
+                return;
+            }
+
+            var stdout = await process.StandardOutput.ReadToEndAsync();
+            var stderr = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode == 0)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _viewModel.StatusText = $"✅ Package '{packageName}' installed successfully";
+                });
+
+                // Run dotnet restore to ensure references are fully resolved
+                var restorePsi = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = $"restore \"{projectFile}\"",
+                    WorkingDirectory = Path.GetDirectoryName(projectFile),
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                };
+                using var restoreProcess = Process.Start(restorePsi);
+                if (restoreProcess != null)
+                {
+                    await restoreProcess.WaitForExitAsync();
+                }
+            }
+            else
+            {
+                var errorMsg = !string.IsNullOrWhiteSpace(stderr) ? stderr.Trim() : stdout.Trim();
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _viewModel.StatusText = $"⚠ Failed to install '{packageName}': {errorMsg.Split('\n')[0]}";
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _viewModel.StatusText = $"⚠ Error installing '{packageName}': {ex.Message}";
+            });
+        }
+    }
+
+    /// <summary>
+    /// Finds the nearest .csproj file for the currently active file/project.
+    /// </summary>
+    private string? FindProjectFileForNuGet()
+    {
+        // First try the current project path
+        var path = GetCurrentProjectPath();
+        if (!string.IsNullOrEmpty(path))
+        {
+            if (File.Exists(path))
+            {
+                var ext = Path.GetExtension(path).ToLowerInvariant();
+                if (ext == ".csproj") return path;
+                // If it's a solution, find the first .csproj in directory
+                if (ext is ".sln" or ".slnx")
+                {
+                    var slnDir = Path.GetDirectoryName(path);
+                    if (!string.IsNullOrEmpty(slnDir))
+                    {
+                        var csproj = Directory.GetFiles(slnDir, "*.csproj", SearchOption.AllDirectories).FirstOrDefault();
+                        if (csproj != null) return csproj;
+                    }
+                }
+            }
+            else if (Directory.Exists(path))
+            {
+                var csproj = Directory.GetFiles(path, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (csproj != null) return csproj;
+            }
+        }
+
+        // Try to find .csproj near the active file
+        var activeFile = _viewModel.ActiveTab?.FilePath;
+        if (!string.IsNullOrEmpty(activeFile))
+        {
+            var dir = Path.GetDirectoryName(activeFile);
+            while (!string.IsNullOrEmpty(dir))
+            {
+                var csproj = Directory.GetFiles(dir, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (csproj != null) return csproj;
+                dir = Path.GetDirectoryName(dir);
+            }
+        }
+
+        return null;
     }
 
     /// <summary>

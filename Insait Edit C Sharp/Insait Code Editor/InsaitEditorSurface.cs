@@ -1095,9 +1095,30 @@ internal sealed class InsaitEditorSurface : Control
         if (!HasSelection) return;
         int sl = Math.Min(_selStartLine, _selEndLine);
         int el = Math.Max(_selStartLine, _selEndLine);
-        int sc = _selStartLine <= _selEndLine ? _selStartCol : _selEndCol;
-        int ec = _selStartLine <= _selEndLine ? _selEndCol   : _selStartCol;
+        int sc, ec;
+        if (_selStartLine < _selEndLine)
+        {
+            sc = _selStartCol;
+            ec = _selEndCol;
+        }
+        else if (_selStartLine > _selEndLine)
+        {
+            sc = _selEndCol;
+            ec = _selStartCol;
+        }
+        else
+        {
+            // Same line — always use min/max for columns
+            sc = Math.Min(_selStartCol, _selEndCol);
+            ec = Math.Max(_selStartCol, _selEndCol);
+        }
+
+        // Clamp columns to actual line lengths to prevent out-of-range
+        sc = Math.Clamp(sc, 0, sl < _lines.Count ? _lines[sl].Length : 0);
+        ec = Math.Clamp(ec, 0, el < _lines.Count ? _lines[el].Length : 0);
+
         int so = OffsetForPos(sl, sc), eo = OffsetForPos(el, ec);
+        if (so >= eo) { ClearSelection(); return; } // nothing to delete
         RecordUndo(so, _fullText[so..eo], string.Empty);
         if (sl == el) _lines[sl] = _lines[sl].Remove(sc, ec - sc);
         else { _lines[sl] = _lines[sl][..sc] + _lines[el][ec..]; _lines.RemoveRange(sl + 1, el - sl); }
@@ -1138,9 +1159,26 @@ internal sealed class InsaitEditorSurface : Control
     {
         if (!HasSelection) return string.Empty;
         int sl = Math.Min(_selStartLine, _selEndLine), el = Math.Max(_selStartLine, _selEndLine);
-        int sc = _selStartLine <= _selEndLine ? _selStartCol : _selEndCol;
-        int ec = _selStartLine <= _selEndLine ? _selEndCol   : _selStartCol;
-        return _fullText[OffsetForPos(sl, sc)..OffsetForPos(el, ec)];
+        int sc, ec;
+        if (_selStartLine < _selEndLine)
+        {
+            sc = _selStartCol;
+            ec = _selEndCol;
+        }
+        else if (_selStartLine > _selEndLine)
+        {
+            sc = _selEndCol;
+            ec = _selStartCol;
+        }
+        else
+        {
+            sc = Math.Min(_selStartCol, _selEndCol);
+            ec = Math.Max(_selStartCol, _selEndCol);
+        }
+        sc = Math.Clamp(sc, 0, sl < _lines.Count ? _lines[sl].Length : 0);
+        ec = Math.Clamp(ec, 0, el < _lines.Count ? _lines[el].Length : 0);
+        int so = OffsetForPos(sl, sc), eo = OffsetForPos(el, ec);
+        return so < eo ? _fullText[so..eo] : string.Empty;
     }
     private void SelectAll()
     {

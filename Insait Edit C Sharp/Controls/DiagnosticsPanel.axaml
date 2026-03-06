@@ -25,21 +25,39 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16">
                     <TextBlock Text="🔍 Diagnostics" FontSize="12" FontWeight="SemiBold"
                                Foreground="{StaticResource DpText}"/>
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="⛔" FontSize="11"/>
-                        <TextBlock x:Name="ErrorCountText" Text="0" FontSize="11"
-                                   Foreground="{StaticResource DpError}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="⚠" FontSize="11"/>
-                        <TextBlock x:Name="WarningCountText" Text="0" FontSize="11"
-                                   Foreground="{StaticResource DpWarning}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="ℹ" FontSize="11"/>
-                        <TextBlock x:Name="InfoCountText" Text="0" FontSize="11"
-                                   Foreground="{StaticResource DpInfo}"/>
-                    </StackPanel>
+                    <Button x:Name="ToggleErrors" Height="22" Padding="6,2"
+                            Background="{StaticResource DpTabActive}"
+                            BorderThickness="0" CornerRadius="4"
+                            Click="OnToggleErrors"
+                            ToolTip.Tip="Show/Hide Errors">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⛔" FontSize="11"/>
+                            <TextBlock x:Name="ErrorCountText" Text="0" FontSize="11"
+                                       Foreground="{StaticResource DpError}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ToggleWarnings" Height="22" Padding="6,2"
+                            Background="{StaticResource DpTabActive}"
+                            BorderThickness="0" CornerRadius="4"
+                            Click="OnToggleWarnings"
+                            ToolTip.Tip="Show/Hide Warnings">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⚠" FontSize="11"/>
+                            <TextBlock x:Name="WarningCountText" Text="0" FontSize="11"
+                                       Foreground="{StaticResource DpWarning}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="ToggleInfo" Height="22" Padding="6,2"
+                            Background="{StaticResource DpTabActive}"
+                            BorderThickness="0" CornerRadius="4"
+                            Click="OnToggleInfo"
+                            ToolTip.Tip="Show/Hide Info &amp; Hints">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="ℹ" FontSize="11"/>
+                            <TextBlock x:Name="InfoCountText" Text="0" FontSize="11"
+                                       Foreground="{StaticResource DpInfo}"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
                     <Button x:Name="CopyAllButton" Content="📋" FontSize="12"

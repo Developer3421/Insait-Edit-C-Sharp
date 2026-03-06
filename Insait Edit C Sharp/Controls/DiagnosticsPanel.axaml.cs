@@ -27,6 +27,9 @@ public partial class DiagnosticsPanel : UserControl
     private Button _tabAll = null!;
     private Button _tabCurrentFile = null!;
     private TextBlock _currentFileLabel = null!;
+    private Button _toggleErrors = null!;
+    private Button _toggleWarnings = null!;
+    private Button _toggleInfo = null!;
 
     private readonly ObservableCollection<DiagnosticItem> _items = new();
 
@@ -35,6 +38,15 @@ public partial class DiagnosticsPanel : UserControl
 
     /// <summary>Path of the currently open file in the editor.</summary>
     private string? _currentFilePath;
+
+    /// <summary>Whether to show errors in the list.</summary>
+    private bool _showErrors = true;
+
+    /// <summary>Whether to show warnings in the list.</summary>
+    private bool _showWarnings = true;
+
+    /// <summary>Whether to show info/hint diagnostics in the list.</summary>
+    private bool _showInfo = true;
 
     /// <summary>Fired when user clicks a diagnostic — navigate to file:line:col.</summary>
     public event EventHandler<DiagnosticNavigationEventArgs>? NavigateToDiagnostic;
@@ -57,6 +69,9 @@ public partial class DiagnosticsPanel : UserControl
         _tabAll           = this.FindControl<Button>("TabAll")!;
         _tabCurrentFile   = this.FindControl<Button>("TabCurrentFile")!;
         _currentFileLabel = this.FindControl<TextBlock>("CurrentFileLabel")!;
+        _toggleErrors     = this.FindControl<Button>("ToggleErrors")!;
+        _toggleWarnings   = this.FindControl<Button>("ToggleWarnings")!;
+        _toggleInfo       = this.FindControl<Button>("ToggleInfo")!;
     }
 
     /// <summary>
@@ -141,6 +156,19 @@ public partial class DiagnosticsPanel : UserControl
                 string.Equals(i.FilePath, _currentFilePath, StringComparison.OrdinalIgnoreCase));
         }
 
+        // Apply severity filters
+        source = source.Where(i =>
+        {
+            return i.Severity switch
+            {
+                DiagnosticSeverity.Error => _showErrors,
+                DiagnosticSeverity.Warning => _showWarnings,
+                DiagnosticSeverity.Info => _showInfo,
+                DiagnosticSeverity.Hint => _showInfo,
+                _ => true,
+            };
+        });
+
         return source
             .OrderBy(d => d.Severity)
             .ThenBy(d => d.FileName)
@@ -149,10 +177,18 @@ public partial class DiagnosticsPanel : UserControl
 
     private void UpdateCounts()
     {
-        var source = GetVisibleItems().ToList();
-        _errorCountText.Text = source.Count(i => i.Severity == DiagnosticSeverity.Error).ToString();
-        _warningCountText.Text = source.Count(i => i.Severity == DiagnosticSeverity.Warning).ToString();
-        _infoCountText.Text = source.Count(i => i.Severity == DiagnosticSeverity.Info ||
+        // Show total counts (before severity filtering) so users always see
+        // how many errors/warnings/info exist even if category is toggled off.
+        IEnumerable<DiagnosticItem> source = _items;
+        if (!_showAll && !string.IsNullOrEmpty(_currentFilePath))
+        {
+            source = source.Where(i =>
+                string.Equals(i.FilePath, _currentFilePath, StringComparison.OrdinalIgnoreCase));
+        }
+        var all = source.ToList();
+        _errorCountText.Text = all.Count(i => i.Severity == DiagnosticSeverity.Error).ToString();
+        _warningCountText.Text = all.Count(i => i.Severity == DiagnosticSeverity.Warning).ToString();
+        _infoCountText.Text = all.Count(i => i.Severity == DiagnosticSeverity.Info ||
                                                   i.Severity == DiagnosticSeverity.Hint).ToString();
     }
 
@@ -359,6 +395,42 @@ public partial class DiagnosticsPanel : UserControl
     private void OnClear(object? sender, RoutedEventArgs e)
     {
         Clear();
+    }
+
+    private void OnToggleErrors(object? sender, RoutedEventArgs e)
+    {
+        _showErrors = !_showErrors;
+        UpdateToggleStyles();
+        RebuildList();
+    }
+
+    private void OnToggleWarnings(object? sender, RoutedEventArgs e)
+    {
+        _showWarnings = !_showWarnings;
+        UpdateToggleStyles();
+        RebuildList();
+    }
+
+    private void OnToggleInfo(object? sender, RoutedEventArgs e)
+    {
+        _showInfo = !_showInfo;
+        UpdateToggleStyles();
+        RebuildList();
+    }
+
+    private void UpdateToggleStyles()
+    {
+        var activeBg   = new SolidColorBrush(Color.Parse("#FF3E3050"));
+        var inactiveBg = Brushes.Transparent;
+
+        _toggleErrors.Background   = _showErrors   ? activeBg : inactiveBg;
+        _toggleErrors.Opacity      = _showErrors   ? 1.0 : 0.4;
+
+        _toggleWarnings.Background = _showWarnings ? activeBg : inactiveBg;
+        _toggleWarnings.Opacity    = _showWarnings ? 1.0 : 0.4;
+
+        _toggleInfo.Background     = _showInfo     ? activeBg : inactiveBg;
+        _toggleInfo.Opacity        = _showInfo     ? 1.0 : 0.4;
     }
 }
 
