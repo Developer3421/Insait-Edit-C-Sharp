@@ -216,7 +216,30 @@ internal sealed class InsaitEditorSurface : Control
     public void SetDiagnostics(List<DiagnosticSpan> spans)
     {
         _diagnostics = spans;
+        _lastHoveredDiag = null;
         InvalidateVisual();
+    }
+
+    /// <summary>
+    /// Adjusts all diagnostic offsets after an edit so underlines stay in
+    /// approximately correct positions until the next re-analysis completes.
+    /// </summary>
+    public void AdjustDiagnosticOffsets(int editOffset, int delta)
+    {
+        if (delta == 0 || _diagnostics.Count == 0) return;
+        foreach (var d in _diagnostics)
+        {
+            if (d.StartOffset > editOffset)
+            {
+                d.StartOffset = Math.Max(0, d.StartOffset + delta);
+                d.EndOffset   = Math.Max(d.StartOffset + 1, d.EndOffset + delta);
+            }
+            else if (d.EndOffset > editOffset)
+            {
+                // Edit is inside the diagnostic span — expand/shrink it
+                d.EndOffset = Math.Max(d.StartOffset + 1, d.EndOffset + delta);
+            }
+        }
     }
 
     public Rect GetCursorRect()
@@ -261,6 +284,7 @@ internal sealed class InsaitEditorSurface : Control
         sb.Insert(offset, text);
         _fullText = sb.ToString();
         RebuildLines();
+        AdjustDiagnosticOffsets(offset, text.Length);
         ScheduleHighlight();
         TextChanged?.Invoke(this, EventArgs.Empty);
         InvalidateVisual();
@@ -289,6 +313,7 @@ internal sealed class InsaitEditorSurface : Control
         sb.Remove(start, end - start);
         _fullText = sb.ToString();
         RebuildLines();
+        AdjustDiagnosticOffsets(start, -(end - start));
         SetCursorFromOffset(start);
         ScheduleHighlight();
         TextChanged?.Invoke(this, EventArgs.Empty);
@@ -339,6 +364,7 @@ internal sealed class InsaitEditorSurface : Control
         sb.Insert(spanStart, textToInsert);
         _fullText = sb.ToString();
         RebuildLines();
+        AdjustDiagnosticOffsets(spanStart, textToInsert.Length - spanLength);
         SetCursorFromOffset(Math.Clamp(cursorAfter, 0, _fullText.Length));
         ScheduleHighlight(); ClearSelection(); EnsureCursorVisible();
         TextChanged?.Invoke(this, EventArgs.Empty); CursorMoved?.Invoke(this, CursorPosition);
@@ -950,14 +976,32 @@ internal sealed class InsaitEditorSurface : Control
             PositionFromPoint(pt, out int hli, out int hci);
             int off = OffsetForPos(hli, hci);
             var hd = _diagnostics.FirstOrDefault(d => off >= d.StartOffset && off <= d.EndOffset);
-            if (hd != null) HoverDiagnostic?.Invoke(this, hd);
-            else HoverCleared?.Invoke(this, EventArgs.Empty);
+            if (hd != null)
+            {
+                // Only fire if we moved to a different diagnostic
+                if (!ReferenceEquals(hd, _lastHoveredDiag))
+                {
+                    _lastHoveredDiag = hd;
+                    HoverDiagnostic?.Invoke(this, hd);
+                }
+            }
+            else
+            {
+                if (_lastHoveredDiag != null)
+                {
+                    _lastHoveredDiag = null;
+                    HoverCleared?.Invoke(this, EventArgs.Empty);
+                }
+            }
         }
         base.OnPointerMoved(e);
     }
 
+    private DiagnosticSpan? _lastHoveredDiag;
+
     protected override void OnPointerExited(PointerEventArgs e)
     {
+        _lastHoveredDiag = null;
         HoverCleared?.Invoke(this, EventArgs.Empty);
         base.OnPointerExited(e);
     }
@@ -985,6 +1029,7 @@ internal sealed class InsaitEditorSurface : Control
         RecordUndo(offset, string.Empty, text);
         _lines[_cursorLine] = _lines[_cursorLine][.._cursorCol] + text + _lines[_cursorLine][_cursorCol..];
         _cursorCol += text.Length;
+        AdjustDiagnosticOffsets(offset, text.Length);
         RebuildFullText(); ScheduleHighlight(); ClearSelection(); EnsureCursorVisible();
         TextChanged?.Invoke(this, EventArgs.Empty); CursorMoved?.Invoke(this, CursorPosition);
     }
@@ -1012,6 +1057,8 @@ internal sealed class InsaitEditorSurface : Control
         _lines[_cursorLine] = current[.._cursorCol];
         _lines.Insert(_cursorLine + 1, indent + tail);
         _cursorLine++; _cursorCol = indent.Length;
+        // +1 for the newline, + indent.Length for the auto-indent
+        AdjustDiagnosticOffsets(offset, 1 + indent.Length);
         RebuildFullText(); ScheduleHighlight(); ClearSelection(); EnsureCursorVisible();
         TextChanged?.Invoke(this, EventArgs.Empty); CursorMoved?.Invoke(this, CursorPosition);
     }
@@ -1029,6 +1076,7 @@ internal sealed class InsaitEditorSurface : Control
                 RecordUndo(off, line[..spaces], string.Empty);
                 _lines[_cursorLine] = line[spaces..];
                 _cursorCol = Math.Max(0, _cursorCol - spaces);
+                AdjustDiagnosticOffsets(off, -spaces);
                 RebuildFullText(); ScheduleHighlight();
                 TextChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -1045,6 +1093,7 @@ internal sealed class InsaitEditorSurface : Control
             RecordUndo(off - 1, _lines[_cursorLine][_cursorCol - 1].ToString(), string.Empty);
             _lines[_cursorLine] = _lines[_cursorLine].Remove(_cursorCol - 1, 1);
             _cursorCol--;
+            AdjustDiagnosticOffsets(off - 1, -1);
         }
         else if (_cursorLine > 0)
         {
@@ -1054,6 +1103,7 @@ internal sealed class InsaitEditorSurface : Control
             _lines[_cursorLine - 1] += _lines[_cursorLine];
             _lines.RemoveAt(_cursorLine);
             _cursorLine--; _cursorCol = prevLen;
+            AdjustDiagnosticOffsets(off - 1, -1);
         }
         RebuildFullText(); ScheduleHighlight(); EnsureCursorVisible();
         TextChanged?.Invoke(this, EventArgs.Empty); CursorMoved?.Invoke(this, CursorPosition);
@@ -1067,6 +1117,7 @@ internal sealed class InsaitEditorSurface : Control
             int off = GetCursorOffset();
             RecordUndo(off, _lines[_cursorLine][_cursorCol].ToString(), string.Empty);
             _lines[_cursorLine] = _lines[_cursorLine].Remove(_cursorCol, 1);
+            AdjustDiagnosticOffsets(off, -1);
         }
         else if (_cursorLine < _lines.Count - 1)
         {
@@ -1074,6 +1125,7 @@ internal sealed class InsaitEditorSurface : Control
             RecordUndo(off, "\n", string.Empty);
             _lines[_cursorLine] += _lines[_cursorLine + 1];
             _lines.RemoveAt(_cursorLine + 1);
+            AdjustDiagnosticOffsets(off, -1);
         }
         RebuildFullText(); ScheduleHighlight(); EnsureCursorVisible();
         TextChanged?.Invoke(this, EventArgs.Empty);
@@ -1086,6 +1138,7 @@ internal sealed class InsaitEditorSurface : Control
         RecordUndo(off, string.Empty, "\n" + line);
         _lines.Insert(_cursorLine + 1, line);
         _cursorLine++;
+        AdjustDiagnosticOffsets(off, 1 + line.Length);
         RebuildFullText(); ScheduleHighlight(); EnsureCursorVisible();
         TextChanged?.Invoke(this, EventArgs.Empty); CursorMoved?.Invoke(this, CursorPosition);
     }
@@ -1123,6 +1176,7 @@ internal sealed class InsaitEditorSurface : Control
         if (sl == el) _lines[sl] = _lines[sl].Remove(sc, ec - sc);
         else { _lines[sl] = _lines[sl][..sc] + _lines[el][ec..]; _lines.RemoveRange(sl + 1, el - sl); }
         _cursorLine = sl; _cursorCol = sc;
+        AdjustDiagnosticOffsets(so, -(eo - so));
         ClearSelection(); RebuildFullText(); ScheduleHighlight(); EnsureCursorVisible();
         TextChanged?.Invoke(this, EventArgs.Empty); CursorMoved?.Invoke(this, CursorPosition);
     }
@@ -1262,7 +1316,7 @@ internal sealed class InsaitEditorSurface : Control
         RebuildLines(); ScheduleHighlight();
         TextChanged?.Invoke(this, EventArgs.Empty); InvalidateVisual();
     }
-    private void SetCursorFromOffset(int offset)
+    internal void SetCursorFromOffset(int offset)
     {
         int o = 0;
         for (int i = 0; i < _lines.Count; i++)

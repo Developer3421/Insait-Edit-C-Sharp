@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.Controls.GenerateTypeWindow"
+        Title="Generate Type"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="420"
+        Height="340"
+        CanResize="False"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Border Background="#FF1F1A24"
+            BorderBrush="#FF7C3AED"
+            BorderThickness="1"
+            CornerRadius="10"
+            ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect Color="#CC3E1060" BlurRadius="24" OffsetX="0" OffsetY="8" Opacity="0.8"/>
+        </Border.Effect>
+
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Title bar -->
+            <Border Grid.Row="0" Background="#18DCC4FF" Padding="14,8" CornerRadius="10,10,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="⚡" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TitleText" Text="Generate Type"
+                                   FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="✕" Width="28" Height="28"
+                            Background="Transparent" Foreground="#FF9E90B0" BorderThickness="0"
+                            FontSize="13" Cursor="Hand" x:Name="CloseBtn"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Type options -->
+            <StackPanel Grid.Row="1" Margin="16,12" Spacing="4">
+                <TextBlock Text="Choose type to create:" FontSize="11"
+                           Foreground="#FF9E90B0" Margin="0,0,0,8"
+                           FontFamily="Cascadia Code, Consolas, monospace"/>
+
+                <Button x:Name="BtnClass"     Classes="type-btn" Tag="class">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="📦" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblClass" Text="Class" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public class with empty body" FontSize="10" Foreground="#FF9E90B0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BtnStruct"    Classes="type-btn" Tag="struct">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="📐" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblStruct" Text="Struct" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public struct with empty body" FontSize="10" Foreground="#FF9E90B0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BtnInterface" Classes="type-btn" Tag="interface">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="🔌" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblInterface" Text="Interface" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public interface with empty body" FontSize="10" Foreground="#FF9E90B0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BtnEnum"      Classes="type-btn" Tag="enum">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="🔢" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblEnum" Text="Enum" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public enum with empty body" FontSize="10" Foreground="#FF9E90B0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BtnRecord"    Classes="type-btn" Tag="record">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="📝" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblRecord" Text="Record" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public record (positional)" FontSize="10" Foreground="#FF9E90B0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Padding="14,6" Background="#10DCC4FF" CornerRadius="0,0,10,10">
+                <TextBlock x:Name="FooterText" Text="Type will be appended to the current file"
+                           FontSize="10" Foreground="#FF9E90B0"
+                           FontFamily="Cascadia Code, Consolas, monospace"
+                           HorizontalAlignment="Center"/>
+            </Border>
+        </Grid>
+    </Border>
+
+    <Window.Styles>
+        <Style Selector="Button.type-btn">
+            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.type-btn:pointerover">
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="BorderBrush" Value="#FF7C3AED"/>
+        </Style>
+        <Style Selector="Button.type-btn:pressed">
+            <Setter Property="Background" Value="#FF5B3A8A"/>
+        </Style>
+    </Window.Styles>
+</Window>
+

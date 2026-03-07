@@ -43,6 +43,7 @@ public partial class InsaitEditor : UserControl
     private RoslynCompletionWindow? _completionWin;
     private RoslynQuickFixWindow?   _quickFixWin;
     private AutoFixWindow?          _autoFixWin;
+    private CancellationTokenSource? _hoverFixCts;
 
     // ── Editor state ─────────────────────────────────────────────────────
     private string _currentFilePath = "untitled.cs";
@@ -105,7 +106,7 @@ public partial class InsaitEditor : UserControl
         _surface.RequestCompletion += (_, _) => { if (!_suppressCompletion) _ = ShowCompletionAsync(); };
         _surface.RequestSignature  += (_, _) => _ = ShowSignatureHelpAsync();
         _surface.HoverDiagnostic   += OnHoverDiagnostic;
-        _surface.HoverCleared      += (_, _) => HideTooltip();
+        _surface.HoverCleared      += OnHoverCleared;
         _surface.RequestQuickFix   += (_, d) => _ = ShowQuickFixAsync(d);
         _surface.CtrlClickGoToDefinition += (_, _) => _ = GoToDefinitionAsync();
         _surface.CompletionDismissChar   += (_, _) => HideCompletionWindow();
@@ -307,23 +308,129 @@ public partial class InsaitEditor : UserControl
         }
     }
 
+    private DiagnosticSpan? _currentHoverDiag;
+    private RoslynQuickFixWindow? _hoverQuickFixWin;
+
+    private void OnHoverCleared(object? sender, EventArgs e)
+    {
+        _hoverFixCts?.Cancel();
+        // Don't auto-close the hover window — user may be interacting with it.
+        // It will be closed explicitly when cursor moves or text changes.
+    }
+
     private void OnHoverDiagnostic(object? sender, DiagnosticSpan diag)
     {
-        Dispatcher.UIThread.Post(() =>
+        // If already showing window for this exact diagnostic, skip
+        if (ReferenceEquals(_currentHoverDiag, diag) && _hoverQuickFixWin is { IsVisible: true })
+            return;
+
+        // Cancel previous hover-fix loading
+        _hoverFixCts?.Cancel();
+        _hoverFixCts = new CancellationTokenSource();
+        var ct = _hoverFixCts.Token;
+        _currentHoverDiag = diag;
+
+        // Small delay to avoid flickering when mouse moves quickly
+        Task.Delay(200, ct).ContinueWith(_ =>
         {
-            var sev = diag.Severity switch
+            if (ct.IsCancellationRequested) return;
+            Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                DiagnosticSeverityKind.Error   => "❌ Error",
-                DiagnosticSeverityKind.Warning => "⚠ Warning",
-                DiagnosticSeverityKind.Info    => "ℹ Info",
-                _                              => "💡 Hint",
-            };
-            _tooltipText.Text = $"{sev} {diag.Code}: {diag.Message}";
-            var r = _surface.GetCursorRectForPos(diag.Line - 1, diag.Column - 1);
-            Canvas.SetLeft(_tooltipPopup, r.X + 60);
-            Canvas.SetTop(_tooltipPopup, r.Bottom + 4);
-            _tooltipPopup.IsVisible = true;
-        });
+                if (ct.IsCancellationRequested) return;
+                try
+                {
+                    _tooltipPopup.IsVisible = false;
+
+                    // Load quick fixes for this diagnostic asynchronously
+                    if (diag.Fixes.Count == 0 && IsCSharpFile())
+                    {
+                        try
+                        {
+                            var fixes = await _quickFixService.GetFixesAsync(
+                                _currentFilePath, _surface.Text,
+                                diag.StartOffset, diag.EndOffset,
+                                diag.Code, diag.Message, ct);
+                            if (ct.IsCancellationRequested) return;
+                            diag.Fixes.AddRange(fixes);
+                        }
+                        catch (OperationCanceledException) { return; }
+                        catch { /* best-effort */ }
+                    }
+
+                    if (ct.IsCancellationRequested) return;
+
+                    // Close previous hover window
+                    HideHoverQuickFixWindow();
+
+                    // Build the list: diagnostic message header + fixes
+                    var items = new List<QuickFixSuggestion>();
+
+                    // Add a "header" item showing the error message (non-actionable visual cue)
+                    var sevIcon = diag.Severity switch
+                    {
+                        DiagnosticSeverityKind.Error   => "⛔",
+                        DiagnosticSeverityKind.Warning => "⚠",
+                        DiagnosticSeverityKind.Info    => "ℹ",
+                        _                              => "💡",
+                    };
+                    items.Add(new QuickFixSuggestion
+                    {
+                        Title = $"{sevIcon} {diag.Code}: {diag.Message}",
+                        Kind  = QuickFixKind.Other,
+                    });
+
+                    // Add all fixes
+                    items.AddRange(diag.Fixes);
+
+                    // Show a stable window near the diagnostic
+                    _activeQuickFixDiag = diag;
+
+                    var parentWin = TopLevel.GetTopLevel(this) as Window;
+                    if (parentWin == null) return;
+
+                    var r = _surface.GetCursorRectForPos(diag.Line - 1, diag.Column - 1);
+                    var screenPos = _surface.PointToScreen(new Point(r.X, r.Bottom + 4));
+
+                    _hoverQuickFixWin = new RoslynQuickFixWindow();
+                    _hoverQuickFixWin.FixChosen += OnQuickFixChosen;
+                    _hoverQuickFixWin.Closed += (_, _) => _hoverQuickFixWin = null;
+                    _hoverQuickFixWin.SetFixes(items, diag.Code);
+                    _hoverQuickFixWin.Position = new PixelPoint(screenPos.X, screenPos.Y);
+                    _hoverQuickFixWin.Show(parentWin);
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[InsaitEditor] HoverDiag: {ex.Message}");
+                    // Fall back to simple tooltip
+                    if (ct.IsCancellationRequested) return;
+                    var sev = diag.Severity switch
+                    {
+                        DiagnosticSeverityKind.Error   => "❌ Error",
+                        DiagnosticSeverityKind.Warning => "⚠ Warning",
+                        DiagnosticSeverityKind.Info    => "ℹ Info",
+                        _                              => "💡 Hint",
+                    };
+                    _tooltipText.Text = $"{sev} {diag.Code}: {diag.Message}";
+                    var r = _surface.GetCursorRectForPos(diag.Line - 1, diag.Column - 1);
+                    Canvas.SetLeft(_tooltipPopup, r.X + 60);
+                    Canvas.SetTop(_tooltipPopup, r.Bottom + 4);
+                    _tooltipPopup.IsVisible = true;
+                }
+            });
+        }, TaskScheduler.Default);
+    }
+
+
+    private void HideHoverQuickFixWindow()
+    {
+        if (_hoverQuickFixWin != null)
+        {
+            _hoverQuickFixWin.FixChosen -= OnQuickFixChosen;
+            try { _hoverQuickFixWin.SafeClose(); } catch { }
+            _hoverQuickFixWin = null;
+        }
+        _currentHoverDiag = null;
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -492,8 +599,53 @@ public partial class InsaitEditor : UserControl
                 var change = await _completionEngine.GetCompletionChangeAsync(
                     item, _currentFilePath, _surface.Text);
                 if (change != null)
-                    _surface.ApplyCompletionChange(change.SpanStart, change.SpanLength,
-                        change.NewText, change.IsSnippet);
+                {
+                    if (change.AdditionalChanges.Count > 0)
+                    {
+                        // Apply ALL changes atomically to avoid offset invalidation.
+                        // Collect all changes (primary + additional), sort by offset descending,
+                        // and apply them to a single string builder, then set the full text.
+                        var allChanges = new List<(int Start, int Length, string Text)>(change.AdditionalChanges)
+                        {
+                            (change.SpanStart, change.SpanLength, change.NewText)
+                        };
+                        allChanges.Sort((a, b) => b.Start.CompareTo(a.Start)); // descending
+
+                        var sb = new StringBuilder(_surface.Text);
+                        foreach (var (start, length, text) in allChanges)
+                        {
+                            int s = Math.Clamp(start, 0, sb.Length);
+                            int l = Math.Clamp(length, 0, sb.Length - s);
+                            sb.Remove(s, l);
+                            sb.Insert(s, text);
+                        }
+
+                        // Calculate cursor position after primary change
+                        // Account for text inserted before the primary change
+                        int extraBefore = 0;
+                        foreach (var (start, length, text) in allChanges)
+                        {
+                            if (start < change.SpanStart)
+                                extraBefore += text.Length - length;
+                        }
+                        int cursorOffset = change.SpanStart + extraBefore + change.NewText.Length;
+
+                        _surface.SetText(sb.ToString(), preserveCursor: false);
+                        _surface.SetCursorFromOffset(Math.Clamp(cursorOffset, 0, _surface.Text.Length));
+
+                        // SetText doesn't fire TextChanged, so trigger events manually
+                        _isDirty = true;
+                        ContentChanged?.Invoke(this, EventArgs.Empty);
+                        ContentChangedWithValue?.Invoke(this, new ContentChangedEventArgs(_surface.Text));
+                        ScheduleDiagnostics();
+                    }
+                    else
+                    {
+                        // Single change — use the optimized path
+                        _surface.ApplyCompletionChange(change.SpanStart, change.SpanLength,
+                            change.NewText, change.IsSnippet);
+                    }
+                }
                 else
                     _surface.InsertCompletion(item.InsertText);
             }
@@ -560,8 +712,15 @@ public partial class InsaitEditor : UserControl
     private void OnQuickFixChosen(object? sender, QuickFixSuggestion fix)
     {
         HideQuickFixWindow();
+        HideHoverQuickFixWindow();
+
+        // "Other" kind is used for the header info row — no action
+        if (fix.Kind == QuickFixKind.Other) return;
+
         if (_activeQuickFixDiag == null) return;
         var diag = _activeQuickFixDiag;
+        _activeQuickFixDiag = null;
+
         switch (fix.Kind)
         {
             case QuickFixKind.AddUsing when !string.IsNullOrEmpty(fix.NamespaceName):
@@ -576,7 +735,6 @@ public partial class InsaitEditor : UserControl
                 _surface.RemoveTextRange(diag.StartOffset, diag.EndOffset);
                 break;
             case QuickFixKind.InstallNuGet when !string.IsNullOrEmpty(fix.NuGetPackage):
-                // Also insert using if a namespace is provided
                 if (!string.IsNullOrEmpty(fix.NamespaceName))
                 {
                     var nugetUsing = $"using {fix.NamespaceName};";
@@ -585,14 +743,63 @@ public partial class InsaitEditor : UserControl
                 }
                 NuGetInstallRequested?.Invoke(this, new NuGetInstallRequestedEventArgs(fix.NuGetPackage));
                 break;
+            case QuickFixKind.RoslynFix when fix.RoslynAction != null:
+                _ = ApplyRoslynFixAsync(fix);
+                return;
+            case QuickFixKind.GenerateType:
+                ShowGenerateTypeWindow(fix.InsertText ?? "MyType");
+                return;
             default:
                 if (!string.IsNullOrEmpty(fix.InsertText))
                     _surface.InsertTextAt(diag.StartOffset, fix.InsertText);
                 break;
         }
 
-        // Re-run diagnostics after applying the fix to clear stale errors
         ScheduleDiagnostics();
+    }
+
+    private void ShowGenerateTypeWindow(string typeName)
+    {
+        var parentWin = TopLevel.GetTopLevel(this) as Window;
+        if (parentWin == null) return;
+
+        var genWin = new GenerateTypeWindow(typeName);
+        genWin.TypeGenerated += (_, code) =>
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _surface.InsertTextAt(_surface.Text.Length, code);
+                _isDirty = true;
+                ContentChanged?.Invoke(this, EventArgs.Empty);
+                ContentChangedWithValue?.Invoke(this, new ContentChangedEventArgs(_surface.Text));
+                ScheduleDiagnostics();
+            });
+        };
+        genWin.ShowDialog(parentWin);
+    }
+
+    private async Task ApplyRoslynFixAsync(QuickFixSuggestion fix)
+    {
+        try
+        {
+            var newSource = await _quickFixService.ApplyRoslynFixAsync(
+                fix, _currentFilePath, _surface.Text);
+            if (!string.IsNullOrEmpty(newSource))
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _surface.SetText(newSource, preserveCursor: true);
+                    _isDirty = true;
+                    ContentChanged?.Invoke(this, EventArgs.Empty);
+                    ContentChangedWithValue?.Invoke(this, new ContentChangedEventArgs(newSource));
+                    ScheduleDiagnostics();
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[InsaitEditor] ApplyRoslynFix: {ex.Message}");
+        }
     }
 
     private void HideQuickFixWindow()
@@ -843,7 +1050,12 @@ public partial class InsaitEditor : UserControl
     //  Hide helpers
     // ═══════════════════════════════════════════════════════════════════════
     private void HideSignature()  => _signaturePopup.IsVisible = false;
-    private void HideTooltip()    => _tooltipPopup.IsVisible = false;
+    private void HideTooltip()
+    {
+        _tooltipPopup.IsVisible = false;
+        _hoverFixCts?.Cancel();
+        HideHoverQuickFixWindow();
+    }
     private void HideAllPopups()  { HideCompletionWindow(); HideQuickFixWindow(); HideSignature(); HideTooltip(); }
 
     private void ShowToolWindow(Window win)

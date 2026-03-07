@@ -138,12 +138,26 @@ public sealed class RoslynCompletionEngine : IDisposable
             var change = await svc.GetChangeAsync(document, item.RoslynItem, cancellationToken: ct);
             var tc = change.TextChange;
 
+            // Collect additional text changes (e.g. using directive insertions)
+            var additionalChanges = new List<(int SpanStart, int SpanLength, string NewText)>();
+            if (change.TextChanges.Length > 1)
+            {
+                foreach (var extra in change.TextChanges)
+                {
+                    // Skip the primary text change — it's already handled
+                    if (extra.Span == tc.Span && extra.NewText == tc.NewText)
+                        continue;
+                    additionalChanges.Add((extra.Span.Start, extra.Span.Length, extra.NewText ?? ""));
+                }
+            }
+
             return new RoslynCompletionChange
             {
-                SpanStart  = tc.Span.Start,
-                SpanLength = tc.Span.Length,
-                NewText    = tc.NewText ?? item.InsertText,
-                IsSnippet  = item.Kind == "Snippet",
+                SpanStart        = tc.Span.Start,
+                SpanLength       = tc.Span.Length,
+                NewText          = tc.NewText ?? item.InsertText,
+                IsSnippet        = item.Kind == "Snippet",
+                AdditionalChanges = additionalChanges,
             };
         }
         catch (OperationCanceledException) { throw; }
@@ -578,5 +592,13 @@ public sealed class RoslynCompletionChange
     public string NewText    { get; init; } = string.Empty;
     /// <summary>Whether this change originated from a snippet item.</summary>
     public bool   IsSnippet  { get; init; }
+
+    /// <summary>
+    /// Additional text changes that should be applied to the document,
+    /// e.g. adding <c>using</c> directives at the top of the file.
+    /// Each entry is (SpanStart, SpanLength, NewText).
+    /// These should be applied in reverse order (bottom-to-top) so offsets stay valid.
+    /// </summary>
+    public List<(int SpanStart, int SpanLength, string NewText)> AdditionalChanges { get; init; } = new();
 }
 

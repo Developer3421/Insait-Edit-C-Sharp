@@ -222,14 +222,25 @@ public sealed class InlineDiagnosticService : IDisposable
     private Document SyncDocument(string filePath, string sourceCode)
     {
         if (_trackedFilePath != filePath)
+        {
             RebuildProject(filePath, sourceCode);
+        }
         else
         {
             var doc = _workspace.CurrentSolution.GetDocument(_documentId!);
             if (doc != null)
             {
                 var updated = doc.WithText(SourceText.From(sourceCode));
-                _workspace.TryApplyChanges(updated.Project.Solution);
+                if (!_workspace.TryApplyChanges(updated.Project.Solution))
+                {
+                    // Workspace desynchronized — rebuild from scratch
+                    RebuildProject(filePath, sourceCode);
+                }
+            }
+            else
+            {
+                // Document was lost — rebuild
+                RebuildProject(filePath, sourceCode);
             }
         }
         return _workspace.CurrentSolution.GetDocument(_documentId!)!;

@@ -108,6 +108,15 @@ public sealed class QuickFixService : IDisposable
                     // Also check NuGet packages
                     var nugetFixes = GetNuGetSuggestions(missingType, diagnosticMessage);
                     fixes.AddRange(nugetFixes);
+
+                    // Generate type via dialog window
+                    fixes.Add(new QuickFixSuggestion
+                    {
+                        Title          = $"⚡ Generate type '{missingType}'...",
+                        Kind           = QuickFixKind.GenerateType,
+                        DiagnosticCode = "CS0246",
+                        InsertText     = missingType, // carries the type name for the dialog
+                    });
                 }
             }
 
@@ -178,6 +187,7 @@ public sealed class QuickFixService : IDisposable
 
     // ── Helpers ────────────────────────────────────────────────────────────
 
+
     private static string? ExtractMissingTypeName(string message)
     {
         // "The type or namespace name 'Foo' could not be found"
@@ -245,9 +255,10 @@ public sealed class QuickFixService : IDisposable
                 {
                     fixes.Add(new QuickFixSuggestion
                     {
-                        Title          = $"Install NuGet package '{pkg}'",
+                        Title          = $"Install NuGet package '{pkg}' + using {kv.Key}",
                         Kind           = QuickFixKind.InstallNuGet,
                         NuGetPackage   = pkg,
+                        NamespaceName  = kv.Key,
                         DiagnosticCode = "CS0246",
                     });
                 }
@@ -297,11 +308,22 @@ public sealed class QuickFixService : IDisposable
                             document, diag,
                             (action, _) =>
                             {
+                                // Skip actions that create new files (Generate type, etc.)
+                                // — they can't be applied with simple text replacement
+                                var title = action.Title;
+                                if (title.Contains("Generate type", StringComparison.OrdinalIgnoreCase) ||
+                                    title.Contains("Generate class", StringComparison.OrdinalIgnoreCase) ||
+                                    title.Contains("Generate new type", StringComparison.OrdinalIgnoreCase) ||
+                                    title.Contains("in new file", StringComparison.OrdinalIgnoreCase) ||
+                                    title.Contains("Move type", StringComparison.OrdinalIgnoreCase))
+                                    return;
+
                                 fixes.Add(new QuickFixSuggestion
                                 {
-                                    Title          = action.Title,
+                                    Title          = title,
                                     Kind           = QuickFixKind.RoslynFix,
                                     DiagnosticCode = diagnosticCode,
+                                    RoslynAction   = action,
                                 });
                             },
                             ct);
@@ -355,14 +377,25 @@ public sealed class QuickFixService : IDisposable
     private Document SyncDocument(string filePath, string sourceCode)
     {
         if (_trackedFilePath != filePath)
+        {
             RebuildProject(filePath, sourceCode);
+        }
         else
         {
             var doc = _workspace.CurrentSolution.GetDocument(_documentId!);
             if (doc is not null)
             {
                 var updated = doc.WithText(SourceText.From(sourceCode));
-                _workspace.TryApplyChanges(updated.Project.Solution);
+                if (!_workspace.TryApplyChanges(updated.Project.Solution))
+                {
+                    // Workspace desynchronized — rebuild from scratch
+                    RebuildProject(filePath, sourceCode);
+                }
+            }
+            else
+            {
+                // Document was lost — rebuild
+                RebuildProject(filePath, sourceCode);
             }
         }
         return _workspace.CurrentSolution.GetDocument(_documentId!)!;
@@ -415,6 +448,42 @@ public sealed class QuickFixService : IDisposable
         return assemblies;
     }
 
+    /// <summary>
+    /// Applies a Roslyn CodeAction-based fix and returns the resulting source text.
+    /// Returns null if the action cannot be applied.
+    /// </summary>
+    public async Task<string?> ApplyRoslynFixAsync(
+        QuickFixSuggestion fix,
+        string filePath,
+        string sourceCode,
+        CancellationToken ct = default)
+    {
+        if (fix.RoslynAction == null) return null;
+        try
+        {
+            var document = SyncDocument(filePath, sourceCode);
+            var operations = await fix.RoslynAction.GetOperationsAsync(ct);
+            foreach (var op in operations)
+            {
+                if (op is Microsoft.CodeAnalysis.CodeActions.ApplyChangesOperation applyOp)
+                {
+                    var changedDoc = applyOp.ChangedSolution.GetDocument(_documentId!);
+                    if (changedDoc != null)
+                    {
+                        var newText = await changedDoc.GetTextAsync(ct);
+                        return newText.ToString();
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[QuickFix] ApplyRoslynFix: {ex.Message}");
+        }
+        return null;
+    }
+
     public void Dispose() => _workspace.Dispose();
 }
 
@@ -428,6 +497,12 @@ public sealed class QuickFixSuggestion
     public string?       InsertText     { get; init; }
     public int           InsertOffset   { get; init; }
     public string        DiagnosticCode { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The Roslyn CodeAction — kept so that <see cref="QuickFixKind.RoslynFix"/>
+    /// can be applied by obtaining text changes from the action.
+    /// </summary>
+    internal CodeAction? RoslynAction   { get; init; }
 }
 
 public enum QuickFixKind
@@ -437,6 +512,7 @@ public enum QuickFixKind
     InsertCode,
     RemoveCode,
     RoslynFix,
+    GenerateType,
     Other,
 }
 

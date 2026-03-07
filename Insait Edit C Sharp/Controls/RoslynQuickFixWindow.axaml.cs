@@ -83,12 +83,13 @@ public partial class RoslynQuickFixWindow : Window
     {
         var icon = fix.Kind switch
         {
-            QuickFixKind.AddUsing     => "📦",
-            QuickFixKind.InstallNuGet => "⬇",
-            QuickFixKind.InsertCode   => "✏",
-            QuickFixKind.RemoveCode   => "🗑",
-            QuickFixKind.RoslynFix    => "🔧",
-            _                         => "💡",
+            QuickFixKind.AddUsing      => "📦",
+            QuickFixKind.InstallNuGet  => "⬇",
+            QuickFixKind.InsertCode    => "✏",
+            QuickFixKind.RemoveCode    => "🗑",
+            QuickFixKind.RoslynFix     => "🔧",
+            QuickFixKind.GenerateType  => "⚡",
+            _                          => "💡",
         };
 
         var iconTb = new TextBlock

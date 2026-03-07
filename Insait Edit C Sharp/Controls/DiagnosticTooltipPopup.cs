@@ -127,11 +127,12 @@ public sealed class DiagnosticTooltipPopup : Popup
     {
         var fixIcon = fix.Kind switch
         {
-            QuickFixKind.AddUsing     => "→ ",
-            QuickFixKind.InstallNuGet => "📦 ",
-            QuickFixKind.InsertCode   => "✏ ",
-            QuickFixKind.RemoveCode   => "✂ ",
-            _                         => "⚡ ",
+            QuickFixKind.AddUsing      => "→ ",
+            QuickFixKind.InstallNuGet  => "📦 ",
+            QuickFixKind.InsertCode    => "✏ ",
+            QuickFixKind.RemoveCode    => "✂ ",
+            QuickFixKind.GenerateType  => "⚡ ",
+            _                          => "💡 ",
         };
 
         var text = new TextBlock
