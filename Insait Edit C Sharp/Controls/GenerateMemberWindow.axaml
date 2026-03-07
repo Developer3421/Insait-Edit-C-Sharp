@@ -1,0 +1,130 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.Controls.GenerateMemberWindow"
+        Title="Generate Member"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="460"
+        Height="400"
+        CanResize="False"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Border Background="#FF1F1A24"
+            BorderBrush="#FF7C3AED"
+            BorderThickness="1"
+            CornerRadius="10"
+            ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect Color="#CC3E1060" BlurRadius="24" OffsetX="0" OffsetY="8" Opacity="0.8"/>
+        </Border.Effect>
+
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Title bar -->
+            <Border Grid.Row="0" Background="#18DCC4FF" Padding="14,8" CornerRadius="10,10,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🔧" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TitleText" Text="Generate Member"
+                                   FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="✕" Width="28" Height="28"
+                            Background="Transparent" Foreground="#FF9E90B0" BorderThickness="0"
+                            FontSize="13" Cursor="Hand" x:Name="CloseBtn"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- Member options -->
+            <StackPanel Grid.Row="1" Margin="16,12" Spacing="4">
+                <TextBlock x:Name="SubtitleText" Text="Choose member to generate:"
+                           FontSize="11" Foreground="#FF9E90B0" Margin="0,0,0,8"
+                           FontFamily="Cascadia Code, Consolas, monospace"/>
+
+                <Button x:Name="BtnProperty" Classes="type-btn" Tag="property">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="🏷️" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblProperty" Text="Property" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public object Name { get; set; }" FontSize="10" Foreground="#FF9E90B0"
+                                       FontFamily="Cascadia Code, Consolas, monospace"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BtnMethod" Classes="type-btn" Tag="method">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblMethod" Text="Method" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public void Name() { }" FontSize="10" Foreground="#FF9E90B0"
+                                       FontFamily="Cascadia Code, Consolas, monospace"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BtnAsyncMethod" Classes="type-btn" Tag="asyncmethod">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="⏳" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblAsyncMethod" Text="Async Method" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public async Task Name() { }" FontSize="10" Foreground="#FF9E90B0"
+                                       FontFamily="Cascadia Code, Consolas, monospace"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BtnField" Classes="type-btn" Tag="field">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="📌" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblField" Text="Field" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="private object _name;" FontSize="10" Foreground="#FF9E90B0"
+                                       FontFamily="Cascadia Code, Consolas, monospace"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="BtnEvent" Classes="type-btn" Tag="event">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="📡" FontSize="16" VerticalAlignment="Center"/>
+                        <StackPanel>
+                            <TextBlock x:Name="LblEvent" Text="Event" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock Text="public event EventHandler? Name;" FontSize="10" Foreground="#FF9E90B0"
+                                       FontFamily="Cascadia Code, Consolas, monospace"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Padding="14,6" Background="#10DCC4FF" CornerRadius="0,0,10,10">
+                <TextBlock x:Name="FooterText" Text="Member will be inserted into the target type"
+                           FontSize="10" Foreground="#FF9E90B0"
+                           FontFamily="Cascadia Code, Consolas, monospace"
+                           HorizontalAlignment="Center"/>
+            </Border>
+        </Grid>
+    </Border>
+
+    <Window.Styles>
+        <Style Selector="Button.type-btn">
+            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.type-btn:pointerover">
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="BorderBrush" Value="#FF7C3AED"/>
+        </Style>
+        <Style Selector="Button.type-btn:pressed">
+            <Setter Property="Background" Value="#FF5B3A8A"/>
+        </Style>
+    </Window.Styles>
+</Window>
+

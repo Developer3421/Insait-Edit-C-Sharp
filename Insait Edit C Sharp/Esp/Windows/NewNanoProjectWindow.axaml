@@ -2,13 +2,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="750" d:DesignHeight="650"
+        mc:Ignorable="d" d:DesignWidth="780" d:DesignHeight="720"
         x:Class="Insait_Edit_C_Sharp.Esp.Windows.NewNanoProjectWindow"
         Title="New nanoFramework Project"
         WindowStartupLocation="CenterOwner"
         SystemDecorations="None"
-        Width="750"
-        Height="650"
+        Width="780"
+        MinHeight="680"
+        Height="720"
         CanResize="False"
         FontFamily="Segoe UI, Arial, Tahoma">
 
@@ -152,8 +153,8 @@
             </Grid>
 
             <!-- Content -->
-            <ScrollViewer Grid.Row="1" Padding="24">
-                <StackPanel Spacing="24">
+            <ScrollViewer Grid.Row="1" Padding="24,20,24,16">
+                <StackPanel Spacing="18">
                     
                     <!-- Header -->
                     <StackPanel Spacing="4">
@@ -167,83 +168,83 @@
                     </StackPanel>
 
                     <!-- Template Selection -->
-                    <StackPanel Spacing="12">
+                    <StackPanel Spacing="10">
                         <TextBlock Text="Select a template" FontSize="14" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                         
-                        <WrapPanel Orientation="Horizontal" Name="TemplatePanel">
-                            <Button Classes="template-btn selected" Name="BlankAppTemplate" Margin="0,0,8,8"
+                        <Grid Name="TemplatePanel" ColumnDefinitions="*,*,*,*,*,*" ColumnSpacing="8">
+                            <Button Grid.Column="0" Classes="template-btn selected" Name="BlankAppTemplate"
                                     Click="Template_Click" Tag="BlankApp">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="📱" FontSize="28" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Blank App" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
-                                    <TextBlock Text="Empty nanoFramework app" FontSize="9"
+                                <StackPanel>
+                                    <TextBlock Text="📱" FontSize="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Blank App" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,4,0,2"/>
+                                    <TextBlock Text="Empty app" FontSize="9"
                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                TextWrapping="Wrap" TextAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
-                            <Button Classes="template-btn" Name="ClassLibTemplate" Margin="0,0,8,8"
+                            <Button Grid.Column="1" Classes="template-btn" Name="ClassLibTemplate"
                                     Click="Template_Click" Tag="ClassLibrary">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="📚" FontSize="28" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Class Library" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
+                                <StackPanel>
+                                    <TextBlock Text="📚" FontSize="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Class Library" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,4,0,2"/>
                                     <TextBlock Text="Reusable library" FontSize="9"
                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                TextWrapping="Wrap" TextAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
-                            <Button Classes="template-btn" Name="GpioBlinkTemplate" Margin="0,0,8,8"
+                            <Button Grid.Column="2" Classes="template-btn" Name="GpioBlinkTemplate"
                                     Click="Template_Click" Tag="GpioBlink">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="💡" FontSize="28" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="GPIO Blink" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
-                                    <TextBlock Text="LED blink example" FontSize="9"
+                                <StackPanel>
+                                    <TextBlock Text="💡" FontSize="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="GPIO Blink" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,4,0,2"/>
+                                    <TextBlock Text="LED blink" FontSize="9"
                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                TextWrapping="Wrap" TextAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
-                            <Button Classes="template-btn" Name="WiFiTemplate" Margin="0,0,8,8"
+                            <Button Grid.Column="3" Classes="template-btn" Name="WiFiTemplate"
                                     Click="Template_Click" Tag="WiFiConnect">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="📡" FontSize="28" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Wi-Fi" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
-                                    <TextBlock Text="Wi-Fi connection" FontSize="9"
+                                <StackPanel>
+                                    <TextBlock Text="📡" FontSize="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Wi-Fi" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,4,0,2"/>
+                                    <TextBlock Text="Wi-Fi connect" FontSize="9"
                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                TextWrapping="Wrap" TextAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
-                            <Button Classes="template-btn" Name="HttpTemplate" Margin="0,0,8,8"
+                            <Button Grid.Column="4" Classes="template-btn" Name="HttpTemplate"
                                     Click="Template_Click" Tag="HttpClient">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="🌐" FontSize="28" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="HTTP Client" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
+                                <StackPanel>
+                                    <TextBlock Text="🌐" FontSize="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="HTTP Client" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,4,0,2"/>
                                     <TextBlock Text="HTTP requests" FontSize="9"
                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                TextWrapping="Wrap" TextAlignment="Center"/>
                                 </StackPanel>
                             </Button>
 
-                            <Button Classes="template-btn" Name="I2CTemplate" Margin="0,0,8,8"
+                            <Button Grid.Column="5" Classes="template-btn" Name="I2CTemplate"
                                     Click="Template_Click" Tag="I2CSensor">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="🌡️" FontSize="28" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="I2C Sensor" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
+                                <StackPanel>
+                                    <TextBlock Text="🌡️" FontSize="24" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="I2C Sensor" FontSize="11" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center" Margin="0,4,0,2"/>
                                     <TextBlock Text="Sensor reading" FontSize="9"
                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                TextWrapping="Wrap" TextAlignment="Center"/>
                                 </StackPanel>
                             </Button>
-                        </WrapPanel>
+                        </Grid>
                     </StackPanel>
 
                     <!-- Project Settings -->
@@ -288,21 +289,22 @@
                     </StackPanel>
 
                     <!-- Info Box -->
-                    <Border Background="#204FC3F7" CornerRadius="8" Padding="16" 
+                    <Border Background="#204FC3F7" CornerRadius="8" Padding="12,10"
                             BorderBrush="{StaticResource EspColorBrush}" BorderThickness="1" Opacity="0.8">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="ℹ️ Requirements" FontSize="13" FontWeight="SemiBold"
+                        <Grid ColumnDefinitions="Auto,*">
+                            <TextBlock Grid.Column="0" Text="ℹ️" FontSize="14"
+                                       FontFamily="Segoe UI Emoji, Segoe UI"
                                        Foreground="{StaticResource EspColorBrush}"
-                                       FontFamily="Segoe UI Emoji, Segoe UI"/>
-                            <TextBlock TextWrapping="Wrap" FontSize="12"
-                                       Foreground="{StaticResource TextSecondaryBrush}">
-                                <Run Text="• nanoff CLI tool (auto-installed if missing)"/>
-                                <LineBreak/>
-                                <Run Text="• ESP32 device connected via USB"/>
-                                <LineBreak/>
-                                <Run Text="• USB-to-Serial driver (CP210x or CH340)"/>
-                            </TextBlock>
-                        </StackPanel>
+                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <WrapPanel Grid.Column="1" Orientation="Horizontal">
+                                <TextBlock Text="nanoff CLI (auto-installed)" FontSize="11"
+                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,16,0"/>
+                                <TextBlock Text="ESP32 via USB" FontSize="11"
+                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,16,0"/>
+                                <TextBlock Text="CP210x / CH340 driver" FontSize="11"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </WrapPanel>
+                        </Grid>
                     </Border>
                 </StackPanel>
             </ScrollViewer>

@@ -749,6 +749,9 @@ public partial class InsaitEditor : UserControl
             case QuickFixKind.GenerateType:
                 ShowGenerateTypeWindow(fix.InsertText ?? "MyType");
                 return;
+            case QuickFixKind.GenerateMember:
+                ShowGenerateMemberWindow(fix.InsertText ?? "MyClass", fix.MemberName ?? "MyMember");
+                return;
             default:
                 if (!string.IsNullOrEmpty(fix.InsertText))
                     _surface.InsertTextAt(diag.StartOffset, fix.InsertText);
@@ -776,6 +779,59 @@ public partial class InsaitEditor : UserControl
             });
         };
         genWin.ShowDialog(parentWin);
+    }
+
+    private void ShowGenerateMemberWindow(string typeName, string memberName)
+    {
+        var parentWin = TopLevel.GetTopLevel(this) as Window;
+        if (parentWin == null) return;
+
+        var genWin = new GenerateMemberWindow(typeName, memberName);
+        genWin.MemberGenerated += (_, result) =>
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                // Insert member into the target type's body
+                var newSource = InsertMemberIntoType(_surface.Text, result.TypeName, result.Code);
+                _surface.SetText(newSource, preserveCursor: true);
+                _isDirty = true;
+                ContentChanged?.Invoke(this, EventArgs.Empty);
+                ContentChangedWithValue?.Invoke(this, new ContentChangedEventArgs(newSource));
+                ScheduleDiagnostics();
+            });
+        };
+        genWin.ShowDialog(parentWin);
+    }
+
+    /// <summary>
+    /// Finds the closing brace of the specified type declaration and inserts
+    /// the member code just before it. Falls back to appending at end.
+    /// </summary>
+    private static string InsertMemberIntoType(string source, string typeName, string memberCode)
+    {
+        var pattern = $@"\b(?:class|struct|interface|record)\s+{System.Text.RegularExpressions.Regex.Escape(typeName)}\b";
+        var match = System.Text.RegularExpressions.Regex.Match(source, pattern);
+        if (!match.Success)
+            return source + memberCode;
+
+        int searchFrom = match.Index + match.Length;
+        int braceStart = source.IndexOf('{', searchFrom);
+        if (braceStart < 0)
+            return source + memberCode;
+
+        int depth = 1;
+        int pos = braceStart + 1;
+        while (pos < source.Length && depth > 0)
+        {
+            if (source[pos] == '{') depth++;
+            else if (source[pos] == '}') depth--;
+            if (depth > 0) pos++;
+        }
+
+        if (depth == 0)
+            return source[..pos] + memberCode + source[pos..];
+
+        return source + memberCode;
     }
 
     private async Task ApplyRoslynFixAsync(QuickFixSuggestion fix)

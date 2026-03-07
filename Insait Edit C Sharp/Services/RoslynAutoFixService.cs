@@ -413,9 +413,21 @@ public sealed class RoslynAutoFixService : IDisposable
                     document, diagnostic,
                     (codeAction, _) =>
                     {
+                        // Skip actions that create new files — IDE can't handle those
+                        var title = codeAction.Title;
+                        if (title.Contains("Generate type", StringComparison.OrdinalIgnoreCase) ||
+                            title.Contains("Generate class", StringComparison.OrdinalIgnoreCase) ||
+                            title.Contains("Generate new type", StringComparison.OrdinalIgnoreCase) ||
+                            title.Contains("Generate property", StringComparison.OrdinalIgnoreCase) ||
+                            title.Contains("Generate method", StringComparison.OrdinalIgnoreCase) ||
+                            title.Contains("Generate field", StringComparison.OrdinalIgnoreCase) ||
+                            title.Contains("in new file", StringComparison.OrdinalIgnoreCase) ||
+                            title.Contains("Move type", StringComparison.OrdinalIgnoreCase))
+                            return;
+
                         actions.Add(new AutoFixAction
                         {
-                            Title        = codeAction.Title,
+                            Title        = title,
                             Kind         = AutoFixKind.RoslynCodeFix,
                             CodeAction   = codeAction,
                             ProviderName = provider.GetType().Name,
@@ -435,6 +447,25 @@ public sealed class RoslynAutoFixService : IDisposable
     {
         switch (entry.DiagnosticId)
         {
+            case "CS0246": // type or namespace not found
+            case "CS0103": // name does not exist
+            case "CS0234": // type or namespace does not exist in namespace
+            {
+                // Extract the missing type name from the message
+                var m = System.Text.RegularExpressions.Regex.Match(entry.Message, @"'([^']+)'");
+                if (m.Success)
+                {
+                    var typeName = m.Groups[1].Value;
+                    entry.AvailableFixes.Add(new AutoFixAction
+                    {
+                        Title      = $"⚡ Generate type '{typeName}'...",
+                        Kind       = AutoFixKind.GenerateType,
+                        InsertText = typeName, // carries the type name for the dialog
+                    });
+                }
+                break;
+            }
+
             case "CS1002": // missing semicolon
                 entry.AvailableFixes.Add(new AutoFixAction
                 {
@@ -444,6 +475,26 @@ public sealed class RoslynAutoFixService : IDisposable
                     InsertOffset = entry.EndOffset,
                 });
                 break;
+
+            case "CS1061": // 'Type' does not contain a definition for 'Member'
+            case "CS0117": // 'Type' does not contain a definition for 'Member'
+            {
+                // Message pattern: "'TypeName' does not contain a definition for 'MemberName'"
+                var matches = System.Text.RegularExpressions.Regex.Matches(entry.Message, @"'([^']+)'");
+                if (matches.Count >= 2)
+                {
+                    var ownerType  = matches[0].Groups[1].Value;
+                    var memberName = matches[1].Groups[1].Value;
+                    entry.AvailableFixes.Add(new AutoFixAction
+                    {
+                        Title      = $"🔧 Generate member '{memberName}' on '{ownerType}'...",
+                        Kind       = AutoFixKind.GenerateMember,
+                        InsertText = ownerType,   // carries type name
+                        MemberName = memberName,   // carries member name
+                    });
+                }
+                break;
+            }
 
             case "CS0168": // unused variable
             case "CS0219":
@@ -642,15 +693,19 @@ public sealed class AutoFixAction
     public string?      InsertText   { get; init; }
     public int          InsertOffset { get; init; }
     public string?      ProviderName { get; init; }
+    /// <summary>For GenerateMember — the member name after the dot.</summary>
+    public string?      MemberName   { get; init; }
 
     public string KindIcon => Kind switch
     {
-        AutoFixKind.RoslynCodeFix => "🔧",
-        AutoFixKind.Refactoring   => "🔄",
-        AutoFixKind.InsertText    => "✏",
-        AutoFixKind.RemoveText    => "✂",
-        AutoFixKind.AddUsing      => "📦",
-        _                         => "💡",
+        AutoFixKind.RoslynCodeFix  => "🔧",
+        AutoFixKind.Refactoring    => "🔄",
+        AutoFixKind.InsertText     => "✏",
+        AutoFixKind.RemoveText     => "✂",
+        AutoFixKind.AddUsing       => "📦",
+        AutoFixKind.GenerateType   => "⚡",
+        AutoFixKind.GenerateMember => "🔧",
+        _                          => "💡",
     };
 }
 
@@ -661,6 +716,8 @@ public enum AutoFixKind
     InsertText,
     RemoveText,
     AddUsing,
+    GenerateType,
+    GenerateMember,
     Other,
 }
 

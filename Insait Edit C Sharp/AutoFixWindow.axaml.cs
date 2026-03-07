@@ -425,6 +425,42 @@ public partial class AutoFixWindow : Window
         {
             SetStatus(LocalizationService.Get("AutoFix.Applying"));
 
+            // Generate type — open dialog to choose class/struct/interface/enum/record
+            if (fix.Kind == AutoFixKind.GenerateType)
+            {
+                var typeName = fix.InsertText ?? "MyType";
+                var genWin = new GenerateTypeWindow(typeName);
+                genWin.TypeGenerated += async (_, code) =>
+                {
+                    var newSource = _sourceCode + code;
+                    _sourceCode = newSource;
+                    FixApplied?.Invoke(this, new AutoFixAppliedEventArgs(_filePath, newSource));
+                    SetStatus(string.Format(LocalizationService.Get("AutoFix.Applied"), $"Generated type '{typeName}'"));
+                    await RefreshDiagnosticsAsync();
+                };
+                await genWin.ShowDialog(this);
+                return;
+            }
+
+            // Generate member — open dialog to choose property/method/field/event
+            if (fix.Kind == AutoFixKind.GenerateMember)
+            {
+                var ownerType  = fix.InsertText ?? "MyClass";
+                var memberName = fix.MemberName ?? "MyMember";
+                var genWin = new GenerateMemberWindow(ownerType, memberName);
+                genWin.MemberGenerated += async (_, result) =>
+                {
+                    var newSource = InsertMemberIntoType(_sourceCode, result.TypeName, result.Code);
+                    _sourceCode = newSource;
+                    FixApplied?.Invoke(this, new AutoFixAppliedEventArgs(_filePath, newSource));
+                    SetStatus(string.Format(LocalizationService.Get("AutoFix.Applied"),
+                        $"Generated member '{memberName}' on '{ownerType}'"));
+                    await RefreshDiagnosticsAsync();
+                };
+                await genWin.ShowDialog(this);
+                return;
+            }
+
             if (fix.CodeAction != null)
             {
                 // Roslyn CodeAction — produces actual code changes
@@ -793,6 +829,45 @@ public partial class AutoFixWindow : Window
     {
         var status = this.FindControl<TextBlock>("StatusText");
         if (status != null) status.Text = text;
+    }
+
+    /// <summary>
+    /// Finds the closing brace of the specified type declaration in the source code
+    /// and inserts the member code just before it. Falls back to appending at end.
+    /// </summary>
+    private static string InsertMemberIntoType(string source, string typeName, string memberCode)
+    {
+        // Look for: class/struct/interface/record TypeName ... {
+        // Then find its matching closing brace and insert before it.
+        var pattern = $@"\b(?:class|struct|interface|record)\s+{System.Text.RegularExpressions.Regex.Escape(typeName)}\b";
+        var match = System.Text.RegularExpressions.Regex.Match(source, pattern);
+        if (!match.Success)
+            return source + memberCode; // fallback: append at end
+
+        // Find the opening brace after the type declaration
+        int searchFrom = match.Index + match.Length;
+        int braceStart = source.IndexOf('{', searchFrom);
+        if (braceStart < 0)
+            return source + memberCode;
+
+        // Find the matching closing brace
+        int depth = 1;
+        int pos = braceStart + 1;
+        while (pos < source.Length && depth > 0)
+        {
+            if (source[pos] == '{') depth++;
+            else if (source[pos] == '}') depth--;
+            if (depth > 0) pos++;
+        }
+
+        if (depth == 0)
+        {
+            // pos is at the matching '}'
+            return source[..pos] + memberCode + source[pos..];
+        }
+
+        // Couldn't find matching brace — append at end
+        return source + memberCode;
     }
 
     /// <summary>

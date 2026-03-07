@@ -120,7 +120,26 @@ public sealed class QuickFixService : IDisposable
                 }
             }
 
-            // 2. Unused variable (CS0168, CS0219) → suggest removing
+            // 2. Missing member after dot (CS1061, CS0117)
+            if (diagnosticCode is "CS1061" or "CS0117")
+            {
+                var matches = System.Text.RegularExpressions.Regex.Matches(diagnosticMessage, @"'([^']+)'");
+                if (matches.Count >= 2)
+                {
+                    var ownerType  = matches[0].Groups[1].Value;
+                    var memberName = matches[1].Groups[1].Value;
+                    fixes.Add(new QuickFixSuggestion
+                    {
+                        Title          = $"🔧 Generate member '{memberName}' on '{ownerType}'...",
+                        Kind           = QuickFixKind.GenerateMember,
+                        DiagnosticCode = diagnosticCode,
+                        InsertText     = ownerType,   // carries type name
+                        MemberName     = memberName,   // carries member name
+                    });
+                }
+            }
+
+            // 3. Unused variable (CS0168, CS0219) → suggest removing
             if (diagnosticCode is "CS0168" or "CS0219")
             {
                 fixes.Add(new QuickFixSuggestion
@@ -308,12 +327,15 @@ public sealed class QuickFixService : IDisposable
                             document, diag,
                             (action, _) =>
                             {
-                                // Skip actions that create new files (Generate type, etc.)
-                                // — they can't be applied with simple text replacement
+                                // Skip actions that create new files or generate members
+                                // — replaced by our template-based approach
                                 var title = action.Title;
                                 if (title.Contains("Generate type", StringComparison.OrdinalIgnoreCase) ||
                                     title.Contains("Generate class", StringComparison.OrdinalIgnoreCase) ||
                                     title.Contains("Generate new type", StringComparison.OrdinalIgnoreCase) ||
+                                    title.Contains("Generate property", StringComparison.OrdinalIgnoreCase) ||
+                                    title.Contains("Generate method", StringComparison.OrdinalIgnoreCase) ||
+                                    title.Contains("Generate field", StringComparison.OrdinalIgnoreCase) ||
                                     title.Contains("in new file", StringComparison.OrdinalIgnoreCase) ||
                                     title.Contains("Move type", StringComparison.OrdinalIgnoreCase))
                                     return;
@@ -497,6 +519,8 @@ public sealed class QuickFixSuggestion
     public string?       InsertText     { get; init; }
     public int           InsertOffset   { get; init; }
     public string        DiagnosticCode { get; init; } = string.Empty;
+    /// <summary>For GenerateMember — the member name after the dot.</summary>
+    public string?       MemberName     { get; init; }
 
     /// <summary>
     /// The Roslyn CodeAction — kept so that <see cref="QuickFixKind.RoslynFix"/>
@@ -513,6 +537,7 @@ public enum QuickFixKind
     RemoveCode,
     RoslynFix,
     GenerateType,
+    GenerateMember,
     Other,
 }
 
