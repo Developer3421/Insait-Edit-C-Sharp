@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insait Edit C Sharp", "Insa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder1", "SolutionFolder1", "{285E3A3A-A237-4337-BFFA-F2B55F21E255}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insait Program Image Editor", "Insait Program Image Editor\Insait Program Image Editor.csproj", "{57B795EB-561B-4D6E-8F5F-E46D083989D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHub.Copilot.SDK", "C:\Users\OLEG\source\repos\copilot-sdk-main\dotnet\src\GitHub.Copilot.SDK.csproj", "{1EA8136C-546E-4DCD-959B-44B0BDAA9750}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,5 +18,13 @@ Global
 		{2D9D2796-B37B-4CCA-97CD-0F28067D2720}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D9D2796-B37B-4CCA-97CD-0F28067D2720}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D9D2796-B37B-4CCA-97CD-0F28067D2720}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57B795EB-561B-4D6E-8F5F-E46D083989D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57B795EB-561B-4D6E-8F5F-E46D083989D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57B795EB-561B-4D6E-8F5F-E46D083989D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57B795EB-561B-4D6E-8F5F-E46D083989D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EA8136C-546E-4DCD-959B-44B0BDAA9750}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EA8136C-546E-4DCD-959B-44B0BDAA9750}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EA8136C-546E-4DCD-959B-44B0BDAA9750}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EA8136C-546E-4DCD-959B-44B0BDAA9750}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

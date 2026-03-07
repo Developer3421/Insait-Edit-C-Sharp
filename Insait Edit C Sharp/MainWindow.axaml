@@ -1572,13 +1572,13 @@
             <!-- Right Panel (AI Assistant / Properties) -->
             <Border Grid.Column="5" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1,0,0,0"
                     Name="AIPanelBorder">
-                <Grid RowDefinitions="Auto,*,Auto">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
                     <!-- Panel Header -->
                     <Border Grid.Row="0" Padding="12,10" Background="#20000000">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock Text="🤖" FontSize="16" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
-                                <TextBlock Text="COPILOT CLI" FontSize="11" FontWeight="SemiBold" 
+                                <TextBlock Name="AIPanelTitle" Text="AI ASSISTANT" FontSize="11" FontWeight="SemiBold"
                                            Foreground="{StaticResource AppTextMutedBrush}" VerticalAlignment="Center"
                                            LetterSpacing="1"/>
                             </StackPanel>
@@ -1589,13 +1589,19 @@
                                     <TextBlock Text="🐙" FontSize="12" FontFamily="Segoe UI Emoji"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Button>
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Session Manager"
+                                        Name="SessionMenuButton" Click="SessionMenu_Click"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                    <TextBlock Text="📋" FontSize="10" FontFamily="Segoe UI Emoji"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Button>
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat"
                                         Name="ClearAIChatButton" Click="ClearAIChat_Click"
                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                                     <TextBlock Text="🗑️" FontSize="10" FontFamily="Segoe UI Emoji"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Button>
-                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Close Panel" 
+                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Close Panel"
                                         Name="CloseAIPanelButton" Click="CloseAIPanel_Click"
                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                                     <TextBlock Text="✕" FontSize="12"
@@ -1604,15 +1610,76 @@
                             </StackPanel>
                         </Grid>
                     </Border>
-                    
-                    <!-- Chat messages -->
-                    <ScrollViewer Grid.Row="1" Margin="12,8" Name="AIChatScrollViewer">
+
+                    <!-- Mode Switcher Tabs -->
+                    <Border Grid.Row="1" Background="#15000000" Padding="8,4">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <!-- Copilot Chat tab -->
+                            <Button Name="CopilotChatModeButton"
+                                    Click="CopilotChatMode_Click"
+                                    Padding="10,5" CornerRadius="4"
+                                    Background="{StaticResource AccentOrangeBrush}"
+                                    Foreground="#FF1F1A24"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontSize="11" FontWeight="SemiBold">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="✨" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Copilot Chat" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <!-- CLI Commands tab -->
+                            <Button Name="CliModeButton"
+                                    Click="CliMode_Click"
+                                    Padding="10,5" CornerRadius="4"
+                                    Background="Transparent"
+                                    Foreground="{StaticResource AppTextMutedBrush}"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontSize="11">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="⌨" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                    <TextBlock Text="CLI Commands" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Chat messages area -->
+                    <ScrollViewer Grid.Row="2" Margin="12,8" Name="AIChatScrollViewer">
                         <StackPanel Spacing="12" Name="AIChatMessages">
-                            <!-- AI Welcome message -->
-                            <Border Background="#40FFC09F" CornerRadius="8" Padding="12">
+
+                            <!-- Copilot Chat Welcome (shown in Copilot mode) -->
+                            <Border Name="CopilotWelcomeBanner" Background="#30DCC4FF" CornerRadius="8" Padding="12">
+                                <StackPanel Spacing="8">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="✨" FontSize="20" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                        <TextBlock Text="GitHub Copilot Chat" FontWeight="Bold" FontSize="14"
+                                                   Foreground="#FFDCC4FF" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Name="CopilotStatusText"
+                                               Text="Initializing..."
+                                               Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="12"/>
+                                    <Border Background="#15FFFFFF" CornerRadius="4" Padding="8,6" Margin="0,4,0,0">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="💡 Features:" FontWeight="SemiBold" Foreground="#FFDCC4FF" FontSize="11"/>
+                                            <TextBlock Text="• Streaming responses in real-time" Foreground="#B0B0B0" FontSize="10"/>
+                                            <TextBlock Text="• Multiple AI models (GPT-5, Claude, Gemini)" Foreground="#B0B0B0" FontSize="10"/>
+                                            <TextBlock Text="• File attachments for context" Foreground="#B0B0B0" FontSize="10"/>
+                                            <TextBlock Text="• Session history &amp; resume" Foreground="#B0B0B0" FontSize="10"/>
+                                            <TextBlock Text="• Infinite sessions with auto-compaction" Foreground="#B0B0B0" FontSize="10"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="Ask me anything about your code!" 
+                                               Foreground="#A0C0FF" FontSize="11" FontStyle="Italic"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- CLI Welcome (hidden in Copilot mode, shown in CLI mode) -->
+                            <Border Name="CliWelcomeBanner" Background="#40FFC09F" CornerRadius="8" Padding="12" IsVisible="False">
                                 <StackPanel Spacing="8">
                                     <TextBlock Name="AiWelcomeTitle" Text="🚀 Copilot CLI Ready!" FontWeight="SemiBold" Foreground="#FFFFFF" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                    <TextBlock Name="AiWelcomeManageFiles" Text="Manage your project files with commands:" 
+                                    <TextBlock Name="AiWelcomeManageFiles" Text="Manage your project files with commands:"
                                                Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="12"/>
                                     <StackPanel Spacing="4" Margin="8,4,0,0">
                                         <TextBlock Text="📁 create, delete, rename" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
@@ -1620,43 +1687,130 @@
                                         <TextBlock Text="🔍 find, search" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                         <TextBlock Text="📝 template, touch, write" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     </StackPanel>
-                                    <TextBlock Name="AiWelcomeGitHubCommands" Text="GitHub CLI Commands:" 
+                                    <TextBlock Name="AiWelcomeGitHubCommands" Text="GitHub CLI Commands:"
                                                Foreground="#89B4FA" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0"/>
                                     <StackPanel Spacing="4" Margin="8,4,0,0">
                                         <TextBlock Text="🐙 gh-status, gh-install" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                         <TextBlock Text="🔑 gh-auth login/logout" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     </StackPanel>
-                                    <TextBlock Name="AiWelcomeTypeHelp" Text="Type 'help' for full command list" 
+                                    <TextBlock Name="AiWelcomeTypeHelp" Text="Type 'help' for full command list"
                                                Foreground="#89B4FA" FontSize="11" FontStyle="Italic" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
+
                         </StackPanel>
                     </ScrollViewer>
-                    
+
                     <!-- Chat input -->
-                    <Border Grid.Row="2" Padding="12" Background="#20000000">
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
-                            <TextBox Name="AIChatInput" 
-                                     Watermark="Enter command (create, ls, help...)"
-                                     Background="#FF1A1628"
-                                     BorderBrush="#FF3E3050"
-                                     BorderThickness="1"
-                                     Foreground="{StaticResource AppTextBrush}"
-                                     CaretBrush="{StaticResource AppTextBrush}"
-                                     SelectionBrush="{StaticResource AccentOrangeBrush}"
-                                     SelectionForegroundBrush="#FF1F1A24"
-                                     CornerRadius="8"
-                                     Padding="12,10"
-                                     FontFamily="Consolas, Monaco, monospace"
-                                     FontSize="12"
-                                     TextWrapping="Wrap"
-                                     AcceptsReturn="False"
-                                     KeyDown="AIChatInput_KeyDown"/>
-                            <Button Grid.Column="1" Classes="icon-button" Margin="8,0,0,0" 
-                                    Background="{StaticResource AccentOrangeBrush}"
-                                    ToolTip.Tip="Execute command" Name="SendAIButton" Click="SendAI_Click">
-                                <TextBlock Text="➤" FontSize="16" Foreground="#FF1F1A24"/>
-                            </Button>
+                    <Border Grid.Row="3" Padding="12" Background="#20000000">
+                        <Grid RowDefinitions="Auto,Auto,Auto">
+                            <!-- Copilot status indicator -->
+                            <Border Grid.Row="0" Name="CopilotStatusBar"
+                                    Background="#20DCC4FF" CornerRadius="4"
+                                    Padding="8,4" Margin="0,0,0,6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Name="CopilotStatusIcon" Text="✨" FontSize="11" FontFamily="Segoe UI Emoji"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Name="CopilotStatusLabel" Text="Copilot Chat" FontSize="11"
+                                                   Foreground="#FFDCC4FF" VerticalAlignment="Center"/>
+                                        <Border Width="1" Background="#50DCC4FF" Margin="2,0"/>
+                                        <!-- Model selector button -->
+                                        <Button Name="CopilotModelSelector" Click="CopilotModelSelector_Click"
+                                                Background="Transparent" BorderThickness="0" Padding="4,2"
+                                                Cursor="Hand" ToolTip.Tip="Select AI Model">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Name="CopilotModelLabel" Text="gpt-4o" FontSize="10"
+                                                           Foreground="#80DCC4FF" VerticalAlignment="Center"/>
+                                                <TextBlock Text="▾" FontSize="9" Foreground="#60DCC4FF" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                        <!-- Streaming toggle -->
+                                        <Button Name="StreamingToggleButton" Click="StreamingToggle_Click"
+                                                Background="Transparent" BorderThickness="0" Padding="2"
+                                                Width="22" Height="22" Cursor="Hand"
+                                                ToolTip.Tip="Toggle Streaming"
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                            <TextBlock Name="StreamingToggleIcon" Text="⚡" FontSize="11" FontFamily="Segoe UI Emoji"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       Foreground="#FFDCC4FF"/>
+                                        </Button>
+                                        <!-- Abort button (visible only during processing) -->
+                                        <Button Name="AbortRequestButton" Click="AbortRequest_Click"
+                                                Background="#40F38BA8" BorderThickness="0" Padding="2"
+                                                Width="22" Height="22" CornerRadius="4" Cursor="Hand"
+                                                ToolTip.Tip="Abort Request" IsVisible="False"
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                            <TextBlock Text="⏹" FontSize="11" FontFamily="Segoe UI Emoji"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       Foreground="#FFF38BA8"/>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Compaction indicator -->
+                            <Border Grid.Row="0" Name="CompactionIndicator" IsVisible="False"
+                                    Background="#30FAB387" CornerRadius="4"
+                                    Padding="6,2" Margin="0,0,0,2" VerticalAlignment="Top">
+                                <TextBlock Name="CompactionText" Text="🔄 Compacting..." FontSize="10"
+                                           Foreground="#FFFAB387" HorizontalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Input row -->
+                            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto">
+                                <!-- Attach file button -->
+                                <Button Grid.Column="0" Classes="icon-button" Margin="0,0,6,0"
+                                        Background="Transparent" BorderThickness="0"
+                                        ToolTip.Tip="Attach Current File" Name="AttachFileButton" Click="AttachFile_Click"
+                                        Width="32" Height="32" Padding="0"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                    <TextBlock Name="AttachFileIcon" Text="📎" FontSize="14" FontFamily="Segoe UI Emoji"
+                                               Foreground="#FF9E90B0"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Button>
+                                <TextBox Grid.Column="1" Name="AIChatInput"
+                                         Watermark="Ask Copilot anything..."
+                                         Background="#FF1A1628"
+                                         BorderBrush="#FF3E3050"
+                                         BorderThickness="1"
+                                         Foreground="{StaticResource AppTextBrush}"
+                                         CaretBrush="{StaticResource AppTextBrush}"
+                                         SelectionBrush="{StaticResource AccentOrangeBrush}"
+                                         SelectionForegroundBrush="#FF1F1A24"
+                                         CornerRadius="8"
+                                         Padding="12,10"
+                                         FontFamily="Consolas, Monaco, monospace"
+                                         FontSize="12"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="False"
+                                         KeyDown="AIChatInput_KeyDown"/>
+                                <Button Grid.Column="2" Classes="icon-button" Margin="8,0,0,0"
+                                        Background="{StaticResource AccentOrangeBrush}"
+                                        ToolTip.Tip="Send" Name="SendAIButton" Click="SendAI_Click">
+                                    <TextBlock Text="➤" FontSize="16" Foreground="#FF1F1A24"/>
+                                </Button>
+                            </Grid>
+                            <!-- Attachment indicator -->
+                            <Border Grid.Row="1" Name="AttachmentIndicator" IsVisible="False"
+                                    Background="#30DCC4FF" CornerRadius="4"
+                                    Padding="6,2" Margin="38,0,0,4" VerticalAlignment="Top"
+                                    HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Text="📄" FontSize="10" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                    <TextBlock Name="AttachmentFileName" Text="" FontSize="10"
+                                               Foreground="#FFDCC4FF" VerticalAlignment="Center" MaxWidth="150"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <Button Classes="icon-button" Width="16" Height="16" Padding="0"
+                                            Background="Transparent" BorderThickness="0"
+                                            Click="RemoveAttachment_Click" ToolTip.Tip="Remove attachment"
+                                            VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
+                                        <TextBlock Text="✕" FontSize="9" Foreground="#80DCC4FF"/>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
                         </Grid>
                     </Border>
                 </Grid>

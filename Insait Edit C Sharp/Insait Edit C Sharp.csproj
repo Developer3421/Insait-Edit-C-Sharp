@@ -17,6 +17,7 @@
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12" />
         <PackageReference Include="FSharp.Compiler.Service" Version="43.10.103" />
         <PackageReference Include="GitForWindows" Version="2.53.0" />
+        <PackageReference Include="GitHub.Copilot.SDK" Version="0.1.32" />
         <PackageReference Include="LiteDB" Version="6.0.0-prerelease.77" />
         <PackageReference Include="Microsoft.Build" Version="18.3.3" />
         <PackageReference Include="Microsoft.Build.Framework" Version="18.3.3" />
@@ -59,7 +60,7 @@
              The host app invokes nanoff/msbuild as external processes for ESP32 builds. -->
         <PackageReference Include="NuGet.Protocol" Version="7.3.0" />
         <PackageReference Include="Octokit" Version="14.0.0" />
-        <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+        <PackageReference Include="System.Drawing.Common" Version="11.0.0-preview.1.26104.118" />
         <PackageReference Include="System.IO.Ports" Version="10.0.3" />
     </ItemGroup>
 

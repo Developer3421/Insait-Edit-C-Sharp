@@ -632,10 +632,274 @@ public partial class MainWindow
         if (string.IsNullOrEmpty(cmd)) return;
         input.Text = string.Empty;
         AddAIMessage(cmd, isUser: true);
-        _copilotCliService.WorkingDirectory = _projectPath ?? Environment.CurrentDirectory;
-        var result = await _copilotCliService.ExecuteAsync(cmd);
-        AddAIMessage(result.Success ? result.Output : $"❌ {result.Output}", isUser: false);
+
+        if (_isCliMode)
+        {
+            // CLI mode — use CopilotCliService
+            _copilotCliService.WorkingDirectory = _projectPath ?? Environment.CurrentDirectory;
+            var result = await _copilotCliService.ExecuteAsync(cmd);
+            AddAIMessage(result.Success ? result.Output : $"❌ {result.Output}", isUser: false);
+        }
+        else
+        {
+            // Copilot Chat mode — use GitHub Copilot SDK with streaming
+            if (!_copilotSdkService.IsAvailable)
+            {
+                AddAIMessage("⏳ GitHub Copilot is initializing, please wait...", isUser: false);
+                await InitializeCopilotSdkAsync();
+            }
+
+            // Build context from current file if available
+            string? systemPrompt = null;
+            if (_viewModel.ActiveTab != null)
+            {
+                var lang = _viewModel.ActiveTab.Language;
+                var fileName = _viewModel.ActiveTab.FileName;
+                systemPrompt =
+                    "You are GitHub Copilot, an AI coding assistant embedded in Insait Edit IDE. " +
+                    $"The user currently has '{fileName}' open (language: {lang}). " +
+                    "Help the user with their code, answer questions, suggest improvements, and provide examples. " +
+                    "Be concise and helpful.";
+            }
+
+            // Show abort button
+            var abortBtn = this.FindControl<Button>("AbortRequestButton");
+            if (abortBtn != null) abortBtn.IsVisible = true;
+
+            if (_copilotSdkService.IsStreamingEnabled)
+            {
+                // Create a streaming response bubble
+                var (bubble, textBlock) = AddStreamingBubble();
+                string accumulated = "";
+
+                // Wire streaming tokens to update the bubble in real-time
+                void OnToken(object? s, string token)
+                {
+                    accumulated += token;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (textBlock != null) textBlock.Text = accumulated;
+                        this.FindControl<ScrollViewer>("AIChatScrollViewer")?.ScrollToEnd();
+                    });
+                }
+
+                _copilotSdkService.StreamingTokenReceived += OnToken;
+
+                string reply;
+                if (!string.IsNullOrEmpty(_attachedFilePath))
+                {
+                    reply = await _copilotSdkService.ChatWithAttachmentsAsync(
+                        cmd, new string[] { _attachedFilePath! }, systemPrompt);
+                    ClearAttachment();
+                }
+                else
+                {
+                    reply = await _copilotSdkService.ChatAsync(cmd, systemPrompt);
+                }
+
+                _copilotSdkService.StreamingTokenReceived -= OnToken;
+
+                // Update final content
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (textBlock != null)
+                        textBlock.Text = string.IsNullOrWhiteSpace(accumulated) ? reply : accumulated;
+                });
+            }
+            else
+            {
+                // Non-streaming: show thinking bubble
+                var thinkingBubble = AddAIThinkingBubble();
+
+                string reply;
+                if (!string.IsNullOrEmpty(_attachedFilePath))
+                {
+                    reply = await _copilotSdkService.ChatWithAttachmentsAsync(
+                        cmd, new string[] { _attachedFilePath! }, systemPrompt);
+                    ClearAttachment();
+                }
+                else
+                {
+                    reply = await _copilotSdkService.ChatAsync(cmd, systemPrompt);
+                }
+
+                RemoveThinkingBubble(thinkingBubble);
+                AddAIMessage(reply, isUser: false);
+            }
+
+            // Hide abort button and reset status label
+            if (abortBtn != null) abortBtn.IsVisible = false;
+            var lbl = this.FindControl<TextBlock>("CopilotStatusLabel");
+            if (lbl != null) lbl.Text = "Copilot Chat";
+        }
+
         this.FindControl<ScrollViewer>("AIChatScrollViewer")?.ScrollToEnd();
+    }
+
+    /// <summary>Initialize the GitHub Copilot SDK service and update UI status.</summary>
+    private async Task InitializeCopilotSdkAsync()
+    {
+        var statusText  = this.FindControl<TextBlock>("CopilotStatusText");
+        var statusBar   = this.FindControl<Border>("CopilotStatusBar");
+        var statusIcon  = this.FindControl<TextBlock>("CopilotStatusIcon");
+        var statusLabel = this.FindControl<TextBlock>("CopilotStatusLabel");
+        var modelLabel  = this.FindControl<TextBlock>("CopilotModelLabel");
+        var compactionIndicator = this.FindControl<Border>("CompactionIndicator");
+        var compactionText = this.FindControl<TextBlock>("CompactionText");
+
+        // Load persisted settings
+        _copilotSdkService.LoadSettings();
+
+        // Update model label
+        if (modelLabel != null) modelLabel.Text = _copilotSdkService.CurrentModel;
+
+        // Update streaming toggle visual
+        UpdateStreamingToggleVisual();
+
+        // Status messages → UI thread
+        _copilotSdkService.StatusChanged += (_, msg) =>
+            Dispatcher.UIThread.Post(() => { if (statusText != null) statusText.Text = msg; });
+
+        // Streaming reasoning tokens — update status label in real time
+        _copilotSdkService.ReasoningTokenReceived += (_, token) =>
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (statusLabel != null && !string.IsNullOrWhiteSpace(token))
+                    statusLabel.Text = "💭 " + (token.Length > 35 ? token[..35] + "…" : token);
+            });
+
+        // Tool execution events
+        _copilotSdkService.ToolExecutionStarted += (_, toolName) =>
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (statusLabel != null) statusLabel.Text = $"🔧 {toolName}";
+            });
+
+        _copilotSdkService.ToolExecutionCompleted += (_, _) =>
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (statusLabel != null) statusLabel.Text = "Copilot Chat";
+            });
+
+        // Compaction events
+        _copilotSdkService.CompactionEvent += (_, msg) =>
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (compactionIndicator != null && compactionText != null)
+                {
+                    compactionText.Text = msg;
+                    compactionIndicator.IsVisible = msg.Contains("Compacting");
+                }
+            });
+
+        // Error events
+        _copilotSdkService.ErrorOccurred += (_, msg) =>
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (statusIcon != null) statusIcon.Text = "⚠️";
+                if (statusLabel != null) statusLabel.Text = "Error occurred";
+            });
+
+        var ok = await _copilotSdkService.InitializeAsync();
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (statusText != null)
+                statusText.Text = ok
+                    ? $"✅ Connected via GitHub.Copilot.SDK — model: {_copilotSdkService.CurrentModel}"
+                    : "⚠️ Not available. Configure GitHub CLI path in Settings, or install: winget install GitHub.cli";
+            if (statusBar != null)
+                statusBar.Background = ok
+                    ? new SolidColorBrush(Color.Parse("#20DCC4FF"))
+                    : new SolidColorBrush(Color.Parse("#30F38BA8"));
+            if (statusIcon != null)
+                statusIcon.Text = ok ? "✨" : "⚠️";
+            if (statusLabel != null)
+                statusLabel.Text = ok ? "Copilot Chat" : "Copilot unavailable";
+            if (modelLabel != null)
+                modelLabel.Text = _copilotSdkService.CurrentModel;
+        });
+    }
+
+    /// <summary>Switch AI panel to GitHub Copilot Chat mode.</summary>
+    private void CopilotChatMode_Click(object? sender, RoutedEventArgs e) => SetAIMode(isCli: false);
+
+    /// <summary>Switch AI panel to CLI Commands mode.</summary>
+    private void CliMode_Click(object? sender, RoutedEventArgs e) => SetAIMode(isCli: true);
+
+    private void SetAIMode(bool isCli)
+    {
+        _isCliMode = isCli;
+
+        // Update tab button styles
+        var copilotBtn = this.FindControl<Button>("CopilotChatModeButton");
+        var cliBtn     = this.FindControl<Button>("CliModeButton");
+        var statusBar  = this.FindControl<Border>("CopilotStatusBar");
+        var aiInput    = this.FindControl<TextBox>("AIChatInput");
+        var copilotBanner = this.FindControl<Border>("CopilotWelcomeBanner");
+        var cliBanner     = this.FindControl<Border>("CliWelcomeBanner");
+        var panelTitle    = this.FindControl<TextBlock>("AIPanelTitle");
+
+        if (copilotBtn != null)
+        {
+            copilotBtn.Background = isCli
+                ? new SolidColorBrush(Colors.Transparent)
+                : new SolidColorBrush(Color.Parse("#FFFFC09F"));
+            copilotBtn.Foreground = isCli
+                ? new SolidColorBrush(Color.Parse("#FF9E90B0"))
+                : new SolidColorBrush(Color.Parse("#FF1F1A24"));
+        }
+        if (cliBtn != null)
+        {
+            cliBtn.Background = isCli
+                ? new SolidColorBrush(Color.Parse("#FFFFC09F"))
+                : new SolidColorBrush(Colors.Transparent);
+            cliBtn.Foreground = isCli
+                ? new SolidColorBrush(Color.Parse("#FF1F1A24"))
+                : new SolidColorBrush(Color.Parse("#FF9E90B0"));
+        }
+        if (statusBar != null) statusBar.IsVisible = !isCli;
+        if (aiInput   != null) aiInput.Watermark = isCli ? "Enter command (create, ls, help...)" : "Ask Copilot anything...";
+        if (copilotBanner != null) copilotBanner.IsVisible = !isCli;
+        if (cliBanner     != null) cliBanner.IsVisible = isCli;
+        if (panelTitle    != null) panelTitle.Text = isCli ? "COPILOT CLI" : "COPILOT CHAT";
+
+        // Hide attachment & copilot-specific controls in CLI mode
+        var attachBtn = this.FindControl<Button>("AttachFileButton");
+        if (attachBtn != null) attachBtn.IsVisible = !isCli;
+        var compaction = this.FindControl<Border>("CompactionIndicator");
+        if (compaction != null) compaction.IsVisible = false;
+        if (isCli) ClearAttachment();
+    }
+
+    /// <summary>Add a "thinking" indicator bubble and return it for later removal.</summary>
+    private Border AddAIThinkingBubble()
+    {
+        var messages = this.FindControl<StackPanel>("AIChatMessages");
+        var bubble = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse("#30DCC4FF")),
+            CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 8),
+            Margin = new Thickness(0, 4), MaxWidth = 280,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+            Name = "ThinkingBubble",
+            Child = new TextBlock
+            {
+                Text = "⏳ Thinking...", TextWrapping = TextWrapping.Wrap, FontSize = 12,
+                Foreground = Brushes.White, FontStyle = Avalonia.Media.FontStyle.Italic
+            }
+        };
+        messages?.Children.Add(bubble);
+        this.FindControl<ScrollViewer>("AIChatScrollViewer")?.ScrollToEnd();
+        return bubble;
+    }
+
+    /// <summary>Remove the thinking indicator bubble.</summary>
+    private void RemoveThinkingBubble(Border? bubble)
+    {
+        if (bubble == null) return;
+        var messages = this.FindControl<StackPanel>("AIChatMessages");
+        messages?.Children.Remove(bubble);
     }
 
     private void AddAIMessage(string text, bool isUser)
@@ -788,7 +1052,10 @@ public partial class MainWindow
     {
         var m = this.FindControl<StackPanel>("AIChatMessages");
         if (m == null) return;
-        while (m.Children.Count > 1) m.Children.RemoveAt(m.Children.Count - 1);
+        // Keep only the welcome banners (first 2 children: Copilot banner + CLI banner)
+        while (m.Children.Count > 2) m.Children.RemoveAt(m.Children.Count - 1);
+        // Clear Copilot SDK conversation history
+        _copilotSdkService.ClearHistory();
     }
     private void CloseAIPanel_Click(object? sender, RoutedEventArgs e)          => ToggleAIPanel();
     private async void AIChatInput_KeyDown(object? sender, KeyEventArgs e)
@@ -796,6 +1063,196 @@ public partial class MainWindow
         if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift)) { e.Handled = true; await ExecuteAIChatCommandAsync(); }
     }
     private async void SendAI_Click(object? sender, RoutedEventArgs e)          => await ExecuteAIChatCommandAsync();
+
+    // ── Copilot Model Selector ───────────────────────────────────────────
+    private void CopilotModelSelector_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn) return;
+
+        var menu = new ContextMenu();
+        foreach (var model in CopilotSdkService.AvailableModels)
+        {
+            var item = new MenuItem
+            {
+                Header = $"{model.DisplayName}  —  {model.Description}",
+                Tag = model.Id,
+                FontSize = 11,
+                Icon = _copilotSdkService.CurrentModel == model.Id
+                    ? new TextBlock { Text = "✓", FontSize = 11, Foreground = Brushes.LimeGreen }
+                    : null
+            };
+            item.Click += async (_, _) =>
+            {
+                var modelId = model.Id;
+                var modelLabel = this.FindControl<TextBlock>("CopilotModelLabel");
+                if (modelLabel != null) modelLabel.Text = modelId;
+                _viewModel.StatusText = $"Switching model to {model.DisplayName}...";
+                await _copilotSdkService.SwitchModelAsync(modelId);
+                _viewModel.StatusText = $"Model: {model.DisplayName}";
+            };
+            menu.Items.Add(item);
+        }
+
+        menu.Open(btn);
+    }
+
+    // ── Streaming Toggle ─────────────────────────────────────────────────
+    private void StreamingToggle_Click(object? sender, RoutedEventArgs e)
+    {
+        var newState = !_copilotSdkService.IsStreamingEnabled;
+        _copilotSdkService.SetStreamingEnabled(newState);
+        UpdateStreamingToggleVisual();
+        _viewModel.StatusText = newState ? "Streaming enabled ⚡" : "Streaming disabled";
+    }
+
+    private void UpdateStreamingToggleVisual()
+    {
+        var icon = this.FindControl<TextBlock>("StreamingToggleIcon");
+        if (icon != null)
+        {
+            icon.Foreground = _copilotSdkService.IsStreamingEnabled
+                ? new SolidColorBrush(Color.Parse("#FFDCC4FF"))
+                : new SolidColorBrush(Color.Parse("#50DCC4FF"));
+        }
+        var btn = this.FindControl<Button>("StreamingToggleButton");
+        if (btn != null)
+        {
+            ToolTip.SetTip(btn,
+                _copilotSdkService.IsStreamingEnabled ? "Streaming ON — click to disable" : "Streaming OFF — click to enable");
+        }
+    }
+
+    // ── Abort Request ────────────────────────────────────────────────────
+    private async void AbortRequest_Click(object? sender, RoutedEventArgs e)
+    {
+        await _copilotSdkService.AbortCurrentRequestAsync();
+        var abortBtn = this.FindControl<Button>("AbortRequestButton");
+        if (abortBtn != null) abortBtn.IsVisible = false;
+        _viewModel.StatusText = "Request aborted";
+    }
+
+    // ── File Attachment ──────────────────────────────────────────────────
+
+    private void AttachFile_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_viewModel.ActiveTab == null)
+        {
+            _viewModel.StatusText = "No file open to attach";
+            return;
+        }
+
+        var tab = _viewModel.ActiveTab;
+        _attachedFilePath = tab.FilePath;
+
+        var indicator = this.FindControl<Border>("AttachmentIndicator");
+        var fileName  = this.FindControl<TextBlock>("AttachmentFileName");
+        var attachIcon = this.FindControl<TextBlock>("AttachFileIcon");
+
+        if (indicator != null) indicator.IsVisible = true;
+        if (fileName  != null) fileName.Text = tab.FileName;
+        if (attachIcon != null) attachIcon.Foreground = new SolidColorBrush(Color.Parse("#FFDCC4FF"));
+
+        _viewModel.StatusText = $"📎 Attached: {tab.FileName}";
+    }
+
+    private void RemoveAttachment_Click(object? sender, RoutedEventArgs e)
+    {
+        ClearAttachment();
+        _viewModel.StatusText = "Attachment removed";
+    }
+
+    private void ClearAttachment()
+    {
+        _attachedFilePath = null;
+        var indicator = this.FindControl<Border>("AttachmentIndicator");
+        var attachIcon = this.FindControl<TextBlock>("AttachFileIcon");
+        if (indicator != null) indicator.IsVisible = false;
+        if (attachIcon != null) attachIcon.Foreground = new SolidColorBrush(Color.Parse("#FF9E90B0"));
+    }
+
+    // ── Session Management ───────────────────────────────────────────────
+    private void SessionMenu_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn) return;
+
+        var menu = new ContextMenu();
+
+        // New Session
+        var newItem = new MenuItem
+        {
+            Header = "✨ New Session",
+            FontSize = 11
+        };
+        newItem.Click += async (_, _) =>
+        {
+            var m = this.FindControl<StackPanel>("AIChatMessages");
+            if (m != null) while (m.Children.Count > 2) m.Children.RemoveAt(m.Children.Count - 1);
+            await _copilotSdkService.NewSessionAsync();
+            _viewModel.StatusText = "New Copilot session started";
+        };
+        menu.Items.Add(newItem);
+
+        menu.Items.Add(new Separator());
+
+        // List Sessions
+        var listItem = new MenuItem
+        {
+            Header = "📋 List Sessions...",
+            FontSize = 11
+        };
+        listItem.Click += async (_, _) =>
+        {
+            var sessions = await _copilotSdkService.ListSessionsAsync();
+            if (sessions == null || sessions.Count == 0)
+            {
+                AddAIMessage("📋 No saved sessions found.", isUser: false);
+                return;
+            }
+
+            var sessionList = string.Join("\n", sessions.Select((s, i) =>
+                $"  {i + 1}. {s.SessionId}"));
+            AddAIMessage($"📋 Sessions ({sessions.Count}):\n{sessionList}", isUser: false);
+        };
+        menu.Items.Add(listItem);
+
+        // Current Session ID
+        if (_copilotSdkService.CurrentSessionId != null)
+        {
+            var currentItem = new MenuItem
+            {
+                Header = $"📌 Current: {_copilotSdkService.CurrentSessionId[..Math.Min(12, _copilotSdkService.CurrentSessionId.Length)]}...",
+                FontSize = 11,
+                IsEnabled = false
+            };
+            menu.Items.Add(currentItem);
+        }
+
+        menu.Open(btn);
+    }
+
+    // ── Streaming Bubble ─────────────────────────────────────────────────
+    /// <summary>Create a streaming response bubble and return (bubble, textBlock) for real-time updates.</summary>
+    private (Border bubble, SelectableTextBlock textBlock) AddStreamingBubble()
+    {
+        var messages = this.FindControl<StackPanel>("AIChatMessages");
+        var textBlock = new SelectableTextBlock
+        {
+            Text = "", TextWrapping = TextWrapping.Wrap, FontSize = 12,
+            Foreground = Brushes.White,
+            SelectionBrush = new SolidColorBrush(Color.Parse("#664FC3F7"))
+        };
+        var bubble = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse("#40FAB387")),
+            CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 8),
+            Margin = new Thickness(0, 4), MaxWidth = 280,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+            Child = textBlock
+        };
+        messages?.Children.Add(bubble);
+        this.FindControl<ScrollViewer>("AIChatScrollViewer")?.ScrollToEnd();
+        return (bubble, textBlock);
+    }
 
     // Context menu
     private void ContextMenu_ManageNuGet_Click(object? sender, RoutedEventArgs e)        => NuGet_Click(sender, e);

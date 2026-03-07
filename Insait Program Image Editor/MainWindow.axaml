@@ -1,0 +1,370 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="900"
+        x:Class="Insait_Program_Image_Editor.MainWindow"
+        Title="Insait Image Editor — AXAML Designer &amp; Export"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        Width="1400" Height="900"
+        MinWidth="800" MinHeight="600"
+        CanResize="True"
+        UseLayoutRounding="True"
+        FontFamily="Segoe UI, Arial, Tahoma"
+        Background="#FF1F1A24">
+
+    <Window.Styles>
+        <!-- Window buttons -->
+        <Style Selector="Button.win-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.win-btn:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <!-- Toolbar buttons -->
+        <Style Selector="Button.tool-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+        <Style Selector="Button.tool-btn:pointerover">
+            <Setter Property="Background" Value="#20FFFFFF"/>
+        </Style>
+        <!-- Accent button -->
+        <Style Selector="Button.accent-btn">
+            <Setter Property="Background" Value="#FF8B5CF6"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.accent-btn:pointerover">
+            <Setter Property="Background" Value="#FF7C3AED"/>
+        </Style>
+        <!-- Error button -->
+        <Style Selector="Button.err-btn">
+            <Setter Property="Background" Value="#25F38BA8"/>
+            <Setter Property="BorderBrush" Value="#50F38BA8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        <Style Selector="Button.err-btn:pointerover">
+            <Setter Property="Background" Value="#40F38BA8"/>
+        </Style>
+        <!-- TextBox styling -->
+        <Style Selector="TextBox.editor-box">
+            <Setter Property="Background" Value="#FF1A1624"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New, monospace"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="AcceptsTab" Value="True"/>
+            <Setter Property="TextWrapping" Value="NoWrap"/>
+        </Style>
+        <!-- Terminal TextBox -->
+        <Style Selector="TextBox.terminal-input">
+            <Setter Property="Background" Value="#FF1A1624"/>
+            <Setter Property="Foreground" Value="#FFA6E3A1"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontFamily" Value="Cascadia Code, Consolas, Courier New, monospace"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </Window.Styles>
+
+    <!-- 3 rows: title bar | toolbar | content -->
+    <Grid RowDefinitions="36,Auto,*">
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ROW 0: Title Bar
+             ═══════════════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0" Background="#FF2D2438"
+                PointerPressed="TitleBar_PointerPressed">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" Margin="12,0,0,0">
+                    <TextBlock Text="🎨" FontSize="16" FontFamily="Segoe UI Emoji"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="Insait Image Editor" FontSize="13" FontWeight="Bold"
+                               Foreground="#FFFFC09F" VerticalAlignment="Center"/>
+                    <TextBlock Text="— AXAML Designer &amp; Export" FontSize="11"
+                               Foreground="#FF9E90B0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="0"
+                            VerticalAlignment="Center">
+                    <Button Classes="win-btn" Width="36" Height="36" Click="Minimize_Click">
+                        <TextBlock Text="─" FontSize="14" Foreground="#FF9E90B0"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="win-btn" Width="36" Height="36" Click="MaximizeRestore_Click">
+                        <TextBlock Text="☐" FontSize="14" Foreground="#FF9E90B0"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                    <Button Classes="win-btn" Width="36" Height="36" Click="Close_Click">
+                        <TextBlock Text="✕" FontSize="14" Foreground="#FFF38BA8"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ROW 1: Toolbar
+             ═══════════════════════════════════════════════════════════════ -->
+        <Border Grid.Row="1" Background="#FF2A2230" Padding="8,5"
+                BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Left: File actions -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4"
+                            VerticalAlignment="Center">
+                    <Button Classes="tool-btn" ToolTip.Tip="New AXAML file"
+                            Click="NewFile_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="📄" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="New" FontSize="11" Foreground="#FFF0E8F4"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool-btn" ToolTip.Tip="Open .axaml file"
+                            Click="OpenFile_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="📂" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="Open" FontSize="11" Foreground="#FFF0E8F4"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool-btn" ToolTip.Tip="Save (Ctrl+S)"
+                            Click="SaveFile_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="💾" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="Save" FontSize="11" Foreground="#FFF0E8F4"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Border Width="1" Background="#FF3E3050" Margin="4,2"/>
+
+                    <!-- Preview controls -->
+                    <Button Classes="tool-btn" ToolTip.Tip="Refresh preview (F5)"
+                            Click="Refresh_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="Preview" FontSize="11" Foreground="#FFF0E8F4"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool-btn" ToolTip.Tip="Toggle background"
+                            Click="ToggleBackground_Click">
+                        <TextBlock Text="🎨" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    </Button>
+
+                    <Border Width="1" Background="#FF3E3050" Margin="4,2"/>
+
+                    <!-- Size presets -->
+                    <TextBlock Text="Size:" FontSize="11" Foreground="#FF9E90B0"
+                               VerticalAlignment="Center"/>
+                    <Button Classes="tool-btn" ToolTip.Tip="Phone 360×640"
+                            Click="SizePhone_Click">
+                        <TextBlock Text="📱" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    </Button>
+                    <Button Classes="tool-btn" ToolTip.Tip="Tablet 768×1024"
+                            Click="SizeTablet_Click">
+                        <TextBlock Text="💻" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    </Button>
+                    <Button Classes="tool-btn" ToolTip.Tip="Desktop 1280×800"
+                            Click="SizeDesktop_Click">
+                        <TextBlock Text="🖥️" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    </Button>
+                    <Button Classes="tool-btn" ToolTip.Tip="Free size"
+                            Click="SizeFree_Click">
+                        <TextBlock Text="⬛" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    </Button>
+                    <TextBlock Name="SizeLabel" Text="Free" FontSize="11"
+                               Foreground="#FF9E90B0" VerticalAlignment="Center" Margin="2,0"/>
+                </StackPanel>
+
+                <!-- Centre -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Width="1" Background="#FF3E3050" Margin="4,2"/>
+
+                    <!-- Export -->
+                    <Button Classes="accent-btn" ToolTip.Tip="Export rendered preview as PNG image"
+                            Click="ExportImage_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="📸" FontSize="13" FontFamily="Segoe UI Emoji"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="Export as Image" FontSize="12"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Border Width="1" Background="#FF3E3050" Margin="4,2"/>
+
+                    <!-- Copilot -->
+                    <Button Classes="tool-btn" ToolTip.Tip="Open GitHub Copilot CLI in terminal"
+                            Click="CopilotCli_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="✦" FontSize="14" Foreground="#FF8B5CF6"
+                                       FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text="Copilot CLI" FontSize="11" Foreground="#FFF0E8F4"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Right: status -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center">
+                    <TextBlock Name="StatusLabel" Text="Ready" FontSize="11"
+                               Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
+                    <Button Name="ErrorButton" Classes="err-btn" IsVisible="False"
+                            ToolTip.Tip="Show error" Click="ErrorButton_Click" Padding="8,3">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="⚠" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="Error" FontSize="11" Foreground="#FFF38BA8"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             ROW 2: Main content — Editor | Splitter | Preview
+             ═══════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="2" RowDefinitions="*,Auto,Auto">
+
+            <!-- Main split: Editor left, Preview right -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,4,*">
+
+                <!-- ── LEFT: AXAML Code Editor ────────────────────────── -->
+                <Border Grid.Column="0" Background="#FF1A1624" ClipToBounds="True">
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- Editor header -->
+                        <Border Grid.Row="0" Background="#FF2A2230" Padding="10,5"
+                                BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="✦" FontSize="12" Foreground="#FF8B5CF6"
+                                               FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock Name="EditorFileLabel" Text="untitled.axaml"
+                                               FontSize="12" Foreground="#FFFFC09F"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Name="CursorPosLabel"
+                                           Text="Ln 1, Col 1" FontSize="11"
+                                           Foreground="#FF9E90B0" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Code editor TextBox -->
+                        <TextBox Grid.Row="1" Name="CodeEditor"
+                                 Classes="editor-box"
+                                 Watermark="Type or paste AXAML code here..."
+                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                 TextChanged="CodeEditor_TextChanged"/>
+                    </Grid>
+                </Border>
+
+                <!-- ── Splitter ───────────────────────────────────────── -->
+                <GridSplitter Grid.Column="1" Background="#FF3E3050"
+                              ResizeDirection="Columns"/>
+
+                <!-- ── RIGHT: Live Preview ────────────────────────────── -->
+                <Border Grid.Column="2" Background="#FF181420" ClipToBounds="True">
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- Preview header -->
+                        <Border Grid.Row="0" Background="#FF2A2230" Padding="10,5"
+                                BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="🎨" FontSize="12" FontFamily="Segoe UI Emoji"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="Live Preview" FontSize="12"
+                                           Foreground="#FF89DCEB" FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Name="PreviewStatusLabel" Text="—"
+                                           FontSize="11" Foreground="#FF9E90B0"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Preview canvas -->
+                        <ScrollViewer Grid.Row="1"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto">
+                            <Border Name="PreviewCanvas"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Background="#FF1F1A24"
+                                    BoxShadow="0 4 32 0 #80000000"
+                                    Margin="24">
+                                <ContentControl Name="PreviewContent"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"/>
+                            </Border>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ── Splitter for terminal ──────────────────────────────── -->
+            <GridSplitter Grid.Row="1" Height="4" Background="#FF3E3050"
+                          ResizeDirection="Rows"/>
+
+            <!-- ── BOTTOM: Copilot CLI Terminal Panel ─────────────────── -->
+            <Border Grid.Row="2" Height="180" Background="#FF1A1624"
+                    BorderBrush="#FF3E3050" BorderThickness="0,1,0,0">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Terminal header -->
+                    <Border Grid.Row="0" Background="#FF2A2230" Padding="10,4"
+                            BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="✦" FontSize="13" Foreground="#FF8B5CF6"
+                                       FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text="GitHub Copilot CLI" FontSize="12"
+                                       Foreground="#FFF0E8F4" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="— Ask Copilot to generate AXAML code" FontSize="11"
+                                       Foreground="#FF9E90B0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Terminal output -->
+                    <ScrollViewer Grid.Row="1" Name="TerminalScroll"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <TextBlock Name="TerminalOutput"
+                                   FontFamily="Cascadia Code, Consolas, Courier New, monospace"
+                                   FontSize="12" Foreground="#FFA6E3A1"
+                                   TextWrapping="Wrap" Margin="10,6"
+                                   Text="Welcome to Insait Image Editor — GitHub Copilot CLI&#x0a;Type a prompt below and press Enter to ask Copilot to generate AXAML code.&#x0a;Use 'gh copilot suggest' for shell commands or 'gh copilot explain' for explanations.&#x0a;───────────────────────────────────────────────────────&#x0a;"/>
+                    </ScrollViewer>
+
+                    <!-- Terminal input -->
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="8,4">
+                        <TextBlock Grid.Column="0" Text="✦ ❯" FontSize="13"
+                                   Foreground="#FF8B5CF6" FontWeight="Bold"
+                                   VerticalAlignment="Center" Margin="4,0,6,0"/>
+                        <TextBox Grid.Column="1" Name="TerminalInput"
+                                 Classes="terminal-input"
+                                 Watermark="Ask Copilot to generate AXAML... (e.g. 'create a login form')"
+                                 KeyDown="TerminalInput_KeyDown"/>
+                        <Button Grid.Column="2" Classes="accent-btn" Margin="4,0,0,0"
+                                Click="TerminalSend_Click" ToolTip.Tip="Send to Copilot CLI">
+                            <TextBlock Text="Send" FontSize="11"/>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

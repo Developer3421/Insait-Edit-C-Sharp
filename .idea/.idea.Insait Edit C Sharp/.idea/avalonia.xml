@@ -18,6 +18,8 @@
         <entry key="Insait Edit C Sharp/Controls/CompletionWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
         <entry key="Insait Edit C Sharp/Controls/CopilotCliControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
         <entry key="Insait Edit C Sharp/Controls/DiagnosticsPanel.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/GenerateMemberWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
+        <entry key="Insait Edit C Sharp/Controls/GenerateTypeWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
         <entry key="Insait Edit C Sharp/Controls/GitPanelControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
         <entry key="Insait Edit C Sharp/Controls/GoToDefinitionWindow.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />
         <entry key="Insait Edit C Sharp/Controls/NuGetPanelControl.axaml" value="Insait Edit C Sharp/Insait Edit C Sharp.csproj" />

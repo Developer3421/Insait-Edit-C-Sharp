@@ -40,6 +40,9 @@ public partial class MainWindow : Window
     private readonly RunConfigurationService _runConfigService;
     private readonly PublishService _publishService;
     private readonly CopilotCliService _copilotCliService;
+    private readonly CopilotSdkService _copilotSdkService;
+    private bool _isCliMode = false; // false = Copilot Chat (SDK), true = CLI Commands
+    private string? _attachedFilePath; // path of file attached for Copilot context
     private string? _projectPath;
     private InsaitEditor? _insaitEditor;
     private TerminalControl? _terminalControl;
@@ -67,6 +70,8 @@ public partial class MainWindow : Window
         _runConfigService = new RunConfigurationService();
         _publishService = new PublishService();
         _copilotCliService = new CopilotCliService();
+        _copilotSdkService = new CopilotSdkService();
+        _copilotSdkService.LoadSettings(); // restore model, streaming, etc.
         _projectPath = projectPath;
         
         DataContext = _viewModel;
@@ -125,6 +130,9 @@ public partial class MainWindow : Window
         // Apply localization and subscribe to language changes
         ApplyLocalization();
         LocalizationService.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(ApplyLocalization);
+
+        // Initialize GitHub Copilot SDK in background
+        Opened += (_, _) => _ = InitializeCopilotSdkAsync();
     }
     
     private void SetupColumnConstraints()
