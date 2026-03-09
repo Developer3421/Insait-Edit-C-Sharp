@@ -16,6 +16,7 @@ public partial class SettingsPanelControl : UserControl
     // Settings keys for SettingsDbService
     private const string KeyDotNetSdk  = "path_dotnet_sdk";
     private const string KeyGitHubCli  = "path_github_cli";
+    private const string KeyCopilotCli = "path_copilot_cli";
     private const string KeySignTool   = "path_signtool";
     private const string KeyMSBuild    = "path_msbuild";
 
@@ -40,6 +41,7 @@ public partial class SettingsPanelControl : UserControl
     {
         SetBox("DotNetSdkPathBox", SettingsDbService.LoadSetting(KeyDotNetSdk) ?? "");
         SetBox("GitHubCliPathBox", SettingsDbService.LoadSetting(KeyGitHubCli) ?? "");
+        SetBox("CopilotCliPathBox", SettingsDbService.LoadSetting(KeyCopilotCli) ?? "");
         SetBox("SignToolPathBox",  SettingsDbService.LoadSetting(KeySignTool)  ?? "");
         SetBox("MSBuildPathBox",   SettingsDbService.LoadSetting(KeyMSBuild)   ?? "");
 
@@ -55,7 +57,7 @@ public partial class SettingsPanelControl : UserControl
     /// Returns the saved GitHub CLI path (or empty string).
     /// </summary>
     public static string GetGitHubCliPath()  => SettingsDbService.LoadSetting(KeyGitHubCli) ?? "";
-
+        public static string GetCopilotCliPath() => SettingsDbService.LoadSetting(KeyCopilotCli) ?? "";
     /// <summary>
     /// Returns the saved SignTool path (or empty string).
     /// </summary>
@@ -96,8 +98,20 @@ public partial class SettingsPanelControl : UserControl
     public static string ResolveGhExe()
     {
         var gh = GetGitHubCliPath();
-        if (!string.IsNullOrWhiteSpace(gh) && File.Exists(gh))
-            return gh;
+        if (!string.IsNullOrWhiteSpace(gh))
+        {
+            // if the user pointed directly at the executable, just return it
+            if (File.Exists(gh))
+                return gh;
+
+            // if they gave a directory, look for gh.exe inside
+            if (Directory.Exists(gh))
+            {
+                var inside = Path.Combine(gh, "gh.exe");
+                if (File.Exists(inside))
+                    return inside;
+            }
+        }
         return "gh";
     }
 
@@ -129,15 +143,17 @@ public partial class SettingsPanelControl : UserControl
 
     private void Save_Click(object? sender, RoutedEventArgs e)
     {
-        var dotnet = GetBox("DotNetSdkPathBox");
-        var gh     = GetBox("GitHubCliPathBox");
-        var sign   = GetBox("SignToolPathBox");
-        var msbuild = GetBox("MSBuildPathBox");
+        var dotnet   = GetBox("DotNetSdkPathBox");
+        var gh       = GetBox("GitHubCliPathBox");
+        var copilot  = GetBox("CopilotCliPathBox");
+        var sign     = GetBox("SignToolPathBox");
+        var msbuild  = GetBox("MSBuildPathBox");
 
-        SettingsDbService.SaveSetting(KeyDotNetSdk, dotnet);
-        SettingsDbService.SaveSetting(KeyGitHubCli, gh);
-        SettingsDbService.SaveSetting(KeySignTool,  sign);
-        SettingsDbService.SaveSetting(KeyMSBuild,   msbuild);
+        SettingsDbService.SaveSetting(KeyDotNetSdk,   dotnet);
+        SettingsDbService.SaveSetting(KeyGitHubCli,   gh);
+        SettingsDbService.SaveSetting(KeyCopilotCli,  copilot);
+        SettingsDbService.SaveSetting(KeySignTool,    sign);
+        SettingsDbService.SaveSetting(KeyMSBuild,     msbuild);
 
         ValidateAllPaths();
         ShowStatus("✅ Settings saved successfully.", isSuccess: true);
@@ -148,6 +164,7 @@ public partial class SettingsPanelControl : UserControl
     {
         SetBox("DotNetSdkPathBox", "");
         SetBox("GitHubCliPathBox", "");
+        SetBox("CopilotCliPathBox", "");
         SetBox("SignToolPathBox",  "");
         SetBox("MSBuildPathBox",   "");
 
@@ -174,6 +191,12 @@ public partial class SettingsPanelControl : UserControl
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 if (!string.IsNullOrEmpty(gh)) SetBox("GitHubCliPathBox", gh);
+            });
+
+            var cop = AutoDetectCopilotCli();
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (!string.IsNullOrEmpty(cop)) SetBox("CopilotCliPathBox", cop);
             });
 
             // SignTool
@@ -216,6 +239,16 @@ public partial class SettingsPanelControl : UserControl
         }
     }
 
+    private async void BrowseCopilotCli_Click(object? sender, RoutedEventArgs e)
+    {
+        var path = await BrowseForFileAsync("Select copilot.exe", "copilot.exe", "*.exe");
+        if (!string.IsNullOrEmpty(path))
+        {
+            SetBox("CopilotCliPathBox", path);
+            ValidatePath("CopilotCliPathBox", "CopilotCliStatus", isDirectory: false, expectedName: "copilot.exe");
+        }
+    }
+
     private async void BrowseSignTool_Click(object? sender, RoutedEventArgs e)
     {
         var path = await BrowseForFileAsync("Select signtool.exe", "signtool.exe", "*.exe");
@@ -244,6 +277,7 @@ public partial class SettingsPanelControl : UserControl
     {
         ValidatePath("DotNetSdkPathBox", "DotNetSdkStatus", isDirectory: true);
         ValidatePath("GitHubCliPathBox", "GitHubCliStatus", isDirectory: false, expectedName: "gh.exe");
+        ValidatePath("CopilotCliPathBox", "CopilotCliStatus", isDirectory: false, expectedName: "copilot.exe");
         ValidatePath("SignToolPathBox",  "SignToolStatus",  isDirectory: false, expectedName: "signtool.exe");
         ValidatePath("MSBuildPathBox",   "MSBuildStatus",   isDirectory: false, expectedName: "MSBuild.exe");
     }
@@ -287,7 +321,7 @@ public partial class SettingsPanelControl : UserControl
 
     private void ClearAllStatuses()
     {
-        foreach (var name in new[] { "DotNetSdkStatus", "GitHubCliStatus", "SignToolStatus", "MSBuildStatus" })
+        foreach (var name in new[] { "DotNetSdkStatus", "GitHubCliStatus", "CopilotCliStatus", "SignToolStatus", "MSBuildStatus" })
         {
             var tb = this.FindControl<TextBlock>(name);
             if (tb != null) tb.Text = "";

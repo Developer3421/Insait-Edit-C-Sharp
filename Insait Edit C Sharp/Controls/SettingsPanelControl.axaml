@@ -151,6 +151,25 @@
                                Foreground="{StaticResource SettingsTextMutedBrush}"/>
                 </StackPanel>
                 
+                <!-- Copilot CLI Path -->
+                <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
+                <TextBlock Text="🤖 Copilot CLI" FontSize="13" FontWeight="SemiBold" 
+                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
+                           FontFamily="Segoe UI Emoji"/>
+                <TextBlock Text="Path to the standalone GitHub Copilot CLI executable" 
+                           FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
+                           TextWrapping="Wrap"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Name="CopilotCliPathBox" Watermark="C:\Program Files\Copilot\copilot.exe" 
+                             ToolTip.Tip="Path to copilot.exe"/>
+                    <Button Grid.Column="1" Classes="settings-browse" Content="..." 
+                            Click="BrowseCopilotCli_Click" ToolTip.Tip="Browse for copilot.exe"/>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+                    <TextBlock Name="CopilotCliStatus" Text="" FontSize="10" 
+                               Foreground="{StaticResource SettingsTextMutedBrush}"/>
+                </StackPanel>
+                
                 <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
                 
                 <!-- SignTool Path -->

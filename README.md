@@ -63,7 +63,7 @@
 - **Git panel** — stage, commit, push, pull, and view change diffs
 - **Clone repository** — clone repos from URL or GitHub
 - **GitHub account** — sign in with GitHub OAuth, view repositories
-- **GitHub Copilot CLI** — integrated Copilot CLI assistant
+- **GitHub Copilot CLI** — integrated Copilot CLI assistant (path detection now handles both `gh-copilot` extension and standalone `copilot.exe`; configure path under Settings)
 
 ### 🖥️ Terminal
 - **Built-in terminal** — a full ConPTY-based terminal emulator with ANSI rendering

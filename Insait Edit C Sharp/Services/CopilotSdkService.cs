@@ -152,10 +152,21 @@ public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
             _session = null;
 
             // Build detailed error message
-            var savedPath = SettingsPanelControl.GetGitHubCliPath();
-            var details = string.IsNullOrWhiteSpace(savedPath)
-                ? "GitHub CLI path is NOT set in Settings."
-                : $"Saved path: {savedPath} (exists: {File.Exists(savedPath)})";
+            var savedGh = SettingsPanelControl.GetGitHubCliPath();
+            var savedCop = SettingsPanelControl.GetCopilotCliPath();
+            var details = string.Empty;
+            if (string.IsNullOrWhiteSpace(savedGh))
+            {
+                details += "GitHub CLI path is NOT set in Settings.";
+            }
+            else
+            {
+                details += $"Saved gh path: {savedGh} (exists: {File.Exists(savedGh)})";
+            }
+            if (!string.IsNullOrWhiteSpace(savedCop))
+            {
+                details += $"\nSaved copilot path: {savedCop} (exists: {File.Exists(savedCop)})";
+            }
 
             var msg = $"⚠️ Copilot: {ex.Message}\n{details}";
             StatusChanged?.Invoke(this, msg);
@@ -221,6 +232,22 @@ public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
 
         // 4) Also set GH_PATH env var — some SDK builds look at this
         Environment.SetEnvironmentVariable("GH_PATH", ghPath);
+
+        // 5) In the new Copilot CLI world we may also need the standalone
+        //    "copilot.exe" path so that other components or tools can use it.
+        //    Resolve and inject it into PATH if found.
+        var copilotPath = FindCopilotCliPath();
+        if (!string.IsNullOrEmpty(copilotPath))
+        {
+            var copilotDir = Path.GetDirectoryName(copilotPath);
+            if (!string.IsNullOrEmpty(copilotDir))
+            {
+                AddToPathIfMissing(ref currentPath, copilotDir);
+            }
+
+            Environment.SetEnvironmentVariable("COPILOT_CLI_PATH", copilotPath);
+            Debug.WriteLine($"[CopilotSdk] copilot CLI resolved to: {copilotPath}");
+        }
 
         Debug.WriteLine($"[CopilotSdk] gh resolved to: {ghPath}");
         return ghPath;
@@ -325,6 +352,70 @@ public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
             }
         }
         catch { /* where.exe failed */ }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Try to locate the standalone Copilot CLI binary (copilot.exe).
+    /// This is separate from the gh-copilot extension and may be installed
+    /// in its own directories or provided via an environment variable.
+    /// </summary>
+    private static string? FindCopilotCliPath()
+    {
+        // 1) respect environment variable if provided
+        var env = Environment.GetEnvironmentVariable("COPILOT_CLI_PATH");
+        if (!string.IsNullOrWhiteSpace(env))
+        {
+            if (File.Exists(env))
+                return env;
+            if (Directory.Exists(env))
+            {
+                var inside = Path.Combine(env, "copilot.exe");
+                if (File.Exists(inside))
+                    return inside;
+            }
+        }
+
+        // 2) common installation locations
+        var candidates = new[]
+        {
+            @"C:\Program Files\Copilot\copilot.exe",
+            @"C:\Program Files (x86)\Copilot\copilot.exe",
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs\\copilot\\copilot.exe")
+        };
+        foreach (var c in candidates)
+        {
+            if (File.Exists(c))
+                return c;
+        }
+
+        // 3) fallback to PATH lookup using `where`
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "where",
+                Arguments = "copilot.exe",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+            using var proc = Process.Start(psi);
+            if (proc != null)
+            {
+                var output = proc.StandardOutput.ReadToEnd();
+                proc.WaitForExit();
+                if (proc.ExitCode == 0)
+                {
+                    var first = output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                       .FirstOrDefault()?.Trim();
+                    if (!string.IsNullOrEmpty(first) && File.Exists(first))
+                        return first;
+                }
+            }
+        }
+        catch { }
 
         return null;
     }

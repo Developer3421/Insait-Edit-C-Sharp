@@ -1235,11 +1235,23 @@ public class CopilotCliService
 
     private async Task<string?> FindGhPathAsync()
     {
-        // Check user settings first
+        // First, honour whatever the user saved in Settings.
+        // ResolveGhExe already handles the case where the user pointed at a directory.
         var fromSettings = SettingsPanelControl.ResolveGhExe();
-        if (fromSettings != "gh" && File.Exists(fromSettings))
-            return fromSettings;
+        if (!string.IsNullOrEmpty(fromSettings) && fromSettings != "gh")
+        {
+            if (File.Exists(fromSettings))
+                return fromSettings;
 
+n            if (Directory.Exists(fromSettings))
+            {
+                var inside = Path.Combine(fromSettings, "gh.exe");
+                if (File.Exists(inside))
+                    return inside;
+            }
+        }
+
+        // fallback to well-known locations / PATH lookup
         var possiblePaths = new[]
         {
             "gh",
@@ -1268,7 +1280,10 @@ public class CopilotCliService
                 }
                 catch { continue; }
             }
-            else if (File.Exists(path)) return path;
+            else if (File.Exists(path))
+            {
+                return path;
+            }
         }
         return null;
     }
