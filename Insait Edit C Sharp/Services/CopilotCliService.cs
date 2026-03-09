@@ -15,17 +15,17 @@ public class CopilotCliService
 {
     private readonly FileService _fileService;
     private string? _workingDirectory;
-    
+
     /// <summary>
     /// Event raised when a command is executed
     /// </summary>
     public event EventHandler<CopilotCommandEventArgs>? CommandExecuted;
-    
+
     /// <summary>
     /// Event raised when output is generated
     /// </summary>
     public event EventHandler<string>? OutputGenerated;
-    
+
     /// <summary>
     /// Current working directory for CLI operations
     /// </summary>
@@ -34,7 +34,7 @@ public class CopilotCliService
         get => _workingDirectory;
         set => _workingDirectory = value;
     }
-    
+
     /// <summary>
     /// Available commands
     /// </summary>
@@ -61,43 +61,43 @@ public class CopilotCliService
             ["delete"] = new CopilotCommand("delete", "Delete a file or directory", "<path> [--force]", DeleteAsync),
             ["rm"] = new CopilotCommand("rm", "Alias for delete", "<path> [--force]", DeleteAsync),
             ["remove"] = new CopilotCommand("remove", "Alias for delete", "<path> [--force]", DeleteAsync),
-            
+
             // Directory operations
             ["mkdir"] = new CopilotCommand("mkdir", "Create a new directory", "<path>", MkdirAsync),
             ["rmdir"] = new CopilotCommand("rmdir", "Remove a directory", "<path> [--force]", RmdirAsync),
-            
+
             // File manipulation
             ["rename"] = new CopilotCommand("rename", "Rename a file or directory", "<old-path> <new-name>", RenameAsync),
             ["mv"] = new CopilotCommand("mv", "Move/rename a file or directory", "<source> <destination>", MoveAsync),
             ["copy"] = new CopilotCommand("copy", "Copy a file or directory", "<source> <destination>", CopyAsync),
             ["cp"] = new CopilotCommand("cp", "Alias for copy", "<source> <destination>", CopyAsync),
-            
+
             // File content operations
             ["touch"] = new CopilotCommand("touch", "Create an empty file or update timestamp", "<path>", TouchAsync),
             ["write"] = new CopilotCommand("write", "Write content to a file", "<path> <content>", WriteAsync),
             ["append"] = new CopilotCommand("append", "Append content to a file", "<path> <content>", AppendAsync),
             ["read"] = new CopilotCommand("read", "Read file content", "<path>", ReadAsync),
             ["cat"] = new CopilotCommand("cat", "Display file content", "<path>", ReadAsync),
-            
+
             // Listing and navigation
             ["ls"] = new CopilotCommand("ls", "List directory contents", "[path] [--all]", ListAsync),
             ["dir"] = new CopilotCommand("dir", "List directory contents", "[path] [--all]", ListAsync),
             ["tree"] = new CopilotCommand("tree", "Display directory tree", "[path] [--depth <n>]", TreeAsync),
             ["pwd"] = new CopilotCommand("pwd", "Print working directory", "", PwdAsync),
             ["cd"] = new CopilotCommand("cd", "Change working directory", "<path>", CdAsync),
-            
+
             // Search
             ["find"] = new CopilotCommand("find", "Find files by name pattern", "<pattern> [--path <dir>]", FindAsync),
             ["search"] = new CopilotCommand("search", "Search for text in files", "<text> [--path <dir>] [--ext <extension>]", SearchAsync),
-            
+
             // Templates
             ["template"] = new CopilotCommand("template", "Create file from template", "<template-name> <path>", TemplateAsync),
-            
+
             // Info
             ["help"] = new CopilotCommand("help", "Show help for commands", "[command]", HelpAsync),
             ["info"] = new CopilotCommand("info", "Show file/directory information", "<path>", InfoAsync),
             ["exists"] = new CopilotCommand("exists", "Check if file/directory exists", "<path>", ExistsAsync),
-            
+
             // GitHub CLI commands - SETUP & STATUS ONLY
             ["gh-install"] = new CopilotCommand("gh-install", "Install GitHub CLI via winget", "", GhInstallAsync),
             ["gh-auth"] = new CopilotCommand("gh-auth", "Authenticate gh and git with GitHub", "<login|logout|status|refresh|setup-git|token> [args...]", GhAuthAsync),
@@ -107,7 +107,7 @@ public class CopilotCliService
             ["gh-copilot"] = new CopilotCommand("gh-copilot", "GitHub Copilot CLI - AI command assistant", "<explain|suggest|config> <args...>", GhCopilotAsync),
             ["gh-t"] = new CopilotCommand("gh-t", "Run GitHub Copilot in agent mode with project context", "<task description>", GhCopilotTaskAsync),
             ["gh-m"] = new CopilotCommand("gh-m", "Set GitHub Copilot model", "<model name>", GhCopilotModelAsync),
-            
+
             // External terminal commands
             ["terminal"] = new CopilotCommand("terminal", "Open external Windows Terminal or CMD", "[command]", OpenExternalTerminalAsync),
             ["cmd-ext"] = new CopilotCommand("cmd-ext", "Open external Command Prompt window", "[command]", OpenExternalTerminalAsync),
@@ -158,7 +158,7 @@ public class CopilotCliService
         var parts = new List<string>();
         var regex = new Regex(@"[\""].+?[\""]|[^ ]+");
         var matches = regex.Matches(commandLine.Trim());
-        
+
         foreach (Match match in matches)
         {
             var value = match.Value;
@@ -168,7 +168,7 @@ public class CopilotCliService
             }
             parts.Add(value);
         }
-        
+
         return parts;
     }
 
@@ -178,12 +178,12 @@ public class CopilotCliService
         {
             return Path.GetFullPath(path);
         }
-        
+
         if (string.IsNullOrEmpty(_workingDirectory))
         {
             return Path.GetFullPath(path);
         }
-        
+
         return Path.GetFullPath(Path.Combine(_workingDirectory, path));
     }
 
@@ -220,7 +220,7 @@ public class CopilotCliService
 
         var fileContent = content ?? GetDefaultContent(path);
         await File.WriteAllTextAsync(path, fileContent);
-        
+
         return new CopilotCliResult(true, string.Format(LocalizationService.Get("Cli.CreatedFile"), path));
     }
 
@@ -515,8 +515,8 @@ public class CopilotCliService
 
     private Task<CopilotCliResult> ListAsync(string[] args)
     {
-        var path = args.Length > 0 && !args[0].StartsWith("-") 
-            ? ResolvePath(args[0]) 
+        var path = args.Length > 0 && !args[0].StartsWith("-")
+            ? ResolvePath(args[0])
             : _workingDirectory ?? Directory.GetCurrentDirectory();
         var showAll = HasFlag(args, "--all") || HasFlag(args, "-a");
 
@@ -540,8 +540,8 @@ public class CopilotCliService
 
     private Task<CopilotCliResult> TreeAsync(string[] args)
     {
-        var path = args.Length > 0 && !args[0].StartsWith("-") 
-            ? ResolvePath(args[0]) 
+        var path = args.Length > 0 && !args[0].StartsWith("-")
+            ? ResolvePath(args[0])
             : _workingDirectory ?? Directory.GetCurrentDirectory();
         var depth = GetArgValueInt(args, "--depth", 3);
 
@@ -735,12 +735,12 @@ public class CopilotCliService
             var dirInfo = new DirectoryInfo(path);
             var fileCount = Directory.GetFiles(path, "*", SearchOption.AllDirectories).Length;
             var dirCount = Directory.GetDirectories(path, "*", SearchOption.AllDirectories).Length;
-            
+
             var output = $"Directory: {dirInfo.FullName}\n" +
                          $"Created: {dirInfo.CreationTime}\n" +
                          $"Modified: {dirInfo.LastWriteTime}\n" +
                          $"Contains: {fileCount} files, {dirCount} subdirectories";
-            
+
             return Task.FromResult(new CopilotCliResult(true, output));
         }
 
@@ -752,7 +752,7 @@ public class CopilotCliService
                          $"Created: {fileInfo.CreationTime}\n" +
                          $"Modified: {fileInfo.LastWriteTime}\n" +
                          $"Extension: {fileInfo.Extension}";
-            
+
             return Task.FromResult(new CopilotCliResult(true, output));
         }
 
@@ -867,29 +867,29 @@ public class CopilotCliService
         };
     }
 
-    private string GenerateClassTemplate(string name) => 
+    private string GenerateClassTemplate(string name) =>
         $"namespace MyNamespace;\n\n/// <summary>\n/// {name} class\n/// </summary>\npublic class {name}\n{{\n    public {name}()\n    {{\n    }}\n}}\n";
 
-    private string GenerateInterfaceTemplate(string name) => 
+    private string GenerateInterfaceTemplate(string name) =>
         $"namespace MyNamespace;\n\n/// <summary>\n/// {name} interface\n/// </summary>\npublic interface {name}\n{{\n}}\n";
 
-    private string GenerateRecordTemplate(string name) => 
+    private string GenerateRecordTemplate(string name) =>
         $"namespace MyNamespace;\n\n/// <summary>\n/// {name} record\n/// </summary>\npublic record {name}();\n";
 
-    private string GenerateEnumTemplate(string name) => 
+    private string GenerateEnumTemplate(string name) =>
         $"namespace MyNamespace;\n\n/// <summary>\n/// {name} enumeration\n/// </summary>\npublic enum {name}\n{{\n    None = 0,\n}}\n";
 
-    private string GenerateServiceTemplate(string name) => 
+    private string GenerateServiceTemplate(string name) =>
         $"namespace MyNamespace.Services;\n\n/// <summary>\n/// {name} service\n/// </summary>\npublic class {name}\n{{\n    public {name}()\n    {{\n    }}\n}}\n";
 
-    private string GenerateViewModelTemplate(string name) => 
+    private string GenerateViewModelTemplate(string name) =>
         $"using System.ComponentModel;\nusing System.Runtime.CompilerServices;\n\nnamespace MyNamespace.ViewModels;\n\n/// <summary>\n/// {name} ViewModel\n/// </summary>\npublic class {name} : INotifyPropertyChanged\n{{\n    public event PropertyChangedEventHandler? PropertyChanged;\n\n    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)\n    {{\n        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));\n    }}\n\n    protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)\n    {{\n        if (EqualityComparer<T>.Default.Equals(field, value)) return false;\n        field = value;\n        OnPropertyChanged(propertyName);\n        return true;\n    }}\n}}\n";
 
-    private string GenerateHtmlTemplate(string title) => 
+    private string GenerateHtmlTemplate(string title) =>
         $"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>{title}</title>\n</head>\n<body>\n    <h1>{title}</h1>\n</body>\n</html>\n";
 
     #endregion
-    
+
     #region GitHub CLI Commands
 
     private async Task<CopilotCliResult> GhInstallAsync(string[] args)
@@ -1243,7 +1243,7 @@ public class CopilotCliService
             if (File.Exists(fromSettings))
                 return fromSettings;
 
-n            if (Directory.Exists(fromSettings))
+            n            if (Directory.Exists(fromSettings))
             {
                 var inside = Path.Combine(fromSettings, "gh.exe");
                 if (File.Exists(inside))
@@ -1270,8 +1270,11 @@ n            if (Directory.Exists(fromSettings))
                     {
                         StartInfo = new System.Diagnostics.ProcessStartInfo
                         {
-                            FileName = "gh", Arguments = "--version",
-                            UseShellExecute = false, RedirectStandardOutput = true, CreateNoWindow = true
+                            FileName = "gh",
+                            Arguments = "--version",
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            CreateNoWindow = true
                         }
                     };
                     testProcess.Start();
@@ -1322,8 +1325,10 @@ n            if (Directory.Exists(fromSettings))
                 if (!string.IsNullOrEmpty(command)) wtArgs += $" cmd /k {command}";
                 startInfo = new System.Diagnostics.ProcessStartInfo
                 {
-                    FileName = wtPath, Arguments = wtArgs,
-                    UseShellExecute = true, WorkingDirectory = workDir
+                    FileName = wtPath,
+                    Arguments = wtArgs,
+                    UseShellExecute = true,
+                    WorkingDirectory = workDir
                 };
                 terminalName = "Windows Terminal";
             }
@@ -1332,8 +1337,10 @@ n            if (Directory.Exists(fromSettings))
                 var cmdArgs = string.IsNullOrEmpty(command) ? $"/k cd /d \"{workDir}\"" : $"/k cd /d \"{workDir}\" && {command}";
                 startInfo = new System.Diagnostics.ProcessStartInfo
                 {
-                    FileName = "cmd.exe", Arguments = cmdArgs,
-                    UseShellExecute = true, WorkingDirectory = workDir
+                    FileName = "cmd.exe",
+                    Arguments = cmdArgs,
+                    UseShellExecute = true,
+                    WorkingDirectory = workDir
                 };
                 terminalName = "Command Prompt";
             }
@@ -1361,8 +1368,10 @@ n            if (Directory.Exists(fromSettings))
                 : $"-NoExit -Command \"Set-Location '{workDir}'; {command}\"";
             var startInfo = new System.Diagnostics.ProcessStartInfo
             {
-                FileName = "powershell.exe", Arguments = pwshArgs,
-                UseShellExecute = true, WorkingDirectory = workDir
+                FileName = "powershell.exe",
+                Arguments = pwshArgs,
+                UseShellExecute = true,
+                WorkingDirectory = workDir
             };
             System.Diagnostics.Process.Start(startInfo);
             var message = L("Cli.PowerShellOpened") + "\n" + string.Format(L("Cli.TerminalWorkDir"), workDir) + "\n";

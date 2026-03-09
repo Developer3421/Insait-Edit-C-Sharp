@@ -18,7 +18,7 @@ namespace Insait_Edit_C_Sharp.Services;
 public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
 {
     // ── Internals ────────────────────────────────────────────────────────
-    private CopilotClient?  _client;
+    private CopilotClient? _client;
     private CopilotSession? _session;
     private bool _initialized;
     private bool _disposed;
@@ -26,8 +26,8 @@ public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
 
     // ── Configuration ────────────────────────────────────────────────────
     private string _model = "gpt-4o";
-    private bool   _streamingEnabled = true;
-    private string _reasoningEffort  = "medium";
+    private bool _streamingEnabled = true;
+    private string _reasoningEffort = "medium";
     private string? _customSystemMessage;
 
     // ── Events ───────────────────────────────────────────────────────────
@@ -55,11 +55,11 @@ public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
 
     // ── Public state ─────────────────────────────────────────────────────
 
-    public bool   IsAvailable      => _initialized && _session != null;
-    public bool   IsProcessing     { get; private set; }
-    public string CurrentModel     => _model;
-    public bool   IsStreamingEnabled => _streamingEnabled;
-    public string ReasoningEffort  => _reasoningEffort;
+    public bool IsAvailable => _initialized && _session != null;
+    public bool IsProcessing { get; private set; }
+    public string CurrentModel => _model;
+    public bool IsStreamingEnabled => _streamingEnabled;
+    public string ReasoningEffort => _reasoningEffort;
     public string? CurrentSessionId => _session?.SessionId;
 
     /// <summary>Known models available for selection.</summary>
@@ -108,9 +108,9 @@ public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
     /// <summary>Load persisted settings from SettingsDbService.</summary>
     public void LoadSettings()
     {
-        _model            = SettingsDbService.LoadSetting("copilot_model") ?? "gpt-4o";
+        _model = SettingsDbService.LoadSetting("copilot_model") ?? "gpt-4o";
         _streamingEnabled = SettingsDbService.LoadSetting("copilot_streaming") != "False";
-        _reasoningEffort  = SettingsDbService.LoadSetting("copilot_reasoning_effort") ?? "medium";
+        _reasoningEffort = SettingsDbService.LoadSetting("copilot_reasoning_effort") ?? "medium";
         _customSystemMessage = SettingsDbService.LoadSetting("copilot_system_message");
     }
 
@@ -208,7 +208,7 @@ public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
         //    Standard location: %USERPROFILE%\.local\share\gh\extensions\gh-copilot
         //    Also check:        %APPDATA%\GitHub CLI\extensions\gh-copilot
         var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var appData     = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
         var extensionDirs = new[]
         {
@@ -826,9 +826,9 @@ public sealed class CopilotSdkService : IAsyncDisposable, IDisposable
         _abortCts?.Cancel();
         _abortCts?.Dispose();
         if (_session != null) try { await _session.DisposeAsync(); } catch { }
-        if (_client  != null) try { await _client.DisposeAsync(); }  catch { }
+        if (_client != null) try { await _client.DisposeAsync(); } catch { }
         _session = null;
-        _client  = null;
+        _client = null;
     }
 
     public void Dispose() => _ = DisposeAsync().AsTask();

@@ -14,11 +14,11 @@ namespace Insait_Edit_C_Sharp.Controls;
 public partial class SettingsPanelControl : UserControl
 {
     // Settings keys for SettingsDbService
-    private const string KeyDotNetSdk  = "path_dotnet_sdk";
-    private const string KeyGitHubCli  = "path_github_cli";
+    private const string KeyDotNetSdk = "path_dotnet_sdk";
+    private const string KeyGitHubCli = "path_github_cli";
     private const string KeyCopilotCli = "path_copilot_cli";
-    private const string KeySignTool   = "path_signtool";
-    private const string KeyMSBuild    = "path_msbuild";
+    private const string KeySignTool = "path_signtool";
+    private const string KeyMSBuild = "path_msbuild";
 
     /// <summary>
     /// Raised when the status text should be shown in the main window status bar.
@@ -42,8 +42,8 @@ public partial class SettingsPanelControl : UserControl
         SetBox("DotNetSdkPathBox", SettingsDbService.LoadSetting(KeyDotNetSdk) ?? "");
         SetBox("GitHubCliPathBox", SettingsDbService.LoadSetting(KeyGitHubCli) ?? "");
         SetBox("CopilotCliPathBox", SettingsDbService.LoadSetting(KeyCopilotCli) ?? "");
-        SetBox("SignToolPathBox",  SettingsDbService.LoadSetting(KeySignTool)  ?? "");
-        SetBox("MSBuildPathBox",   SettingsDbService.LoadSetting(KeyMSBuild)   ?? "");
+        SetBox("SignToolPathBox", SettingsDbService.LoadSetting(KeySignTool) ?? "");
+        SetBox("MSBuildPathBox", SettingsDbService.LoadSetting(KeyMSBuild) ?? "");
 
         ValidateAllPaths();
     }
@@ -51,22 +51,22 @@ public partial class SettingsPanelControl : UserControl
     /// <summary>
     /// Returns the saved .NET SDK path (or empty string).
     /// </summary>
-    public static string GetDotNetSdkPath()  => SettingsDbService.LoadSetting(KeyDotNetSdk) ?? "";
+    public static string GetDotNetSdkPath() => SettingsDbService.LoadSetting(KeyDotNetSdk) ?? "";
 
     /// <summary>
     /// Returns the saved GitHub CLI path (or empty string).
     /// </summary>
-    public static string GetGitHubCliPath()  => SettingsDbService.LoadSetting(KeyGitHubCli) ?? "";
-        public static string GetCopilotCliPath() => SettingsDbService.LoadSetting(KeyCopilotCli) ?? "";
+    public static string GetGitHubCliPath() => SettingsDbService.LoadSetting(KeyGitHubCli) ?? "";
+    public static string GetCopilotCliPath() => SettingsDbService.LoadSetting(KeyCopilotCli) ?? "";
     /// <summary>
     /// Returns the saved SignTool path (or empty string).
     /// </summary>
-    public static string GetSignToolPath()   => SettingsDbService.LoadSetting(KeySignTool)  ?? "";
+    public static string GetSignToolPath() => SettingsDbService.LoadSetting(KeySignTool) ?? "";
 
     /// <summary>
     /// Returns the saved MSBuild path (or empty string).
     /// </summary>
-    public static string GetMSBuildPath()    => SettingsDbService.LoadSetting(KeyMSBuild)   ?? "";
+    public static string GetMSBuildPath() => SettingsDbService.LoadSetting(KeyMSBuild) ?? "";
 
     /// <summary>
     /// Resolves the dotnet executable path from saved SDK path.
@@ -143,17 +143,17 @@ public partial class SettingsPanelControl : UserControl
 
     private void Save_Click(object? sender, RoutedEventArgs e)
     {
-        var dotnet   = GetBox("DotNetSdkPathBox");
-        var gh       = GetBox("GitHubCliPathBox");
-        var copilot  = GetBox("CopilotCliPathBox");
-        var sign     = GetBox("SignToolPathBox");
-        var msbuild  = GetBox("MSBuildPathBox");
+        var dotnet = GetBox("DotNetSdkPathBox");
+        var gh = GetBox("GitHubCliPathBox");
+        var copilot = GetBox("CopilotCliPathBox");
+        var sign = GetBox("SignToolPathBox");
+        var msbuild = GetBox("MSBuildPathBox");
 
-        SettingsDbService.SaveSetting(KeyDotNetSdk,   dotnet);
-        SettingsDbService.SaveSetting(KeyGitHubCli,   gh);
-        SettingsDbService.SaveSetting(KeyCopilotCli,  copilot);
-        SettingsDbService.SaveSetting(KeySignTool,    sign);
-        SettingsDbService.SaveSetting(KeyMSBuild,     msbuild);
+        SettingsDbService.SaveSetting(KeyDotNetSdk, dotnet);
+        SettingsDbService.SaveSetting(KeyGitHubCli, gh);
+        SettingsDbService.SaveSetting(KeyCopilotCli, copilot);
+        SettingsDbService.SaveSetting(KeySignTool, sign);
+        SettingsDbService.SaveSetting(KeyMSBuild, msbuild);
 
         ValidateAllPaths();
         ShowStatus("✅ Settings saved successfully.", isSuccess: true);
@@ -165,8 +165,8 @@ public partial class SettingsPanelControl : UserControl
         SetBox("DotNetSdkPathBox", "");
         SetBox("GitHubCliPathBox", "");
         SetBox("CopilotCliPathBox", "");
-        SetBox("SignToolPathBox",  "");
-        SetBox("MSBuildPathBox",   "");
+        SetBox("SignToolPathBox", "");
+        SetBox("MSBuildPathBox", "");
 
         ClearAllStatuses();
         ShowStatus("Settings cleared. Click Save to persist.", isSuccess: false);
@@ -278,8 +278,8 @@ public partial class SettingsPanelControl : UserControl
         ValidatePath("DotNetSdkPathBox", "DotNetSdkStatus", isDirectory: true);
         ValidatePath("GitHubCliPathBox", "GitHubCliStatus", isDirectory: false, expectedName: "gh.exe");
         ValidatePath("CopilotCliPathBox", "CopilotCliStatus", isDirectory: false, expectedName: "copilot.exe");
-        ValidatePath("SignToolPathBox",  "SignToolStatus",  isDirectory: false, expectedName: "signtool.exe");
-        ValidatePath("MSBuildPathBox",   "MSBuildStatus",   isDirectory: false, expectedName: "MSBuild.exe");
+        ValidatePath("SignToolPathBox", "SignToolStatus", isDirectory: false, expectedName: "signtool.exe");
+        ValidatePath("MSBuildPathBox", "MSBuildStatus", isDirectory: false, expectedName: "MSBuild.exe");
     }
 
     private void ValidatePath(string boxName, string statusName, bool isDirectory, string? expectedName = null)
@@ -491,7 +491,7 @@ public partial class SettingsPanelControl : UserControl
     private void ShowStatus(string message, bool isSuccess)
     {
         var border = this.FindControl<Border>("StatusBorder");
-        var text   = this.FindControl<TextBlock>("StatusMessageText");
+        var text = this.FindControl<TextBlock>("StatusMessageText");
 
         if (border != null)
         {
