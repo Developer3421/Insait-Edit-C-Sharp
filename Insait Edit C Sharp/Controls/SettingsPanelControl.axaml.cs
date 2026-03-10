@@ -25,6 +25,12 @@ public partial class SettingsPanelControl : UserControl
     /// </summary>
     public event EventHandler<string>? StatusChanged;
 
+    /// <summary>
+    /// Raised after settings are persisted. Subscribers can use this to
+    /// re-initialize services that depend on the saved paths (e.g. Copilot SDK).
+    /// </summary>
+    public event EventHandler? SettingsSaved;
+
     public SettingsPanelControl()
     {
         InitializeComponent();
@@ -158,6 +164,7 @@ public partial class SettingsPanelControl : UserControl
         ValidateAllPaths();
         ShowStatus("✅ Settings saved successfully.", isSuccess: true);
         StatusChanged?.Invoke(this, "Settings saved.");
+        SettingsSaved?.Invoke(this, EventArgs.Empty);
     }
 
     private void Reset_Click(object? sender, RoutedEventArgs e)
@@ -387,6 +394,24 @@ public partial class SettingsPanelControl : UserControl
         }
 
         return FindInPath("gh.exe");
+    }
+
+    private static string? AutoDetectCopilotCli()
+    {
+        var candidates = new[]
+        {
+            @"C:\Program Files\Copilot\copilot.exe",
+            @"C:\Program Files (x86)\Copilot\copilot.exe",
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Programs", "copilot", "copilot.exe")
+        };
+
+        foreach (var path in candidates)
+        {
+            if (File.Exists(path)) return path;
+        }
+
+        return FindInPath("copilot.exe");
     }
 
     private static string? AutoDetectSignTool()

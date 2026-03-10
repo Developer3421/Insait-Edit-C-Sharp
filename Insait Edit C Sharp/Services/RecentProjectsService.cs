@@ -21,10 +21,10 @@ public class RecentProjectsService
         var appDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "InsaitEdit");
-        
+
         Directory.CreateDirectory(appDataPath);
         _recentProjectsPath = Path.Combine(appDataPath, "recent_projects.json");
-        
+
         _recentProjects = LoadFromFile();
     }
 
@@ -37,7 +37,7 @@ public class RecentProjectsService
         _recentProjects = _recentProjects
             .Where(p => File.Exists(p.Path) || Directory.Exists(p.Path))
             .ToList();
-        
+
         SaveToFile();
 
         return _recentProjects
@@ -51,7 +51,7 @@ public class RecentProjectsService
     public void AddRecentProject(string path)
     {
         // Remove if already exists
-        _recentProjects.RemoveAll(p => 
+        _recentProjects.RemoveAll(p =>
             p.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
 
         // Add to beginning
@@ -75,7 +75,7 @@ public class RecentProjectsService
     /// </summary>
     public void RemoveRecentProject(string path)
     {
-        _recentProjects.RemoveAll(p => 
+        _recentProjects.RemoveAll(p =>
             p.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
         SaveToFile();
     }
@@ -150,7 +150,6 @@ public class RecentProjectsService
             ".csproj" => "C# Project",
             ".fsproj" => "F# Project",
             ".vbproj" => "VB.NET Project",
-            ".nfproj" => "nanoFramework Project",
             _ => Directory.Exists(extension) ? "Folder" : "File"
         };
     }
@@ -164,7 +163,6 @@ public class RecentProjectsService
             ".csproj" => ("⚡", "#30A6E3A1"),    // Green tint
             ".fsproj" => ("🔷", "#3089B4FA"),    // Blue tint
             ".vbproj" => ("🔶", "#30FAB387"),    // Orange tint
-            ".nfproj" => ("🔌", "#304FC3F7"),    // Cyan tint
             _ => ("📁", "#30CBA6F7")
         };
     }
@@ -179,7 +177,7 @@ public class RecentProjectsService
         if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
         if (diff.TotalDays < 30) return $"{(int)(diff.TotalDays / 7)}w ago";
         if (diff.TotalDays < 365) return lastOpened.ToString("MMM d");
-        
+
         return lastOpened.ToString("MMM d, yyyy");
     }
 }

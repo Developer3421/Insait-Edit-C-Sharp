@@ -52,12 +52,6 @@
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">none</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="nanoFramework.CoreLibrary" Version="2.0.0-preview.35" />
-        <PackageReference Include="nanoFramework.Tools.MetadataProcessor.CLI" Version="4.0.0-preview.73" />
-        <PackageReference Include="nanoFramework.Tools.MetadataProcessor.MsBuildTask" Version="4.0.0-preview.73" />
-        <!-- nanoFramework packages are NOT referenced in the host desktop app.
-             They redefine System.String, System.Boolean etc. and conflict with .NET runtime.
-             The host app invokes nanoff/msbuild as external processes for ESP32 builds. -->
         <PackageReference Include="NuGet.Protocol" Version="7.3.0" />
         <PackageReference Include="Octokit" Version="14.0.0" />
         <PackageReference Include="System.Drawing.Common" Version="11.0.0-preview.1.26104.118" />

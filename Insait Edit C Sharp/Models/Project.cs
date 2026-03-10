@@ -26,8 +26,6 @@ public enum ProjectType
     Avalonia,
     AspNet,
     Library,
-    NanoFramework,
-    NanoFrameworkLib,
     Unknown
 }
 
@@ -54,7 +52,6 @@ public enum FileType
     Config,
     Solution,
     Project,
-    NanoProject,
     Text,
     Markdown,
     Unknown

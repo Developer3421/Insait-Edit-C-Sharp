@@ -34,7 +34,6 @@
     <x:String x:Key="Sidebar.Search">Ara (Ctrl+Shift+F)</x:String>
     <x:String x:Key="Sidebar.Git">Kaynak Denetimi (Ctrl+Shift+G)</x:String>
     <x:String x:Key="Sidebar.NuGet">NuGet Paketleri (Ctrl+Shift+N)</x:String>
-    <x:String x:Key="Sidebar.LedPanel">LED Panel Tasarımcısı</x:String>
     <x:String x:Key="Sidebar.Account">Hesap</x:String>
     <x:String x:Key="Sidebar.Settings">Ayarlar (Ctrl+,)</x:String>
     <x:String x:Key="Panel.Explorer">GEZGİN</x:String>
@@ -338,7 +337,6 @@
     <x:String x:Key="Menu.SolutionProject">📦 Çözüm ve Proje</x:String>
     <x:String x:Key="Menu.NewSolution">📦 Yeni Çözüm...</x:String>
     <x:String x:Key="Menu.NewProject">📁 Yeni Proje...</x:String>
-    <x:String x:Key="Menu.NewNanoProject">🔌 Yeni nanoFramework Projesi...</x:String>
     <x:String x:Key="Menu.AddProjectToSolution">➕ Çözüme Proje Ekle...</x:String>
     <x:String x:Key="Menu.FileOperations">📁 Dosya İşlemleri</x:String>
     <x:String x:Key="Menu.NewFile">📄 Yeni Dosya</x:String>
@@ -805,80 +803,8 @@
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn hazır</x:String>
 
     <!-- LED Panel Designer -->
-    <x:String x:Key="Led.Title">LED Panel Tasarımcısı</x:String>
-    <x:String x:Key="Led.PanelSize">PANEL BOYUTU</x:String>
-    <x:String x:Key="Led.Rows">Satırlar</x:String>
-    <x:String x:Key="Led.Columns">Sütunlar</x:String>
-    <x:String x:Key="Led.TotalLeds">Toplam LED</x:String>
-    <x:String x:Key="Led.Hardware">DONANIM</x:String>
-    <x:String x:Key="Led.GpioPin">GPIO Pini</x:String>
-    <x:String x:Key="Led.StripType">Şerit Türü</x:String>
-    <x:String x:Key="Led.Brightness">Parlaklık</x:String>
-    <x:String x:Key="Led.PaintColor">BOYA RENGİ</x:String>
-    <x:String x:Key="Led.DrawMode">ÇİZİM MODU</x:String>
-    <x:String x:Key="Led.DrawSingle">🖌️ Tek LED</x:String>
-    <x:String x:Key="Led.DrawRow">↔️ Tüm Satır</x:String>
-    <x:String x:Key="Led.DrawColumn">↕️ Tüm Sütun</x:String>
-    <x:String x:Key="Led.DrawErase">🧹 Silgi</x:String>
-    <x:String x:Key="Led.DrawFill">🪣 Tümünü Doldur</x:String>
-    <x:String x:Key="Led.Actions">EYLEMLER</x:String>
-    <x:String x:Key="Led.ClearAll">🗑️ Tümünü Temizle</x:String>
-    <x:String x:Key="Led.InvertColors">🔄 Renkleri Ters Çevir</x:String>
-    <x:String x:Key="Led.RandomPattern">🎲 Rastgele Desen</x:String>
-    <x:String x:Key="Led.Animation">ANİMASYON</x:String>
-    <x:String x:Key="Led.CaptureFrame">📸 Kare Yakala</x:String>
-    <x:String x:Key="Led.FrameDelay">Kare Gecikmesi (ms)</x:String>
-    <x:String x:Key="Led.InfiniteLoop">♾️ Sonsuz Döngü</x:String>
-    <x:String x:Key="Led.LoopCount">Döngü Sayısı</x:String>
-    <x:String x:Key="Led.ClearFrames">🗑️ Kareleri Sil</x:String>
-    <x:String x:Key="Led.LedDisplay">LED Ekranı</x:String>
-    <x:String x:Key="Led.HoverLeds">LED'lerin üzerine gelin</x:String>
-    <x:String x:Key="Led.GridLines">Izgara Çizgileri</x:String>
-    <x:String x:Key="Led.Coordinates">Koordinatlar</x:String>
-    <x:String x:Key="Led.PreviewPattern">Deseni Önizle</x:String>
-    <x:String x:Key="Led.Playing">Oynatılıyor...</x:String>
-    <x:String x:Key="Led.PreviewComplete">Önizleme tamamlandı</x:String>
-    <x:String x:Key="Led.Stop">⏹ Durdur</x:String>
-    <x:String x:Key="Led.SaveConfig">💾 Yapılandırmayı Kaydet</x:String>
-    <x:String x:Key="Led.LoadConfig">📂 Yapılandırmayı Yükle</x:String>
-    <x:String x:Key="Led.StatusReady">Hazır — LED deseni tasarlayın</x:String>
-    <x:String x:Key="Led.GenerateCode">nanoFramework Kodu Oluştur</x:String>
-    <x:String x:Key="Led.Cancel">İptal</x:String>
-    <x:String x:Key="Led.Frames">Kareler: {0}</x:String>
-    <x:String x:Key="Led.FrameStatus">Kare {0}/{1} (Döngü {2}/5)</x:String>
-    <x:String x:Key="Led.SaveDialogTitle">LED Panel Yapılandırmasını Kaydet</x:String>
-    <x:String x:Key="Led.LoadDialogTitle">LED Panel Yapılandırmasını Yükle</x:String>
 
     <!-- nanoFramework Project -->
-    <x:String x:Key="Nano.Title">Yeni nanoFramework Projesi</x:String>
-    <x:String x:Key="Nano.Subtitle">ESP32 / nanoFramework için C# projesi oluştur</x:String>
-    <x:String x:Key="Nano.SelectTemplate">Şablon seçin</x:String>
-    <x:String x:Key="Nano.Configure">Projeyi yapılandırın</x:String>
-    <x:String x:Key="Nano.ProjectName">Proje adı</x:String>
-    <x:String x:Key="Nano.Location">Konum</x:String>
-    <x:String x:Key="Nano.TargetBoard">Hedef Kart</x:String>
-    <x:String x:Key="Nano.Solution">Çözüm</x:String>
-    <x:String x:Key="Nano.AddToSolution">Mevcut çözüme ekle</x:String>
-    <x:String x:Key="Nano.CreateNewSolution">Yeni çözüm oluştur</x:String>
-    <x:String x:Key="Nano.Requirements">ℹ️ Gereksinimler</x:String>
-    <x:String x:Key="Nano.Req1">• nanoff CLI (eksikse otomatik yüklenir)</x:String>
-    <x:String x:Key="Nano.Req2">• USB üzerinden bağlı ESP32</x:String>
-    <x:String x:Key="Nano.Req3">• USB-Serial sürücüsü (CP210x veya CH340)</x:String>
-    <x:String x:Key="Nano.Browse">Gözat...</x:String>
-    <x:String x:Key="Nano.Cancel">İptal</x:String>
-    <x:String x:Key="Nano.Create">nanoFramework Projesi Oluştur</x:String>
-    <x:String x:Key="Nano.TplBlankName">Boş Uygulama</x:String>
-    <x:String x:Key="Nano.TplBlankDesc">Boş nanoFramework uygulaması</x:String>
-    <x:String x:Key="Nano.TplClassLibName">Sınıf Kitaplığı</x:String>
-    <x:String x:Key="Nano.TplClassLibDesc">Yeniden kullanılabilir kitaplık</x:String>
-    <x:String x:Key="Nano.TplGpioName">GPIO Blink</x:String>
-    <x:String x:Key="Nano.TplGpioDesc">LED yanıp sönme örneği</x:String>
-    <x:String x:Key="Nano.TplWifiName">Wi-Fi</x:String>
-    <x:String x:Key="Nano.TplWifiDesc">Wi-Fi bağlantısı</x:String>
-    <x:String x:Key="Nano.TplHttpName">HTTP İstemcisi</x:String>
-    <x:String x:Key="Nano.TplHttpDesc">HTTP istekleri</x:String>
-    <x:String x:Key="Nano.TplI2CName">I2C Sensörü</x:String>
-    <x:String x:Key="Nano.TplI2CDesc">Sensör okuma</x:String>
 
     <!-- AxamlPreview extra -->
     <x:String x:Key="AxamlPreview.LivePreview">✔ Canlı önizleme</x:String>
@@ -888,8 +814,6 @@
 
 
     <!-- NuGet extra -->
-    <x:String x:Key="NuGet.NanoFramework">🔌 Popüler nanoFramework Paketleri</x:String>
-    <x:String x:Key="NuGet.NanoFrameworkDesc">nanoFramework için popüler paketler. Herhangi bir NuGet paketi için aramayı kullanın.</x:String>
     <x:String x:Key="NuGet.NoPackagesFound">Paket bulunamadı</x:String>
     <x:String x:Key="NuGet.Install">Yükle</x:String>
     <x:String x:Key="NuGet.Update">Güncelle</x:String>
@@ -911,9 +835,7 @@
     <x:String x:Key="NuGet.ViewOnNuGetOrg">nuget.org'da görüntüle</x:String>
     <x:String x:Key="NuGet.SearchAbove">Yukarıdan NuGet paketi arayın</x:String>
     <x:String x:Key="NuGet.Project.Label">Proje:</x:String>
-    <x:String x:Key="NuGet.NanoFrameworkMode">NUGET PAKETLERİ (NANOFRAMEWORK)</x:String>
     <x:String x:Key="NuGet.Tooltip.Refresh">Yenile</x:String>
-    <x:String x:Key="NuGet.Tooltip.NanoSuggestions">Popüler nanoFramework Paketleri</x:String>
     <x:String x:Key="NuGet.ByAuthor">{0} tarafından</x:String>
     <x:String x:Key="NuGet.InstalledVersion">Yüklü: v{0}</x:String>
     <x:String x:Key="NuGet.InstalledCount">{0} paket yüklü</x:String>

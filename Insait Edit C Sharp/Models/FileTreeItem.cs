@@ -20,14 +20,13 @@ public enum FileTreeItemType
     Solution,
     SolutionFolder,
     Project,
-    EspProject,         // ESP32/nanoFramework project (distinct icon)
-    
+
     // Folders
     Folder,
     SpecialFolder,      // Properties, wwwroot, etc.
     DependenciesFolder, // NuGet/Package references
     NuGetPackage,       // Individual NuGet package reference
-    
+
     // C# code files
     CSharpFile,
     CSharpClass,
@@ -36,7 +35,7 @@ public enum FileTreeItemType
     CSharpStruct,
     CSharpEnum,
     CSharpDelegate,
-    
+
     // UI files
     AxamlWindow,
     AxamlUserControl,
@@ -47,14 +46,14 @@ public enum FileTreeItemType
     RazorComponent,
     RazorPage,
     RazorView,
-    
+
     // Web files
     HtmlFile,
     CssFile,
     ScssFile,
     JavaScriptFile,
     TypeScriptFile,
-    
+
     // Config files
     JsonFile,
     XmlFile,
@@ -62,7 +61,7 @@ public enum FileTreeItemType
     EditorConfig,
     AppSettings,
     LaunchSettings,
-    
+
     // Project files
     CsProjFile,
     NfProjFile,
@@ -70,7 +69,7 @@ public enum FileTreeItemType
     DirectoryBuildProps,
     DirectoryBuildTargets,
     GlobalJson,
-    
+
     // Other
     MarkdownFile,
     TextFile,
@@ -78,7 +77,7 @@ public enum FileTreeItemType
     FontFile,
     BinaryFile,
     UnknownFile,
-    
+
     // Special nested items
     CodeBehind,        // .axaml.cs, .razor.cs, etc.
     DesignerFile,      // .Designer.cs
@@ -325,7 +324,7 @@ public class FileTreeItem : INotifyPropertyChanged
     public IBrush NameColor => GetNameColorBrush();
     public FontWeight FontWeight => GetFontWeightValue();
     public string Extension => Path.GetExtension(FullPath).ToLowerInvariant();
-    
+
     /// <summary>
     /// Returns true if the icon is a text-based icon (like C#, JS, TS) that should use IconColor,
     /// or false if it's an emoji that should display with natural colors
@@ -395,7 +394,7 @@ public class FileTreeItem : INotifyPropertyChanged
     private FileTreeItemType DetermineDirectoryType()
     {
         var name = Name.ToLowerInvariant();
-        
+
         if (Directory.Exists(FullPath))
         {
             try
@@ -407,7 +406,7 @@ public class FileTreeItem : INotifyPropertyChanged
             }
             catch { }
         }
-        
+
         return name switch
         {
             "properties" => FileTreeItemType.SpecialFolder,
@@ -565,7 +564,6 @@ public class FileTreeItem : INotifyPropertyChanged
                 FileTreeItemType.Solution => "🏠",  // House for solution root
                 FileTreeItemType.SolutionFolder => "📁",
                 FileTreeItemType.Project => "📦",
-                FileTreeItemType.EspProject => "🔌",  // nanoFramework project
                 FileTreeItemType.SpecialFolder => IsExpanded ? "📂" : "📁",
                 FileTreeItemType.DependenciesFolder => "📚",
                 _ => IsExpanded ? "📂" : "📁"
@@ -628,7 +626,6 @@ public class FileTreeItem : INotifyPropertyChanged
             FileTreeItemType.Solution => "#FFCBA6F7",
             FileTreeItemType.SolutionFolder => "#FFCBA6F7",
             FileTreeItemType.Project => "#FFCBA6F7",
-            FileTreeItemType.EspProject => "#FF4FC3F7",
             FileTreeItemType.CsProjFile => "#FFCBA6F7",
             FileTreeItemType.NfProjFile => "#FF4FC3F7",
             FileTreeItemType.NuGetPackage => "#FF89DCEB",
@@ -696,7 +693,6 @@ public class FileTreeItem : INotifyPropertyChanged
             FileTreeItemType.JsonFile => "#20F9E2AF",
             FileTreeItemType.Solution => "#20CBA6F7",
             FileTreeItemType.Project => "#20CBA6F7",
-            FileTreeItemType.EspProject => "#204FC3F7",
             FileTreeItemType.CsProjFile => "#20CBA6F7",
             FileTreeItemType.NfProjFile => "#204FC3F7",
             _ => "#00000000"
@@ -710,7 +706,6 @@ public class FileTreeItem : INotifyPropertyChanged
         {
             FileTreeItemType.Solution => "#FFCBA6F7",
             FileTreeItemType.Project => "#FFCBA6F7",
-            FileTreeItemType.EspProject => "#FF4FC3F7",
             FileTreeItemType.CsProjFile => "#FFCBA6F7",
             FileTreeItemType.NfProjFile => "#FF4FC3F7",
             FileTreeItemType.Folder => "#FFFAB387",
@@ -730,7 +725,6 @@ public class FileTreeItem : INotifyPropertyChanged
         {
             FileTreeItemType.Solution => FontWeight.Bold,
             FileTreeItemType.Project => FontWeight.SemiBold,
-            FileTreeItemType.EspProject => FontWeight.SemiBold,
             FileTreeItemType.CsProjFile => FontWeight.SemiBold,
             FileTreeItemType.NfProjFile => FontWeight.SemiBold,
             _ => FontWeight.Normal
@@ -740,18 +734,18 @@ public class FileTreeItem : INotifyPropertyChanged
     public void LoadChildren(bool forceReload = false)
     {
         if (!IsDirectory) return;
-        
+
         // Dependencies folder, Projects, and Solutions are populated manually, never load from filesystem
-        if (_itemType == FileTreeItemType.DependenciesFolder || 
+        if (_itemType == FileTreeItemType.DependenciesFolder ||
             _itemType == FileTreeItemType.Project ||
             _itemType == FileTreeItemType.Solution)
         {
             _isLoaded = true;
             return;
         }
-        
+
         if (_isLoaded && !forceReload) return;
-        
+
         if (!Directory.Exists(FullPath))
         {
             _isLoaded = true;
@@ -770,9 +764,9 @@ public class FileTreeItem : INotifyPropertyChanged
             foreach (var dir in Directory.GetDirectories(FullPath))
             {
                 var dirName = Path.GetFileName(dir);
-                if (dirName.StartsWith(".") || 
-                    dirName == "bin" || 
-                    dirName == "obj" || 
+                if (dirName.StartsWith(".") ||
+                    dirName == "bin" ||
+                    dirName == "obj" ||
                     dirName == "node_modules" ||
                     dirName == ".git" ||
                     dirName == ".vs" ||
@@ -851,7 +845,7 @@ public class FileTreeItem : INotifyPropertyChanged
     private string? GetGroupKey(string fileName)
     {
         var lowerName = fileName.ToLowerInvariant();
-        
+
         if (lowerName.EndsWith(".axaml") || lowerName.EndsWith(".axaml.cs"))
             return Path.GetFileNameWithoutExtension(lowerName.Replace(".axaml.cs", ".axaml"));
         if (lowerName.EndsWith(".xaml") || lowerName.EndsWith(".xaml.cs"))
@@ -869,8 +863,8 @@ public class FileTreeItem : INotifyPropertyChanged
     private int GetFilePriority(string fileName)
     {
         var lowerName = fileName.ToLowerInvariant();
-        
-        if (lowerName.EndsWith(".axaml") || lowerName.EndsWith(".xaml") || 
+
+        if (lowerName.EndsWith(".axaml") || lowerName.EndsWith(".xaml") ||
             lowerName.EndsWith(".razor") || lowerName.EndsWith(".cshtml"))
             return 0;
         if (lowerName.EndsWith(".razor.css"))
@@ -885,7 +879,7 @@ public class FileTreeItem : INotifyPropertyChanged
         if (!IsDirectory) return;
         LoadChildren(forceReload: true);
     }
-    
+
     public void RefreshRecursive()
     {
         if (!IsDirectory) return;

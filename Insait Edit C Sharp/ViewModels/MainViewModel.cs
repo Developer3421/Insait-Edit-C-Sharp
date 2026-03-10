@@ -37,13 +37,13 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private string? _currentProjectPath;
     private int _errorsCount;
     private int _warningsCount;
-    
+
     // File system watcher for automatic refresh
     private FileSystemWatcher? _fileWatcher;
     private Timer? _refreshDebounceTimer;
     private bool _refreshPending;
     private readonly object _refreshLock = new object();
-    
+
     // Action to invoke UI refresh on dispatcher
     public Action? RefreshTreeAction { get; set; }
 
@@ -54,7 +54,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         Problems = new ObservableCollection<DiagnosticItem>();
         OutputLines = new ObservableCollection<string>();
         FileTreeItems = new ObservableCollection<FileTreeItem>();
-        
+
         // Subscribe to Problems collection changes
         Problems.CollectionChanged += (s, e) => UpdateProblemsCounts();
     }
@@ -98,28 +98,28 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         get => _currentProjectPath;
         set => SetProperty(ref _currentProjectPath, value);
     }
-    
+
     public int ErrorsCount
     {
         get => _errorsCount;
         set => SetProperty(ref _errorsCount, value);
     }
-    
+
     public int WarningsCount
     {
         get => _warningsCount;
         set => SetProperty(ref _warningsCount, value);
     }
-    
+
     public int ProblemsCount => ErrorsCount + WarningsCount;
-    
+
     public bool HasProblems => ProblemsCount > 0;
 
     public ObservableCollection<string> RecentFiles { get; }
     public ObservableCollection<DiagnosticItem> Problems { get; }
     public ObservableCollection<string> OutputLines { get; }
     public ObservableCollection<FileTreeItem> FileTreeItems { get; }
-    
+
     private void UpdateProblemsCounts()
     {
         ErrorsCount = 0;
@@ -176,9 +176,9 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // Check if there's a solution file in the folder
         var solutionFile = await Task.Run(() => FindSolutionFileInDirectory(folderPath));
-        
+
         System.Diagnostics.Debug.WriteLine($"LoadProjectFolderAsync: folderPath={folderPath}, solutionFile={solutionFile ?? "null"}");
-        
+
         if (!string.IsNullOrEmpty(solutionFile))
         {
             System.Diagnostics.Debug.WriteLine($"LoadProjectFolderAsync: Loading as solution");
@@ -202,7 +202,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 await Dispatcher.UIThread.InvokeAsync(() => FileTreeItems.Add(rootItem));
             }
         }
-        
+
         // Initialize file watcher
         InitializeFileWatcher(folderPath);
 
@@ -218,7 +218,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Searching in '{directory}'");
             System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Directory.Exists = {Directory.Exists(directory)}");
-            
+
             // List all files first for debugging
             try
             {
@@ -229,14 +229,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Error listing all files: {ex.Message}");
             }
-            
+
             // First look for .slnx files (new format) - use enumeration for better performance
             foreach (var file in Directory.EnumerateFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly))
             {
                 System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Found .slnx file: {file}");
                 return file;
             }
-            
+
             // Then look for .sln files (legacy format)
             foreach (var file in Directory.EnumerateFiles(directory, "*.sln", SearchOption.TopDirectoryOnly))
             {
@@ -284,23 +284,23 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private async Task LoadSolutionStructureAsync(string folderPath, string solutionFile)
     {
         System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: START - folderPath={folderPath}, solutionFile={solutionFile}");
-        
+
         // Force re-read the file from disk
         System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Reading solution file content...");
         var solutionContent = await File.ReadAllTextAsync(solutionFile);
         System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Solution file content:\n{solutionContent}");
-        
+
         var solutionName = Path.GetFileNameWithoutExtension(solutionFile);
-        
+
         // Parse solution file on background thread
         var projects = await Task.Run(() => ParseSolutionFile(solutionFile));
         System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Found {projects.Count} projects in solution");
-        
+
         foreach (var proj in projects)
         {
             System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Project - Name={proj.Name}, Path={proj.RelativePath}");
         }
-        
+
         // Create solution root node
         var solutionItem = new FileTreeItem
         {
@@ -311,14 +311,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             IsSolutionItem = true,
             IsExpanded = true
         };
-        
+
         System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Created solutionItem - Name={solutionItem.Name}, IsDirectory={solutionItem.IsDirectory}, ItemType={solutionItem.ItemType}, Icon={solutionItem.Icon}");
-        
+
         // Load project items on background thread
         var projectItems = await Task.Run(() =>
         {
             var items = new List<FileTreeItem>();
-            
+
             foreach (var projectInfo in projects)
             {
                 var projectPath = Path.GetFullPath(Path.Combine(folderPath, projectInfo.RelativePath));
@@ -341,13 +341,13 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
                 // Load project children (source files)
                 LoadProjectContents(projectItem, projectDir);
-                
+
                 items.Add(projectItem);
             }
-            
+
             return items;
         });
-        
+
         // Add project items to solution
         foreach (var projectItem in projectItems)
         {
@@ -370,7 +370,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private async Task LoadProjectStructureAsync(string folderPath, string projectFile)
     {
         var projectName = Path.GetFileNameWithoutExtension(projectFile);
-        
+
         var projectItem = await Task.Run(() =>
         {
             var item = new FileTreeItem
@@ -387,7 +387,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             LoadProjectContents(item, folderPath);
             return item;
         });
-        
+
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             FileTreeItems.Add(projectItem);
@@ -401,7 +401,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private void LoadSolutionStructure(string folderPath, string solutionFile)
     {
         var solutionName = Path.GetFileNameWithoutExtension(solutionFile);
-        
+
         // Create solution root node
         var solutionItem = new FileTreeItem
         {
@@ -415,7 +415,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // Parse solution file to get projects
         var projects = ParseSolutionFile(solutionFile);
-        
+
         // Add each project as child of solution
         foreach (var projectInfo in projects)
         {
@@ -439,7 +439,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
             // Load project children (source files)
             LoadProjectContents(projectItem, projectDir);
-            
+
             solutionItem.Children.Add(projectItem);
         }
 
@@ -456,7 +456,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private void LoadProjectStructure(string folderPath, string projectFile)
     {
         var projectName = Path.GetFileNameWithoutExtension(projectFile);
-        
+
         var projectItem = new FileTreeItem
         {
             Name = projectName,
@@ -469,7 +469,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         };
 
         LoadProjectContents(projectItem, folderPath);
-        
+
         FileTreeItems.Add(projectItem);
         StatusText = $"Loaded project: {projectName}";
     }
@@ -480,7 +480,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private List<SolutionProjectInfo> ParseSolutionFile(string solutionPath)
     {
         var ext = Path.GetExtension(solutionPath).ToLowerInvariant();
-        
+
         if (ext == ".slnx")
         {
             return ParseSlnxFile(solutionPath);
@@ -497,7 +497,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private List<SolutionProjectInfo> ParseSlnxFile(string solutionPath)
     {
         var projects = new List<SolutionProjectInfo>();
-        
+
         try
         {
             var content = File.ReadAllText(solutionPath);
@@ -510,11 +510,11 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 var pathAttr = projectElement.Attribute("Path")?.Value;
                 if (string.IsNullOrEmpty(pathAttr)) continue;
-                
+
                 // Normalize path separators
                 var normalizedPath = pathAttr.Replace("/", "\\");
                 var projectName = Path.GetFileNameWithoutExtension(normalizedPath);
-                
+
                 projects.Add(new SolutionProjectInfo
                 {
                     Name = projectName,
@@ -528,15 +528,15 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             foreach (var folder in root.Elements("Folder"))
             {
                 var folderName = folder.Attribute("Name")?.Value ?? "Folder";
-                
+
                 foreach (var projectElement in folder.Elements("Project"))
                 {
                     var pathAttr = projectElement.Attribute("Path")?.Value;
                     if (string.IsNullOrEmpty(pathAttr)) continue;
-                    
+
                     var normalizedPath = pathAttr.Replace("/", "\\");
                     var projectName = Path.GetFileNameWithoutExtension(normalizedPath);
-                    
+
                     projects.Add(new SolutionProjectInfo
                     {
                         Name = projectName,
@@ -552,7 +552,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             System.Diagnostics.Debug.WriteLine($"Error parsing slnx file: {ex.Message}");
         }
-        
+
         return projects;
     }
 
@@ -562,35 +562,35 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private List<SolutionProjectInfo> ParseSlnFile(string solutionPath)
     {
         var projects = new List<SolutionProjectInfo>();
-        
+
         try
         {
             var lines = File.ReadAllLines(solutionPath);
-            
+
             // Regex for parsing Project lines in .sln files
             // Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName", "Path\ProjectName.csproj", "{GUID}"
             var projectRegex = new System.Text.RegularExpressions.Regex(
                 @"^Project\(""(?<TypeGuid>[^""]+)""\)\s*=\s*""(?<Name>[^""]+)""\s*,\s*""(?<Path>[^""]+)""\s*,\s*""(?<Guid>[^""]+)""",
                 System.Text.RegularExpressions.RegexOptions.Compiled);
-            
+
             // GUID for solution folders (we skip these)
             var solutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
-            
+
             foreach (var line in lines)
             {
                 var match = projectRegex.Match(line);
                 if (match.Success)
                 {
                     var typeGuid = match.Groups["TypeGuid"].Value;
-                    
+
                     // Skip solution folders
                     if (typeGuid.Equals(solutionFolderGuid, StringComparison.OrdinalIgnoreCase))
                         continue;
-                    
+
                     var name = match.Groups["Name"].Value;
                     var path = match.Groups["Path"].Value;
                     var guid = match.Groups["Guid"].Value;
-                    
+
                     // Only include actual project files
                     if (path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
                         path.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
@@ -612,42 +612,33 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             System.Diagnostics.Debug.WriteLine($"Error parsing sln file: {ex.Message}");
         }
-        
+
         return projects;
     }
 
     /// <summary>
-    /// Get project description from csproj/nfproj file
+    /// Get project description from csproj file
     /// </summary>
     private string? GetProjectDescription(string projectPath)
     {
         try
         {
             var content = File.ReadAllText(projectPath);
-            
-            // Check if this is a nanoFramework project (.nfproj or .csproj with marker)
-            if (projectPath.EndsWith(".nfproj", StringComparison.OrdinalIgnoreCase) ||
-                content.Contains("<NanoFrameworkProject>true</NanoFrameworkProject>", StringComparison.OrdinalIgnoreCase))
-            {
-                var boardMatch = System.Text.RegularExpressions.Regex.Match(content, @"<TargetBoard>([^<]+)</TargetBoard>");
-                var board = boardMatch.Success ? boardMatch.Groups[1].Value : "ESP32";
-                return $"nanoFramework ({board})";
-            }
-            
+
             // Try to find TargetFramework
             var tfMatch = System.Text.RegularExpressions.Regex.Match(content, @"<TargetFramework>([^<]+)</TargetFramework>");
             if (tfMatch.Success)
             {
                 return tfMatch.Groups[1].Value;
             }
-            
+
             // Try TargetFrameworks (multiple)
             tfMatch = System.Text.RegularExpressions.Regex.Match(content, @"<TargetFrameworks>([^<]+)</TargetFrameworks>");
             if (tfMatch.Success)
             {
                 return tfMatch.Groups[1].Value;
             }
-            
+
             // Try to find OutputType
             var outputMatch = System.Text.RegularExpressions.Regex.Match(content, @"<OutputType>([^<]+)</OutputType>");
             if (outputMatch.Success)
@@ -656,39 +647,12 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             }
         }
         catch { }
-        
+
         return null;
     }
 
-    /// <summary>
-    /// Determine whether a project file (.csproj or .nfproj) is an ESP32/nanoFramework project.
-    /// Returns FileTreeItemType.EspProject if yes, FileTreeItemType.Project otherwise.
-    /// </summary>
-    private FileTreeItemType DetermineProjectItemType(string projectFilePath)
+    private static FileTreeItemType DetermineProjectItemType(string projectFilePath)
     {
-        try
-        {
-            if (projectFilePath.EndsWith(".nfproj", StringComparison.OrdinalIgnoreCase))
-                return FileTreeItemType.EspProject;
-
-            if (File.Exists(projectFilePath))
-            {
-                var content = File.ReadAllText(projectFilePath);
-                if (content.Contains("<NanoFrameworkProject>true</NanoFrameworkProject>", StringComparison.OrdinalIgnoreCase))
-                    return FileTreeItemType.EspProject;
-            }
-            
-            // Also check if the directory contains .nfproj files
-            var dir = Path.GetDirectoryName(projectFilePath);
-            if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
-            {
-                var nfprojFiles = Directory.GetFiles(dir, "*.nfproj", SearchOption.TopDirectoryOnly);
-                if (nfprojFiles.Length > 0)
-                    return FileTreeItemType.EspProject;
-            }
-        }
-        catch { }
-        
         return FileTreeItemType.Project;
     }
 
@@ -701,10 +665,10 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             // Clear any existing children first to prevent duplicates
             projectItem.Children.Clear();
-            
+
             // Find the project file to parse NuGet packages
             var projectFile = FindProjectFileInDirectory(projectDir);
-            
+
             // First add special folders (Dependencies, Properties, etc.)
             var dependenciesFolder = new FileTreeItem
             {
@@ -715,7 +679,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 IsSolutionItem = true,
                 IsLoaded = true  // Mark as loaded to prevent auto-loading files
             };
-            
+
             // Populate NuGet packages if project file exists
             if (!string.IsNullOrEmpty(projectFile))
             {
@@ -733,7 +697,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     dependenciesFolder.Children.Add(packageItem);
                 }
             }
-            
+
             projectItem.Children.Add(dependenciesFolder);
 
             // Add Properties folder if exists
@@ -759,12 +723,12 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             // Add files (grouped by relation - .cs, .axaml + .axaml.cs, etc.)
             var files = Directory.GetFiles(projectDir);
             var groupedFiles = GroupRelatedFiles(files);
-            
+
             foreach (var group in groupedFiles.OrderBy(g => GetFileSortOrder(g.Key)))
             {
                 var mainFile = group.Value.First();
                 var fileItem = FileTreeItem.FromFile(mainFile);
-                
+
                 // Add related files as children
                 foreach (var relatedFile in group.Value.Skip(1))
                 {
@@ -773,10 +737,10 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     relatedItem.AssociatedFile = mainFile;
                     fileItem.Children.Add(relatedItem);
                 }
-                
+
                 projectItem.Children.Add(fileItem);
             }
-            
+
             // Mark project as loaded to prevent duplicate loading when expanded
             projectItem.IsLoaded = true;
         }
@@ -785,7 +749,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             System.Diagnostics.Debug.WriteLine($"Error loading project contents: {ex.Message}");
         }
     }
-    
+
     /// <summary>
     /// Represents a NuGet package reference
     /// </summary>
@@ -794,14 +758,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         public string Name { get; set; } = string.Empty;
         public string Version { get; set; } = string.Empty;
     }
-    
+
     /// <summary>
     /// Parse NuGet package references from a project file (.csproj or .nfproj)
     /// </summary>
     private List<NuGetPackageInfo> ParseNuGetPackages(string projectFile)
     {
         var packages = new List<NuGetPackageInfo>();
-        
+
         try
         {
             // For .nfproj files, parse packages.config instead
@@ -817,7 +781,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                         var pkgRegex = new System.Text.RegularExpressions.Regex(
                             @"<package\s+id=""(?<Name>[^""]+)""\s+version=""(?<Version>[^""]+)""",
                             System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                        
+
                         foreach (System.Text.RegularExpressions.Match match in pkgRegex.Matches(configContent))
                         {
                             packages.Add(new NuGetPackageInfo
@@ -827,13 +791,13 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                             });
                         }
                     }
-                    
+
                     // Also check for Reference hints in nfproj (HintPath references)
                     var nfContent = File.ReadAllText(projectFile);
                     var refRegex = new System.Text.RegularExpressions.Regex(
                         @"<Reference\s+Include=""(?<Name>[^""]+)""",
                         System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                    
+
                     foreach (System.Text.RegularExpressions.Match match in refRegex.Matches(nfContent))
                     {
                         var name = match.Groups["Name"].Value;
@@ -849,14 +813,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 }
                 return packages;
             }
-            
+
             var content = File.ReadAllText(projectFile);
-            
+
             // Use regex to find all PackageReference elements
             var packageRegex = new System.Text.RegularExpressions.Regex(
                 @"<PackageReference\s+Include=""(?<Name>[^""]+)""\s+Version=""(?<Version>[^""]+)""",
                 System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            
+
             foreach (System.Text.RegularExpressions.Match match in packageRegex.Matches(content))
             {
                 packages.Add(new NuGetPackageInfo
@@ -865,12 +829,12 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     Version = match.Groups["Version"].Value
                 });
             }
-            
+
             // Also try format with Version as child element
             var altPackageRegex = new System.Text.RegularExpressions.Regex(
                 @"<PackageReference\s+Include=""(?<Name>[^""]+)""[^>]*>\s*<Version>(?<Version>[^<]+)</Version>",
                 System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
-            
+
             foreach (System.Text.RegularExpressions.Match match in altPackageRegex.Matches(content))
             {
                 var name = match.Groups["Name"].Value;
@@ -889,7 +853,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             System.Diagnostics.Debug.WriteLine($"Error parsing NuGet packages: {ex.Message}");
         }
-        
+
         return packages;
     }
 
@@ -910,7 +874,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             foreach (var file in Directory.GetFiles(folderPath))
             {
                 var fileName = Path.GetFileName(file);
-                
+
                 // Skip solution file itself (already added as root)
                 if (fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
                     fileName.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
@@ -927,10 +891,10 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             foreach (var dir in Directory.GetDirectories(folderPath))
             {
                 var dirName = Path.GetFileName(dir);
-                
+
                 // Skip hidden and excluded directories
                 if (ShouldExcludeDirectory(dirName)) continue;
-                
+
                 // Skip project directories
                 if (projectDirs.Contains(dir)) continue;
 
@@ -964,17 +928,17 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private Dictionary<string, List<string>> GroupRelatedFiles(string[] files)
     {
         var groups = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-        
+
         foreach (var file in files.OrderBy(f => f))
         {
             var fileName = Path.GetFileName(file);
-            
+
             // Skip hidden files
             if (fileName.StartsWith(".")) continue;
 
             // Determine the group key
             var groupKey = GetFileGroupKey(fileName);
-            
+
             if (!groups.ContainsKey(groupKey))
             {
                 groups[groupKey] = new List<string>();
@@ -997,7 +961,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private string GetFileGroupKey(string fileName)
     {
         var lower = fileName.ToLowerInvariant();
-        
+
         // AXAML grouping
         if (lower.EndsWith(".axaml.cs"))
             return fileName.Substring(0, fileName.Length - 3); // Remove .cs
@@ -1029,33 +993,33 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private int GetFileSortOrder(string fileName)
     {
         var lower = fileName.ToLowerInvariant();
-        
+
         // Project files first
         if (lower.EndsWith(".csproj") || lower.EndsWith(".fsproj") || lower.EndsWith(".vbproj"))
             return 0;
-        
+
         // Config files
         if (lower == "appsettings.json" || lower == "app.config" || lower == "web.config")
             return 1;
-        
+
         // Main UI files
         if (lower.EndsWith(".axaml") && !lower.EndsWith(".axaml.cs"))
             return 2;
         if (lower.EndsWith(".razor") && !lower.EndsWith(".razor.cs"))
             return 2;
-        
+
         // CSS files
         if (lower.EndsWith(".razor.css"))
             return 3;
-        
+
         // Code-behind
         if (lower.EndsWith(".axaml.cs") || lower.EndsWith(".xaml.cs") || lower.EndsWith(".razor.cs"))
             return 4;
-        
+
         // Regular C# files
         if (lower.EndsWith(".cs"))
             return 5;
-        
+
         return 99;
     }
 
@@ -1067,26 +1031,26 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         // Dispose existing watcher
         _fileWatcher?.Dispose();
         _refreshDebounceTimer?.Dispose();
-        
+
         try
         {
             _fileWatcher = new FileSystemWatcher(folderPath)
             {
                 IncludeSubdirectories = true,
-                NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | 
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName |
                                NotifyFilters.LastWrite | NotifyFilters.CreationTime
             };
-            
+
             // Setup debounce timer (500ms delay to batch multiple changes)
             _refreshDebounceTimer = new Timer(500);
             _refreshDebounceTimer.AutoReset = false;
             _refreshDebounceTimer.Elapsed += OnRefreshDebounceTimerElapsed;
-            
+
             // Subscribe to events
             _fileWatcher.Created += OnFileSystemChanged;
             _fileWatcher.Deleted += OnFileSystemChanged;
             _fileWatcher.Renamed += OnFileSystemRenamed;
-            
+
             _fileWatcher.EnableRaisingEvents = true;
         }
         catch (Exception ex)
@@ -1094,34 +1058,34 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             System.Diagnostics.Debug.WriteLine($"Error initializing file watcher: {ex.Message}");
         }
     }
-    
+
     private void OnFileSystemChanged(object sender, FileSystemEventArgs e)
     {
         // Skip changes in excluded directories
         if (ShouldIgnorePath(e.FullPath)) return;
-        
+
         RequestDebouncedRefresh();
     }
-    
+
     private void OnFileSystemRenamed(object sender, RenamedEventArgs e)
     {
         // Skip changes in excluded directories
         if (ShouldIgnorePath(e.FullPath) && ShouldIgnorePath(e.OldFullPath)) return;
-        
+
         RequestDebouncedRefresh();
     }
-    
+
     private bool ShouldIgnorePath(string path)
     {
         var lowerPath = path.ToLowerInvariant();
-        return lowerPath.Contains("\\bin\\") || 
-               lowerPath.Contains("\\obj\\") || 
+        return lowerPath.Contains("\\bin\\") ||
+               lowerPath.Contains("\\obj\\") ||
                lowerPath.Contains("\\.git\\") ||
                lowerPath.Contains("\\.vs\\") ||
                lowerPath.Contains("\\.idea\\") ||
                lowerPath.Contains("\\node_modules\\");
     }
-    
+
     private void RequestDebouncedRefresh()
     {
         lock (_refreshLock)
@@ -1131,7 +1095,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             _refreshDebounceTimer?.Start();
         }
     }
-    
+
     private void OnRefreshDebounceTimerElapsed(object? sender, ElapsedEventArgs e)
     {
         lock (_refreshLock)
@@ -1168,10 +1132,10 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         // Save expanded state
         var expandedPaths = new HashSet<string>();
         await Dispatcher.UIThread.InvokeAsync(() => CollectExpandedPaths(FileTreeItems, expandedPaths));
-        
+
         // Reload the tree using solution-aware logic
         await LoadProjectFolderAsync(CurrentProjectPath);
-        
+
         // Restore expanded state
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
@@ -1179,7 +1143,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             StatusText = "File tree refreshed";
         });
     }
-    
+
     private void CollectExpandedPaths(ObservableCollection<FileTreeItem> items, HashSet<string> expandedPaths)
     {
         foreach (var item in items)
@@ -1191,7 +1155,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             }
         }
     }
-    
+
     private void RestoreExpandedPaths(ObservableCollection<FileTreeItem> items, HashSet<string> expandedPaths)
     {
         foreach (var item in items)
@@ -1249,7 +1213,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         Tabs.Add(tab);
         ActiveTab = tab;
-        
+
         // Update recent files
         if (!RecentFiles.Contains(filePath))
         {
@@ -1345,30 +1309,30 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     #endregion
-    
+
     #region IDisposable
-    
+
     private bool _disposed;
-    
+
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
-    
+
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed) return;
-        
+
         if (disposing)
         {
             _fileWatcher?.Dispose();
             _refreshDebounceTimer?.Dispose();
         }
-        
+
         _disposed = true;
     }
-    
+
     #endregion
 }
 
@@ -1384,7 +1348,7 @@ public class DiagnosticItem
     public int Line { get; set; }
     public int Column { get; set; }
     public string Code { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// Icon for severity
     /// </summary>
@@ -1395,7 +1359,7 @@ public class DiagnosticItem
         DiagnosticSeverity.Info => "ℹ",
         _ => "💡"
     };
-    
+
     /// <summary>
     /// Color for severity
     /// </summary>
@@ -1406,7 +1370,7 @@ public class DiagnosticItem
         DiagnosticSeverity.Info => "#FF89B4FA",
         _ => "#FFA6E3A1"
     };
-    
+
     /// <summary>
     /// Location display string
     /// </summary>

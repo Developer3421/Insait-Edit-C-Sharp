@@ -4,7 +4,6 @@
 // ============================================================
 using Avalonia.Controls;
 using Avalonia.Threading;
-using Insait_Edit_C_Sharp.Esp.Services;
 using Insait_Edit_C_Sharp.Models;
 using System;
 using System.Collections.Generic;
@@ -36,7 +35,7 @@ public partial class MainWindow
                     _viewModel.StatusText = $"Analysis complete: {e.Diagnostics.Count} issue(s)";
                 else
                     _viewModel.StatusText = $"Analysis failed: {e.ErrorMessage}";
-                    
+
                 UpdateTabDiagnosticIndicators();
             });
         };
@@ -141,9 +140,9 @@ public partial class MainWindow
             {
                 FileName = Path.GetFileName(filePath),
                 FilePath = filePath,
-                Content  = content,
+                Content = content,
                 Language = language,
-                IsDirty  = false
+                IsDirty = false
             };
 
             _viewModel.Tabs.Add(tab);
@@ -189,7 +188,7 @@ public partial class MainWindow
 
         // Push content with language hint
         editor.SetContent(tab.Content, tab.Language);
-        
+
         // Update tab visual styles (active + error/warning indicators)
         UpdateTabButtonStyles();
     }
@@ -201,7 +200,6 @@ public partial class MainWindow
     private void CancelBuild()
     {
         _buildService.CancelBuild();
-        _nanoBuildService.CancelBuild();
         _isBuildInProgress = false;
         UpdateBuildButtons();
         _viewModel.StatusText = "Build cancelled";
@@ -228,11 +226,7 @@ public partial class MainWindow
         try
         {
             bool success;
-            if (IsNanoFrameworkProject(path))
-                success = await _nanoBuildService.RestoreAsync(path);
-            else
-                success = await _buildService.RestoreAsync(path);
-
+            success = await _buildService.RestoreAsync(path);
             _viewModel.StatusText = success ? "Packages restored successfully" : "Package restore failed";
         }
         catch (Exception ex)
@@ -242,7 +236,7 @@ public partial class MainWindow
     }
 
     // ═══════════════════════════════════════════════════════════
-    //  Get current project path (resolves to .csproj/.nfproj/etc.)
+    //  Get current project path (resolves to .csproj/etc.)
     // ═══════════════════════════════════════════════════════════
 
     private string? GetCurrentProjectPath()
@@ -254,7 +248,7 @@ public partial class MainWindow
         if (File.Exists(path))
         {
             var ext = Path.GetExtension(path).ToLowerInvariant();
-            if (ext is ".csproj" or ".nfproj" or ".fsproj" or ".vbproj" or ".sln" or ".slnx")
+            if (ext is ".csproj" or ".fsproj" or ".vbproj" or ".sln" or ".slnx")
                 return path;
         }
 
@@ -272,9 +266,6 @@ public partial class MainWindow
 
             var fsproj = Directory.GetFiles(path, "*.fsproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
             if (fsproj != null) return fsproj;
-
-            var nfproj = Directory.GetFiles(path, "*.nfproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (nfproj != null) return nfproj;
         }
 
         return path;
@@ -368,35 +359,6 @@ public partial class MainWindow
     }
 
     // ═══════════════════════════════════════════════════════════
-    //  IsNanoFrameworkProject — delegates to NanoProjectService
-    // ═══════════════════════════════════════════════════════════
-
-    private static bool IsNanoFrameworkProject(string projectPath)
-    {
-        if (string.IsNullOrEmpty(projectPath)) return false;
-
-        // Quick check: .nfproj extension
-        if (Path.GetExtension(projectPath).Equals(".nfproj", StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        // If it's a directory, look for project files inside it
-        if (Directory.Exists(projectPath))
-        {
-            var nfProj = Directory.GetFiles(projectPath, "*.nfproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (nfProj != null) return true;
-
-            var csproj = Directory.GetFiles(projectPath, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (!string.IsNullOrEmpty(csproj))
-                return NanoProjectService.IsNanoFrameworkProject(csproj);
-
-            return false;
-        }
-
-        // Delegate to the full implementation
-        return NanoProjectService.IsNanoFrameworkProject(projectPath);
-    }
-
-    // ═══════════════════════════════════════════════════════════
     //  Language detection helper
     // ═══════════════════════════════════════════════════════════
 
@@ -411,25 +373,25 @@ public partial class MainWindow
 
         return Path.GetExtension(filePath).ToLowerInvariant() switch
         {
-            ".cs"          => "csharp",
-            ".axaml"       => "xml",
-            ".xaml"        => "xml",
-            ".xml"         => "xml",
-            ".json"        => "json",
+            ".cs" => "csharp",
+            ".axaml" => "xml",
+            ".xaml" => "xml",
+            ".xml" => "xml",
+            ".json" => "json",
             ".yaml" or ".yml" => "yaml",
-            ".js"          => "javascript",
-            ".ts"          => "typescript",
-            ".html"        => "html",
-            ".css"         => "css",
-            ".md"          => "markdown",
-            ".sh"          => "shell",
+            ".js" => "javascript",
+            ".ts" => "typescript",
+            ".html" => "html",
+            ".css" => "css",
+            ".md" => "markdown",
+            ".sh" => "shell",
             ".bat" or ".cmd" => "bat",
-            ".ps1"         => "powershell",
-            ".py"          => "python",
-            ".fs"          => "fsharp",
-            ".vb"          => "vb",
-            ".sql"         => "sql",
-            ".csproj" or ".nfproj" or ".fsproj" or ".vbproj" => "xml",
+            ".ps1" => "powershell",
+            ".py" => "python",
+            ".fs" => "fsharp",
+            ".vb" => "vb",
+            ".sql" => "sql",
+            ".csproj" or ".fsproj" or ".vbproj" => "xml",
             ".sln" or ".slnx" => "plaintext",
             ".txt" or ".log" or ".csv" or ".cfg" or ".ini" or ".conf" => "plaintext",
             ".gitattributes" or ".gitmodules" => "plaintext",
@@ -446,7 +408,7 @@ public partial class MainWindow
             ".swift" => "swift",
             ".kt" or ".kts" => "kotlin",
             ".toml" => "toml",
-            _              => "plaintext"
+            _ => "plaintext"
         };
     }
 }

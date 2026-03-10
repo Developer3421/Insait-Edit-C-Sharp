@@ -25,7 +25,7 @@ public partial class MenuWindow : Window
     {
         InitializeComponent();
         _mainWindow = mainWindow;
-        
+
         InitializeCategories();
         ShowCategory("File");
     }
@@ -70,19 +70,19 @@ public partial class MenuWindow : Window
                     Orientation = Avalonia.Layout.Orientation.Horizontal,
                     Children =
                     {
-                        new TextBlock 
-                        { 
-                            Text = icon, 
-                            FontSize = 16, 
+                        new TextBlock
+                        {
+                            Text = icon,
+                            FontSize = 16,
                             FontFamily = new FontFamily("Segoe UI Emoji"),
-                            Margin = new Thickness(0, 0, 10, 0), 
-                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center 
+                            Margin = new Thickness(0, 0, 10, 0),
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
                         },
-                        new TextBlock 
-                        { 
-                            Text = label, 
-                            FontSize = 13, 
-                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center 
+                        new TextBlock
+                        {
+                            Text = label,
+                            FontSize = 13,
+                            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
                         }
                     }
                 }
@@ -154,22 +154,21 @@ public partial class MenuWindow : Window
         AddHeader(panel, LocalizationService.Get("Menu.SolutionProject"));
         AddMenuItem(panel, LocalizationService.Get("Menu.NewSolution"), "", () => _mainWindow.ExecuteMenuAction("NewSolution"));
         AddMenuItem(panel, LocalizationService.Get("Menu.NewProject"), "Ctrl+Shift+N", () => _mainWindow.ExecuteMenuAction("NewProject"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.NewNanoProject"), "", () => _mainWindow.ExecuteMenuAction("NewEspProject"));
         AddMenuItem(panel, LocalizationService.Get("Menu.AddProjectToSolution"), "", () => _mainWindow.ExecuteMenuAction("AddProjectToSolution"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.FileOperations"));
         AddMenuItem(panel, LocalizationService.Get("Menu.NewFile"), "Ctrl+N", () => _mainWindow.ExecuteMenuAction("NewFile"));
         AddMenuItem(panel, LocalizationService.Get("Menu.OpenFile"), "Ctrl+O", () => _mainWindow.ExecuteMenuAction("OpenFile"));
         AddMenuItem(panel, LocalizationService.Get("Menu.OpenFolder"), "", () => _mainWindow.ExecuteMenuAction("OpenFolder"));
         AddMenuItem(panel, LocalizationService.Get("Menu.OpenSolution"), "", () => _mainWindow.ExecuteMenuAction("OpenSolution"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.Save"));
         AddMenuItem(panel, LocalizationService.Get("Menu.Save"), "Ctrl+S", () => _mainWindow.ExecuteMenuAction("Save"));
         AddMenuItem(panel, LocalizationService.Get("Menu.SaveAs"), "", () => _mainWindow.ExecuteMenuAction("SaveAs"));
         AddMenuItem(panel, LocalizationService.Get("Menu.SaveAll"), "Ctrl+Shift+S", () => _mainWindow.ExecuteMenuAction("SaveAll"));
-        
+
         AddSeparator(panel);
         AddMenuItem(panel, LocalizationService.Get("Menu.Exit"), "Alt+F4", () => _mainWindow.ExecuteMenuAction("Exit"));
     }
@@ -179,13 +178,13 @@ public partial class MenuWindow : Window
         AddHeader(panel, LocalizationService.Get("Menu.UndoRedo"));
         AddMenuItem(panel, LocalizationService.Get("Menu.Undo"), "Ctrl+Z", () => _mainWindow.ExecuteMenuAction("Undo"));
         AddMenuItem(panel, LocalizationService.Get("Menu.Redo"), "Ctrl+Y", () => _mainWindow.ExecuteMenuAction("Redo"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.FindReplace"));
         AddMenuItem(panel, LocalizationService.Get("Menu.Find"), "Ctrl+F", () => _mainWindow.ExecuteMenuAction("Find"));
         AddMenuItem(panel, LocalizationService.Get("Menu.Replace"), "Ctrl+H", () => _mainWindow.ExecuteMenuAction("Replace"));
         AddMenuItem(panel, LocalizationService.Get("Menu.FindInFiles"), "Ctrl+Shift+F", () => _mainWindow.ExecuteMenuAction("FindInFiles"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.Code"));
         AddMenuItem(panel, LocalizationService.Get("Menu.FormatDocument"), "Ctrl+Shift+F", () => _mainWindow.ExecuteMenuAction("FormatDocument"));
@@ -197,29 +196,29 @@ public partial class MenuWindow : Window
     {
         // ── Side panels ──────────────────────────────────────
         AddHeader(panel, LocalizationService.Get("Menu.Panels"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.Explorer"),      "Ctrl+Shift+E", () => { Close(); _mainWindow.ExecuteMenuAction("ShowExplorer"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.AIAssistant"),   "Ctrl+Shift+I", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleAI"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.Search"),        "Ctrl+Shift+F", () => { Close(); _mainWindow.ExecuteMenuAction("ShowSearch"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.Explorer"), "Ctrl+Shift+E", () => { Close(); _mainWindow.ExecuteMenuAction("ShowExplorer"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.AIAssistant"), "Ctrl+Shift+I", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleAI"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.Search"), "Ctrl+Shift+F", () => { Close(); _mainWindow.ExecuteMenuAction("ShowSearch"); });
         AddMenuItem(panel, LocalizationService.Get("Menu.SourceControl"), "Ctrl+Shift+G", () => { Close(); _mainWindow.ExecuteMenuAction("ShowSourceControl"); });
 
         AddSeparator(panel);
 
         // ── Bottom panel / terminal tabs ─────────────────────
         AddHeader(panel, LocalizationService.Get("Menu.BottomPanel"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.Terminal"),    "Ctrl+`", () => { Close(); _mainWindow.ExecuteMenuAction("ShowTerminal"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.NewTerminal"), "",       () => { Close(); _mainWindow.ExecuteMenuAction("NewTerminal"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.Problems"),    "",       () => { Close(); _mainWindow.ExecuteMenuAction("ShowProblems"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.BuildOutput"), "",       () => { Close(); _mainWindow.ExecuteMenuAction("ShowBuildOutput"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.RunOutput"),   "",       () => { Close(); _mainWindow.ExecuteMenuAction("ShowRunOutput"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.Terminal"), "Ctrl+`", () => { Close(); _mainWindow.ExecuteMenuAction("ShowTerminal"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.NewTerminal"), "", () => { Close(); _mainWindow.ExecuteMenuAction("NewTerminal"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.Problems"), "", () => { Close(); _mainWindow.ExecuteMenuAction("ShowProblems"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.BuildOutput"), "", () => { Close(); _mainWindow.ExecuteMenuAction("ShowBuildOutput"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.RunOutput"), "", () => { Close(); _mainWindow.ExecuteMenuAction("ShowRunOutput"); });
 
         AddSeparator(panel);
 
         // ── Panel toggles (Focus layout) ─────────────────────
         AddHeader(panel, LocalizationService.Get("Menu.FocusLayout"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.ToggleLeftPanel"),   "Ctrl+Shift+E", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleLeftPanel"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.ToggleBottomPanel"), "Ctrl+`",       () => { Close(); _mainWindow.ExecuteMenuAction("ToggleBottomPanel"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.ToggleAIPanel"),     "Ctrl+Shift+I", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleRightPanel"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.ZenMode"),           "Ctrl+Shift+Z", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleZenMode"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.ToggleLeftPanel"), "Ctrl+Shift+E", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleLeftPanel"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.ToggleBottomPanel"), "Ctrl+`", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleBottomPanel"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.ToggleAIPanel"), "Ctrl+Shift+I", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleRightPanel"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.ZenMode"), "Ctrl+Shift+Z", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleZenMode"); });
 
         AddSeparator(panel);
 
@@ -231,8 +230,8 @@ public partial class MenuWindow : Window
 
         // ── Window ────────────────────────────────────────────
         AddHeader(panel, LocalizationService.Get("Menu.Window"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.Minimize"),       "", () => { Close(); _mainWindow.ExecuteMenuAction("Minimize"); });
-        AddMenuItem(panel, LocalizationService.Get("Menu.MaximizeRestore"),"", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleMaximize"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.Minimize"), "", () => { Close(); _mainWindow.ExecuteMenuAction("Minimize"); });
+        AddMenuItem(panel, LocalizationService.Get("Menu.MaximizeRestore"), "", () => { Close(); _mainWindow.ExecuteMenuAction("ToggleMaximize"); });
     }
 
     private void CreateBuildContent(StackPanel panel)
@@ -241,17 +240,17 @@ public partial class MenuWindow : Window
         AddMenuItem(panel, LocalizationService.Get("Menu.BuildProject"), "Ctrl+B", () => _mainWindow.ExecuteMenuAction("Build"));
         AddMenuItem(panel, LocalizationService.Get("Menu.RebuildProject"), "Ctrl+Shift+B", () => _mainWindow.ExecuteMenuAction("Rebuild"));
         AddMenuItem(panel, LocalizationService.Get("Menu.CleanProject"), "", () => _mainWindow.ExecuteMenuAction("Clean"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.Analysis"));
         AddMenuItem(panel, LocalizationService.Get("Menu.AnalyzeCode"), "Ctrl+Shift+A", () => _mainWindow.ExecuteMenuAction("Analyze"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.RunHeader"));
         AddMenuItem(panel, LocalizationService.Get("Menu.RunProject"), "F5", () => _mainWindow.ExecuteMenuAction("Run"));
         AddMenuItem(panel, LocalizationService.Get("Menu.StopProject"), "Shift+F5", () => _mainWindow.ExecuteMenuAction("Stop"));
         AddMenuItem(panel, LocalizationService.Get("Menu.RunConfigurations"), "Shift+Alt+F10", () => _mainWindow.ExecuteMenuAction("RunConfigurations"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.PackagesDeploy"));
         AddMenuItem(panel, LocalizationService.Get("Menu.RestoreNuGet"), "", () => _mainWindow.ExecuteMenuAction("RestorePackages"));
@@ -264,12 +263,12 @@ public partial class MenuWindow : Window
         AddMenuItem(panel, LocalizationService.Get("Menu.StartDebugging"), "F5", () => _mainWindow.ExecuteMenuAction("StartDebugging"));
         AddMenuItem(panel, LocalizationService.Get("Menu.StartWithout"), "Ctrl+F5", () => _mainWindow.ExecuteMenuAction("StartWithoutDebugging"));
         AddMenuItem(panel, LocalizationService.Get("Menu.StopDebugging"), "Shift+F5", () => _mainWindow.ExecuteMenuAction("StopDebugging"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.Breakpoints"));
         AddMenuItem(panel, LocalizationService.Get("Menu.ToggleBreakpoint"), "F9", () => _mainWindow.ExecuteMenuAction("ToggleBreakpoint"));
         AddMenuItem(panel, LocalizationService.Get("Menu.DeleteAllBreakpoints"), "Ctrl+Shift+F9", () => _mainWindow.ExecuteMenuAction("DeleteAllBreakpoints"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.Step"));
         AddMenuItem(panel, LocalizationService.Get("Menu.StepOver"), "F10", () => _mainWindow.ExecuteMenuAction("StepOver"));
@@ -282,13 +281,13 @@ public partial class MenuWindow : Window
         AddHeader(panel, LocalizationService.Get("Menu.ToolsHeader"));
         AddMenuItem(panel, LocalizationService.Get("Menu.OpenTerminal"), "Ctrl+`", () => _mainWindow.ExecuteMenuAction("OpenTerminal"));
         AddMenuItem(panel, LocalizationService.Get("Menu.RefreshFileTree"), "", () => _mainWindow.ExecuteMenuAction("RefreshFileTree"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.SettingsHeader"));
         AddMenuItem(panel, LocalizationService.Get("Menu.Settings"), "Ctrl+,", () => _mainWindow.ExecuteMenuAction("OpenSettings"));
         AddMenuItem(panel, LocalizationService.Get("Menu.Theme"), "", () => _mainWindow.ExecuteMenuAction("OpenTheme"));
         AddMenuItem(panel, LocalizationService.Get("Menu.KeyboardShortcuts"), "Ctrl+K Ctrl+S", () => _mainWindow.ExecuteMenuAction("OpenKeyboardShortcuts"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.NuGetHeader"));
         AddMenuItem(panel, LocalizationService.Get("Menu.ManageNuGet"), "Ctrl+Shift+N", () => _mainWindow.ExecuteMenuAction("ManageNuGetPackages"));
@@ -300,12 +299,12 @@ public partial class MenuWindow : Window
         AddMenuItem(panel, LocalizationService.Get("Menu.Documentation"), "F1", () => _mainWindow.ExecuteMenuAction("OpenDocumentation"));
         AddMenuItem(panel, LocalizationService.Get("Menu.GettingStarted"), "", () => _mainWindow.ExecuteMenuAction("GettingStarted"));
         AddMenuItem(panel, LocalizationService.Get("Menu.KeyboardShortcutsHelp"), "", () => _mainWindow.ExecuteMenuAction("ShowKeyboardShortcuts"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.Feedback"));
         AddMenuItem(panel, LocalizationService.Get("Menu.ReportIssue"), "", () => _mainWindow.ExecuteMenuAction("ReportIssue"));
         AddMenuItem(panel, LocalizationService.Get("Menu.FeatureRequest"), "", () => _mainWindow.ExecuteMenuAction("FeatureRequest"));
-        
+
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.About"));
         AddMenuItem(panel, LocalizationService.Get("Menu.AboutInsait"), "", () => _mainWindow.ExecuteMenuAction("ShowAbout"));
@@ -344,8 +343,8 @@ public partial class MenuWindow : Window
         foreach (var entry in customLangs)
         {
             var entryName = entry.LanguageName;
-            var dictOk    = CustomTranslationService.DictionaryExists(entryName);
-            var label2    = $"🌐  {entryName}" + (dictOk ? "" : " ⚠");
+            var dictOk = CustomTranslationService.DictionaryExists(entryName);
+            var label2 = $"🌐  {entryName}" + (dictOk ? "" : " ⚠");
             AddMenuItem(panel, label2, "", () =>
             {
                 if (dictOk)

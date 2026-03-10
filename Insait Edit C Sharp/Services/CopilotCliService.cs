@@ -1243,7 +1243,7 @@ public class CopilotCliService
             if (File.Exists(fromSettings))
                 return fromSettings;
 
-            n            if (Directory.Exists(fromSettings))
+            if (Directory.Exists(fromSettings))
             {
                 var inside = Path.Combine(fromSettings, "gh.exe");
                 if (File.Exists(inside))

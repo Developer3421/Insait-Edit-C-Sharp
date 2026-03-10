@@ -149,7 +149,7 @@ public class BuildService
     public async Task<BuildResult> BuildAndRunAsync(string projectPath, string configuration = "Debug")
     {
         var buildResult = await BuildAsync(projectPath, configuration);
-        
+
         if (!buildResult.Success)
         {
             return buildResult;
@@ -157,7 +157,7 @@ public class BuildService
 
         // Run the project
         await RunProjectAsync(projectPath, configuration);
-        
+
         return buildResult;
     }
 
@@ -179,12 +179,12 @@ public class BuildService
         {
             // Determine if this is a GUI application
             var isGuiApp = IsGuiApplication(targetFile);
-            
+
             // Find the output executable
             var projectDir = Path.GetDirectoryName(targetFile);
             var projectName = Path.GetFileNameWithoutExtension(targetFile);
             var outputDir = Path.Combine(projectDir!, "bin", configuration);
-            
+
             // Find the target framework folder (e.g., net9.0-windows)
             string? executablePath = null;
             if (Directory.Exists(outputDir))
@@ -211,7 +211,7 @@ public class BuildService
             if (!string.IsNullOrEmpty(executablePath) && executablePath.EndsWith(".exe"))
             {
                 OnOutput($"Starting: {executablePath}\n");
-                
+
                 if (isGuiApp)
                 {
                     // For GUI apps, use ShellExecute so the window appears properly
@@ -246,7 +246,7 @@ public class BuildService
                     };
 
                     using var runProcess = new Process { StartInfo = startInfo };
-                    
+
                     runProcess.OutputDataReceived += (s, e) =>
                     {
                         if (!string.IsNullOrEmpty(e.Data))
@@ -254,7 +254,7 @@ public class BuildService
                             OnOutput(e.Data + "\n");
                         }
                     };
-                    
+
                     runProcess.ErrorDataReceived += (s, e) =>
                     {
                         if (!string.IsNullOrEmpty(e.Data))
@@ -262,15 +262,15 @@ public class BuildService
                             OnOutput($"[stderr] {e.Data}\n");
                         }
                     };
-                    
+
                     runProcess.Start();
                     OnOutput($"Application started (PID: {runProcess.Id})\n\n");
-                    
+
                     runProcess.BeginOutputReadLine();
                     runProcess.BeginErrorReadLine();
-                    
+
                     await runProcess.WaitForExitAsync();
-                    
+
                     OnOutput($"\n========== Application Exited (Code: {runProcess.ExitCode}) ==========\n");
                 }
             }
@@ -278,7 +278,7 @@ public class BuildService
             {
                 // Fall back to dotnet run with output capture
                 OnOutput("Starting via dotnet run...\n");
-                
+
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = SettingsPanelControl.ResolveDotNetExe(),
@@ -293,7 +293,7 @@ public class BuildService
                 };
 
                 using var runProcess = new Process { StartInfo = startInfo };
-                
+
                 runProcess.OutputDataReceived += (s, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
@@ -301,7 +301,7 @@ public class BuildService
                         OnOutput(e.Data + "\n");
                     }
                 };
-                
+
                 runProcess.ErrorDataReceived += (s, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
@@ -309,15 +309,15 @@ public class BuildService
                         OnOutput($"[stderr] {e.Data}\n");
                     }
                 };
-                
+
                 runProcess.Start();
                 OnOutput($"Application started (PID: {runProcess.Id})\n\n");
-                
+
                 runProcess.BeginOutputReadLine();
                 runProcess.BeginErrorReadLine();
-                
+
                 await runProcess.WaitForExitAsync();
-                
+
                 OnOutput($"\n========== Application Exited (Code: {runProcess.ExitCode}) ==========\n");
             }
         }
@@ -335,13 +335,13 @@ public class BuildService
         try
         {
             var content = File.ReadAllText(projectFile);
-            
+
             // Check for OutputType=WinExe
             if (content.Contains("<OutputType>WinExe</OutputType>", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
-            
+
             // Check for GUI frameworks
             return content.Contains("Avalonia") ||
                    content.Contains("UseWPF") ||
@@ -504,9 +504,9 @@ public class BuildService
         if (File.Exists(path))
         {
             var ext = Path.GetExtension(path).ToLowerInvariant();
-            if (ext == ".slnx" || ext == ".sln" || ext == ".csproj" || ext == ".fsproj" || ext == ".vbproj" || ext == ".nfproj")
+            if (ext == ".slnx" || ext == ".sln" || ext == ".csproj" || ext == ".fsproj" || ext == ".vbproj")
                 return path;
-            
+
             // If it's a different file, search in its directory
             path = Path.GetDirectoryName(path) ?? path;
         }
@@ -529,21 +529,12 @@ public class BuildService
         if (csprojFiles.Length > 0)
             return csprojFiles[0];
 
-        // Then look for .nfproj (nanoFramework)
-        var nfprojFiles = Directory.GetFiles(path, "*.nfproj", SearchOption.TopDirectoryOnly);
-        if (nfprojFiles.Length > 0)
-            return nfprojFiles[0];
-
-        // Check subdirectories for .csproj or .nfproj (one level deep)
+        // Check subdirectories for .csproj (one level deep)
         foreach (var subDir in Directory.GetDirectories(path))
         {
             csprojFiles = Directory.GetFiles(subDir, "*.csproj", SearchOption.TopDirectoryOnly);
             if (csprojFiles.Length > 0)
                 return csprojFiles[0];
-
-            nfprojFiles = Directory.GetFiles(subDir, "*.nfproj", SearchOption.TopDirectoryOnly);
-            if (nfprojFiles.Length > 0)
-                return nfprojFiles[0];
         }
 
         return null;

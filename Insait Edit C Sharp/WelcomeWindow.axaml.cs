@@ -22,11 +22,11 @@ public partial class WelcomeWindow : Window
     public WelcomeWindow()
     {
         InitializeComponent();
-        
+
         _recentProjectsService = new RecentProjectsService();
         _recentProjects = new ObservableCollection<RecentProjectItem>();
         _filteredProjects = new ObservableCollection<RecentProjectItem>();
-        
+
         LoadRecentProjects();
         ApplyLocalization();
         LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
@@ -35,41 +35,41 @@ public partial class WelcomeWindow : Window
     private void ApplyLocalization()
     {
         var L = (Func<string, string>)LocalizationService.Get;
-        
+
         Title = L("Welcome.Title");
-        
+
         var subtitle = this.FindControl<TextBlock>("WelcomeSubtitleText");
         if (subtitle != null) subtitle.Text = L("Welcome.Subtitle");
         var version = this.FindControl<TextBlock>("WelcomeVersionText");
         if (version != null) version.Text = L("Welcome.Version");
-        
+
         var newSlnTitle = this.FindControl<TextBlock>("NewSolutionTitle");
         if (newSlnTitle != null) newSlnTitle.Text = L("Welcome.NewSolution");
         var newSlnDesc = this.FindControl<TextBlock>("NewSolutionDesc");
         if (newSlnDesc != null) newSlnDesc.Text = L("Welcome.NewSolutionDesc");
-        
+
         var newProjTitle = this.FindControl<TextBlock>("NewProjectTitle");
         if (newProjTitle != null) newProjTitle.Text = L("Welcome.NewProject");
         var newProjDesc = this.FindControl<TextBlock>("NewProjectDesc");
         if (newProjDesc != null) newProjDesc.Text = L("Welcome.NewProjectDesc");
-        
+
         var openTitle = this.FindControl<TextBlock>("OpenTitle");
         if (openTitle != null) openTitle.Text = L("Welcome.Open");
         var openDesc = this.FindControl<TextBlock>("OpenDesc");
         if (openDesc != null) openDesc.Text = L("Welcome.OpenDesc");
-        
+
         var cloneTitle = this.FindControl<TextBlock>("CloneTitle");
         if (cloneTitle != null) cloneTitle.Text = L("Welcome.CloneRepository");
         var cloneDesc = this.FindControl<TextBlock>("CloneDesc");
         if (cloneDesc != null) cloneDesc.Text = L("Welcome.CloneRepositoryDesc");
-        
+
         var docLink = this.FindControl<Button>("DocLink");
         if (docLink != null) docLink.Content = L("Welcome.Documentation");
         var ghLink = this.FindControl<Button>("GitHubLink");
         if (ghLink != null) ghLink.Content = L("Welcome.GitHub");
         var settingsLink = this.FindControl<Button>("SettingsLink");
         if (settingsLink != null) settingsLink.Content = L("Welcome.Settings");
-        
+
         var searchBox = this.FindControl<TextBox>("SearchBox");
         if (searchBox != null) searchBox.Watermark = L("Welcome.SearchRecent");
         var clearBtn = this.FindControl<Button>("ClearAllButton");
@@ -83,7 +83,7 @@ public partial class WelcomeWindow : Window
     {
         _recentProjects.Clear();
         var projects = _recentProjectsService.GetRecentProjects();
-        
+
         foreach (var project in projects)
         {
             _recentProjects.Add(project);
@@ -96,10 +96,10 @@ public partial class WelcomeWindow : Window
     private void UpdateFilteredProjects(string? filter = null)
     {
         _filteredProjects.Clear();
-        
-        var projects = string.IsNullOrWhiteSpace(filter) 
-            ? _recentProjects 
-            : _recentProjects.Where(p => 
+
+        var projects = string.IsNullOrWhiteSpace(filter)
+            ? _recentProjects
+            : _recentProjects.Where(p =>
                 p.Name.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
                 p.Path.Contains(filter, StringComparison.OrdinalIgnoreCase));
 
@@ -113,7 +113,7 @@ public partial class WelcomeWindow : Window
         {
             list.ItemsSource = _filteredProjects;
         }
-        
+
         UpdateEmptyState();
     }
 
@@ -121,7 +121,7 @@ public partial class WelcomeWindow : Window
     {
         var emptyState = this.FindControl<StackPanel>("EmptyState");
         var list = this.FindControl<ItemsControl>("RecentProjectsList");
-        
+
         if (emptyState != null && list != null)
         {
             var isEmpty = !_filteredProjects.Any();
@@ -158,7 +158,7 @@ public partial class WelcomeWindow : Window
     {
         var newSolutionWindow = new NewSolutionWindow();
         var result = await newSolutionWindow.ShowDialog<string?>(this);
-        
+
         if (!string.IsNullOrEmpty(result))
         {
             OpenProjectAndShowMainWindow(result);
@@ -169,7 +169,7 @@ public partial class WelcomeWindow : Window
     {
         var newProjectWindow = new NewProjectWindow();
         var result = await newProjectWindow.ShowDialog<string?>(this);
-        
+
         if (!string.IsNullOrEmpty(result))
         {
             OpenProjectAndShowMainWindow(result);
@@ -189,7 +189,6 @@ public partial class WelcomeWindow : Window
             {
                 new FilePickerFileType("C# Solution") { Patterns = new[] { "*.sln", "*.slnx" } },
                 new FilePickerFileType("C# Project") { Patterns = new[] { "*.csproj" } },
-                new FilePickerFileType("nanoFramework Project") { Patterns = new[] { "*.nfproj" } },
                 new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } }
             }
         });
@@ -205,7 +204,7 @@ public partial class WelcomeWindow : Window
     {
         var cloneWindow = new CloneRepositoryWindow();
         var result = await cloneWindow.ShowDialog<string?>(this);
-        
+
         if (!string.IsNullOrEmpty(result))
         {
             // Find .sln or .csproj in cloned directory
@@ -234,10 +233,6 @@ public partial class WelcomeWindow : Window
         // Then look for .csproj
         var csprojFiles = Directory.GetFiles(directory, "*.csproj", SearchOption.AllDirectories);
         if (csprojFiles.Length > 0) return csprojFiles[0];
-
-        // Then look for .nfproj (nanoFramework)
-        var nfprojFiles = Directory.GetFiles(directory, "*.nfproj", SearchOption.AllDirectories);
-        if (nfprojFiles.Length > 0) return nfprojFiles[0];
 
         return null;
     }
@@ -319,11 +314,11 @@ public partial class WelcomeWindow : Window
     {
         // Add to recent projects
         _recentProjectsService.AddRecentProject(projectPath);
-        
+
         // Open main window with project
         var mainWindow = new MainWindow(projectPath);
         mainWindow.Show();
-        
+
         // Close welcome window
         Close();
     }

@@ -165,10 +165,6 @@
                            Foreground="{StaticResource NuGetTextMutedBrush}" VerticalAlignment="Center"
                            LetterSpacing="1"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                    <Button Classes="icon-btn" ToolTip.Tip="Popular nanoFramework Packages" Name="EspSuggestionsButton" 
-                            Click="EspSuggestionsButton_Click" IsVisible="False">
-                        <TextBlock Text="📌" FontSize="14" Classes="emoji"/>
-                    </Button>
                     <Button Classes="icon-btn" ToolTip.Tip="Refresh" Name="RefreshButton" Click="RefreshButton_Click">
                         <TextBlock Text="🔄" FontSize="14" Classes="emoji"/>
                     </Button>

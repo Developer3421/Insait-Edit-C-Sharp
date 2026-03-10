@@ -35,7 +35,6 @@
     <x:String x:Key="Sidebar.Search">Search (Ctrl+Shift+F)</x:String>
     <x:String x:Key="Sidebar.Git">Source Control (Ctrl+Shift+G)</x:String>
     <x:String x:Key="Sidebar.NuGet">NuGet Packages (Ctrl+Shift+N)</x:String>
-    <x:String x:Key="Sidebar.LedPanel">LED Panel Designer</x:String>
     <x:String x:Key="Sidebar.Account">Account</x:String>
     <x:String x:Key="Sidebar.Settings">Settings (Ctrl+,)</x:String>
     <x:String x:Key="Panel.Explorer">EXPLORER</x:String>
@@ -342,7 +341,6 @@
     <x:String x:Key="Menu.SolutionProject">📦 Solution &amp; Project</x:String>
     <x:String x:Key="Menu.NewSolution">📦 New Solution...</x:String>
     <x:String x:Key="Menu.NewProject">📁 New Project...</x:String>
-    <x:String x:Key="Menu.NewNanoProject">🔌 New nanoFramework Project...</x:String>
     <x:String x:Key="Menu.AddProjectToSolution">➕ Add Project to Solution...</x:String>
     <x:String x:Key="Menu.FileOperations">📁 File Operations</x:String>
     <x:String x:Key="Menu.NewFile">📄 New File</x:String>
@@ -824,82 +822,6 @@
     <x:String x:Key="Diag.LineCol">Line {0}, Col {1}</x:String>
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn ready</x:String>
 
-    <!-- ── 22. LedPanelDesignerWindow ───────────────────────────── -->
-    <x:String x:Key="Led.Title">LED Panel Designer</x:String>
-    <x:String x:Key="Led.PanelSize">PANEL SIZE</x:String>
-    <x:String x:Key="Led.Rows">Rows</x:String>
-    <x:String x:Key="Led.Columns">Columns</x:String>
-    <x:String x:Key="Led.TotalLeds">Total LEDs</x:String>
-    <x:String x:Key="Led.Hardware">HARDWARE</x:String>
-    <x:String x:Key="Led.GpioPin">GPIO Pin</x:String>
-    <x:String x:Key="Led.StripType">Strip Type</x:String>
-    <x:String x:Key="Led.Brightness">Brightness</x:String>
-    <x:String x:Key="Led.PaintColor">PAINT COLOR</x:String>
-    <x:String x:Key="Led.DrawMode">DRAW MODE</x:String>
-    <x:String x:Key="Led.DrawSingle">🖌️ Single LED</x:String>
-    <x:String x:Key="Led.DrawRow">↔️ Entire Row</x:String>
-    <x:String x:Key="Led.DrawColumn">↕️ Entire Column</x:String>
-    <x:String x:Key="Led.DrawErase">🧹 Eraser</x:String>
-    <x:String x:Key="Led.DrawFill">🪣 Fill All</x:String>
-    <x:String x:Key="Led.Actions">ACTIONS</x:String>
-    <x:String x:Key="Led.ClearAll">🗑️ Clear All</x:String>
-    <x:String x:Key="Led.InvertColors">🔄 Invert Colors</x:String>
-    <x:String x:Key="Led.RandomPattern">🎲 Random Pattern</x:String>
-    <x:String x:Key="Led.Animation">ANIMATION</x:String>
-    <x:String x:Key="Led.CaptureFrame">📸 Capture Frame</x:String>
-    <x:String x:Key="Led.FrameDelay">Frame Delay (ms)</x:String>
-    <x:String x:Key="Led.InfiniteLoop">♾️ Infinite Loop</x:String>
-    <x:String x:Key="Led.LoopCount">Loop Count</x:String>
-    <x:String x:Key="Led.ClearFrames">🗑️ Clear Frames</x:String>
-    <x:String x:Key="Led.LedDisplay">LED Display</x:String>
-    <x:String x:Key="Led.HoverLeds">Hover over LEDs</x:String>
-    <x:String x:Key="Led.GridLines">Grid Lines</x:String>
-    <x:String x:Key="Led.Coordinates">Coordinates</x:String>
-    <x:String x:Key="Led.PreviewPattern">Preview Pattern</x:String>
-    <x:String x:Key="Led.Playing">Playing...</x:String>
-    <x:String x:Key="Led.PreviewComplete">Preview complete</x:String>
-    <x:String x:Key="Led.Stop">⏹ Stop</x:String>
-    <x:String x:Key="Led.SaveConfig">💾 Save Config</x:String>
-    <x:String x:Key="Led.LoadConfig">📂 Load Config</x:String>
-    <x:String x:Key="Led.StatusReady">Ready — Design your LED pattern</x:String>
-    <x:String x:Key="Led.GenerateCode">Generate nanoFramework Code</x:String>
-    <x:String x:Key="Led.Cancel">Cancel</x:String>
-    <x:String x:Key="Led.Frames">Frames: {0}</x:String>
-    <x:String x:Key="Led.FrameStatus">Frame {0}/{1} (Loop {2}/5)</x:String>
-    <x:String x:Key="Led.SaveDialogTitle">Save LED Panel Configuration</x:String>
-    <x:String x:Key="Led.LoadDialogTitle">Load LED Panel Configuration</x:String>
-
-    <!-- ── 23. NewNanoProjectWindow ──────────────────────────────── -->
-    <x:String x:Key="Nano.Title">New nanoFramework Project</x:String>
-    <x:String x:Key="Nano.Subtitle">Create a C# project for ESP32 / nanoFramework</x:String>
-    <x:String x:Key="Nano.SelectTemplate">Select a template</x:String>
-    <x:String x:Key="Nano.Configure">Configure your project</x:String>
-    <x:String x:Key="Nano.ProjectName">Project name</x:String>
-    <x:String x:Key="Nano.Location">Location</x:String>
-    <x:String x:Key="Nano.TargetBoard">Target Board</x:String>
-    <x:String x:Key="Nano.Solution">Solution</x:String>
-    <x:String x:Key="Nano.AddToSolution">Add to existing solution</x:String>
-    <x:String x:Key="Nano.CreateNewSolution">Create new solution</x:String>
-    <x:String x:Key="Nano.Requirements">ℹ️ Requirements</x:String>
-    <x:String x:Key="Nano.Req1">• nanoff CLI tool (auto-installed if missing)</x:String>
-    <x:String x:Key="Nano.Req2">• ESP32 device connected via USB</x:String>
-    <x:String x:Key="Nano.Req3">• USB-to-Serial driver (CP210x or CH340)</x:String>
-    <x:String x:Key="Nano.Browse">Browse...</x:String>
-    <x:String x:Key="Nano.Cancel">Cancel</x:String>
-    <x:String x:Key="Nano.Create">Create nanoFramework Project</x:String>
-    <x:String x:Key="Nano.TplBlankName">Blank App</x:String>
-    <x:String x:Key="Nano.TplBlankDesc">Empty nanoFramework app</x:String>
-    <x:String x:Key="Nano.TplClassLibName">Class Library</x:String>
-    <x:String x:Key="Nano.TplClassLibDesc">Reusable library</x:String>
-    <x:String x:Key="Nano.TplGpioName">GPIO Blink</x:String>
-    <x:String x:Key="Nano.TplGpioDesc">LED blink example</x:String>
-    <x:String x:Key="Nano.TplWifiName">Wi-Fi</x:String>
-    <x:String x:Key="Nano.TplWifiDesc">Wi-Fi connection</x:String>
-    <x:String x:Key="Nano.TplHttpName">HTTP Client</x:String>
-    <x:String x:Key="Nano.TplHttpDesc">HTTP requests</x:String>
-    <x:String x:Key="Nano.TplI2CName">I2C Sensor</x:String>
-    <x:String x:Key="Nano.TplI2CDesc">Sensor reading</x:String>
-
     <!-- ── AxamlPreview extra ─────────────────────────────────────── -->
     <x:String x:Key="AxamlPreview.LivePreview">✔ Live preview</x:String>
     <x:String x:Key="AxamlPreview.FallbackView">⚠ Fallback view</x:String>
@@ -908,8 +830,6 @@
 
 
     <!-- ── NuGet extra ────────────────────────────────────────────── -->
-    <x:String x:Key="NuGet.NanoFramework">🔌 Popular nanoFramework Packages</x:String>
-    <x:String x:Key="NuGet.NanoFrameworkDesc">Popular packages for nanoFramework projects. Use the search box to find any NuGet package.</x:String>
     <x:String x:Key="NuGet.NoPackagesFound">No packages found</x:String>
     <x:String x:Key="NuGet.Install">Install</x:String>
     <x:String x:Key="NuGet.Update">Update</x:String>
@@ -931,9 +851,7 @@
     <x:String x:Key="NuGet.ViewOnNuGetOrg">View on nuget.org</x:String>
     <x:String x:Key="NuGet.SearchAbove">Search for NuGet packages above</x:String>
     <x:String x:Key="NuGet.Project.Label">Project:</x:String>
-    <x:String x:Key="NuGet.NanoFrameworkMode">NUGET PACKAGES (NANOFRAMEWORK)</x:String>
     <x:String x:Key="NuGet.Tooltip.Refresh">Refresh</x:String>
-    <x:String x:Key="NuGet.Tooltip.NanoSuggestions">Popular nanoFramework Packages</x:String>
     <x:String x:Key="NuGet.ByAuthor">by {0}</x:String>
     <x:String x:Key="NuGet.InstalledVersion">Installed: v{0}</x:String>
     <x:String x:Key="NuGet.InstalledCount">{0} package(s) installed</x:String>

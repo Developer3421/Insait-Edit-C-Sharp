@@ -189,20 +189,6 @@
                             </Button>
                             
 
-                            
-                            <Button Classes="template-btn" Name="NanoTemplate" Margin="0,0,12,12"
-                                    Click="Template_Click" Tag="nano">
-                                <StackPanel Width="140">
-                                    <TextBlock Text="🔌" FontSize="32" HorizontalAlignment="Center"
-                                               FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                    <TextBlock Text="nanoFramework" FontSize="13" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,8,0,4"/>
-                                    <TextBlock Text=".NET nanoFramework for ESP32 / IoT"
-                                               FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextWrapping="Wrap" TextAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-
                             <Button Classes="template-btn" Name="FSharpConsoleTemplate" Margin="0,0,12,12"
                                     Click="Template_Click" Tag="fsharp-console">
                                 <StackPanel Width="140">

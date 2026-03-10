@@ -19,18 +19,17 @@ public partial class NuGetPanelControl : UserControl
 {
     private readonly NuGetService _nugetService;
     private readonly HttpClient _httpClient;
-    
+
     private string? _projectPath;
     private string _currentTab = "browse";
-    private bool _isNanoFrameworkProject;
     private List<NuGetPackageInfo> _searchResults = new();
     private List<InstalledNuGetPackage> _installedPackages = new();
     private List<InstalledNuGetPackage> _updatablePackages = new();
     private NuGetPackageInfo? _selectedPackage;
     private CancellationTokenSource? _searchCts;
-    
+
     private static readonly Dictionary<string, Bitmap?> _iconCache = new();
-    
+
     // Cached brushes
     private IBrush? _textBrush;
     private IBrush? _textMutedBrush;
@@ -38,10 +37,10 @@ public partial class NuGetPanelControl : UserControl
     private IBrush? _orangeBrush;
     private IBrush? _greenBrush;
     private IBrush? _blueBrush;
-    
+
     // Emoji font family for consistent rendering
     private static readonly FontFamily EmojiFont = new FontFamily("Segoe UI Emoji, Noto Color Emoji, Apple Color Emoji, Segoe UI Symbol");
-    
+
     public event EventHandler<string>? StatusChanged;
     public event EventHandler<string>? ErrorOccurred;
 
@@ -50,23 +49,23 @@ public partial class NuGetPanelControl : UserControl
         InitializeComponent();
         _nugetService = new NuGetService();
         _httpClient = new HttpClient();
-        
-        _nugetService.StatusChanged += (_, status) => 
+
+        _nugetService.StatusChanged += (_, status) =>
             Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => StatusChanged?.Invoke(this, status));
-        _nugetService.ErrorOccurred += (_, error) => 
+        _nugetService.ErrorOccurred += (_, error) =>
             Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => ErrorOccurred?.Invoke(this, error));
-        
+
         // Initialize brushes
         InitializeBrushes();
         ApplyLocalization();
         LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
     }
-    
+
     private void ApplyLocalization()
     {
         var L = (Func<string, string>)LocalizationService.Get;
         var header = this.FindControl<TextBlock>("HeaderTitleText");
-        if (header != null) header.Text = _isNanoFrameworkProject ? L("NuGet.NanoFrameworkMode") : L("NuGet.Title");
+        if (header != null) header.Text = L("NuGet.Title");
         var searchBox = this.FindControl<TextBox>("SearchBox");
         if (searchBox != null) searchBox.Watermark = L("NuGet.SearchPlaceholder");
         var searchPlaceholder = this.FindControl<TextBlock>("SearchPlaceholder");
@@ -82,8 +81,6 @@ public partial class NuGetPanelControl : UserControl
         var updateAllBtn = this.FindControl<Button>("UpdateAllBtn");
         if (updateAllBtn != null) updateAllBtn.Content = L("NuGet.UpdateAll");
         // Update tooltip strings for icon buttons
-        var espBtn = this.FindControl<Button>("EspSuggestionsButton");
-        if (espBtn != null) ToolTip.SetTip(espBtn, L("NuGet.Tooltip.NanoSuggestions"));
         var refreshBtn = this.FindControl<Button>("RefreshButton");
         if (refreshBtn != null) ToolTip.SetTip(refreshBtn, L("NuGet.Tooltip.Refresh"));
         // Update installed/updates placeholders
@@ -117,7 +114,7 @@ public partial class NuGetPanelControl : UserControl
         var uninstallBtnText = this.FindControl<TextBlock>("UninstallButtonText");
         if (uninstallBtnText != null) uninstallBtnText.Text = L("NuGet.Uninstall");
     }
-    
+
     private void InitializeBrushes()
     {
         _textBrush = new SolidColorBrush(Color.Parse("#FFF0E8F4"));
@@ -134,107 +131,12 @@ public partial class NuGetPanelControl : UserControl
     public async Task SetProjectPathAsync(string projectPath)
     {
         _projectPath = projectPath;
-        
-        // Detect if this is a nanoFramework project
-        _nugetService.ConfigureForProject(projectPath);
-        _isNanoFrameworkProject = _nugetService.IsNanoFrameworkProject;
-        
+
         var projectNameText = this.FindControl<TextBlock>("ProjectNameText");
         if (projectNameText != null)
         {
-            var name = Path.GetFileName(projectPath);
-            projectNameText.Text = _isNanoFrameworkProject ? $"🔌 {name} (nanoFramework)" : name;
+            projectNameText.Text = Path.GetFileName(projectPath);
         }
-        
-        // Update header to show nanoFramework mode
-        UpdateHeaderForProjectType();
-        
-        // Show common nanoFramework packages if no search has been done yet
-        if (_isNanoFrameworkProject)
-        {
-            ShowNanoFrameworkSuggestions();
-        }
-        
-        await RefreshInstalledPackagesAsync();
-    }
-    
-    /// <summary>
-    /// Update the panel header to indicate nanoFramework project
-    /// </summary>
-    private void UpdateHeaderForProjectType()
-    {
-        var headerText = this.FindControl<TextBlock>("HeaderTitleText");
-        if (headerText != null)
-        {
-            headerText.Text = _isNanoFrameworkProject 
-                ? LocalizationService.Get("NuGet.NanoFrameworkMode") 
-                : LocalizationService.Get("NuGet.Title");
-        }
-        
-        var searchBox = this.FindControl<TextBox>("SearchBox");
-        if (searchBox != null)
-        {
-            searchBox.Watermark = LocalizationService.Get("NuGet.SearchPlaceholder");
-        }
-        
-        var espSuggestionsBtn = this.FindControl<Button>("EspSuggestionsButton");
-        if (espSuggestionsBtn != null)
-        {
-            espSuggestionsBtn.IsVisible = _isNanoFrameworkProject;
-        }
-    }
-    
-    /// <summary>
-    /// Show common nanoFramework packages as suggestions
-    /// </summary>
-    private void ShowNanoFrameworkSuggestions()
-    {
-        var panel = this.FindControl<StackPanel>("SearchResultsPanel");
-        if (panel == null) return;
-        
-        panel.Children.Clear();
-        
-        var headerPanel = new StackPanel
-        {
-            Margin = new Thickness(8, 8, 8, 4)
-        };
-        
-        headerPanel.Children.Add(new TextBlock
-        {
-            Text = LocalizationService.Get("NuGet.NanoFramework"),
-            FontSize = 13,
-            FontWeight = FontWeight.SemiBold,
-            Foreground = _accentBrush,
-            FontFamily = EmojiFont,
-            Margin = new Thickness(0, 0, 0, 4)
-        });
-        
-        headerPanel.Children.Add(new TextBlock
-        {
-            Text = LocalizationService.Get("NuGet.NanoFrameworkDesc"),
-            FontSize = 11,
-            Foreground = _textMutedBrush,
-            TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(0, 0, 0, 8)
-        });
-        
-        panel.Children.Add(headerPanel);
-        
-        var commonPackages = NuGetService.GetCommonNanoFrameworkPackages();
-        _searchResults = commonPackages;
-        
-        foreach (var package in commonPackages)
-        {
-            panel.Children.Add(CreatePackageItem(package));
-        }
-    }
-    
-    /// <summary>
-    /// nanoFramework suggestions button click handler
-    /// </summary>
-    private void EspSuggestionsButton_Click(object? sender, RoutedEventArgs e)
-    {
-        ShowNanoFrameworkSuggestions();
     }
 
     #region Tab Switching
@@ -257,29 +159,29 @@ public partial class NuGetPanelControl : UserControl
     private void SwitchTab(string tab)
     {
         _currentTab = tab;
-        
-        var browseTab    = this.FindControl<Button>("BrowseTab");
+
+        var browseTab = this.FindControl<Button>("BrowseTab");
         var installedTab = this.FindControl<Button>("InstalledTab");
-        var updatesTab   = this.FindControl<Button>("UpdatesTab");
-        
-        var browsePanel    = this.FindControl<Grid>("BrowsePanel");
+        var updatesTab = this.FindControl<Button>("UpdatesTab");
+
+        var browsePanel = this.FindControl<Grid>("BrowsePanel");
         var installedPanel = this.FindControl<Grid>("InstalledPanel");
-        var updatesPanel   = this.FindControl<Grid>("UpdatesPanel");
-        
+        var updatesPanel = this.FindControl<Grid>("UpdatesPanel");
+
         // Hide details panel when switching tabs
         var detailsPanel = this.FindControl<Border>("PackageDetailsPanel");
         if (detailsPanel != null) detailsPanel.IsVisible = false;
-        
+
         // Remove active class from all tabs
         browseTab?.Classes.Remove("active");
         installedTab?.Classes.Remove("active");
         updatesTab?.Classes.Remove("active");
-        
+
         // Hide all panels
-        if (browsePanel    != null) browsePanel.IsVisible    = false;
+        if (browsePanel != null) browsePanel.IsVisible = false;
         if (installedPanel != null) installedPanel.IsVisible = false;
-        if (updatesPanel   != null) updatesPanel.IsVisible   = false;
-        
+        if (updatesPanel != null) updatesPanel.IsVisible = false;
+
         // Show selected panel
         switch (tab)
         {
@@ -321,21 +223,17 @@ public partial class NuGetPanelControl : UserControl
     {
         var searchBox = this.FindControl<TextBox>("SearchBox");
         var searchTerm = searchBox?.Text?.Trim() ?? "";
-        
+
         if (string.IsNullOrEmpty(searchTerm))
         {
-            if (_isNanoFrameworkProject)
-            {
-                ShowNanoFrameworkSuggestions();
-            }
             return;
         }
-        
+
         _searchCts?.Cancel();
         _searchCts = new CancellationTokenSource();
-        
+
         ShowLoading(string.Format(LocalizationService.Get("NuGet.Searching"), searchTerm));
-        
+
         try
         {
             _searchResults = await _nugetService.SearchPackagesAsync(searchTerm, 0, 50, false, _searchCts.Token);
@@ -358,11 +256,11 @@ public partial class NuGetPanelControl : UserControl
     private void UpdateSearchResultsUI()
     {
         var panel = this.FindControl<StackPanel>("SearchResultsPanel");
-        
+
         if (panel == null) return;
-        
+
         panel.Children.Clear();
-        
+
         if (_searchResults.Count == 0)
         {
             panel.Children.Add(new TextBlock
@@ -375,7 +273,7 @@ public partial class NuGetPanelControl : UserControl
             });
             return;
         }
-        
+
         foreach (var package in _searchResults)
         {
             panel.Children.Add(CreatePackageItem(package));
@@ -389,12 +287,12 @@ public partial class NuGetPanelControl : UserControl
             Classes = { "package-item" },
             Tag = package
         };
-        
+
         var grid = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("40,*,Auto")
         };
-        
+
         // Icon with fallback using Panel overlay pattern
         var iconBorder = new Border
         {
@@ -406,7 +304,7 @@ public partial class NuGetPanelControl : UserControl
             Margin = new Thickness(0, 2, 0, 0),
             ClipToBounds = true
         };
-        
+
         var iconPanel = new Panel();
         var defaultIcon = new TextBlock
         {
@@ -425,16 +323,16 @@ public partial class NuGetPanelControl : UserControl
         iconPanel.Children.Add(defaultIcon);
         iconPanel.Children.Add(iconImage);
         iconBorder.Child = iconPanel;
-        
+
         // Load icon asynchronously
         _ = LoadPackageIconAsync(package.IconUrl, iconImage, defaultIcon);
-        
+
         // Info
         var infoPanel = new StackPanel
         {
             Margin = new Thickness(8, 0, 0, 0)
         };
-        
+
         // Title row with verified badge
         var titleRow = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 6 };
         titleRow.Children.Add(new TextBlock
@@ -444,7 +342,7 @@ public partial class NuGetPanelControl : UserControl
             FontWeight = FontWeight.SemiBold,
             Foreground = _textBrush
         });
-        
+
         if (package.IsVerified)
         {
             titleRow.Children.Add(new Border
@@ -461,9 +359,9 @@ public partial class NuGetPanelControl : UserControl
                 }
             });
         }
-        
+
         infoPanel.Children.Add(titleRow);
-        
+
         // ID and version
         infoPanel.Children.Add(new TextBlock
         {
@@ -472,7 +370,7 @@ public partial class NuGetPanelControl : UserControl
             Foreground = _textMutedBrush,
             Margin = new Thickness(0, 2, 0, 0)
         });
-        
+
         // Description (truncated)
         if (!string.IsNullOrEmpty(package.Description))
         {
@@ -487,7 +385,7 @@ public partial class NuGetPanelControl : UserControl
                 Margin = new Thickness(0, 4, 0, 0)
             });
         }
-        
+
         // Stats row
         var statsRow = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 12, Margin = new Thickness(0, 4, 0, 0) };
         statsRow.Children.Add(new TextBlock
@@ -497,7 +395,7 @@ public partial class NuGetPanelControl : UserControl
             FontFamily = EmojiFont,
             Foreground = _textMutedBrush
         });
-        
+
         if (!string.IsNullOrEmpty(package.Authors))
         {
             statsRow.Children.Add(new TextBlock
@@ -510,7 +408,7 @@ public partial class NuGetPanelControl : UserControl
                 MaxWidth = 120
             });
         }
-        
+
         // Published date in search results
         if (package.Published != DateTime.MinValue)
         {
@@ -522,19 +420,19 @@ public partial class NuGetPanelControl : UserControl
                 Foreground = _textMutedBrush
             });
         }
-        
+
         infoPanel.Children.Add(statsRow);
-        
+
         Grid.SetColumn(iconBorder, 0);
         Grid.SetColumn(infoPanel, 1);
-        
+
         grid.Children.Add(iconBorder);
         grid.Children.Add(infoPanel);
-        
+
         border.Child = grid;
-        
+
         border.PointerPressed += (_, _) => _ = ShowSearchPackageDetailsAsync(package);
-        
+
         return border;
     }
 
@@ -551,14 +449,14 @@ public partial class NuGetPanelControl : UserControl
     {
         if (string.IsNullOrEmpty(_projectPath))
             return;
-        
+
         ShowLoading(LocalizationService.Get("NuGet.LoadingInstalled"));
-        
+
         try
         {
             _installedPackages = await _nugetService.GetInstalledPackagesAsync(_projectPath);
             _updatablePackages = _installedPackages.Where(p => p.HasUpdate).ToList();
-            
+
             UpdateInstalledPackagesUI();
             UpdateUpdatesTabBadge();
         }
@@ -575,10 +473,10 @@ public partial class NuGetPanelControl : UserControl
     private void UpdateInstalledPackagesUI()
     {
         var panel = this.FindControl<StackPanel>("InstalledPackagesPanel");
-        
-        if (panel == null) return;        
+
+        if (panel == null) return;
         panel.Children.Clear();
-        
+
         if (_installedPackages.Count == 0)
         {
             panel.Children.Add(new TextBlock
@@ -591,7 +489,7 @@ public partial class NuGetPanelControl : UserControl
             });
             return;
         }
-        
+
         // Show count header
         panel.Children.Add(new TextBlock
         {
@@ -600,7 +498,7 @@ public partial class NuGetPanelControl : UserControl
             Foreground = _textMutedBrush,
             Margin = new Thickness(8, 4, 0, 4)
         });
-        
+
         foreach (var package in _installedPackages)
         {
             panel.Children.Add(CreateInstalledPackageItem(package));
@@ -614,12 +512,12 @@ public partial class NuGetPanelControl : UserControl
             Classes = { "package-item" },
             Tag = package
         };
-        
+
         var grid = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("40,*,Auto")
         };
-        
+
         // Icon with fallback using Panel overlay pattern
         var iconBorder = new Border
         {
@@ -631,7 +529,7 @@ public partial class NuGetPanelControl : UserControl
             Margin = new Thickness(0, 2, 0, 0),
             ClipToBounds = true
         };
-        
+
         var iconPanel = new Panel();
         var defaultIcon = new TextBlock
         {
@@ -650,17 +548,17 @@ public partial class NuGetPanelControl : UserControl
         iconPanel.Children.Add(defaultIcon);
         iconPanel.Children.Add(iconImage);
         iconBorder.Child = iconPanel;
-        
+
         // Load icon asynchronously
         _ = LoadPackageIconAsync(package.IconUrl, iconImage, defaultIcon);
-        
+
         // Info
         var infoPanel = new StackPanel
         {
             Margin = new Thickness(8, 0, 0, 0),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
-        
+
         // Title
         infoPanel.Children.Add(new TextBlock
         {
@@ -669,14 +567,14 @@ public partial class NuGetPanelControl : UserControl
             FontWeight = FontWeight.SemiBold,
             Foreground = _textBrush
         });
-        
+
         // Version with update indicator
         var versionText = package.Version;
         if (package.HasUpdate)
         {
             versionText += $" → {package.LatestVersion}";
         }
-        
+
         var versionTextBlock = new TextBlock
         {
             Text = versionText,
@@ -685,7 +583,7 @@ public partial class NuGetPanelControl : UserControl
             Margin = new Thickness(0, 2, 0, 0)
         };
         infoPanel.Children.Add(versionTextBlock);
-        
+
         // Description
         if (!string.IsNullOrEmpty(package.Description))
         {
@@ -699,7 +597,7 @@ public partial class NuGetPanelControl : UserControl
                 MaxLines = 1
             });
         }
-        
+
         // Actions
         var actionsPanel = new StackPanel
         {
@@ -707,7 +605,7 @@ public partial class NuGetPanelControl : UserControl
             Spacing = 4,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
-        
+
         if (package.HasUpdate)
         {
             var updateBtn = new Button
@@ -723,7 +621,7 @@ public partial class NuGetPanelControl : UserControl
             };
             actionsPanel.Children.Add(updateBtn);
         }
-        
+
         var uninstallBtn = new Button
         {
             Classes = { "nuget-secondary" },
@@ -742,17 +640,17 @@ public partial class NuGetPanelControl : UserControl
             await UninstallPackageAsync(package);
         };
         actionsPanel.Children.Add(uninstallBtn);
-        
+
         Grid.SetColumn(iconBorder, 0);
         Grid.SetColumn(infoPanel, 1);
         Grid.SetColumn(actionsPanel, 2);
-        
+
         grid.Children.Add(iconBorder);
         grid.Children.Add(infoPanel);
         grid.Children.Add(actionsPanel);
-        
+
         border.Child = grid;
-        
+
         // Click on installed package to open details view
         border.PointerPressed += (_, e) =>
         {
@@ -762,10 +660,10 @@ public partial class NuGetPanelControl : UserControl
                 _ = ShowInstalledPackageDetailsAsync(package);
             }
         };
-        
+
         return border;
     }
-    
+
     /// <summary>
     /// Show details for a search result package, fetching full metadata (including published date) from NuGet
     /// </summary>
@@ -804,21 +702,21 @@ public partial class NuGetPanelControl : UserControl
     private async Task ShowInstalledPackageDetailsAsync(InstalledNuGetPackage installedPackage)
     {
         ShowLoading(string.Format(LocalizationService.Get("NuGet.LoadingDetails"), installedPackage.Id));
-        
+
         try
         {
             // Try cache but only if it has a valid published date
-            var cachedInfo = _searchResults.FirstOrDefault(p => 
+            var cachedInfo = _searchResults.FirstOrDefault(p =>
                 p.Id.Equals(installedPackage.Id, StringComparison.OrdinalIgnoreCase) &&
                 p.Published != DateTime.MinValue);
-            
+
             if (cachedInfo != null)
             {
                 HideLoading();
                 ShowPackageDetails(cachedInfo);
                 return;
             }
-            
+
             // Fetch full details from NuGet (includes correct published date)
             var details = await _nugetService.GetPackageDetailsAsync(installedPackage.Id);
             if (details != null)
@@ -838,12 +736,12 @@ public partial class NuGetPanelControl : UserControl
                     IconUrl = installedPackage.IconUrl ?? "",
                     AllVersions = new List<string> { installedPackage.Version }
                 };
-                
+
                 if (!string.IsNullOrEmpty(installedPackage.LatestVersion) && installedPackage.HasUpdate)
                 {
                     minimalInfo.AllVersions.Insert(0, installedPackage.LatestVersion);
                 }
-                
+
                 HideLoading();
                 ShowPackageDetails(minimalInfo);
             }
@@ -860,7 +758,7 @@ public partial class NuGetPanelControl : UserControl
         var updatesTabText = this.FindControl<TextBlock>("UpdatesTabText");
         if (updatesTabText != null)
         {
-            updatesTabText.Text = _updatablePackages.Count > 0 
+            updatesTabText.Text = _updatablePackages.Count > 0
                 ? string.Format(LocalizationService.Get("NuGet.UpdatesTabBadge"), _updatablePackages.Count)
                 : LocalizationService.Get("NuGet.Updates");
         }
@@ -871,21 +769,21 @@ public partial class NuGetPanelControl : UserControl
         var panel = this.FindControl<StackPanel>("UpdatesPackagesPanel");
         var countText = this.FindControl<TextBlock>("UpdatesCountText");
         var updateAllBtn = this.FindControl<Button>("UpdateAllButton");
-        
+
         if (panel == null) return;
-        
+
         panel.Children.Clear();
-        
+
         if (countText != null)
         {
             countText.Text = string.Format(LocalizationService.Get("NuGet.UpdatesAvailable"), _updatablePackages.Count);
         }
-        
+
         if (updateAllBtn != null)
         {
             updateAllBtn.IsVisible = _updatablePackages.Count > 0;
         }
-        
+
         if (_updatablePackages.Count == 0)
         {
             panel.Children.Add(new TextBlock
@@ -898,7 +796,7 @@ public partial class NuGetPanelControl : UserControl
             });
             return;
         }
-        
+
         foreach (var package in _updatablePackages)
         {
             panel.Children.Add(CreateInstalledPackageItem(package));
@@ -912,10 +810,10 @@ public partial class NuGetPanelControl : UserControl
     private void ShowPackageDetails(NuGetPackageInfo package)
     {
         _selectedPackage = package;
-        
+
         var detailsPanel = this.FindControl<Border>("PackageDetailsPanel");
         if (detailsPanel == null) return;
-        
+
         // Update UI
         var titleText = this.FindControl<TextBlock>("DetailTitleText");
         var authorText = this.FindControl<TextBlock>("DetailAuthorText");
@@ -930,17 +828,17 @@ public partial class NuGetPanelControl : UserControl
         var uninstallBtn = this.FindControl<Button>("UninstallButton");
         var verifiedBadge = this.FindControl<Border>("DetailVerifiedBadge");
         var installedVersionText = this.FindControl<TextBlock>("DetailInstalledVersionText");
-        
+
         if (titleText != null) titleText.Text = package.Title;
         if (authorText != null) authorText.Text = !string.IsNullOrEmpty(package.Authors) ? string.Format(LocalizationService.Get("NuGet.ByAuthor"), package.Authors) : "";
         if (descText != null) descText.Text = !string.IsNullOrEmpty(package.Description) ? package.Description : LocalizationService.Get("NuGet.NoDescription");
-        
+
         // Downloads: show formatted number or "N/A" when unavailable
         if (downloadsText != null)
         {
             downloadsText.Text = package.TotalDownloads > 0 ? package.FormattedDownloads : "N/A";
         }
-        
+
         // Format published date properly
         if (publishedText != null)
         {
@@ -948,34 +846,34 @@ public partial class NuGetPanelControl : UserControl
                 ? package.Published.ToString("MMM dd, yyyy")
                 : "—";
         }
-        
+
         // Verified badge
         if (verifiedBadge != null)
         {
             verifiedBadge.IsVisible = package.IsVerified;
         }
-        
+
         // Load icon with fallback
         if (iconImage != null)
         {
             _ = LoadPackageIconAsync(package.IconUrl, iconImage, defaultIcon);
         }
-        
+
         // Populate versions
         if (versionCombo != null)
         {
             versionCombo.ItemsSource = package.AllVersions;
             versionCombo.SelectedIndex = 0;
         }
-        
+
         // Update tags
         UpdateTagsPanel(package.Tags);
-        
+
         // Check if already installed
-        var installedPkg = _installedPackages.FirstOrDefault(p => 
+        var installedPkg = _installedPackages.FirstOrDefault(p =>
             p.Id.Equals(package.Id, StringComparison.OrdinalIgnoreCase));
         var isInstalled = installedPkg != null;
-        
+
         // Configure Install/Uninstall buttons
         if (isInstalled)
         {
@@ -1003,7 +901,7 @@ public partial class NuGetPanelControl : UserControl
             if (uninstallBtn != null) uninstallBtn.IsVisible = false;
             if (installedVersionText != null) installedVersionText.IsVisible = false;
         }
-        
+
         detailsPanel.IsVisible = true;
     }
 
@@ -1011,20 +909,20 @@ public partial class NuGetPanelControl : UserControl
     {
         var tagsPanel = this.FindControl<StackPanel>("TagsPanel");
         var wrapPanel = this.FindControl<WrapPanel>("TagsWrapPanel");
-        
+
         if (wrapPanel == null || tagsPanel == null) return;
-        
+
         wrapPanel.Children.Clear();
-        
+
         if (string.IsNullOrEmpty(tags))
         {
             tagsPanel.IsVisible = false;
             return;
         }
-        
+
         tagsPanel.IsVisible = true;
         var tagList = tags.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(10);
-        
+
         foreach (var tag in tagList)
         {
             var tagBorder = new Border
@@ -1034,14 +932,14 @@ public partial class NuGetPanelControl : UserControl
                 Padding = new Thickness(8, 3),
                 Margin = new Thickness(0, 0, 4, 4)
             };
-            
+
             tagBorder.Child = new TextBlock
             {
                 Text = tag,
                 FontSize = 10,
                 Foreground = _accentBrush
             };
-            
+
             wrapPanel.Children.Add(tagBorder);
         }
     }
@@ -1059,7 +957,7 @@ public partial class NuGetPanelControl : UserControl
             OpenUrl(_selectedPackage.ProjectUrl);
         }
     }
-    
+
     private void NuGetOrgLink_Click(object? sender, RoutedEventArgs e)
     {
         if (_selectedPackage != null)
@@ -1072,18 +970,18 @@ public partial class NuGetPanelControl : UserControl
     {
         if (_selectedPackage == null || string.IsNullOrEmpty(_projectPath))
             return;
-        
+
         var versionCombo = this.FindControl<ComboBox>("VersionComboBox");
         var version = versionCombo?.SelectedItem?.ToString();
-        
+
         await InstallPackageAsync(_selectedPackage.Id, version);
     }
-    
+
     private async void UninstallButton_Click(object? sender, RoutedEventArgs e)
     {
         if (_selectedPackage == null || string.IsNullOrEmpty(_projectPath))
             return;
-        
+
         await UninstallPackageAsync(_selectedPackage.Id);
     }
 
@@ -1098,18 +996,18 @@ public partial class NuGetPanelControl : UserControl
             ErrorOccurred?.Invoke(this, LocalizationService.Get("NuGet.NoProject.Error"));
             return;
         }
-        
+
         ShowLoading(string.Format(LocalizationService.Get("NuGet.Installing"), packageId));
-        
+
         try
         {
             var success = await _nugetService.InstallPackageAsync(_projectPath, packageId, version);
-            
+
             if (success)
             {
                 StatusChanged?.Invoke(this, string.Format(LocalizationService.Get("NuGet.SuccessInstalled"), packageId));
                 await RefreshInstalledPackagesAsync();
-                
+
                 // Close details panel
                 var detailsPanel = this.FindControl<Border>("PackageDetailsPanel");
                 if (detailsPanel != null) detailsPanel.IsVisible = false;
@@ -1133,18 +1031,18 @@ public partial class NuGetPanelControl : UserControl
             ErrorOccurred?.Invoke(this, LocalizationService.Get("NuGet.NoProject.Error"));
             return;
         }
-        
+
         ShowLoading(string.Format(LocalizationService.Get("NuGet.Uninstalling"), packageId));
-        
+
         try
         {
             var success = await _nugetService.UninstallPackageAsync(_projectPath, packageId);
-            
+
             if (success)
             {
                 StatusChanged?.Invoke(this, string.Format(LocalizationService.Get("NuGet.SuccessUninstalled"), packageId));
                 await RefreshInstalledPackagesAsync();
-                
+
                 // Close details panel
                 var detailsPanel = this.FindControl<Border>("PackageDetailsPanel");
                 if (detailsPanel != null) detailsPanel.IsVisible = false;
@@ -1163,13 +1061,13 @@ public partial class NuGetPanelControl : UserControl
             ErrorOccurred?.Invoke(this, LocalizationService.Get("NuGet.NoProject.Error"));
             return;
         }
-        
+
         ShowLoading(string.Format(LocalizationService.Get("NuGet.Updating"), package.Id));
-        
+
         try
         {
             var success = await _nugetService.UpdatePackageAsync(_projectPath, package.Id, package.LatestVersion);
-            
+
             if (success)
             {
                 StatusChanged?.Invoke(this, string.Format(LocalizationService.Get("NuGet.SuccessUpdated"), package.Id));
@@ -1186,22 +1084,22 @@ public partial class NuGetPanelControl : UserControl
     {
         if (_updatablePackages.Count == 0)
             return;
-        
+
         ShowLoading(LocalizationService.Get("NuGet.UpdatingAll"));
-        
+
         try
         {
             var total = _updatablePackages.Count;
             var current = 0;
-            
+
             foreach (var package in _updatablePackages.ToList())
             {
                 current++;
                 ShowLoading(string.Format(LocalizationService.Get("NuGet.UpdatingCount"), package.Id, current, total));
-                
+
                 await _nugetService.UpdatePackageAsync(_projectPath!, package.Id, package.LatestVersion);
             }
-            
+
             StatusChanged?.Invoke(this, string.Format(LocalizationService.Get("NuGet.SuccessUpdatedCount"), total));
             await RefreshInstalledPackagesAsync();
         }
@@ -1221,7 +1119,7 @@ public partial class NuGetPanelControl : UserControl
         {
             var overlay = this.FindControl<Border>("LoadingOverlay");
             var loadingText = this.FindControl<TextBlock>("LoadingText");
-            
+
             if (loadingText != null) loadingText.Text = message;
             if (overlay != null) overlay.IsVisible = true;
         });
@@ -1244,7 +1142,7 @@ public partial class NuGetPanelControl : UserControl
             if (fallbackIcon != null) fallbackIcon.IsVisible = true;
             return;
         }
-        
+
         try
         {
             // Check cache
@@ -1260,7 +1158,7 @@ public partial class NuGetPanelControl : UserControl
                 }
                 return;
             }
-            
+
             var response = await _httpClient.GetAsync(iconUrl);
             if (response.IsSuccessStatusCode)
             {
@@ -1268,11 +1166,11 @@ public partial class NuGetPanelControl : UserControl
                 var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
-                
+
                 var bitmap = new Bitmap(memoryStream);
-                
+
                 _iconCache[iconUrl] = bitmap;
-                
+
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     imageControl.Source = bitmap;
@@ -1291,14 +1189,14 @@ public partial class NuGetPanelControl : UserControl
             // Keep fallback visible
         }
     }
-    
+
     /// <summary>
     /// Format a date as relative time (e.g., "2 days ago", "3 months ago")
     /// </summary>
     private static string FormatRelativeDate(DateTime date)
     {
         var span = DateTime.Now - date;
-        
+
         if (span.TotalDays < 1) return LocalizationService.Get("NuGet.RelativeDate.Today");
         if (span.TotalDays < 2) return LocalizationService.Get("NuGet.RelativeDate.Yesterday");
         if (span.TotalDays < 7) return string.Format(LocalizationService.Get("NuGet.RelativeDate.DaysAgo"), (int)span.TotalDays);

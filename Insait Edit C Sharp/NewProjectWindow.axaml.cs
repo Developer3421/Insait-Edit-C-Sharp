@@ -31,13 +31,13 @@ public partial class NewProjectWindow : Window
     public NewProjectWindow(string? currentSolutionPath)
     {
         InitializeComponent();
-        
+
         _currentSolutionPath = currentSolutionPath;
-        
+
         _defaultLocation = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "source", "repos");
-        
+
         var locationBox = this.FindControl<TextBox>("LocationBox");
         if (locationBox != null)
         {
@@ -67,7 +67,7 @@ public partial class NewProjectWindow : Window
             slnxFormatRadio.IsCheckedChanged += (_, _) => UpdateProjectPathPreview();
         if (slnFormatRadio != null)
             slnFormatRadio.IsCheckedChanged += (_, _) => UpdateProjectPathPreview();
-        
+
         UpdateProjectPathPreview();
         ApplyLocalization();
     }
@@ -119,23 +119,11 @@ public partial class NewProjectWindow : Window
     {
         if (sender is Button button && button.Tag is string template)
         {
-            // nanoFramework opens its own dedicated window
-            if (template == "nano")
-            {
-                var espWindow = new Insait_Edit_C_Sharp.Esp.Windows.NewNanoProjectWindow(_currentSolutionPath);
-                var result = await espWindow.ShowDialog<string?>(this);
-                if (!string.IsNullOrEmpty(result))
-                {
-                    Close(result);
-                }
-                return;
-            }
-
             _selectedTemplate = template;
-            
+
             // Update visual selection
             var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate",
-                                    "NanoTemplate", "FSharpConsoleTemplate", "FSharpEmptyTemplate",
+                                    "FSharpConsoleTemplate", "FSharpEmptyTemplate",
                                     "WinFormsTemplate", "CSharpEmptyTemplate" };
             foreach (var name in templates)
             {
@@ -158,12 +146,12 @@ public partial class NewProjectWindow : Window
     {
         var projectNameBox = this.FindControl<TextBox>("ProjectNameBox");
         var solutionNameBox = this.FindControl<TextBox>("SolutionNameBox");
-        
+
         if (projectNameBox != null && solutionNameBox != null)
         {
             solutionNameBox.Text = projectNameBox.Text;
         }
-        
+
         UpdateProjectPathPreview();
     }
 
@@ -196,7 +184,7 @@ public partial class NewProjectWindow : Window
         var previewText = this.FindControl<TextBlock>("ProjectPathPreview");
         var sameDir = this.FindControl<CheckBox>("CreateSolutionDir");
         var slnxFormat = this.FindControl<RadioButton>("SlnxFormat");
-        
+
         if (projectNameBox != null && locationBox != null && previewText != null)
         {
             var projectName = projectNameBox.Text ?? "MyProject";
@@ -253,7 +241,7 @@ public partial class NewProjectWindow : Window
         // Create project directory
         string projectDir;
         string slnDir;
-        
+
         if (sameDir?.IsChecked == true)
         {
             projectDir = Path.Combine(location, projectName);
@@ -272,19 +260,19 @@ public partial class NewProjectWindow : Window
             // Run dotnet new
             var templateName = _selectedTemplate switch
             {
-                "console"        => "console",
-                "classlib"       => "classlib",
-                "avalonia"       => "avalonia.app",
+                "console" => "console",
+                "classlib" => "classlib",
+                "avalonia" => "avalonia.app",
                 "fsharp-console" => "console",
-                "fsharp-empty"   => "classlib",
-                "winforms"       => "winforms",
-                "csharp-empty"   => "classlib",
-                _                => "console"
+                "fsharp-empty" => "classlib",
+                "winforms" => "winforms",
+                "csharp-empty" => "classlib",
+                _ => "console"
             };
 
             // F# templates need the --language flag
             var isFSharp = _selectedTemplate is "fsharp-console" or "fsharp-empty";
-            var langArg  = isFSharp ? " --language F#" : string.Empty;
+            var langArg = isFSharp ? " --language F#" : string.Empty;
 
             var process = new Process
             {
@@ -318,7 +306,7 @@ public partial class NewProjectWindow : Window
                     csprojPath = Path.Combine(projectDir, $"{projectName}{projExt}");
                 }
                 string? slnFilePath = null;
-                
+
                 // If we have a current solution, use it
                 if (!string.IsNullOrEmpty(_currentSolutionPath) && File.Exists(_currentSolutionPath))
                 {
@@ -332,7 +320,7 @@ public partial class NewProjectWindow : Window
                     {
                         var existingSlnFiles = Directory.GetFiles(slnDir, "*.sln");
                         var existingSlnxFiles = Directory.GetFiles(slnDir, "*.slnx");
-                        
+
                         if (existingSlnFiles.Length > 0)
                         {
                             slnFilePath = existingSlnFiles[0];
@@ -346,7 +334,7 @@ public partial class NewProjectWindow : Window
 
                 // Use SolutionService for creating/updating solution
                 var solutionService = new SolutionService();
-                
+
                 if (slnFilePath == null)
                 {
                     // Create new solution using SolutionService with selected format.
@@ -358,33 +346,33 @@ public partial class NewProjectWindow : Window
                     Debug.WriteLine($"slnDir: {slnDir}");
                     Debug.WriteLine($"solutionName: {solutionName}");
                     Debug.WriteLine($"useSlnx: {useSlnx}");
-                    
+
                     Directory.CreateDirectory(slnDir); // ensure dir exists
                     var selectedFormat = useSlnx ? SolutionFormat.Slnx : SolutionFormat.Sln;
                     slnFilePath = await solutionService.CreateSolutionAsync(
                         slnDir,
-                        solutionName, 
+                        solutionName,
                         createDirectory: false,  // slnDir is already the target directory
-                        initGit: false, 
+                        initGit: false,
                         format: selectedFormat);
-                    
+
                     Debug.WriteLine($"slnFilePath: {slnFilePath}");
                     Debug.WriteLine($"Created solution file exists: {(slnFilePath != null ? File.Exists(slnFilePath).ToString() : "slnFilePath is null")}");
-                    
+
                     if (slnFilePath == null)
                     {
                         Debug.WriteLine("Failed to create solution file");
                         return;
                     }
                 }
-                
+
                 // Add project to solution using SolutionService
                 if (File.Exists(csprojPath) && File.Exists(slnFilePath))
                 {
                     Debug.WriteLine($"=== Adding project to solution ===");
                     Debug.WriteLine($"csprojPath: {csprojPath}");
                     Debug.WriteLine($"slnFilePath: {slnFilePath}");
-                    
+
                     var added = await solutionService.AddProjectToSolutionAsync(slnFilePath, csprojPath);
                     Debug.WriteLine($"Project added to solution: {added}");
                 }

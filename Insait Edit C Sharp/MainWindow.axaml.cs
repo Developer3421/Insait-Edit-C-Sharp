@@ -10,9 +10,6 @@ using Insait_Edit_C_Sharp.Services;
 using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.InsaitCodeEditor;
 using Insait_Edit_C_Sharp.Models;
-using Insait_Edit_C_Sharp.Esp.Windows;
-using Insait_Edit_C_Sharp.Esp.Models;
-using Insait_Edit_C_Sharp.Esp.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -35,14 +32,10 @@ public partial class MainWindow : Window
     private readonly MainViewModel _viewModel;
     private readonly FileService _fileService;
     private readonly BuildService _buildService;
-    private readonly NanoBuildService _nanoBuildService;
     private readonly CodeAnalysisService _codeAnalysisService;
     private readonly RunConfigurationService _runConfigService;
     private readonly PublishService _publishService;
     private readonly CopilotCliService _copilotCliService;
-    private readonly CopilotSdkService _copilotSdkService;
-    private bool _isCliMode = false; // false = Copilot Chat (SDK), true = CLI Commands
-    private string? _attachedFilePath; // path of file attached for Copilot context
     private string? _projectPath;
     private InsaitEditor? _insaitEditor;
     private TerminalControl? _terminalControl;
@@ -58,24 +51,21 @@ public partial class MainWindow : Window
     public MainWindow(string? projectPath)
     {
         InitializeComponent();
-        
+
         // Set up column constraints for splitters (JetBrains Rider style)
         SetupColumnConstraints();
-        
+
         _viewModel = new MainViewModel();
         _fileService = new FileService();
         _buildService = new BuildService();
-        _nanoBuildService = new NanoBuildService();
         _codeAnalysisService = new CodeAnalysisService();
         _runConfigService = new RunConfigurationService();
         _publishService = new PublishService();
         _copilotCliService = new CopilotCliService();
-        _copilotSdkService = new CopilotSdkService();
-        _copilotSdkService.LoadSettings(); // restore model, streaming, etc.
         _projectPath = projectPath;
-        
+
         DataContext = _viewModel;
-        
+
         // Wire up file watcher refresh action to run on UI thread
         _viewModel.RefreshTreeAction = () =>
         {
@@ -84,7 +74,7 @@ public partial class MainWindow : Window
                 RefreshFileTree();
             });
         };
-        
+
         // Set initial window position for restore
         _restoreSize = new Size(Width, Height);
 
@@ -93,13 +83,13 @@ public partial class MainWindow : Window
 
         // Initialize Build Service events
         InitializeBuildService();
-        
+
         // Initialize Code Analysis Service events
         InitializeCodeAnalysisService();
 
         // Initialize Search panel
         InitializeSearchPanel();
-        
+
         // Load project if specified, otherwise load current directory
         if (!string.IsNullOrEmpty(projectPath))
         {
@@ -123,18 +113,15 @@ public partial class MainWindow : Window
 
         // Update title
         UpdateTitle();
-        
+
         // Setup keyboard shortcuts
         SetupKeyboardShortcuts();
-        
+
         // Apply localization and subscribe to language changes
         ApplyLocalization();
         LocalizationService.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(ApplyLocalization);
-
-        // Initialize GitHub Copilot SDK in background
-        Opened += (_, _) => _ = InitializeCopilotSdkAsync();
     }
-    
+
     private void SetupColumnConstraints()
     {
         // Col 0: Activity bar - fixed 52px, never resized
@@ -146,22 +133,22 @@ public partial class MainWindow : Window
         var mainGrid = this.FindControl<Grid>("MainContentGrid");
         if (mainGrid == null || mainGrid.ColumnDefinitions.Count < 6) return;
 
-        var sideCol   = mainGrid.ColumnDefinitions[1];
+        var sideCol = mainGrid.ColumnDefinitions[1];
         var editorCol = mainGrid.ColumnDefinitions[3];
-        var aiCol     = mainGrid.ColumnDefinitions[5];
+        var aiCol = mainGrid.ColumnDefinitions[5];
 
-        sideCol.MinWidth   = 150;
-        sideCol.MaxWidth   = 550;
+        sideCol.MinWidth = 150;
+        sideCol.MaxWidth = 550;
         editorCol.MinWidth = 300;
-        aiCol.MinWidth     = 220;
-        aiCol.MaxWidth     = 600;
+        aiCol.MinWidth = 220;
+        aiCol.MaxWidth = 600;
     }
 
     private void SetupKeyboardShortcuts()
     {
         KeyDown += OnWindowKeyDown;
     }
-    
+
     private async void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
         // Ctrl+S - Save current file
@@ -362,7 +349,7 @@ public partial class MainWindow : Window
             OpenFileInEditor(file.Path.LocalPath);
         }
     }
-    
+
     private void CreateNewFile()
     {
         var newTab = new EditorTab
@@ -373,29 +360,29 @@ public partial class MainWindow : Window
             Language = "csharp",
             IsDirty = false
         };
-        
+
         _viewModel.Tabs.Add(newTab);
         _viewModel.ActiveTab = newTab;
-        
+
         if (_insaitEditor != null)
         {
             _insaitEditor.SetContent(string.Empty, "csharp");
         }
-        
+
         _viewModel.StatusText = "New file created";
     }
-    
+
     private async Task CloseCurrentTabAsync()
     {
         if (_viewModel.ActiveTab != null)
         {
             var tab = _viewModel.ActiveTab;
-            
+
             // Check if the tab has unsaved changes
             if (tab.IsDirty)
             {
                 var result = await ShowSaveConfirmationDialogAsync(tab.FileName);
-                
+
                 if (result == SaveConfirmationResult.Save)
                 {
                     await SaveCurrentFileAsync();
@@ -405,9 +392,9 @@ public partial class MainWindow : Window
                     return;
                 }
             }
-            
+
             _viewModel.CloseTab(tab);
-            
+
             // Update editor with active tab content
             if (_insaitEditor != null && _viewModel.ActiveTab != null)
             {
@@ -432,26 +419,20 @@ public partial class MainWindow : Window
             {
                 return dir.FullName;
             }
-            
+
             // Look for .sln files
             var slnFiles = dir.GetFiles("*.sln");
             if (slnFiles.Length > 0)
             {
                 return dir.FullName;
             }
-            
+
             var csprojFiles = dir.GetFiles("*.csproj");
             if (csprojFiles.Length > 0)
             {
                 return dir.Parent?.FullName ?? dir.FullName;
             }
-            
-            var nfprojFiles = dir.GetFiles("*.nfproj");
-            if (nfprojFiles.Length > 0)
-            {
-                return dir.Parent?.FullName ?? dir.FullName;
-            }
-            
+
             dir = dir.Parent;
         }
         return startPath;
@@ -488,14 +469,14 @@ public partial class MainWindow : Window
 
     private void WireEditorEvents()
     {
-        _insaitEditor!.EditorReady             += OnEditorReady;
-        _insaitEditor!.ContentChanged          += OnEditorContentChanged;
+        _insaitEditor!.EditorReady += OnEditorReady;
+        _insaitEditor!.ContentChanged += OnEditorContentChanged;
         _insaitEditor!.ContentChangedWithValue += OnEditorContentChangedWithValue;
-        _insaitEditor!.CursorPositionChanged   += OnCursorPositionChanged;
+        _insaitEditor!.CursorPositionChanged += OnCursorPositionChanged;
         _insaitEditor!.UndoRedoManager.StateChanged += OnUndoRedoStateChanged;
         _insaitEditor!.GoToDefinitionRequested += OnGoToDefinitionRequested;
-        _insaitEditor!.RenameCompleted         += OnRenameCompleted;
-        _insaitEditor!.NuGetInstallRequested   += OnNuGetInstallRequested;
+        _insaitEditor!.RenameCompleted += OnRenameCompleted;
+        _insaitEditor!.NuGetInstallRequested += OnNuGetInstallRequested;
     }
 
     /// <summary>
@@ -759,7 +740,7 @@ public partial class MainWindow : Window
         if (File.Exists(projectPath))
         {
             var extension = Path.GetExtension(projectPath).ToLowerInvariant();
-            
+
             if (extension == ".sln" || extension == ".slnx")
             {
                 // Load solution - load its directory
@@ -771,13 +752,13 @@ public partial class MainWindow : Window
                     _viewModel.CurrentProjectPath = directory;
                     await _viewModel.LoadProjectFolderAsync(directory);
                     _viewModel.StatusText = $"Loaded solution: {Path.GetFileName(projectPath)}";
-                    
+
                     // Load run configurations for the solution
                     _ = _runConfigService.LoadConfigurationsAsync(projectPath);
-                    
+
                     // Update Git panel
                     UpdateGitPanel(directory);
-                    
+
                     UpdateTitle();
                 }
                 else
@@ -785,7 +766,7 @@ public partial class MainWindow : Window
                     _viewModel.StatusText = $"Solution directory not found: {directory}";
                 }
             }
-            else if (extension == ".csproj" || extension == ".fsproj" || extension == ".vbproj" || extension == ".nfproj")
+            else if (extension == ".csproj" || extension == ".fsproj" || extension == ".vbproj")
             {
                 // Load project - load its directory
                 var directory = Path.GetDirectoryName(projectPath);
@@ -796,13 +777,13 @@ public partial class MainWindow : Window
                     _viewModel.CurrentProjectPath = directory;
                     await _viewModel.LoadProjectFolderAsync(directory);
                     _viewModel.StatusText = $"Loaded project: {Path.GetFileName(projectPath)}";
-                    
+
                     // Load run configurations for the project
                     _ = _runConfigService.LoadConfigurationsAsync(projectPath);
-                    
+
                     // Update Git panel
                     UpdateGitPanel(directory);
-                    
+
                     UpdateTitle();
                 }
                 else
@@ -822,14 +803,14 @@ public partial class MainWindow : Window
             // Load folder
             await _viewModel.LoadProjectFolderAsync(projectPath);
             _viewModel.StatusText = $"Loaded folder: {Path.GetFileName(projectPath)}";
-            
+
             // Try to find solution/project and load configurations
             var solutionFile = FindSolutionFile();
             if (!string.IsNullOrEmpty(solutionFile))
             {
                 _ = _runConfigService.LoadConfigurationsAsync(solutionFile);
             }
-            
+
             // Update Git panel
             UpdateGitPanel(projectPath);
         }
@@ -897,7 +878,6 @@ public partial class MainWindow : Window
         SetButtonTooltip("SearchButton", L("Sidebar.Search"));
         SetButtonTooltip("GitButton", L("Sidebar.Git"));
         SetButtonTooltip("NuGetButton", L("Sidebar.NuGet"));
-        SetButtonTooltip("LedPanelButton", L("Sidebar.LedPanel"));
         SetButtonTooltip("AccountButton", L("Sidebar.Account"));
         SetButtonTooltip("SettingsButton", L("Sidebar.Settings"));
 
@@ -1235,16 +1215,16 @@ public partial class MainWindow : Window
     {
         await TryCloseWindowAsync();
     }
-    
+
     private async Task TryCloseWindowAsync()
     {
         // Check for unsaved changes
         var unsavedTabs = _viewModel.Tabs.Where(t => t.IsDirty).ToList();
-        
+
         if (unsavedTabs.Count > 0)
         {
             var result = await ShowSaveAllConfirmationDialogAsync(unsavedTabs.Count);
-            
+
             if (result == SaveConfirmationResult.Save)
             {
                 // Save all before closing
@@ -1257,10 +1237,10 @@ public partial class MainWindow : Window
             }
             // If result is DontSave, continue closing without saving
         }
-        
+
         Close();
     }
-    
+
     private async Task<SaveConfirmationResult> ShowSaveAllConfirmationDialogAsync(int unsavedCount)
     {
         var dialog = new Window
@@ -1405,45 +1385,10 @@ public partial class MainWindow : Window
             case "AddProjectToSolution":
                 await AddNewProjectToSolutionAsync();
                 break;
-            case "NewEspProject":
-                var currentSolutionForEsp = FindSolutionFile();
-                var espWindow = new Esp.Windows.NewNanoProjectWindow(currentSolutionForEsp);
-                var espResult = await espWindow.ShowDialog<string?>(this);
-                if (!string.IsNullOrEmpty(espResult))
-                {
-                    // Reload the solution/project tree to show the new nanoFramework project
-                    var solutionFileForEsp = FindSolutionFile();
-                    if (!string.IsNullOrEmpty(solutionFileForEsp))
-                    {
-                        var solutionDirForEsp = Path.GetDirectoryName(solutionFileForEsp);
-                        if (!string.IsNullOrEmpty(solutionDirForEsp))
-                        {
-                            _projectPath = solutionDirForEsp;
-                            _viewModel.CurrentProjectPath = solutionDirForEsp;
-                            _viewModel.FileTreeItems.Clear();
-                            await _viewModel.LoadProjectFolderAsync(solutionDirForEsp);
-                            UpdateTitle();
-                        }
-                    }
-                    else
-                    {
-                        // No solution — load the project directory directly
-                        var espProjectDir = Path.GetDirectoryName(espResult);
-                        if (!string.IsNullOrEmpty(espProjectDir))
-                        {
-                            _projectPath = espProjectDir;
-                            LoadProject(espProjectDir);
-                            UpdateTitle();
-                            RefreshFileTree();
-                        }
-                    }
-                    _viewModel.StatusText = $"Created nanoFramework project: {Path.GetFileNameWithoutExtension(espResult)}";
-                }
-                break;
             case "OpenSolution":
                 await OpenSolutionAsync();
                 break;
-            
+
             // File actions
             case "NewFile":
                 CreateNewFile();
@@ -1967,8 +1912,8 @@ public partial class MainWindow : Window
 
     private void ToggleExplorerSearch(bool open)
     {
-        var searchBar    = this.FindControl<Border>("ExplorerSearchBar");
-        var resultsScroll= this.FindControl<ScrollViewer>("SearchResultsScrollViewer");
+        var searchBar = this.FindControl<Border>("ExplorerSearchBar");
+        var resultsScroll = this.FindControl<ScrollViewer>("SearchResultsScrollViewer");
         if (searchBar == null) return;
 
         searchBar.IsVisible = open;
@@ -1992,33 +1937,33 @@ public partial class MainWindow : Window
     private void SwitchSidePanel(string panelName)
     {
         _currentSidePanel = panelName;
-        
+
         // Get all panels
         var explorerPanel = this.FindControl<Grid>("ExplorerPanel");
         var nugetPanel = this.FindControl<Border>("NuGetSidePanel");
         var accountPanel = this.FindControl<Border>("AccountSidePanel");
         var settingsPanel = this.FindControl<Border>("SettingsSidePanel");
-        
+
         // Get all sidebar buttons
         var explorerButton = this.FindControl<Button>("ExplorerButton");
         var gitButton = this.FindControl<Button>("GitButton");
         var nugetButton = this.FindControl<Button>("NuGetButton");
         var accountButton = this.FindControl<Button>("AccountButton");
         var settingsButton = this.FindControl<Button>("SettingsButton");
-        
+
         // Hide all panels
         if (explorerPanel != null) explorerPanel.IsVisible = false;
         if (nugetPanel != null) nugetPanel.IsVisible = false;
         if (accountPanel != null) accountPanel.IsVisible = false;
         if (settingsPanel != null) settingsPanel.IsVisible = false;
-        
+
         // Remove active class from all buttons
         explorerButton?.Classes.Remove("active");
         gitButton?.Classes.Remove("active");
         nugetButton?.Classes.Remove("active");
         accountButton?.Classes.Remove("active");
         settingsButton?.Classes.Remove("active");
-        
+
         // Show selected panel and activate button
         switch (panelName)
         {
@@ -2075,7 +2020,7 @@ public partial class MainWindow : Window
 
     private static void CollectProjects(Models.FileTreeItem item, List<string> paths)
     {
-        if (item.ItemType is Models.FileTreeItemType.Project or Models.FileTreeItemType.EspProject)
+        if (item.ItemType is Models.FileTreeItemType.Project)
             paths.Add(item.FullPath);
         foreach (var child in item.Children)
             CollectProjects(child, paths);
@@ -2087,18 +2032,18 @@ public partial class MainWindow : Window
     }
 
     private NuGetPanelControl? _nugetPanelControl;
-    
+
     private async void NuGet_Click(object? sender, RoutedEventArgs e)
     {
         EnsureSidePanelVisible();
         SwitchSidePanel("nuget");
-        
+
         // Initialize NuGet panel if not done yet
         if (_nugetPanelControl == null)
         {
             InitializeNuGetPanel();
         }
-        
+
         // Set project path if available
         if (_nugetPanelControl != null && !string.IsNullOrEmpty(_projectPath))
         {
@@ -2110,23 +2055,23 @@ public partial class MainWindow : Window
     {
         var nugetPanelContainer = this.FindControl<Border>("NuGetSidePanel");
         if (nugetPanelContainer == null) return;
-        
+
         _nugetPanelControl = new NuGetPanelControl();
-        
+
         // Subscribe to events
         _nugetPanelControl.StatusChanged += (s, status) =>
         {
             _viewModel.StatusText = status;
         };
-        
+
         _nugetPanelControl.ErrorOccurred += (s, error) =>
         {
             _viewModel.StatusText = $"Error: {error}";
         };
-        
+
         // Add to container
         nugetPanelContainer.Child = _nugetPanelControl;
-        
+
         // Set project path
         if (!string.IsNullOrEmpty(_projectPath))
         {
@@ -2142,10 +2087,10 @@ public partial class MainWindow : Window
     private async Task ShowGitStatusDialog()
     {
         var gitService = new GitService();
-        
+
         // Перевірка чи Git встановлений
         var isGitInstalled = await gitService.IsGitInstalledAsync();
-        
+
         if (!isGitInstalled)
         {
             await ShowGitNotInstalledDialog();
@@ -2161,7 +2106,7 @@ public partial class MainWindow : Window
 
         // Отримуємо директорію проекту (якщо _projectPath - це файл, беремо його директорію)
         var projectDirectory = GetProjectDirectory(_projectPath);
-        
+
         if (string.IsNullOrEmpty(projectDirectory) || !Directory.Exists(projectDirectory))
         {
             await ShowNoProjectOpenedDialog();
@@ -2185,7 +2130,7 @@ public partial class MainWindow : Window
         {
             return Path.GetDirectoryName(path);
         }
-        
+
         // Якщо це директорія, повертаємо як є
         if (Directory.Exists(path))
         {
@@ -2232,7 +2177,7 @@ public partial class MainWindow : Window
                     return result;
                 }
             }
-            
+
             result.Status = GitRepoStatus.Healthy;
             result.Message = $"Git репозиторій OK. Гілка: {statusResult.CurrentBranch}";
             result.BranchName = statusResult.CurrentBranch;
@@ -2267,7 +2212,7 @@ public partial class MainWindow : Window
             var output = await process.StandardOutput.ReadToEndAsync();
             var error = await process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
-            
+
             return (process.ExitCode, output, error);
         }
         catch (Exception ex)
@@ -2290,21 +2235,21 @@ public partial class MainWindow : Window
         };
 
         var mainGrid = new Grid { RowDefinitions = RowDefinitions.Parse("*,Auto") };
-        
-        var content = new StackPanel 
-        { 
-            Spacing = 16, 
+
+        var content = new StackPanel
+        {
+            Spacing = 16,
             Margin = new Thickness(24),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
-        
+
         content.Children.Add(new TextBlock
         {
             Text = "⚠️",
             FontSize = 48,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         });
-        
+
         content.Children.Add(new TextBlock
         {
             Text = "Git не встановлений",
@@ -2313,7 +2258,7 @@ public partial class MainWindow : Window
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             Foreground = Avalonia.Media.Brushes.White
         });
-        
+
         content.Children.Add(new TextBlock
         {
             Text = "Для роботи з Git необхідно встановити Git.\nЗавантажте з https://git-scm.com/",
@@ -2326,24 +2271,24 @@ public partial class MainWindow : Window
         Grid.SetRow(content, 0);
         mainGrid.Children.Add(content);
 
-        var buttonPanel = new StackPanel 
-        { 
+        var buttonPanel = new StackPanel
+        {
             Orientation = Avalonia.Layout.Orientation.Horizontal,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             Spacing = 12,
             Margin = new Thickness(0, 0, 0, 20)
         };
-        
-        var closeButton = new Button 
-        { 
-            Content = "Закрити", 
+
+        var closeButton = new Button
+        {
+            Content = "Закрити",
             Width = 100,
             Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
             Foreground = Avalonia.Media.Brushes.White
         };
         closeButton.Click += (s, e) => dialog.Close();
         buttonPanel.Children.Add(closeButton);
-        
+
         Grid.SetRow(buttonPanel, 1);
         mainGrid.Children.Add(buttonPanel);
 
@@ -2372,20 +2317,20 @@ public partial class MainWindow : Window
             Background = Avalonia.Media.Brushes.Transparent
         };
 
-        var content = new StackPanel 
-        { 
-            Spacing = 16, 
+        var content = new StackPanel
+        {
+            Spacing = 16,
             Margin = new Thickness(24),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
-        
+
         content.Children.Add(new TextBlock
         {
             Text = "📂",
             FontSize = 40,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         });
-        
+
         content.Children.Add(new TextBlock
         {
             Text = "Немає відкритого проекту",
@@ -2395,9 +2340,9 @@ public partial class MainWindow : Window
             Foreground = Avalonia.Media.Brushes.White
         });
 
-        var closeButton = new Button 
-        { 
-            Content = "Закрити", 
+        var closeButton = new Button
+        {
+            Content = "Закрити",
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             Width = 100,
             Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
@@ -2432,9 +2377,9 @@ public partial class MainWindow : Window
 
         var mainGrid = new Grid { RowDefinitions = RowDefinitions.Parse("*,Auto") };
 
-        var content = new StackPanel 
-        { 
-            Spacing = 16, 
+        var content = new StackPanel
+        {
+            Spacing = 16,
             Margin = new Thickness(24),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
@@ -2505,8 +2450,8 @@ public partial class MainWindow : Window
         mainGrid.Children.Add(content);
 
         // Кнопки
-        var buttonPanel = new StackPanel 
-        { 
+        var buttonPanel = new StackPanel
+        {
             Orientation = Avalonia.Layout.Orientation.Horizontal,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             Spacing = 12,
@@ -2515,9 +2460,9 @@ public partial class MainWindow : Window
 
         if (result.Status == GitRepoStatus.NotInitialized)
         {
-            var initButton = new Button 
-            { 
-                Content = "🔧 Ініціалізувати Git", 
+            var initButton = new Button
+            {
+                Content = "🔧 Ініціалізувати Git",
                 Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#89B4FA")),
                 Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
                 FontWeight = FontWeight.SemiBold,
@@ -2532,9 +2477,9 @@ public partial class MainWindow : Window
         }
         else if (result.Status == GitRepoStatus.Corrupted)
         {
-            var repairButton = new Button 
-            { 
-                Content = "🔧 Спробувати відновити", 
+            var repairButton = new Button
+            {
+                Content = "🔧 Спробувати відновити",
                 Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FAB387")),
                 Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
                 FontWeight = FontWeight.SemiBold,
@@ -2547,9 +2492,9 @@ public partial class MainWindow : Window
             };
             buttonPanel.Children.Add(repairButton);
 
-            var reinitButton = new Button 
-            { 
-                Content = "🗑️ Видалити та створити новий", 
+            var reinitButton = new Button
+            {
+                Content = "🗑️ Видалити та створити новий",
                 Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#F38BA8")),
                 Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
                 FontWeight = FontWeight.SemiBold,
@@ -2563,9 +2508,9 @@ public partial class MainWindow : Window
             buttonPanel.Children.Add(reinitButton);
         }
 
-        var closeButton = new Button 
-        { 
-            Content = "Закрити", 
+        var closeButton = new Button
+        {
+            Content = "Закрити",
             Width = 100,
             Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
             Foreground = Avalonia.Media.Brushes.White,
@@ -2595,14 +2540,14 @@ public partial class MainWindow : Window
     private async Task InitializeGitRepository(string path)
     {
         _viewModel.StatusText = "Ініціалізація Git репозиторію...";
-        
+
         var result = await RunGitCommandAsync("init", path);
-        
+
         if (result.ExitCode == 0)
         {
             _viewModel.StatusText = "✅ Git репозиторій успішно ініціалізовано!";
             UpdateGitStatusIndicator(GitRepoStatus.Healthy);
-            
+
             // Оновлюємо Git вікно якщо воно відкрите
             if (_gitWindow != null && _gitWindow.IsVisible)
             {
@@ -2621,19 +2566,19 @@ public partial class MainWindow : Window
 
         // Спробувати git fsck
         var fsckResult = await RunGitCommandAsync("fsck --full", path);
-        
+
         if (fsckResult.ExitCode == 0 || !fsckResult.Error.Contains("fatal"))
         {
             // Спробувати git gc
             var gcResult = await RunGitCommandAsync("gc --prune=now", path);
-            
+
             _viewModel.StatusText = "✅ Git репозиторій відновлено!";
             UpdateGitStatusIndicator(GitRepoStatus.Healthy);
         }
         else
         {
             _viewModel.StatusText = $"⚠️ Не вдалося відновити: {fsckResult.Error}";
-            
+
             // Показати діалог з пропозицією переініціалізувати
             await ShowRepairFailedDialog(path);
         }
@@ -2653,9 +2598,9 @@ public partial class MainWindow : Window
 
         var mainGrid = new Grid { RowDefinitions = RowDefinitions.Parse("*,Auto") };
 
-        var content = new StackPanel 
-        { 
-            Spacing = 12, 
+        var content = new StackPanel
+        {
+            Spacing = 12,
             Margin = new Thickness(24),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
@@ -2687,17 +2632,17 @@ public partial class MainWindow : Window
         Grid.SetRow(content, 0);
         mainGrid.Children.Add(content);
 
-        var buttonPanel = new StackPanel 
-        { 
+        var buttonPanel = new StackPanel
+        {
             Orientation = Avalonia.Layout.Orientation.Horizontal,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             Spacing = 12,
             Margin = new Thickness(0, 0, 0, 20)
         };
-        
-        var reinitButton = new Button 
-        { 
-            Content = "Так, переініціалізувати", 
+
+        var reinitButton = new Button
+        {
+            Content = "Так, переініціалізувати",
             Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FAB387")),
             Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#1E1E2E")),
             FontWeight = FontWeight.SemiBold,
@@ -2710,9 +2655,9 @@ public partial class MainWindow : Window
         };
         buttonPanel.Children.Add(reinitButton);
 
-        var cancelButton = new Button 
-        { 
-            Content = "Скасувати", 
+        var cancelButton = new Button
+        {
+            Content = "Скасувати",
             Background = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#3D3D4D")),
             Foreground = Avalonia.Media.Brushes.White,
             Padding = new Thickness(16, 10)
@@ -2740,7 +2685,7 @@ public partial class MainWindow : Window
         _viewModel.StatusText = "Видалення пошкодженого Git...";
 
         var gitPath = Path.Combine(path, ".git");
-        
+
         try
         {
             if (Directory.Exists(gitPath))
@@ -2750,7 +2695,7 @@ public partial class MainWindow : Window
             }
 
             _viewModel.StatusText = "Ініціалізація нового Git репозиторію...";
-            
+
             // Створюємо новий репозиторій
             await InitializeGitRepository(path);
         }
@@ -2780,13 +2725,13 @@ public partial class MainWindow : Window
     {
         EnsureSidePanelVisible();
         SwitchSidePanel("account");
-        
+
         // Initialize Account panel if not done yet
         if (_accountPanelControl == null)
         {
             InitializeAccountPanel();
         }
-        
+
         // Refresh account data when panel is shown
         if (_accountPanelControl != null)
         {
@@ -2806,7 +2751,7 @@ public partial class MainWindow : Window
 
         EnsureSidePanelVisible();
         SwitchSidePanel("settings");
-        
+
         // Reload settings each time panel is shown
         _settingsPanelControl?.LoadSettings();
     }
@@ -2815,15 +2760,17 @@ public partial class MainWindow : Window
     {
         var settingsPanelContainer = this.FindControl<Border>("SettingsSidePanel");
         if (settingsPanelContainer == null) return;
-        
+
         _settingsPanelControl = new SettingsPanelControl();
-        
+
         // Subscribe to events
         _settingsPanelControl.StatusChanged += (s, status) =>
         {
             _viewModel.StatusText = status;
         };
-        
+
+        _settingsPanelControl.SettingsSaved += (_, _) => { };
+
         // Add to container
         settingsPanelContainer.Child = _settingsPanelControl;
     }
@@ -2837,11 +2784,11 @@ public partial class MainWindow : Window
     private void InitializeSearchPanel()
     {
         // Tab toggle buttons
-        var tabFilesBtn   = this.FindControl<Button>("SearchTabFilesBtn");
+        var tabFilesBtn = this.FindControl<Button>("SearchTabFilesBtn");
         var tabContentBtn = this.FindControl<Button>("SearchTabContentBtn");
 
         if (tabFilesBtn != null)
-            tabFilesBtn.Click += (_, _) => { _searchTabIsFiles = true;  UpdateSearchTabUI(); };
+            tabFilesBtn.Click += (_, _) => { _searchTabIsFiles = true; UpdateSearchTabUI(); };
         if (tabContentBtn != null)
             tabContentBtn.Click += (_, _) => { _searchTabIsFiles = false; UpdateSearchTabUI(); };
 
@@ -2872,10 +2819,10 @@ public partial class MainWindow : Window
 
     private void UpdateSearchTabUI()
     {
-        var filesBorder   = this.FindControl<StackPanel>("FindFilesBorder");
+        var filesBorder = this.FindControl<StackPanel>("FindFilesBorder");
         var contentBorder = this.FindControl<StackPanel>("FindContentBorder");
-        if (filesBorder   != null) filesBorder.IsVisible   = _searchTabIsFiles;
-        if (contentBorder != null) contentBorder.IsVisible  = !_searchTabIsFiles;
+        if (filesBorder != null) filesBorder.IsVisible = _searchTabIsFiles;
+        if (contentBorder != null) contentBorder.IsVisible = !_searchTabIsFiles;
 
         ClearSearchResults();
         SetSearchStatus("");
@@ -2913,8 +2860,7 @@ public partial class MainWindow : Window
     private static void CollectProjectsFromTree(FileTreeItem item,
         List<(string Label, string Directory)> projects)
     {
-        if (item.ItemType == FileTreeItemType.Project ||
-            item.ItemType == FileTreeItemType.EspProject)
+        if (item.ItemType == FileTreeItemType.Project)
         {
             var dir = item.IsDirectory ? item.FullPath : Path.GetDirectoryName(item.FullPath) ?? "";
             if (!string.IsNullOrEmpty(dir))
@@ -3021,8 +2967,8 @@ public partial class MainWindow : Window
         }
 
         bool caseSensitive = this.FindControl<CheckBox>("SearchCaseSensitiveCheck")?.IsChecked == true;
-        bool useRegex      = this.FindControl<CheckBox>("SearchRegexCheck")?.IsChecked == true;
-        bool wholeWord     = this.FindControl<CheckBox>("SearchWholeWordCheck")?.IsChecked == true;
+        bool useRegex = this.FindControl<CheckBox>("SearchRegexCheck")?.IsChecked == true;
+        bool wholeWord = this.FindControl<CheckBox>("SearchWholeWordCheck")?.IsChecked == true;
 
         SetSearchStatus("Searching…");
         ClearSearchResults();
@@ -3050,7 +2996,7 @@ public partial class MainWindow : Window
         }
 
         int totalMatches = 0;
-        int totalFiles   = 0;
+        int totalFiles = 0;
 
         try
         {
@@ -3103,7 +3049,7 @@ public partial class MainWindow : Window
         int idx = 0;
         while ((idx = line.IndexOf(word, idx, comparison)) >= 0)
         {
-            bool leftOk  = idx == 0 || !char.IsLetterOrDigit(line[idx - 1]) && line[idx - 1] != '_';
+            bool leftOk = idx == 0 || !char.IsLetterOrDigit(line[idx - 1]) && line[idx - 1] != '_';
             bool rightOk = idx + word.Length >= line.Length ||
                            !char.IsLetterOrDigit(line[idx + word.Length]) && line[idx + word.Length] != '_';
             if (leftOk && rightOk) return true;
@@ -3129,13 +3075,13 @@ public partial class MainWindow : Window
         var border = new Border
         {
             Background = Avalonia.Media.Brushes.Transparent,
-            Padding    = new Thickness(6, 4),
-            Cursor     = new Cursor(StandardCursorType.Hand),
-            Margin     = new Thickness(0, 1)
+            Padding = new Thickness(6, 4),
+            Cursor = new Cursor(StandardCursorType.Hand),
+            Margin = new Thickness(0, 1)
         };
         border.PointerEntered += (_, _) => border.Background =
             new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#30FFFFFF"));
-        border.PointerExited  += (_, _) => border.Background = Avalonia.Media.Brushes.Transparent;
+        border.PointerExited += (_, _) => border.Background = Avalonia.Media.Brushes.Transparent;
         border.PointerPressed += (_, e) =>
         {
             if (e.GetCurrentPoint(border).Properties.IsLeftButtonPressed)
@@ -3147,15 +3093,15 @@ public partial class MainWindow : Window
         var fileNameLine = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
         var iconTb = new TextBlock
         {
-            Text   = GetFileIcon(filePath),
+            Text = GetFileIcon(filePath),
             Margin = new Thickness(0, 0, 5, 0),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             FontSize = 11
         };
         var pathTb = new TextBlock
         {
-            Text      = relPath,
-            FontSize  = 12,
+            Text = relPath,
+            FontSize = 12,
             Foreground = new Avalonia.Media.SolidColorBrush(
                 Avalonia.Media.Color.Parse("#FFCDD6F4")),
             TextWrapping = Avalonia.Media.TextWrapping.NoWrap,
@@ -3171,13 +3117,13 @@ public partial class MainWindow : Window
         {
             var linePreview = new TextBlock
             {
-                Text      = $"  line {lineNumber}: {lineText}",
-                FontSize  = 11,
+                Text = $"  line {lineNumber}: {lineText}",
+                FontSize = 11,
                 Foreground = new Avalonia.Media.SolidColorBrush(
                     Avalonia.Media.Color.Parse("#FF9399B2")),
                 TextWrapping = Avalonia.Media.TextWrapping.NoWrap,
                 TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis,
-                Margin   = new Thickness(0, 1, 0, 0)
+                Margin = new Thickness(0, 1, 0, 0)
             };
             innerStack.Children.Add(linePreview);
         }
@@ -3199,9 +3145,9 @@ public partial class MainWindow : Window
 
     private void SetSearchStatus(string text)
     {
-        var lbl    = this.FindControl<TextBlock>("SearchStatusLabel");
+        var lbl = this.FindControl<TextBlock>("SearchStatusLabel");
         var border = this.FindControl<Border>("SearchStatusBorder");
-        if (lbl    != null) lbl.Text       = text;
+        if (lbl != null) lbl.Text = text;
         if (border != null) border.IsVisible = !string.IsNullOrEmpty(text);
     }
 
@@ -3227,14 +3173,14 @@ public partial class MainWindow : Window
     private static string GetFileIcon(string path) =>
         Path.GetExtension(path).ToLowerInvariant() switch
         {
-            ".cs"    => "C#",
+            ".cs" => "C#",
             ".axaml" => "AX",
-            ".xaml"  => "XA",
-            ".json"  => "{}",
-            ".xml"   => "<>",
-            ".md"    => "📄",
+            ".xaml" => "XA",
+            ".json" => "{}",
+            ".xml" => "<>",
+            ".md" => "📄",
             ".csproj" or ".sln" or ".slnx" => "⚙",
-            _        => "📄"
+            _ => "📄"
         };
 
 
@@ -3242,15 +3188,15 @@ public partial class MainWindow : Window
     {
         var accountPanelContainer = this.FindControl<Border>("AccountSidePanel");
         if (accountPanelContainer == null) return;
-        
+
         _accountPanelControl = new AccountPanelControl();
-        
+
         // Subscribe to events
         _accountPanelControl.StatusChanged += (s, status) =>
         {
             _viewModel.StatusText = status;
         };
-        
+
         _accountPanelControl.RepositoryCloneRequested += async (s, repo) =>
         {
             // Show clone dialog with pre-filled URL
@@ -3260,7 +3206,7 @@ public partial class MainWindow : Window
                 var service = new GitHubAccountService();
                 var clonePath = Path.Combine(result, repo.Name);
                 _viewModel.StatusText = $"Cloning {repo.FullName}...";
-                
+
                 var success = await service.CloneRepositoryAsync(repo.Url, clonePath);
                 if (success)
                 {
@@ -3275,7 +3221,7 @@ public partial class MainWindow : Window
                 }
             }
         };
-        
+
         // Add to container
         accountPanelContainer.Child = _accountPanelControl;
     }
@@ -3287,7 +3233,7 @@ public partial class MainWindow : Window
             Title = title,
             AllowMultiple = false
         });
-        
+
         return folders.Count > 0 ? folders[0].Path.LocalPath : null;
     }
 
@@ -3304,17 +3250,17 @@ public partial class MainWindow : Window
     private async void AddNewItem_Click(object? sender, RoutedEventArgs e)
     {
         var targetDir = GetTargetDirectory();
-        
+
         // Ensure directory exists before opening the dialog
         if (!Directory.Exists(targetDir))
         {
             _viewModel.StatusText = $"Error: Target directory does not exist: {targetDir}";
             return;
         }
-        
+
         var addItemWindow = new AddNewItemWindow(targetDir);
         var result = await addItemWindow.ShowDialog<string?>(this);
-        
+
         if (!string.IsNullOrEmpty(result))
         {
             RefreshFileTree();
@@ -3326,7 +3272,7 @@ public partial class MainWindow : Window
     private async void AddNewFolder_Click(object? sender, RoutedEventArgs e)
     {
         var targetDir = GetTargetDirectory();
-        
+
         var folderName = await ShowInputDialogAsync("New Folder", "Enter folder name:", "NewFolder");
         if (!string.IsNullOrEmpty(folderName))
         {
@@ -3356,7 +3302,7 @@ public partial class MainWindow : Window
 
         var addProjectWindow = new AddProjectToSolutionWindow(solutionPath);
         var result = await addProjectWindow.ShowDialog<string?>(this);
-        
+
         if (!string.IsNullOrEmpty(result))
         {
             RefreshFileTree();
@@ -3378,7 +3324,7 @@ public partial class MainWindow : Window
                 if (directory == null) return;
 
                 var newPath = Path.Combine(directory, newName);
-                
+
                 if (selectedItem.IsDirectory)
                 {
                     Directory.Move(selectedItem.FullPath, newPath);
@@ -3386,7 +3332,7 @@ public partial class MainWindow : Window
                 else
                 {
                     File.Move(selectedItem.FullPath, newPath);
-                    
+
                     // Update tab if file is open
                     var tab = _viewModel.FindTabByPath(selectedItem.FullPath);
                     if (tab != null)
@@ -3395,7 +3341,7 @@ public partial class MainWindow : Window
                         tab.FileName = newName;
                     }
                 }
-                
+
                 RefreshFileTree();
                 _viewModel.StatusText = $"Renamed to: {newName}";
             }
@@ -3411,8 +3357,7 @@ public partial class MainWindow : Window
         var selectedItems = GetSelectedTreeItems()
             .Where(x => x.ItemType is not FileTreeItemType.Solution
                                    and not FileTreeItemType.SolutionFolder
-                                   and not FileTreeItemType.Project
-                                   and not FileTreeItemType.EspProject)
+                                   and not FileTreeItemType.Project)
             .ToList();
 
         if (selectedItems.Count == 0) return;
@@ -3426,11 +3371,11 @@ public partial class MainWindow : Window
         }
         else
         {
-            var dirCount  = selectedItems.Count(x => x.IsDirectory);
+            var dirCount = selectedItems.Count(x => x.IsDirectory);
             var fileCount = selectedItems.Count(x => !x.IsDirectory);
-            var parts     = new List<string>();
+            var parts = new List<string>();
             if (fileCount > 0) parts.Add(fileCount + " file" + (fileCount > 1 ? "s" : ""));
-            if (dirCount  > 0) parts.Add(dirCount  + " folder" + (dirCount > 1 ? "s" : ""));
+            if (dirCount > 0) parts.Add(dirCount + " folder" + (dirCount > 1 ? "s" : ""));
             confirmMsg = "Are you sure you want to delete " + selectedItems.Count + " items (" + string.Join(", ", parts) + ")?";
             if (dirCount > 0) confirmMsg += "\n\nAll folder contents will be deleted.";
         }
@@ -3547,25 +3492,25 @@ public partial class MainWindow : Window
 
     private void ContextMenu_DebugProject_Click(object? sender, RoutedEventArgs e) => ContextMenu_RunProject_Click(sender, e);
 
-    private async void ContextMenu_NewClass_Click(object? sender, RoutedEventArgs e)           => await CreateNewCSharpFile("class");
-    private async void ContextMenu_NewInterface_Click(object? sender, RoutedEventArgs e)       => await CreateNewCSharpFile("interface");
-    private async void ContextMenu_NewRecord_Click(object? sender, RoutedEventArgs e)          => await CreateNewCSharpFile("record");
-    private async void ContextMenu_NewEnum_Click(object? sender, RoutedEventArgs e)            => await CreateNewCSharpFile("enum");
-    private async void ContextMenu_NewAvaloniaWindow_Click(object? sender, RoutedEventArgs e)  => await CreateNewAvaloniaFile("window");
+    private async void ContextMenu_NewClass_Click(object? sender, RoutedEventArgs e) => await CreateNewCSharpFile("class");
+    private async void ContextMenu_NewInterface_Click(object? sender, RoutedEventArgs e) => await CreateNewCSharpFile("interface");
+    private async void ContextMenu_NewRecord_Click(object? sender, RoutedEventArgs e) => await CreateNewCSharpFile("record");
+    private async void ContextMenu_NewEnum_Click(object? sender, RoutedEventArgs e) => await CreateNewCSharpFile("enum");
+    private async void ContextMenu_NewAvaloniaWindow_Click(object? sender, RoutedEventArgs e) => await CreateNewAvaloniaFile("window");
     private async void ContextMenu_NewAvaloniaUserControl_Click(object? sender, RoutedEventArgs e) => await CreateNewAvaloniaFile("usercontrol");
 
     private async Task CreateNewCSharpFile(string type)
     {
-        var targetDir  = GetTargetDirectory();
-        var typeName   = await ShowInputDialogAsync($"New {type}", $"Enter {type} name:", $"New{char.ToUpper(type[0])}{type[1..]}");
+        var targetDir = GetTargetDirectory();
+        var typeName = await ShowInputDialogAsync($"New {type}", $"Enter {type} name:", $"New{char.ToUpper(type[0])}{type[1..]}");
         if (string.IsNullOrEmpty(typeName)) return;
         var ns = DetermineNamespace(targetDir);
         var template = type.ToLower() switch
         {
             "interface" => $"namespace {ns};\n\npublic interface {typeName}\n{{\n}}\n",
-            "record"    => $"namespace {ns};\n\npublic record {typeName};\n",
-            "enum"      => $"namespace {ns};\n\npublic enum {typeName}\n{{\n}}\n",
-            _           => $"namespace {ns};\n\npublic class {typeName}\n{{\n    public {typeName}() {{ }}\n}}\n"
+            "record" => $"namespace {ns};\n\npublic record {typeName};\n",
+            "enum" => $"namespace {ns};\n\npublic enum {typeName}\n{{\n}}\n",
+            _ => $"namespace {ns};\n\npublic class {typeName}\n{{\n    public {typeName}() {{ }}\n}}\n"
         };
         var filePath = Path.Combine(targetDir, $"{typeName}.cs");
         try { await File.WriteAllTextAsync(filePath, template); RefreshFileTree(); OpenFileInEditor(filePath); _viewModel.StatusText = $"Created {type}: {typeName}.cs"; }
@@ -3575,12 +3520,12 @@ public partial class MainWindow : Window
     private async Task CreateNewAvaloniaFile(string type)
     {
         var targetDir = GetTargetDirectory();
-        var typeName  = await ShowInputDialogAsync($"New Avalonia {type}", $"Enter {type} name:", $"My{char.ToUpper(type[0])}{type[1..]}");
+        var typeName = await ShowInputDialogAsync($"New Avalonia {type}", $"Enter {type} name:", $"My{char.ToUpper(type[0])}{type[1..]}");
         if (string.IsNullOrEmpty(typeName)) return;
-        var ns       = DetermineNamespace(targetDir);
+        var ns = DetermineNamespace(targetDir);
         var baseType = type.ToLower() == "window" ? "Window" : "UserControl";
         var axaml = $"<{baseType} xmlns=\"https://github.com/avaloniaui\"\n        xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n        x:Class=\"{ns}.{typeName}\">\n    <Grid/>\n</{baseType}>\n";
-        var cs    = $"using Avalonia.Controls;\nnamespace {ns};\npublic partial class {typeName} : {baseType}\n{{\n    public {typeName}() {{ InitializeComponent(); }}\n}}\n";
+        var cs = $"using Avalonia.Controls;\nnamespace {ns};\npublic partial class {typeName} : {baseType}\n{{\n    public {typeName}() {{ InitializeComponent(); }}\n}}\n";
         try
         {
             await File.WriteAllTextAsync(Path.Combine(targetDir, $"{typeName}.axaml"), axaml);
@@ -3595,7 +3540,7 @@ public partial class MainWindow : Window
     {
         var projectPath = FindProjectFileInParents(directory);
         if (string.IsNullOrEmpty(projectPath)) return Path.GetFileName(directory) ?? "MyNamespace";
-        var projectDir  = Path.GetDirectoryName(projectPath);
+        var projectDir = Path.GetDirectoryName(projectPath);
         var projectName = Path.GetFileNameWithoutExtension(projectPath);
         if (string.IsNullOrEmpty(projectDir)) return projectName ?? "MyNamespace";
         if (directory.StartsWith(projectDir, StringComparison.OrdinalIgnoreCase))
@@ -3619,8 +3564,9 @@ public partial class MainWindow : Window
         if (string.IsNullOrEmpty(sln)) { _viewModel.StatusText = "No solution file found"; return; }
         var dialog = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Add Existing Project", AllowMultiple = false,
-            FileTypeFilter = new List<FilePickerFileType> { new("C# Project") { Patterns = new[] { "*.csproj", "*.nfproj" } } }
+            Title = "Add Existing Project",
+            AllowMultiple = false,
+            FileTypeFilter = new List<FilePickerFileType> { new("C# Project") { Patterns = new[] { "*.csproj" } } }
         });
         if (dialog.Count > 0)
         {
@@ -3650,8 +3596,6 @@ public partial class MainWindow : Window
         var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
         if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to build"; return; }
         _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
-        if (IsNanoFrameworkProject(projectPath)) await _nanoBuildService.BuildAsync(projectPath);
-        else await _buildService.BuildAsync(projectPath);
     }
 
     private async void ContextMenu_RebuildProject_Click(object? sender, RoutedEventArgs e)
@@ -3660,8 +3604,6 @@ public partial class MainWindow : Window
         var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
         if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to rebuild"; return; }
         _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
-        if (IsNanoFrameworkProject(projectPath)) await _nanoBuildService.BuildAsync(projectPath);
-        else { await _buildService.CleanAsync(projectPath); await _buildService.BuildAsync(projectPath); }
     }
 
     private async void ContextMenu_CleanProject_Click(object? sender, RoutedEventArgs e)
@@ -3670,13 +3612,11 @@ public partial class MainWindow : Window
         var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
         if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to clean"; return; }
         _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
-        if (!IsNanoFrameworkProject(projectPath)) await _buildService.CleanAsync(projectPath);
-        else _viewModel.StatusText = "Clean not supported for nanoFramework projects";
     }
 
-    private void AnalyzeProject_Click(object? sender, RoutedEventArgs e)   => _ = AnalyzeProjectAsync();
-    private void RefreshAnalysis_Click(object? sender, RoutedEventArgs e)  => _ = AnalyzeProjectAsync();
-    private void ClearProblems_Click(object? sender, RoutedEventArgs e)    { _viewModel.Problems.Clear(); _viewModel.StatusText = "Problems cleared"; UpdateTabDiagnosticIndicators(); }
+    private void AnalyzeProject_Click(object? sender, RoutedEventArgs e) => _ = AnalyzeProjectAsync();
+    private void RefreshAnalysis_Click(object? sender, RoutedEventArgs e) => _ = AnalyzeProjectAsync();
+    private void ClearProblems_Click(object? sender, RoutedEventArgs e) { _viewModel.Problems.Clear(); _viewModel.StatusText = "Problems cleared"; UpdateTabDiagnosticIndicators(); }
 
     /// <summary>Whether the Problems tab shows all errors (true) or only current file (false).</summary>
     private bool _problemsShowAll = true;
@@ -3831,10 +3771,10 @@ public partial class MainWindow : Window
             {
                 // Open file (creates tab if needed, switches to existing tab)
                 OpenFileInEditor(diagnostic.FilePath);
-                
+
                 // Update tab visual styles (active class + error/warning classes)
                 UpdateTabButtonStyles();
-                
+
                 // Navigate to error line/column
                 _insaitEditor?.GoToLine(diagnostic.Line, diagnostic.Column);
                 _viewModel.StatusText = $"{diagnostic.SeverityIcon} {diagnostic.Code}: {diagnostic.Message}";
@@ -3842,7 +3782,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ExplorerNewFile_Click(object? sender, RoutedEventArgs e)   => AddNewItem_Click(sender, e);
+    private void ExplorerNewFile_Click(object? sender, RoutedEventArgs e) => AddNewItem_Click(sender, e);
     private void ExplorerNewFolder_Click(object? sender, RoutedEventArgs e) => AddNewFolder_Click(sender, e);
 
     // ═══════════════════════════════════════════════════════════
@@ -3862,7 +3802,7 @@ public partial class MainWindow : Window
         foreach (var problem in _viewModel.Problems)
         {
             if (string.IsNullOrEmpty(problem.FilePath)) continue;
-            
+
             if (!diagnosticsByFile.TryGetValue(problem.FilePath, out var counts))
                 counts = (0, 0);
 
@@ -3938,10 +3878,10 @@ public partial class MainWindow : Window
                 if (transform == null) return;
 
                 var btnBoundsInScroller = transform.Value.Transform(new Point(0, 0));
-                var btnLeft  = btnBoundsInScroller.X;
+                var btnLeft = btnBoundsInScroller.X;
                 var btnRight = btnLeft + activeBtn.Bounds.Width;
 
-                var viewportLeft  = scroller.Offset.X;
+                var viewportLeft = scroller.Offset.X;
                 var viewportRight = scroller.Offset.X + scroller.Viewport.Width;
 
                 // Add a small margin so the tab doesn't sit exactly at the edge
@@ -3966,19 +3906,19 @@ public partial class MainWindow : Window
     {
         // Active state
         if (tab == _viewModel.ActiveTab)
-            { if (!btn.Classes.Contains("active")) btn.Classes.Add("active"); }
+        { if (!btn.Classes.Contains("active")) btn.Classes.Add("active"); }
         else
             btn.Classes.Remove("active");
 
         // Error state
         if (tab.HasErrors)
-            { if (!btn.Classes.Contains("has-errors")) btn.Classes.Add("has-errors"); }
+        { if (!btn.Classes.Contains("has-errors")) btn.Classes.Add("has-errors"); }
         else
             btn.Classes.Remove("has-errors");
 
         // Warning state
         if (tab.HasWarnings && !tab.HasErrors)
-            { if (!btn.Classes.Contains("has-warnings")) btn.Classes.Add("has-warnings"); }
+        { if (!btn.Classes.Contains("has-warnings")) btn.Classes.Add("has-warnings"); }
         else
             btn.Classes.Remove("has-warnings");
     }

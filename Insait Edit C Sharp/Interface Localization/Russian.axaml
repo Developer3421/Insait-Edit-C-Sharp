@@ -35,7 +35,6 @@
     <x:String x:Key="Sidebar.Search">Поиск (Ctrl+Shift+F)</x:String>
     <x:String x:Key="Sidebar.Git">Управление версиями (Ctrl+Shift+G)</x:String>
     <x:String x:Key="Sidebar.NuGet">Пакеты NuGet (Ctrl+Shift+N)</x:String>
-    <x:String x:Key="Sidebar.LedPanel">LED-панель</x:String>
     <x:String x:Key="Sidebar.Account">Аккаунт</x:String>
     <x:String x:Key="Sidebar.Settings">Настройки (Ctrl+,)</x:String>
     <x:String x:Key="Panel.Explorer">ПРОВОДНИК</x:String>
@@ -342,7 +341,6 @@
     <x:String x:Key="Menu.SolutionProject">📦 Решение и проект</x:String>
     <x:String x:Key="Menu.NewSolution">📦 Новое решение...</x:String>
     <x:String x:Key="Menu.NewProject">📁 Новый проект...</x:String>
-    <x:String x:Key="Menu.NewNanoProject">🔌 Новый nanoFramework проект...</x:String>
     <x:String x:Key="Menu.AddProjectToSolution">➕ Добавить проект в решение...</x:String>
     <x:String x:Key="Menu.FileOperations">📁 Операции с файлами</x:String>
     <x:String x:Key="Menu.NewFile">📄 Новый файл</x:String>
@@ -825,80 +823,8 @@
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn готов</x:String>
 
     <!-- LED Panel Designer -->
-    <x:String x:Key="Led.Title">Дизайнер LED-панели</x:String>
-    <x:String x:Key="Led.PanelSize">РАЗМЕР ПАНЕЛИ</x:String>
-    <x:String x:Key="Led.Rows">Строки</x:String>
-    <x:String x:Key="Led.Columns">Столбцы</x:String>
-    <x:String x:Key="Led.TotalLeds">Всего LED</x:String>
-    <x:String x:Key="Led.Hardware">АППАРАТНОЕ ОБЕСПЕЧЕНИЕ</x:String>
-    <x:String x:Key="Led.GpioPin">Пин GPIO</x:String>
-    <x:String x:Key="Led.StripType">Тип ленты</x:String>
-    <x:String x:Key="Led.Brightness">Яркость</x:String>
-    <x:String x:Key="Led.PaintColor">ЦВЕТ РИСОВАНИЯ</x:String>
-    <x:String x:Key="Led.DrawMode">РЕЖИМ РИСОВАНИЯ</x:String>
-    <x:String x:Key="Led.DrawSingle">🖌️ Один LED</x:String>
-    <x:String x:Key="Led.DrawRow">↔️ Вся строка</x:String>
-    <x:String x:Key="Led.DrawColumn">↕️ Весь столбец</x:String>
-    <x:String x:Key="Led.DrawErase">🧹 Ластик</x:String>
-    <x:String x:Key="Led.DrawFill">🪣 Заполнить всё</x:String>
-    <x:String x:Key="Led.Actions">ДЕЙСТВИЯ</x:String>
-    <x:String x:Key="Led.ClearAll">🗑️ Очистить всё</x:String>
-    <x:String x:Key="Led.InvertColors">🔄 Инвертировать цвета</x:String>
-    <x:String x:Key="Led.RandomPattern">🎲 Случайный шаблон</x:String>
-    <x:String x:Key="Led.Animation">АНИМАЦИЯ</x:String>
-    <x:String x:Key="Led.CaptureFrame">📸 Захватить кадр</x:String>
-    <x:String x:Key="Led.FrameDelay">Задержка кадра (мс)</x:String>
-    <x:String x:Key="Led.InfiniteLoop">♾️ Бесконечный цикл</x:String>
-    <x:String x:Key="Led.LoopCount">Количество циклов</x:String>
-    <x:String x:Key="Led.ClearFrames">🗑️ Удалить кадры</x:String>
-    <x:String x:Key="Led.LedDisplay">LED-дисплей</x:String>
-    <x:String x:Key="Led.HoverLeds">Наведите на LED</x:String>
-    <x:String x:Key="Led.GridLines">Линии сетки</x:String>
-    <x:String x:Key="Led.Coordinates">Координаты</x:String>
-    <x:String x:Key="Led.PreviewPattern">Предпросмотр шаблона</x:String>
-    <x:String x:Key="Led.Playing">Воспроизведение...</x:String>
-    <x:String x:Key="Led.PreviewComplete">Предпросмотр завершён</x:String>
-    <x:String x:Key="Led.Stop">⏹ Стоп</x:String>
-    <x:String x:Key="Led.SaveConfig">💾 Сохранить конфиг</x:String>
-    <x:String x:Key="Led.LoadConfig">📂 Загрузить конфиг</x:String>
-    <x:String x:Key="Led.StatusReady">Готово — Создайте LED-шаблон</x:String>
-    <x:String x:Key="Led.GenerateCode">Сгенерировать код nanoFramework</x:String>
-    <x:String x:Key="Led.Cancel">Отмена</x:String>
-    <x:String x:Key="Led.Frames">Кадры: {0}</x:String>
-    <x:String x:Key="Led.FrameStatus">Кадр {0}/{1} (Цикл {2}/5)</x:String>
-    <x:String x:Key="Led.SaveDialogTitle">Сохранить конфигурацию LED-панели</x:String>
-    <x:String x:Key="Led.LoadDialogTitle">Загрузить конфигурацию LED-панели</x:String>
 
     <!-- nanoFramework Project -->
-    <x:String x:Key="Nano.Title">Новый nanoFramework проект</x:String>
-    <x:String x:Key="Nano.Subtitle">Создать C# проект для ESP32 / nanoFramework</x:String>
-    <x:String x:Key="Nano.SelectTemplate">Выберите шаблон</x:String>
-    <x:String x:Key="Nano.Configure">Настройте проект</x:String>
-    <x:String x:Key="Nano.ProjectName">Имя проекта</x:String>
-    <x:String x:Key="Nano.Location">Расположение</x:String>
-    <x:String x:Key="Nano.TargetBoard">Целевая плата</x:String>
-    <x:String x:Key="Nano.Solution">Решение</x:String>
-    <x:String x:Key="Nano.AddToSolution">Добавить в существующее решение</x:String>
-    <x:String x:Key="Nano.CreateNewSolution">Создать новое решение</x:String>
-    <x:String x:Key="Nano.Requirements">ℹ️ Требования</x:String>
-    <x:String x:Key="Nano.Req1">• nanoff CLI (устанавливается автоматически)</x:String>
-    <x:String x:Key="Nano.Req2">• ESP32, подключённый через USB</x:String>
-    <x:String x:Key="Nano.Req3">• Драйвер USB-Serial (CP210x или CH340)</x:String>
-    <x:String x:Key="Nano.Browse">Обзор...</x:String>
-    <x:String x:Key="Nano.Cancel">Отмена</x:String>
-    <x:String x:Key="Nano.Create">Создать nanoFramework проект</x:String>
-    <x:String x:Key="Nano.TplBlankName">Пустое приложение</x:String>
-    <x:String x:Key="Nano.TplBlankDesc">Пустое nanoFramework приложение</x:String>
-    <x:String x:Key="Nano.TplClassLibName">Библиотека классов</x:String>
-    <x:String x:Key="Nano.TplClassLibDesc">Многоразовая библиотека</x:String>
-    <x:String x:Key="Nano.TplGpioName">GPIO Blink</x:String>
-    <x:String x:Key="Nano.TplGpioDesc">Пример мигания LED</x:String>
-    <x:String x:Key="Nano.TplWifiName">Wi-Fi</x:String>
-    <x:String x:Key="Nano.TplWifiDesc">Подключение Wi-Fi</x:String>
-    <x:String x:Key="Nano.TplHttpName">HTTP-клиент</x:String>
-    <x:String x:Key="Nano.TplHttpDesc">HTTP-запросы</x:String>
-    <x:String x:Key="Nano.TplI2CName">I2C-датчик</x:String>
-    <x:String x:Key="Nano.TplI2CDesc">Чтение датчика</x:String>
 
     <!-- AxamlPreview extra -->
     <x:String x:Key="AxamlPreview.LivePreview">✔ Живой просмотр</x:String>
@@ -908,8 +834,6 @@
 
 
     <!-- NuGet extra -->
-    <x:String x:Key="NuGet.NanoFramework">🔌 Популярные пакеты nanoFramework</x:String>
-    <x:String x:Key="NuGet.NanoFrameworkDesc">Популярные пакеты для nanoFramework. Используйте поиск для любого NuGet-пакета.</x:String>
     <x:String x:Key="NuGet.NoPackagesFound">Пакеты не найдены</x:String>
     <x:String x:Key="NuGet.Install">Установить</x:String>
     <x:String x:Key="NuGet.Update">Обновить</x:String>
@@ -931,9 +855,7 @@
     <x:String x:Key="NuGet.ViewOnNuGetOrg">Открыть на nuget.org</x:String>
     <x:String x:Key="NuGet.SearchAbove">Ищите NuGet-пакеты выше</x:String>
     <x:String x:Key="NuGet.Project.Label">Проект:</x:String>
-    <x:String x:Key="NuGet.NanoFrameworkMode">ПАКЕТЫ NUGET (NANOFRAMEWORK)</x:String>
     <x:String x:Key="NuGet.Tooltip.Refresh">Обновить</x:String>
-    <x:String x:Key="NuGet.Tooltip.NanoSuggestions">Популярные пакеты nanoFramework</x:String>
     <x:String x:Key="NuGet.ByAuthor">от {0}</x:String>
     <x:String x:Key="NuGet.InstalledVersion">Установлен: v{0}</x:String>
     <x:String x:Key="NuGet.InstalledCount">{0} пакет(ов) установлено</x:String>

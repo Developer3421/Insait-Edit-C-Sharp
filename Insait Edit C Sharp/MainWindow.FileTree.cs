@@ -23,9 +23,9 @@ namespace Insait_Edit_C_Sharp;
 public partial class MainWindow
 {
     // ── Rubber-band state ────────────────────────────────────
-    private bool   _isDraggingSelection;
-    private Point  _dragStart;
-    private bool   _dragStartedOnItem;   // true → normal TreeView click, no rubber-band
+    private bool _isDraggingSelection;
+    private Point _dragStart;
+    private bool _dragStartedOnItem;   // true → normal TreeView click, no rubber-band
 
     // ═══════════════════════════════════════════════════════════
     //  Panel pointer events — rubber-band drag selection
@@ -69,7 +69,7 @@ public partial class MainWindow
         if (panel == null) return;
 
         var current = e.GetPosition(panel);
-        var delta   = current - _dragStart;
+        var delta = current - _dragStart;
 
         // Start rubber-band only after moving > 4 px (avoid accidental drags)
         if (!_isDraggingSelection && (Math.Abs(delta.X) > 4 || Math.Abs(delta.Y) > 4))
@@ -108,7 +108,7 @@ public partial class MainWindow
                 SelectItemsInRect(panel, _dragStart, current, e.KeyModifiers);
         }
 
-        _dragStartedOnItem   = false;
+        _dragStartedOnItem = false;
         _isDraggingSelection = false;
     }
 
@@ -120,7 +120,7 @@ public partial class MainWindow
         if (canvas == null || border == null) return;
 
         // Make canvas fill the panel
-        canvas.Width  = panel.Bounds.Width;
+        canvas.Width = panel.Bounds.Width;
         canvas.Height = panel.Bounds.Height;
 
         double x = Math.Min(a.X, b.X);
@@ -129,8 +129,8 @@ public partial class MainWindow
         double h = Math.Abs(b.Y - a.Y);
 
         Canvas.SetLeft(border, x);
-        Canvas.SetTop(border,  y);
-        border.Width  = Math.Max(w, 1);
+        Canvas.SetTop(border, y);
+        border.Width = Math.Max(w, 1);
         border.Height = Math.Max(h, 1);
     }
 
@@ -144,7 +144,7 @@ public partial class MainWindow
         double y2 = Math.Max(a.Y, b.Y);
 
         // Collect all visible TreeViewItems
-        var allTvi  = tree.GetVisualDescendants().OfType<TreeViewItem>().ToList();
+        var allTvi = tree.GetVisualDescendants().OfType<TreeViewItem>().ToList();
         var toSelect = new List<FileTreeItem>();
 
         foreach (var tvi in allTvi)
@@ -156,7 +156,7 @@ public partial class MainWindow
             // Translate from tvi's parent coordinate space to panel space
             try
             {
-                var topLeft     = tvi.TranslatePoint(new Point(0, 0), panel);
+                var topLeft = tvi.TranslatePoint(new Point(0, 0), panel);
                 var bottomRight = tvi.TranslatePoint(new Point(tvi.Bounds.Width, tvi.Bounds.Height), panel);
                 if (topLeft == null || bottomRight == null) continue;
 
@@ -239,8 +239,7 @@ public partial class MainWindow
 
             // Project/Solution nodes — just show path, don't open in editor
             bool isProjectNode = single.ItemType is FileTreeItemType.Solution
-                              or FileTreeItemType.Project
-                              or FileTreeItemType.EspProject;
+                              or FileTreeItemType.Project;
 
             _viewModel.StatusText = single.IsDirectory || isProjectNode
                 ? "📁 " + single.FullPath
@@ -252,13 +251,12 @@ public partial class MainWindow
         else
         {
             // Count only real files/folders, ignore project nodes in the summary
-            var files   = allSelected.Count(x => !x.IsDirectory
+            var files = allSelected.Count(x => !x.IsDirectory
                 && x.ItemType is not FileTreeItemType.Solution
-                and not FileTreeItemType.Project
-                and not FileTreeItemType.EspProject);
+                and not FileTreeItemType.Project);
             var folders = allSelected.Count(x => x.IsDirectory);
-            var parts   = new List<string>();
-            if (files   > 0) parts.Add(files   + " file"   + (files   > 1 ? "s" : ""));
+            var parts = new List<string>();
+            if (files > 0) parts.Add(files + " file" + (files > 1 ? "s" : ""));
             if (folders > 0) parts.Add(folders + " folder" + (folders > 1 ? "s" : ""));
             _viewModel.StatusText = "🗂️ " + count + " items selected (" + string.Join(", ", parts) + ")";
         }
@@ -283,7 +281,7 @@ public partial class MainWindow
         if (item == null) return;
 
         if (item.IsDirectory) item.IsExpanded = !item.IsExpanded;
-        else                  OpenFileInEditor(item.FullPath);
+        else OpenFileInEditor(item.FullPath);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -292,62 +290,61 @@ public partial class MainWindow
     private void FileTreeContextMenu_Opening(object? sender, CancelEventArgs e)
     {
         var allSelected = GetSelectedTreeItems();
-        var count       = allSelected.Count;
-        var item        = allSelected.FirstOrDefault();
+        var count = allSelected.Count;
+        var item = allSelected.FirstOrDefault();
 
         bool isMulti = count > 1;
 
         // ── Multi-selection info header ──────────────────────
         var infoLabel = this.FindControl<MenuItem>("ContextMenuMultiInfo");
-        var infoSep   = this.FindControl<Control>("ContextMenuMultiInfoSeparator");
-        var infoText  = this.FindControl<TextBlock>("ContextMenuMultiInfoText");
+        var infoSep = this.FindControl<Control>("ContextMenuMultiInfoSeparator");
+        var infoText = this.FindControl<TextBlock>("ContextMenuMultiInfoText");
         if (infoLabel != null) infoLabel.IsVisible = isMulti;
-        if (infoSep   != null) infoSep.IsVisible   = isMulti;
-        if (infoText  != null && isMulti)
+        if (infoSep != null) infoSep.IsVisible = isMulti;
+        if (infoText != null && isMulti)
         {
-            var files   = allSelected.Count(x => !x.IsDirectory);
+            var files = allSelected.Count(x => !x.IsDirectory);
             var folders = allSelected.Count(x => x.IsDirectory);
-            var parts   = new List<string>();
-            if (files   > 0) parts.Add(files   + " file"   + (files   > 1 ? "s" : ""));
+            var parts = new List<string>();
+            if (files > 0) parts.Add(files + " file" + (files > 1 ? "s" : ""));
             if (folders > 0) parts.Add(folders + " folder" + (folders > 1 ? "s" : ""));
             infoText.Text = count + " items selected — " + string.Join(", ", parts);
         }
 
         bool isSolution = item?.ItemType is FileTreeItemType.Solution or FileTreeItemType.SolutionFolder;
-        bool isProject  = item?.ItemType is FileTreeItemType.Project  or FileTreeItemType.EspProject;
-        bool isFolder   = item?.IsDirectory == true && !isSolution && !isProject;
-        bool isFile     = item != null && !item.IsDirectory;
+        bool isProject = item?.ItemType is FileTreeItemType.Project;
+        bool isFolder = item?.IsDirectory == true && !isSolution && !isProject;
+        bool isFile = item != null && !item.IsDirectory;
         bool hasProject = isSolution || isProject;
 
         bool multiEditable = isMulti && allSelected.All(x =>
-            x.ItemType is not FileTreeItemType.Solution    and
+            x.ItemType is not FileTreeItemType.Solution and
                          not FileTreeItemType.SolutionFolder and
-                         not FileTreeItemType.Project       and
-                         not FileTreeItemType.EspProject);
+                         not FileTreeItemType.Project);
 
-        SetMenuItemVisible("ContextMenuRun",          isProject && !isMulti);
+        SetMenuItemVisible("ContextMenuRun", isProject && !isMulti);
         SetMenuItemVisible("ContextMenuRunSeparator", isProject && !isMulti);
 
-        SetMenuItemVisible("ContextMenuNew",          !isMulti && (isFile || isFolder || isProject));
-        SetMenuItemVisible("ContextMenuAdd",          !isMulti && (hasProject || isSolution));
+        SetMenuItemVisible("ContextMenuNew", !isMulti && (isFile || isFolder || isProject));
+        SetMenuItemVisible("ContextMenuAdd", !isMulti && (hasProject || isSolution));
         SetMenuItemVisible("ContextMenuAddSeparator", !isMulti && (hasProject || isSolution));
 
-        SetMenuItemVisible("ContextMenuBuild",          hasProject && !isMulti);
-        SetMenuItemVisible("ContextMenuRebuild",        hasProject && !isMulti);
-        SetMenuItemVisible("ContextMenuClean",          hasProject && !isMulti);
+        SetMenuItemVisible("ContextMenuBuild", hasProject && !isMulti);
+        SetMenuItemVisible("ContextMenuRebuild", hasProject && !isMulti);
+        SetMenuItemVisible("ContextMenuClean", hasProject && !isMulti);
         SetMenuItemVisible("ContextMenuBuildSeparator", hasProject && !isMulti);
 
-        SetMenuItemVisible("ContextMenuNuGet",          isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuAddReference",   isProject && !isMulti);
+        SetMenuItemVisible("ContextMenuNuGet", isProject && !isMulti);
+        SetMenuItemVisible("ContextMenuAddReference", isProject && !isMulti);
         SetMenuItemVisible("ContextMenuNuGetSeparator", isProject && !isMulti);
 
         SetMenuItemVisible("ContextMenuRemoveFromSolution", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuUnloadProject",      isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuRemoveSeparator",    isProject && !isMulti);
+        SetMenuItemVisible("ContextMenuUnloadProject", isProject && !isMulti);
+        SetMenuItemVisible("ContextMenuRemoveSeparator", isProject && !isMulti);
 
         bool canEdit = isFile || isFolder || (isMulti && multiEditable);
-        SetMenuItemVisible("ContextMenuCut",   canEdit);
-        SetMenuItemVisible("ContextMenuCopy",  canEdit);
+        SetMenuItemVisible("ContextMenuCut", canEdit);
+        SetMenuItemVisible("ContextMenuCopy", canEdit);
         SetMenuItemVisible("ContextMenuPaste", !isMulti && (isFolder || isSolution || isProject));
 
         SetMenuItemVisible("ContextMenuRename", !isMulti && (isFile || isFolder));
@@ -355,15 +352,15 @@ public partial class MainWindow
         var deleteMenu = this.FindControl<MenuItem>("ContextMenuDelete");
         if (deleteMenu != null)
         {
-            deleteMenu.Header    = isMulti ? "🗑️ Delete " + count + " Items..." : "🗑️ Safe Delete...";
+            deleteMenu.Header = isMulti ? "🗑️ Delete " + count + " Items..." : "🗑️ Safe Delete...";
             deleteMenu.IsVisible = isFile || isFolder || (isMulti && multiEditable);
         }
 
-        SetMenuItemVisible("ContextMenuCopyPath",     !isMulti && (isFile || isFolder));
+        SetMenuItemVisible("ContextMenuCopyPath", !isMulti && (isFile || isFolder));
         SetMenuItemVisible("ContextMenuOpenExplorer", !isMulti && (isFile || isFolder));
         SetMenuItemVisible("ContextMenuOpenTerminal", !isMulti && (isFile || isFolder));
-        SetMenuItemVisible("ContextMenuProperties",   !isMulti && (isProject || isFile));
-        SetMenuItemVisible("ContextMenuGit",          !isMulti && item != null);
+        SetMenuItemVisible("ContextMenuProperties", !isMulti && (isProject || isFile));
+        SetMenuItemVisible("ContextMenuGit", !isMulti && item != null);
     }
 
     // ── Допоміжний: показати/приховати пункт меню ───────────
