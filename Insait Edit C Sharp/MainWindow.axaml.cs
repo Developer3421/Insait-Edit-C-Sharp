@@ -34,6 +34,7 @@ public partial class MainWindow : Window
     private readonly BuildService _buildService;
     private readonly CodeAnalysisService _codeAnalysisService;
     private readonly RunConfigurationService _runConfigService;
+    private readonly DebugService _debugService;
     private readonly PublishService _publishService;
     private readonly CopilotCliService _copilotCliService;
     private string? _projectPath;
@@ -60,6 +61,7 @@ public partial class MainWindow : Window
         _buildService = new BuildService();
         _codeAnalysisService = new CodeAnalysisService();
         _runConfigService = new RunConfigurationService();
+        _debugService = new DebugService();
         _publishService = new PublishService();
         _copilotCliService = new CopilotCliService();
         _projectPath = projectPath;
@@ -83,6 +85,9 @@ public partial class MainWindow : Window
 
         // Initialize Build Service events
         InitializeBuildService();
+
+        // Initialize real debugger events
+        InitializeDebugService();
 
         // Initialize Code Analysis Service events
         InitializeCodeAnalysisService();
@@ -254,10 +259,44 @@ public partial class MainWindow : Window
             await AnalyzeProjectAsync();
             e.Handled = true;
         }
-        // F5 - Run project
+        // F5 / Ctrl+F5 / Shift+F5 - Debug / Run / Stop Debugging
         else if (e.Key == Key.F5)
         {
-            await RunProjectAsync();
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+                await RunProjectAsync();
+            else if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+                await StopDebuggingAsync();
+            else
+                await StartDebuggingAsync();
+
+            e.Handled = true;
+        }
+        // F9 - Toggle breakpoint
+        else if (e.Key == Key.F9)
+        {
+            if (_insaitEditor != null)
+            {
+                var (bpLine, _) = _insaitEditor.CursorPosition;
+                var bpFile = _viewModel.ActiveTab?.FilePath ?? string.Empty;
+                if (!string.IsNullOrEmpty(bpFile))
+                    BreakpointService.Toggle(bpFile, bpLine);
+            }
+            e.Handled = true;
+        }
+        // F10 - Step over
+        else if (e.Key == Key.F10)
+        {
+            await StepOverAsync();
+            e.Handled = true;
+        }
+        // F11 / Shift+F11 - Step into / out
+        else if (e.Key == Key.F11)
+        {
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+                await StepOutAsync();
+            else
+                await StepIntoAsync();
+
             e.Handled = true;
         }
         // Ctrl+W - Close current tab
@@ -1314,7 +1353,12 @@ public partial class MainWindow : Window
     /// <summary>
     /// Execute menu action from MenuWindow
     /// </summary>
-    public async void ExecuteMenuAction(string action)
+    public async
+    /// <summary>
+    /// Execute menu action from MenuWindow
+    /// </summary>
+    Task
+ExecuteMenuAction(string action)
     {
         switch (action)
         {
@@ -1524,12 +1568,22 @@ public partial class MainWindow : Window
                 BreakpointService.ClearAll();
                 break;
             case "StartDebugging":
+                await StartDebuggingAsync();
+                break;
             case "StopDebugging":
+                await StopDebuggingAsync();
+                break;
             case "StepOver":
+                await StepOverAsync();
+                break;
             case "StepInto":
+                await StepIntoAsync();
+                break;
             case "StepOut":
+                await StepOutAsync();
+                break;
             case "StartWithoutDebugging":
-                _viewModel.StatusText = $"Debug: {action} (future DAP integration)";
+                await RunProjectAsync();
                 break;
             case "Clean":
                 await CleanProjectAsync();
@@ -1618,6 +1672,14 @@ public partial class MainWindow : Window
 
     private void RefreshFileTree()
     {
+        var workspaceRoot = GetWorkspaceRootDirectory();
+        if (!string.IsNullOrEmpty(workspaceRoot) && !Directory.Exists(workspaceRoot))
+        {
+            ClearWorkspaceState("Workspace is empty. Create a new project or solution.");
+            ReloadOpenTabsFromDisk();
+            return;
+        }
+
         if (!string.IsNullOrEmpty(_projectPath))
         {
             // Use the ViewModel's RefreshFileTree method which preserves expanded state
@@ -3239,8 +3301,7 @@ public partial class MainWindow : Window
 
     private void StartDebug_Click(object? sender, RoutedEventArgs e)
     {
-        // Start debugging
-        _ = RunProjectAsync();
+        _ = StartDebuggingAsync();
     }
 
     #endregion
@@ -3356,11 +3417,20 @@ public partial class MainWindow : Window
     {
         var selectedItems = GetSelectedTreeItems()
             .Where(x => x.ItemType is not FileTreeItemType.Solution
-                                   and not FileTreeItemType.SolutionFolder
-                                   and not FileTreeItemType.Project)
+                                   and not FileTreeItemType.SolutionFolder)
+            .OrderBy(x => x.FullPath.Length)
             .ToList();
 
         if (selectedItems.Count == 0) return;
+
+        selectedItems = selectedItems
+            .Where(item => !selectedItems.Any(other =>
+                !ReferenceEquals(item, other) &&
+                other.IsDirectory &&
+                IsPathInsideDirectory(item.FullPath, other.FullPath)))
+            .ToList();
+
+        var workspaceRoot = GetWorkspaceRootDirectory();
 
         string confirmMsg;
         if (selectedItems.Count == 1)
@@ -3390,6 +3460,7 @@ public partial class MainWindow : Window
             {
                 if (item.IsDirectory)
                 {
+                    CloseTabsInsidePath(item.FullPath);
                     Directory.Delete(item.FullPath, true);
                 }
                 else
@@ -3405,6 +3476,28 @@ public partial class MainWindow : Window
                 errors++;
                 _viewModel.StatusText = "Error deleting '" + item.Name + "': " + ex.Message;
             }
+        }
+
+        var workspaceEmpty = !string.IsNullOrEmpty(workspaceRoot) &&
+                             Directory.Exists(workspaceRoot) &&
+                             !Directory.EnumerateFileSystemEntries(workspaceRoot).Any();
+        if (workspaceEmpty)
+        {
+            try
+            {
+                Directory.Delete(workspaceRoot!);
+            }
+            catch (Exception ex)
+            {
+                _viewModel.StatusText = "Error deleting workspace folder: " + ex.Message;
+            }
+        }
+
+        var workspaceDeleted = !string.IsNullOrEmpty(workspaceRoot) && !Directory.Exists(workspaceRoot);
+        if (workspaceDeleted)
+        {
+            ClearWorkspaceState("Workspace is empty. Create a new project or solution.");
+            return;
         }
 
         RefreshFileTree();

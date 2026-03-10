@@ -319,8 +319,7 @@ public partial class MainWindow
 
         bool multiEditable = isMulti && allSelected.All(x =>
             x.ItemType is not FileTreeItemType.Solution and
-                         not FileTreeItemType.SolutionFolder and
-                         not FileTreeItemType.Project);
+                         not FileTreeItemType.SolutionFolder);
 
         SetMenuItemVisible("ContextMenuRun", isProject && !isMulti);
         SetMenuItemVisible("ContextMenuRunSeparator", isProject && !isMulti);
@@ -353,7 +352,7 @@ public partial class MainWindow
         if (deleteMenu != null)
         {
             deleteMenu.Header = isMulti ? "🗑️ Delete " + count + " Items..." : "🗑️ Safe Delete...";
-            deleteMenu.IsVisible = isFile || isFolder || (isMulti && multiEditable);
+            deleteMenu.IsVisible = isFile || isFolder || isProject || (isMulti && multiEditable);
         }
 
         SetMenuItemVisible("ContextMenuCopyPath", !isMulti && (isFile || isFolder));

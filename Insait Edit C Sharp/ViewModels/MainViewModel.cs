@@ -167,6 +167,9 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             }
         }
 
+        folderPath = Path.GetFullPath(folderPath);
+        FileTreeItem.SetAllowedRootPaths(new[] { folderPath });
+
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
             CurrentProjectPath = folderPath;
@@ -301,6 +304,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             System.Diagnostics.Debug.WriteLine($"LoadSolutionStructureAsync: Project - Name={proj.Name}, Path={proj.RelativePath}");
         }
 
+        var allowedRoots = projects
+            .Select(project => Path.GetDirectoryName(Path.GetFullPath(Path.Combine(folderPath, project.RelativePath))))
+            .Where(directory => !string.IsNullOrWhiteSpace(directory))
+            .Append(folderPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        FileTreeItem.SetAllowedRootPaths(allowedRoots!);
+
         // Create solution root node
         var solutionItem = new FileTreeItem
         {
@@ -369,6 +380,8 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     private async Task LoadProjectStructureAsync(string folderPath, string projectFile)
     {
+        FileTreeItem.SetAllowedRootPaths(new[] { folderPath });
+
         var projectName = Path.GetFileNameWithoutExtension(projectFile);
 
         var projectItem = await Task.Run(() =>
@@ -862,50 +875,9 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     private void AddSolutionLevelItems(FileTreeItem solutionItem, string folderPath, List<SolutionProjectInfo> projects)
     {
-        try
-        {
-            // Get project directories
-            var projectDirs = projects
-                .Select(p => Path.GetDirectoryName(Path.GetFullPath(Path.Combine(folderPath, p.RelativePath))))
-                .Where(d => !string.IsNullOrEmpty(d))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            // Add solution-level files
-            foreach (var file in Directory.GetFiles(folderPath))
-            {
-                var fileName = Path.GetFileName(file);
-
-                // Skip solution file itself (already added as root)
-                if (fileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
-                    fileName.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                // Skip hidden files
-                if (fileName.StartsWith(".")) continue;
-
-                var fileItem = FileTreeItem.FromFile(file);
-                solutionItem.Children.Add(fileItem);
-            }
-
-            // Add directories that are not projects
-            foreach (var dir in Directory.GetDirectories(folderPath))
-            {
-                var dirName = Path.GetFileName(dir);
-
-                // Skip hidden and excluded directories
-                if (ShouldExcludeDirectory(dirName)) continue;
-
-                // Skip project directories
-                if (projectDirs.Contains(dir)) continue;
-
-                var dirItem = FileTreeItem.FromDirectory(dir, loadChildren: true);
-                solutionItem.Children.Add(dirItem);
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error adding solution-level items: {ex.Message}");
-        }
+        // Intentionally left empty.
+        // In solution mode, the tree should only show the solution node and its projects,
+        // without surfacing arbitrary repository/root files next to project contents.
     }
 
     /// <summary>
@@ -1059,6 +1031,35 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    public void StopFileWatcher()
+    {
+        try
+        {
+            if (_fileWatcher != null)
+            {
+                _fileWatcher.EnableRaisingEvents = false;
+                _fileWatcher.Dispose();
+                _fileWatcher = null;
+            }
+
+            if (_refreshDebounceTimer != null)
+            {
+                _refreshDebounceTimer.Stop();
+                _refreshDebounceTimer.Dispose();
+                _refreshDebounceTimer = null;
+            }
+
+            lock (_refreshLock)
+            {
+                _refreshPending = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error stopping file watcher: {ex.Message}");
+        }
+    }
+
     private void OnFileSystemChanged(object sender, FileSystemEventArgs e)
     {
         // Skip changes in excluded directories
@@ -1125,7 +1126,12 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         if (string.IsNullOrEmpty(CurrentProjectPath) || !Directory.Exists(CurrentProjectPath))
         {
-            await Dispatcher.UIThread.InvokeAsync(() => StatusText = "No project folder to refresh");
+            FileTreeItem.SetAllowedRootPaths(null);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                FileTreeItems.Clear();
+                StatusText = "No project folder to refresh";
+            });
             return;
         }
 

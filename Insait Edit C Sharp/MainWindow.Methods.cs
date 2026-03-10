@@ -290,7 +290,7 @@ public partial class MainWindow
         }
 
         // Fallback: project directory
-        var projectDir = _projectPath ?? _viewModel.CurrentProjectPath;
+        var projectDir = GetWorkspaceRootDirectory();
         if (!string.IsNullOrEmpty(projectDir))
         {
             if (Directory.Exists(projectDir))
@@ -300,7 +300,78 @@ public partial class MainWindow
                 return pd;
         }
 
-        return Environment.CurrentDirectory;
+        return string.Empty;
+    }
+
+    private string? GetWorkspaceRootDirectory()
+    {
+        var path = _projectPath ?? _viewModel.CurrentProjectPath;
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+
+        if (Directory.Exists(path))
+            return NormalizePath(path);
+
+        if (File.Exists(path))
+        {
+            var directory = Path.GetDirectoryName(path);
+            return string.IsNullOrWhiteSpace(directory) ? null : NormalizePath(directory);
+        }
+
+        var fallbackDirectory = Path.GetDirectoryName(path);
+        return string.IsNullOrWhiteSpace(fallbackDirectory) ? null : NormalizePath(fallbackDirectory);
+    }
+
+    private static string NormalizePath(string path)
+    {
+        return Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+    }
+
+    private static bool PathsEqual(string left, string right)
+    {
+        return string.Equals(NormalizePath(left), NormalizePath(right), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPathInsideDirectory(string path, string directory)
+    {
+        var normalizedPath = NormalizePath(path);
+        var normalizedDirectory = NormalizePath(directory);
+
+        return normalizedPath.StartsWith(normalizedDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+               normalizedPath.StartsWith(normalizedDirectory + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void CloseTabsInsidePath(string path)
+    {
+        foreach (var tab in _viewModel.Tabs.ToList())
+        {
+            if (string.IsNullOrWhiteSpace(tab.FilePath))
+                continue;
+
+            if (PathsEqual(tab.FilePath, path) || IsPathInsideDirectory(tab.FilePath, path))
+                _viewModel.CloseTab(tab);
+        }
+    }
+
+    private void ClearWorkspaceState(string statusText)
+    {
+        _viewModel.StopFileWatcher();
+
+        foreach (var tab in _viewModel.Tabs.ToList())
+            _viewModel.CloseTab(tab);
+
+        _viewModel.FileTreeItems.Clear();
+        _viewModel.CurrentProjectPath = null;
+        _projectPath = null;
+        FileTreeItem.SetAllowedRootPaths(null);
+
+        UpdateTitle();
+        UpdateWelcomeScreenVisibility();
+
+        if (_terminalControl != null)
+            _terminalControl.WorkingDirectory = Environment.CurrentDirectory;
+
+        _viewModel.StatusText = statusText;
     }
 
     // ═══════════════════════════════════════════════════════════

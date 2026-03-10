@@ -89,6 +89,8 @@ public enum FileTreeItemType
 /// </summary>
 public class FileTreeItem : INotifyPropertyChanged
 {
+    private static IReadOnlyList<string> _allowedRootPaths = Array.Empty<string>();
+
     private string _name = string.Empty;
     private string _fullPath = string.Empty;
     private bool _isDirectory;
@@ -355,6 +357,16 @@ public class FileTreeItem : INotifyPropertyChanged
     /// Returns true if this item should display an emoji icon (not a text icon and not a shell icon)
     /// </summary>
     public bool UseEmojiIcon => !IsTextIcon && !UseShellIcon;
+
+    public static void SetAllowedRootPaths(IEnumerable<string>? roots)
+    {
+        _allowedRootPaths = roots?
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(NormalizePath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray()
+            ?? Array.Empty<string>();
+    }
 
     private Bitmap? _shellIconBitmap;
     private bool _shellIconLoaded;
@@ -746,6 +758,13 @@ public class FileTreeItem : INotifyPropertyChanged
 
         if (_isLoaded && !forceReload) return;
 
+        if (!IsWithinAllowedRoots(FullPath))
+        {
+            _isLoaded = true;
+            Children.Clear();
+            return;
+        }
+
         if (!Directory.Exists(FullPath))
         {
             _isLoaded = true;
@@ -763,6 +782,9 @@ public class FileTreeItem : INotifyPropertyChanged
 
             foreach (var dir in Directory.GetDirectories(FullPath))
             {
+                if (!IsWithinAllowedRoots(dir))
+                    continue;
+
                 var dirName = Path.GetFileName(dir);
                 if (dirName.StartsWith(".") ||
                     dirName == "bin" ||
@@ -784,6 +806,9 @@ public class FileTreeItem : INotifyPropertyChanged
 
             foreach (var file in Directory.GetFiles(FullPath))
             {
+                if (!IsWithinAllowedRoots(file))
+                    continue;
+
                 var fileName = Path.GetFileName(file);
                 if (fileName.StartsWith(".")) continue;
 
@@ -950,6 +975,23 @@ public class FileTreeItem : INotifyPropertyChanged
             FullPath = path,
             IsDirectory = false
         };
+    }
+
+    private static bool IsWithinAllowedRoots(string path)
+    {
+        if (_allowedRootPaths.Count == 0)
+            return true;
+
+        var normalizedPath = NormalizePath(path);
+        return _allowedRootPaths.Any(root =>
+            normalizedPath.Equals(root, StringComparison.OrdinalIgnoreCase) ||
+            normalizedPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+            normalizedPath.StartsWith(root + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string NormalizePath(string path)
+    {
+        return Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
     }
 
     #region INotifyPropertyChanged
