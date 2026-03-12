@@ -68,14 +68,7 @@ public partial class MainWindow : Window
 
         DataContext = _viewModel;
 
-        // Wire up file watcher refresh action to run on UI thread
-        _viewModel.RefreshTreeAction = () =>
-        {
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                RefreshFileTree();
-            });
-        };
+        ActivateFileTreeService();
 
         // Set initial window position for restore
         _restoreSize = new Size(Width, Height);
@@ -196,11 +189,7 @@ public partial class MainWindow : Window
                             var solutionDir = Path.GetDirectoryName(projectResult);
                             if (!string.IsNullOrEmpty(solutionDir) && Directory.Exists(solutionDir))
                             {
-                                _projectPath = solutionDir;
-                                _viewModel.CurrentProjectPath = solutionDir;
-                                _viewModel.FileTreeItems.Clear();
-                                await _viewModel.LoadProjectFolderAsync(solutionDir);
-                                UpdateTitle();
+                                await LoadWorkspaceDirectoryAsync(solutionDir);
                                 _viewModel.StatusText = $"Created solution: {Path.GetFileName(projectResult)}";
                             }
                         }
@@ -214,19 +203,11 @@ public partial class MainWindow : Window
                         if (!string.IsNullOrEmpty(slnFile) && File.Exists(slnFile))
                         {
                             var slnDir = Path.GetDirectoryName(slnFile) ?? projDir;
-                            _projectPath = slnDir;
-                            _viewModel.CurrentProjectPath = slnDir;
-                            _viewModel.FileTreeItems.Clear();
-                            await _viewModel.LoadProjectFolderAsync(slnDir);
-                            UpdateTitle();
+                            await LoadWorkspaceDirectoryAsync(slnDir);
                         }
                         else if (!string.IsNullOrEmpty(projDir) && Directory.Exists(projDir))
                         {
-                            _projectPath = projDir;
-                            _viewModel.CurrentProjectPath = projDir;
-                            _viewModel.FileTreeItems.Clear();
-                            await _viewModel.LoadProjectFolderAsync(projDir);
-                            UpdateTitle();
+                            await LoadWorkspaceDirectoryAsync(projDir);
                         }
                     }
                 }
@@ -391,6 +372,12 @@ public partial class MainWindow : Window
 
     private void CreateNewFile()
     {
+        if (!HasActiveWorkspace())
+        {
+            _viewModel.StatusText = "Creating files without a project or solution is disabled.";
+            return;
+        }
+
         var newTab = new EditorTab
         {
             FileName = "Untitled.cs",
@@ -776,6 +763,8 @@ public partial class MainWindow : Window
 
     private async Task LoadProjectAsync(string projectPath)
     {
+        ActivateFileTreeService();
+
         if (File.Exists(projectPath))
         {
             var extension = Path.GetExtension(projectPath).ToLowerInvariant();
@@ -786,10 +775,7 @@ public partial class MainWindow : Window
                 var directory = Path.GetDirectoryName(projectPath);
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
-                    // Always keep _projectPath as the directory for consistency
-                    _projectPath = directory;
-                    _viewModel.CurrentProjectPath = directory;
-                    await _viewModel.LoadProjectFolderAsync(directory);
+                    await LoadWorkspaceDirectoryAsync(directory);
                     _viewModel.StatusText = $"Loaded solution: {Path.GetFileName(projectPath)}";
 
                     // Load run configurations for the solution
@@ -811,10 +797,7 @@ public partial class MainWindow : Window
                 var directory = Path.GetDirectoryName(projectPath);
                 if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
                 {
-                    // Always keep _projectPath as the directory for consistency
-                    _projectPath = directory;
-                    _viewModel.CurrentProjectPath = directory;
-                    await _viewModel.LoadProjectFolderAsync(directory);
+                    await LoadWorkspaceDirectoryAsync(directory);
                     _viewModel.StatusText = $"Loaded project: {Path.GetFileName(projectPath)}";
 
                     // Load run configurations for the project
@@ -840,7 +823,7 @@ public partial class MainWindow : Window
         else if (Directory.Exists(projectPath))
         {
             // Load folder
-            await _viewModel.LoadProjectFolderAsync(projectPath);
+            await LoadWorkspaceDirectoryAsync(projectPath);
             _viewModel.StatusText = $"Loaded folder: {Path.GetFileName(projectPath)}";
 
             // Try to find solution/project and load configurations
