@@ -1,0 +1,32 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Insait_Edit_C_Sharp.Controls.ProjectProps.SolutionBuildCfgPage"
+             Background="#FF1A1520">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top"
+                   Classes="section-header"
+                   Margin="28,20,28,10"
+                   Text="SOLUTION CONFIGURATIONS"/>
+        <TextBlock DockPanel.Dock="Top"
+                   Classes="info-text"
+                   Margin="28,0,28,12"
+                   Text="Build configurations read from the .sln file (GlobalSection SolutionConfigurationPlatforms)."/>
+        <ScrollViewer Padding="28,0,28,16"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl Name="CfgList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#FF231D35"
+                                BorderBrush="#FF3A2E50" BorderThickness="1"
+                                CornerRadius="6" Padding="14,9" Margin="0,0,0,6">
+                            <TextBlock Text="{Binding}" FontSize="13"
+                                       Foreground="#FFD0C8E0"
+                                       FontFamily="Consolas, Courier New, monospace"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

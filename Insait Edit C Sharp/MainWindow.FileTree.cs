@@ -341,7 +341,7 @@ public partial class MainWindow
         SetMenuItemVisible("ContextMenuUnloadProject", isProject && !isMulti);
         SetMenuItemVisible("ContextMenuRemoveSeparator", isProject && !isMulti);
 
-        bool canEdit = isFile || isFolder || (isMulti && multiEditable);
+        bool canEdit = isFile || isFolder || isSolution || isProject || (isMulti && multiEditable);
         SetMenuItemVisible("ContextMenuCut", canEdit);
         SetMenuItemVisible("ContextMenuCopy", canEdit);
         SetMenuItemVisible("ContextMenuPaste", !isMulti && (isFolder || isSolution || isProject));
@@ -352,7 +352,7 @@ public partial class MainWindow
         if (deleteMenu != null)
         {
             deleteMenu.Header = isMulti ? "🗑️ Delete " + count + " Items..." : "🗑️ Safe Delete...";
-            deleteMenu.IsVisible = isFile || isFolder || isProject || (isMulti && multiEditable);
+            deleteMenu.IsVisible = isFile || isFolder || isSolution || isProject || (isMulti && multiEditable);
         }
 
         SetMenuItemVisible("ContextMenuCopyPath", !isMulti && (isFile || isFolder));

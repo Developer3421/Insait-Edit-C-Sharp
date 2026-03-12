@@ -16,6 +16,8 @@ namespace Insait_Edit_C_Sharp;
 
 public partial class MainWindow
 {
+    private bool _isFileTreeServiceActive = true;
+
     // ═══════════════════════════════════════════════════════════
     //  Code Analysis Service — initialization & wiring
     // ═══════════════════════════════════════════════════════════
@@ -303,6 +305,133 @@ public partial class MainWindow
         return string.Empty;
     }
 
+    private bool HasActiveWorkspace()
+    {
+        var workspaceRoot = GetWorkspaceRootDirectory();
+        return !string.IsNullOrWhiteSpace(workspaceRoot) && Directory.Exists(workspaceRoot);
+    }
+
+    private bool TryGetWritableTargetDirectory(out string targetDir)
+    {
+        targetDir = GetTargetDirectory();
+
+        if (!HasActiveWorkspace() || string.IsNullOrWhiteSpace(targetDir) || !Directory.Exists(targetDir))
+        {
+            _viewModel.StatusText = "No active project or solution. Create or open one first.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ActivateFileTreeService()
+    {
+        _isFileTreeServiceActive = true;
+        _viewModel.RefreshTreeAction = () =>
+        {
+            if (!_isFileTreeServiceActive)
+                return;
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (_isFileTreeServiceActive)
+                    RefreshFileTree();
+            });
+        };
+    }
+
+    private void DeactivateFileTreeService()
+    {
+        _isFileTreeServiceActive = false;
+        _viewModel.RefreshTreeAction = null;
+        _viewModel.StopFileWatcher();
+    }
+
+    private async Task LoadWorkspaceDirectoryAsync(string directory)
+    {
+        ActivateFileTreeService();
+        _projectPath = directory;
+        _viewModel.CurrentProjectPath = directory;
+        _viewModel.FileTreeItems.Clear();
+        await _viewModel.LoadProjectFolderAsync(directory);
+        UpdateTitle();
+    }
+
+    private async Task PrepareWorkspaceRootDeletionAsync(string? workspaceRoot)
+    {
+        _buildService.CancelBuild();
+        _publishService.Cancel();
+        _runConfigService.Stop();
+
+        if (_debugService.IsDebugging)
+            await _debugService.StopDebuggingAsync();
+
+        if (_terminalControl != null)
+        {
+            _terminalControl.StopCurrentProcess();
+            _terminalControl.WorkingDirectory = Environment.CurrentDirectory;
+        }
+
+        _copilotCliService.WorkingDirectory = Environment.CurrentDirectory;
+
+        if (_nugetPanelControl != null)
+            await _nugetPanelControl.SetProjectPathAsync(string.Empty);
+
+        try
+        {
+            var processDirectory = Environment.CurrentDirectory;
+            if (!string.IsNullOrWhiteSpace(workspaceRoot) &&
+                (PathsEqual(processDirectory, workspaceRoot) || IsPathInsideDirectory(processDirectory, workspaceRoot)))
+            {
+                Directory.SetCurrentDirectory(Path.GetTempPath());
+            }
+        }
+        catch
+        {
+            // Ignore cwd reset failures; deletion retries below still run.
+        }
+
+        await Task.Delay(150);
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        DeactivateFileTreeService();
+    }
+
+    private async Task<bool> TryDeleteDirectoryWithRetriesAsync(string path, int attempts = 6, int delayMs = 200)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+            return true;
+
+        Exception? lastError = null;
+
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            try
+            {
+                Directory.Delete(path, true);
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                lastError = ex;
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                if (attempt < attempts)
+                    await Task.Delay(delayMs);
+            }
+        }
+
+        if (lastError != null)
+            _viewModel.StatusText = "Error deleting workspace folder: " + lastError.Message;
+
+        return false;
+    }
+
     private string? GetWorkspaceRootDirectory()
     {
         var path = _projectPath ?? _viewModel.CurrentProjectPath;
@@ -355,8 +484,6 @@ public partial class MainWindow
 
     private void ClearWorkspaceState(string statusText)
     {
-        _viewModel.StopFileWatcher();
-
         foreach (var tab in _viewModel.Tabs.ToList())
             _viewModel.CloseTab(tab);
 
@@ -372,6 +499,8 @@ public partial class MainWindow
             _terminalControl.WorkingDirectory = Environment.CurrentDirectory;
 
         _viewModel.StatusText = statusText;
+
+        DeactivateFileTreeService();
     }
 
     // ═══════════════════════════════════════════════════════════

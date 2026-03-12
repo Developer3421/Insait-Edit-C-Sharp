@@ -1380,11 +1380,7 @@ ExecuteMenuAction(string action)
                         System.Diagnostics.Debug.WriteLine($"NewProject: solutionDir: '{solutionDir}'");
                         if (!string.IsNullOrEmpty(solutionDir) && Directory.Exists(solutionDir))
                         {
-                            _projectPath = solutionDir;
-                            _viewModel.CurrentProjectPath = solutionDir;
-                            _viewModel.FileTreeItems.Clear();
-                            await _viewModel.LoadProjectFolderAsync(solutionDir);
-                            UpdateTitle();
+                            await LoadWorkspaceDirectoryAsync(solutionDir);
                             _viewModel.StatusText = $"Created solution: {Path.GetFileName(solutionFile)}";
                         }
                     }
@@ -1399,11 +1395,7 @@ ExecuteMenuAction(string action)
                             : "";
                         if (!string.IsNullOrEmpty(projDir) && Directory.Exists(projDir))
                         {
-                            _projectPath = projDir;
-                            _viewModel.CurrentProjectPath = projDir;
-                            _viewModel.FileTreeItems.Clear();
-                            await _viewModel.LoadProjectFolderAsync(projDir);
-                            UpdateTitle();
+                            await LoadWorkspaceDirectoryAsync(projDir);
                             _viewModel.StatusText = $"Created project: {Path.GetFileNameWithoutExtension(projectResult)}";
                         }
                     }
@@ -1655,6 +1647,9 @@ ExecuteMenuAction(string action)
 
     private void RefreshFileTree()
     {
+        if (!_isFileTreeServiceActive)
+            return;
+
         var workspaceRoot = GetWorkspaceRootDirectory();
         if (!string.IsNullOrEmpty(workspaceRoot) && !Directory.Exists(workspaceRoot))
         {
@@ -3293,14 +3288,8 @@ ExecuteMenuAction(string action)
 
     private async void AddNewItem_Click(object? sender, RoutedEventArgs e)
     {
-        var targetDir = GetTargetDirectory();
-
-        // Ensure directory exists before opening the dialog
-        if (!Directory.Exists(targetDir))
-        {
-            _viewModel.StatusText = $"Error: Target directory does not exist: {targetDir}";
+        if (!TryGetWritableTargetDirectory(out var targetDir))
             return;
-        }
 
         var addItemWindow = new AddNewItemWindow(targetDir);
         var result = await addItemWindow.ShowDialog<string?>(this);
@@ -3315,7 +3304,8 @@ ExecuteMenuAction(string action)
 
     private async void AddNewFolder_Click(object? sender, RoutedEventArgs e)
     {
-        var targetDir = GetTargetDirectory();
+        if (!TryGetWritableTargetDirectory(out var targetDir))
+            return;
 
         var folderName = await ShowInputDialogAsync("New Folder", "Enter folder name:", "NewFolder");
         if (!string.IsNullOrEmpty(folderName))
@@ -3398,13 +3388,31 @@ ExecuteMenuAction(string action)
 
     private async void DeleteItem_Click(object? sender, RoutedEventArgs e)
     {
+        var workspaceRoot = GetWorkspaceRootDirectory();
         var selectedItems = GetSelectedTreeItems()
-            .Where(x => x.ItemType is not FileTreeItemType.Solution
-                                   and not FileTreeItemType.SolutionFolder)
+            .Where(x => x.ItemType is not FileTreeItemType.SolutionFolder)
             .OrderBy(x => x.FullPath.Length)
             .ToList();
 
         if (selectedItems.Count == 0) return;
+
+        var deleteWorkspaceRoot = !string.IsNullOrEmpty(workspaceRoot) && selectedItems.Any(item =>
+            item.ItemType == FileTreeItemType.Solution ||
+            (item.ItemType == FileTreeItemType.Project && item.ParentItem == null));
+
+        if (deleteWorkspaceRoot)
+        {
+            selectedItems = new List<FileTreeItem>
+            {
+                new FileTreeItem
+                {
+                    Name = Path.GetFileName(workspaceRoot!),
+                    FullPath = workspaceRoot!,
+                    IsDirectory = true,
+                    ItemType = FileTreeItemType.Folder
+                }
+            };
+        }
 
         selectedItems = selectedItems
             .Where(item => !selectedItems.Any(other =>
@@ -3412,8 +3420,6 @@ ExecuteMenuAction(string action)
                 other.IsDirectory &&
                 IsPathInsideDirectory(item.FullPath, other.FullPath)))
             .ToList();
-
-        var workspaceRoot = GetWorkspaceRootDirectory();
 
         string confirmMsg;
         if (selectedItems.Count == 1)
@@ -3436,6 +3442,21 @@ ExecuteMenuAction(string action)
         var confirmDelete = await ShowConfirmDialogAsync("Confirm Delete", confirmMsg);
         if (!confirmDelete) return;
 
+        var preparedWorkspaceRootDeletion = false;
+
+        if (deleteWorkspaceRoot)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _viewModel.FileTreeItems.Clear();
+                _viewModel.StatusText = "Deleting workspace...";
+            }, DispatcherPriority.Render);
+
+            await Task.Delay(75);
+            await PrepareWorkspaceRootDeletionAsync(workspaceRoot);
+            preparedWorkspaceRootDeletion = true;
+        }
+
         int deleted = 0, errors = 0;
         foreach (var item in selectedItems)
         {
@@ -3444,7 +3465,15 @@ ExecuteMenuAction(string action)
                 if (item.IsDirectory)
                 {
                     CloseTabsInsidePath(item.FullPath);
-                    Directory.Delete(item.FullPath, true);
+                    if (deleteWorkspaceRoot && !string.IsNullOrEmpty(workspaceRoot) && PathsEqual(item.FullPath, workspaceRoot))
+                    {
+                        if (!await TryDeleteDirectoryWithRetriesAsync(item.FullPath))
+                            throw new IOException("Workspace root could not be deleted after multiple retries.");
+                    }
+                    else
+                    {
+                        Directory.Delete(item.FullPath, true);
+                    }
                 }
                 else
                 {
@@ -3468,7 +3497,8 @@ ExecuteMenuAction(string action)
         {
             try
             {
-                Directory.Delete(workspaceRoot!);
+                if (!await TryDeleteDirectoryWithRetriesAsync(workspaceRoot!))
+                    throw new IOException("Workspace folder could not be deleted after multiple retries.");
             }
             catch (Exception ex)
             {
@@ -3481,6 +3511,17 @@ ExecuteMenuAction(string action)
         {
             ClearWorkspaceState("Workspace is empty. Create a new project or solution.");
             return;
+        }
+
+        if (deleteWorkspaceRoot && preparedWorkspaceRootDeletion)
+        {
+            ActivateFileTreeService();
+            if (!string.IsNullOrEmpty(workspaceRoot) && Directory.Exists(workspaceRoot))
+            {
+                _projectPath = workspaceRoot;
+                _viewModel.CurrentProjectPath = workspaceRoot;
+                RefreshFileTree();
+            }
         }
 
         RefreshFileTree();
@@ -3577,7 +3618,9 @@ ExecuteMenuAction(string action)
 
     private async Task CreateNewCSharpFile(string type)
     {
-        var targetDir = GetTargetDirectory();
+        if (!TryGetWritableTargetDirectory(out var targetDir))
+            return;
+
         var typeName = await ShowInputDialogAsync($"New {type}", $"Enter {type} name:", $"New{char.ToUpper(type[0])}{type[1..]}");
         if (string.IsNullOrEmpty(typeName)) return;
         var ns = DetermineNamespace(targetDir);
@@ -3595,7 +3638,9 @@ ExecuteMenuAction(string action)
 
     private async Task CreateNewAvaloniaFile(string type)
     {
-        var targetDir = GetTargetDirectory();
+        if (!TryGetWritableTargetDirectory(out var targetDir))
+            return;
+
         var typeName = await ShowInputDialogAsync($"New Avalonia {type}", $"Enter {type} name:", $"My{char.ToUpper(type[0])}{type[1..]}");
         if (string.IsNullOrEmpty(typeName)) return;
         var ns = DetermineNamespace(targetDir);
@@ -3655,7 +3700,9 @@ ExecuteMenuAction(string action)
 
     private async void ContextMenu_AddExistingItem_Click(object? sender, RoutedEventArgs e)
     {
-        var targetDir = GetTargetDirectory();
+        if (!TryGetWritableTargetDirectory(out var targetDir))
+            return;
+
         var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Add Existing Item", AllowMultiple = true });
         foreach (var file in result)
         {

@@ -597,9 +597,7 @@ public partial class MainWindow
         if (!string.IsNullOrEmpty(result))
         {
             var dir = File.Exists(result) ? Path.GetDirectoryName(result) ?? result : result;
-            _projectPath = dir; _viewModel.CurrentProjectPath = dir;
-            _viewModel.FileTreeItems.Clear();
-            await _viewModel.LoadProjectFolderAsync(dir);
+            await LoadWorkspaceDirectoryAsync(dir);
             UpdateTitle(); _viewModel.StatusText = $"Created solution: {Path.GetFileName(result)}";
         }
     }
@@ -1083,6 +1081,10 @@ public partial class MainWindow
     private void ContextMenu_Properties_Click(object? sender, RoutedEventArgs e)
     {
         var item = GetSelectedTreeItem();
+        if (item?.ItemType == FileTreeItemType.Solution)
+        {
+            new SolutionPropertiesWindow(item.FullPath).ShowDialog(this); return;
+        }
         if (item?.ItemType == FileTreeItemType.Project)
         {
             var pf = FindProjectFile(item.FullPath);

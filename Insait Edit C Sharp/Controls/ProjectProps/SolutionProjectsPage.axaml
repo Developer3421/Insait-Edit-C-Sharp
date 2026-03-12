@@ -1,0 +1,38 @@
+﻿﻿﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Insait_Edit_C_Sharp.Controls.ProjectProps"
+             x:Class="Insait_Edit_C_Sharp.Controls.ProjectProps.SolutionProjectsPage"
+             Background="#FF1A1520">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top"
+                   Classes="section-header"
+                   Margin="28,20,28,10"
+                   Text="PROJECTS IN SOLUTION"/>
+        <TextBlock DockPanel.Dock="Top"
+                   Classes="info-text"
+                   Margin="28,0,28,12"
+                   Text="Projects listed in this solution file."/>
+        <ScrollViewer Padding="28,0,28,16"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl Name="ProjectList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:ProjectEntry">
+                        <Border Background="#FF231D35"
+                                BorderBrush="#FF3A2E50" BorderThickness="1"
+                                CornerRadius="6" Padding="14,10" Margin="0,0,0,8">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="{Binding Name}" FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="#FFFFC09F"/>
+                                <TextBlock Text="{Binding RelativePath}" FontSize="11"
+                                           Foreground="#FF8070A0"
+                                           FontFamily="Consolas, Courier New, monospace"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,252 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.SolutionPropertiesWindow"
+        Title="Solution Properties"
+        Width="860" Height="560"
+        WindowStartupLocation="CenterOwner"
+        CanResize="True"
+        SystemDecorations="None"
+        Background="#FF1A1520">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.nav-category">
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#FF3E2E60"/>
+            <Setter Property="Margin" Value="16,14,0,4"/>
+            <Setter Property="LetterSpacing" Value="1.5"/>
+        </Style>
+        <Style Selector="Button.nav-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FF9080A8"/>
+            <Setter Property="BorderThickness" Value="3,0,0,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="14,9"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CornerRadius" Value="0,6,6,0"/>
+            <Setter Property="Margin" Value="0,1,8,1"/>
+        </Style>
+        <Style Selector="Button.nav-btn:pointerover">
+            <Setter Property="Background" Value="#14DCC4FF"/>
+            <Setter Property="Foreground" Value="#FFD0C8E0"/>
+            <Setter Property="BorderBrush" Value="#22DCC4FF"/>
+        </Style>
+        <Style Selector="Button.nav-btn.active">
+            <Setter Property="Background" Value="#28FFC09F"/>
+            <Setter Property="Foreground" Value="#FFFFC09F"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="#FFFFC09F"/>
+        </Style>
+        <Style Selector="Button.action-btn">
+            <Setter Property="Background" Value="#FF231D35"/>
+            <Setter Property="Foreground" Value="#FFD0C8E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FF3A2E50"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="18,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="Button.action-btn:pointerover">
+            <Setter Property="Background" Value="#FF3A2E58"/>
+        </Style>
+        <Style Selector="Button.primary-btn">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Foreground" Value="#FF1A1520"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="26,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="Button.primary-btn:pointerover">
+            <Setter Property="Background" Value="#FFFFD0B8"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#FF231D35"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3A2E50"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CaretBrush" Value="#FFFFC09F"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="#88FFC09F"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF231D35"/>
+        </Style>
+        <Style Selector="TextBox.nav-search">
+            <Setter Property="Background" Value="#FF1C1530"/>
+            <Setter Property="BorderBrush" Value="#FF2A2048"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+        <Style Selector="TextBox.nav-search /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF1C1530"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#FF231D35"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3A2E50"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="MinHeight" Value="34"/>
+        </Style>
+        <Style Selector="ComboBoxItem">
+            <Setter Property="Background" Value="#FF231D35"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FF3A2E50"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="#FFD0C8E0"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
+        <Style Selector="TextBlock.section-header">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#FF6A5888"/>
+            <Setter Property="LetterSpacing" Value="1.5"/>
+            <Setter Property="Margin" Value="0,20,0,10"/>
+        </Style>
+        <Style Selector="TextBlock.prop-label">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#FFB0A0C8"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style Selector="TextBlock.info-text">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="#FF5A4878"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style Selector="TextBlock.readonly-value">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#FF8070A0"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#FF2A2040" BorderThickness="1" CornerRadius="10">
+        <Grid RowDefinitions="44,*,58">
+
+            <!-- TITLE BAR -->
+            <Border Grid.Row="0" Name="TitleBar" CornerRadius="10,10,0,0" ClipToBounds="True">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Color="#FF221838" Offset="0"/>
+                        <GradientStop Color="#FF1C142C" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Grid.Column="0" Width="4" Background="#FFFFC09F"
+                            Margin="0,9,0,9" VerticalAlignment="Stretch"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12,0">
+                        <TextBlock Text="🗒" FontSize="16" VerticalAlignment="Center"
+                                   Foreground="#FFFFC09F"/>
+                        <StackPanel VerticalAlignment="Center" Spacing="1">
+                            <TextBlock Name="TitleText" Text="Solution Properties"
+                                       FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                            <TextBlock Name="SubTitleText" Text=""
+                                       FontSize="10" Foreground="#FF7A6898"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Button Grid.Column="2" Name="CloseButton"
+                            Background="Transparent" BorderThickness="0"
+                            Width="44" Height="44" Cursor="Hand"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png"
+                               Width="26" Height="26"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- BODY -->
+            <Grid Grid.Row="1" ColumnDefinitions="220,1,*">
+
+                <!-- LEFT NAV -->
+                <Border Grid.Column="0" Background="#FF131017">
+                    <DockPanel>
+                        <Border DockPanel.Dock="Top" Margin="10,10,10,2">
+                            <TextBox Name="NavSearchBox"
+                                     Classes="nav-search"
+                                     Watermark="🔍  Search settings…"/>
+                        </Border>
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                      VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="0" Margin="0,6,0,10">
+                                <TextBlock Text="SOLUTION" Classes="nav-category"/>
+                                <Button Name="NavGeneral" Classes="nav-btn active">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="🗒" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="General" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Name="NavBuildCfg" Classes="nav-btn">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="🔨" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Build Configurations" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Name="NavProjects" Classes="nav-btn">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="📁" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Projects" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+
+                <!-- SEPARATOR -->
+                <Border Grid.Column="1" Background="#FF2A2040"/>
+
+                <!-- RIGHT: page title + host -->
+                <DockPanel Grid.Column="2" Background="#FF1A1520">
+                    <Border DockPanel.Dock="Top"
+                            Background="#FF1C1530"
+                            BorderBrush="#FF2A2040" BorderThickness="0,0,0,1"
+                            Padding="28,13">
+                        <TextBlock Name="PageTitle"
+                                   Text="General"
+                                   FontSize="19" FontWeight="SemiBold"
+                                   Foreground="#FFF0E8F4"/>
+                    </Border>
+                    <Panel Name="PageHost" Background="#FF1A1520"/>
+                </DockPanel>
+            </Grid>
+
+            <!-- FOOTER -->
+            <Border Grid.Row="2"
+                    Background="#FF131017"
+                    BorderBrush="#FF2A2040" BorderThickness="0,1,0,0"
+                    Padding="22,0" CornerRadius="0,0,10,10">
+                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                    <TextBlock Name="StatusLabel" Grid.Column="0"
+                               Text="" FontSize="11"
+                               Foreground="#FF8B7EA8" VerticalAlignment="Center"/>
+                    <Button Name="CloseFooterButton" Grid.Column="1"
+                            Content="Close" Classes="primary-btn"/>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>

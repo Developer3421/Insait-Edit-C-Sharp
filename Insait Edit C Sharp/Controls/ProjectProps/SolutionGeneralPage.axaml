@@ -1,0 +1,31 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Insait_Edit_C_Sharp.Controls.ProjectProps.SolutionGeneralPage"
+             Background="#FF1A1520">
+    <ScrollViewer Padding="28,16,28,16"
+                  HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="0" MaxWidth="600" HorizontalAlignment="Left">
+
+            <TextBlock Text="IDENTITY" Classes="section-header"/>
+
+            <TextBlock Text="Name" Classes="prop-label"/>
+            <TextBox Name="NameBox" Margin="0,0,0,14"
+                     IsReadOnly="True" ToolTip.Tip="Solution name (readonly)"/>
+
+            <TextBlock Text="Full Path" Classes="prop-label"/>
+            <TextBox Name="PathBox" Margin="0,0,0,14"
+                     IsReadOnly="True" ToolTip.Tip="Solution file path"/>
+
+            <TextBlock Text="Format Version" Classes="prop-label"/>
+            <TextBox Name="FormatBox" Margin="0,0,0,14" IsReadOnly="True"/>
+
+            <TextBlock Text="Visual Studio Version" Classes="prop-label"/>
+            <TextBox Name="VsVersionBox" Margin="0,0,0,14" IsReadOnly="True"/>
+
+            <TextBlock Text="Minimum Visual Studio Version" Classes="prop-label"/>
+            <TextBox Name="VsMinVersionBox" Margin="0,0,0,14" IsReadOnly="True"/>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
