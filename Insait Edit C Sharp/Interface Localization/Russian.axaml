@@ -30,6 +30,7 @@
     <x:String x:Key="Tooltip.Redo">Повторить (Ctrl+Y)</x:String>
     <x:String x:Key="Tooltip.NewWindow">Новое окно</x:String>
     <x:String x:Key="Tooltip.Restart">Перезапустить приложение</x:String>
+    <x:String x:Key="Tooltip.UserAgreement">Пользовательское соглашение</x:String>
     <x:String x:Key="Tooltip.PreviewAxaml">Предпросмотр AXAML (Ctrl+Shift+P)</x:String>
     <x:String x:Key="Sidebar.Explorer">Проводник (Ctrl+Shift+E)</x:String>
     <x:String x:Key="Sidebar.Search">Поиск (Ctrl+Shift+F)</x:String>
@@ -537,6 +538,11 @@
     <x:String x:Key="PreviewError.Hint">Текст можно выделить — Ctrl+A для выделения всего</x:String>
     <x:String x:Key="PreviewError.Copy">Копировать</x:String>
 
+    <!-- UserAgreementWindow -->
+    <x:String x:Key="UserAgreement.Footer">Используя Insait Edit, вы принимаете эти условия.</x:String>
+    <x:String x:Key="UserAgreement.Close">Закрыть</x:String>
+    <x:String x:Key="UserAgreement.Accept">Принять</x:String>
+
     <!-- CompoundRunWindow -->
     <x:String x:Key="Compound.Title">Комплексные конфигурации запуска</x:String>
     <x:String x:Key="Compound.Subtitle">Запуск нескольких проектов одновременно</x:String>
@@ -822,6 +828,18 @@
     <x:String x:Key="Account.SearchRepos">Поиск репозиториев...</x:String>
     <x:String x:Key="Account.LoadMore">Загрузить ещё</x:String>
     <x:String x:Key="Account.SignOut">Выйти</x:String>
+    <x:String x:Key="Account.DeviceCodeInstr">Введите этот код на GitHub:</x:String>
+    <x:String x:Key="Account.DeviceCodeHint">Должно было открыться окно браузера. Если нет — перейдите на github.com/login/device</x:String>
+    <x:String x:Key="Account.ClickToSignIn">Нажмите «Войти», чтобы открыть GitHub в браузере.</x:String>
+    <x:String x:Key="Account.TokenAlt">Или используйте Personal Access Token:</x:String>
+    <x:String x:Key="Account.LoginWithToken">Войти с токеном</x:String>
+    <x:String x:Key="Account.GetToken">Получить токен</x:String>
+    <x:String x:Key="Account.UseToken">Использовать токен</x:String>
+    <x:String x:Key="Account.HideToken">Скрыть поле токена</x:String>
+    <x:String x:Key="Account.UseTokenTooltip">Войти с Personal Access Token</x:String>
+    <x:String x:Key="Account.Refresh">Обновить</x:String>
+    <x:String x:Key="Account.ViewOnGitHub">Открыть на GitHub</x:String>
+    <x:String x:Key="Account.Loading">Загрузка...</x:String>
 
     <!-- GitPanelControl -->
     <x:String x:Key="GitPanel.LocalChanges">Локальные изменения</x:String>

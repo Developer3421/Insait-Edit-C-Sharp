@@ -34,7 +34,6 @@ public partial class MainWindow : Window
     private readonly BuildService _buildService;
     private readonly CodeAnalysisService _codeAnalysisService;
     private readonly RunConfigurationService _runConfigService;
-    private readonly DebugService _debugService;
     private readonly PublishService _publishService;
     private readonly CopilotCliService _copilotCliService;
     private string? _projectPath;
@@ -61,7 +60,6 @@ public partial class MainWindow : Window
         _buildService = new BuildService();
         _codeAnalysisService = new CodeAnalysisService();
         _runConfigService = new RunConfigurationService();
-        _debugService = new DebugService();
         _publishService = new PublishService();
         _copilotCliService = new CopilotCliService();
         _projectPath = projectPath;
@@ -77,14 +75,15 @@ public partial class MainWindow : Window
         // Set initial window position for restore
         _restoreSize = new Size(Width, Height);
 
+        // Add the Start / Welcome tab so it is always the first pinned tab
+        AddWelcomeTab();
+
         // Wire up the editor that is declared directly in AXAML
         InitializeInsaitEditor();
 
         // Initialize Build Service events
         InitializeBuildService();
 
-        // Initialize real debugger events
-        InitializeDebugService();
 
         // Initialize Code Analysis Service events
         InitializeCodeAnalysisService();
@@ -244,43 +243,13 @@ public partial class MainWindow : Window
             await AnalyzeProjectAsync();
             e.Handled = true;
         }
-        // F5 / Ctrl+F5 / Shift+F5 - Debug / Run / Stop Debugging
+        // F5 / Shift+F5 - Run / Stop
         else if (e.Key == Key.F5)
         {
-            if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
-                await RunProjectAsync();
-            else if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-                await StopDebuggingAsync();
-            else
-                await StartDebuggingAsync();
-
-            e.Handled = true;
-        }
-        // F9 - Toggle breakpoint
-        else if (e.Key == Key.F9)
-        {
-            if (_insaitEditor != null)
-            {
-                var (bpLine, _) = _insaitEditor.CursorPosition;
-                var bpFile = _viewModel.ActiveTab?.FilePath ?? string.Empty;
-                if (!string.IsNullOrEmpty(bpFile))
-                    BreakpointService.Toggle(bpFile, bpLine);
-            }
-            e.Handled = true;
-        }
-        // F10 - Step over
-        else if (e.Key == Key.F10)
-        {
-            await StepOverAsync();
-            e.Handled = true;
-        }
-        // F11 / Shift+F11 - Step into / out
-        else if (e.Key == Key.F11)
-        {
             if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-                await StepOutAsync();
+                StopRunningProcess();
             else
-                await StepIntoAsync();
+                await RunProjectAsync();
 
             e.Handled = true;
         }
@@ -428,7 +397,7 @@ public partial class MainWindow : Window
             // Update editor with active tab content
             if (_insaitEditor != null && _viewModel.ActiveTab != null)
             {
-                _insaitEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
+                ShowTabInEditor(_viewModel.ActiveTab);
             }
             else if (_insaitEditor != null)
             {
@@ -898,6 +867,7 @@ public partial class MainWindow : Window
         SetButtonTooltip("RedoButton", L("Tooltip.Redo"));
         SetButtonTooltip("NewWindowButton", L("Tooltip.NewWindow"));
         SetButtonTooltip("RestartButton", L("Tooltip.Restart"));
+        SetButtonTooltip("UserAgreementButton", L("Tooltip.UserAgreement"));
 
         // ── Sidebar tooltips ─────────────────────────────────────
         SetButtonTooltip("ExplorerButton", L("Sidebar.Explorer"));
@@ -1071,30 +1041,75 @@ public partial class MainWindow : Window
     //  Welcome Screen
     // ═══════════════════════════════════════════════════════════
 
+    /// <summary>
+    /// Inserts the pinned "Start" tab as the first tab and makes it active.
+    /// Called once during window construction — before any project is loaded.
+    /// </summary>
+    private void AddWelcomeTab()
+    {
+        var welcomeTab = new EditorTab
+        {
+            FileName    = "Start",
+            FilePath    = string.Empty,
+            Content     = string.Empty,
+            Language    = string.Empty,
+            IsWelcomeTab = true,
+            IsDirty     = false
+        };
+
+        _viewModel.Tabs.Insert(0, welcomeTab);
+        _viewModel.ActiveTab = welcomeTab;
+    }
+
     private void UpdateWelcomeScreenVisibility()
     {
         var welcomePanel = this.FindControl<Border>("WelcomeScreenPanel");
         var emptyPanel   = this.FindControl<Border>("EmptyProjectPanel");
         var treeOverlay  = this.FindControl<Border>("FileTreeEmptyOverlay");
 
-        bool hasProject  = !string.IsNullOrEmpty(_projectPath ?? _viewModel.CurrentProjectPath);
-        bool hasOpenTab  = _viewModel.ActiveTab != null;
-        bool treeEmpty   = hasProject && IsFileTreeEffectivelyEmpty();
+        bool hasProject       = !string.IsNullOrEmpty(_projectPath ?? _viewModel.CurrentProjectPath);
+        bool isWelcomeTabActive = _viewModel.ActiveTab?.IsWelcomeTab == true;
+        // "No editor content" = either no tab open OR the Start/Welcome tab is active
+        bool noEditorContent  = _viewModel.ActiveTab == null || isWelcomeTabActive;
+        bool treeEmpty        = hasProject && IsFileTreeEffectivelyEmpty();
 
-        // Welcome screen: no active tab AND no project loaded
+        // Welcome screen: no editor content AND no project loaded
         if (welcomePanel != null)
-            welcomePanel.IsVisible = !hasOpenTab && !hasProject;
+            welcomePanel.IsVisible = noEditorContent && !hasProject;
 
-        // Empty project panel (editor area): no active tab BUT a project IS loaded
+        // Empty project / start page (editor area): no editor content AND a project IS loaded
         if (emptyPanel != null)
         {
-            emptyPanel.IsVisible = !hasOpenTab && hasProject;
+            emptyPanel.IsVisible = noEditorContent && hasProject;
 
-            if (!hasOpenTab && hasProject)
+            if (noEditorContent && hasProject)
             {
                 var pathText = this.FindControl<TextBlock>("EmptyProjectPath");
                 if (pathText != null)
                     pathText.Text = _projectPath ?? _viewModel.CurrentProjectPath ?? "";
+
+                // Update title/subtitle depending on whether project actually has files
+                bool projectHasFiles = !treeEmpty;
+                var titleText = this.FindControl<TextBlock>("EmptyProjectTitle");
+                var subtitleText = this.FindControl<TextBlock>("EmptyProjectSubtitle");
+
+                if (isWelcomeTabActive && projectHasFiles)
+                {
+                    // Start tab opened while project has files — show a friendlier heading
+                    var projectName = System.IO.Path.GetFileName(
+                        (_projectPath ?? _viewModel.CurrentProjectPath ?? "").TrimEnd('\\', '/'));
+                    if (titleText != null)
+                        titleText.Text = string.IsNullOrEmpty(projectName) ? "Welcome" : projectName;
+                    if (subtitleText != null)
+                        subtitleText.Text = "Open a file from the Explorer or use the actions below.";
+                }
+                else
+                {
+                    // No active file and project is truly empty
+                    if (titleText != null) titleText.Text = "Project is Empty";
+                    if (subtitleText != null) subtitleText.Text =
+                        "No files in this project yet. Create or add a file to get started.";
+                }
             }
         }
 
@@ -1336,6 +1351,11 @@ public partial class MainWindow : Window
             });
         }
         Close();
+    }
+
+    private void UserAgreementButton_Click(object? sender, RoutedEventArgs e)
+    {
+        new UserAgreementWindow().ShowDialog(this);
     }
 
     private void MaximizeButton_Click(object? sender, RoutedEventArgs e)
@@ -1658,36 +1678,6 @@ ExecuteMenuAction(string action)
                 break;
             case "Analyze":
                 await AnalyzeProjectAsync();
-                break;
-            case "ToggleBreakpoint":
-                if (_insaitEditor != null)
-                {
-                    var (bpLine, _) = _insaitEditor.CursorPosition;
-                    var bpFile = _viewModel.ActiveTab?.FilePath ?? string.Empty;
-                    if (!string.IsNullOrEmpty(bpFile))
-                        BreakpointService.Toggle(bpFile, bpLine);
-                }
-                break;
-            case "DeleteAllBreakpoints":
-                BreakpointService.ClearAll();
-                break;
-            case "StartDebugging":
-                await StartDebuggingAsync();
-                break;
-            case "StopDebugging":
-                await StopDebuggingAsync();
-                break;
-            case "StepOver":
-                await StepOverAsync();
-                break;
-            case "StepInto":
-                await StepIntoAsync();
-                break;
-            case "StepOut":
-                await StepOutAsync();
-                break;
-            case "StartWithoutDebugging":
-                await RunProjectAsync();
                 break;
             case "Clean":
                 await CleanProjectAsync();
@@ -3408,7 +3398,7 @@ ExecuteMenuAction(string action)
 
     private void StartDebug_Click(object? sender, RoutedEventArgs e)
     {
-        _ = StartDebuggingAsync();
+        _ = RunProjectInDebugModeAsync();
     }
 
     #endregion

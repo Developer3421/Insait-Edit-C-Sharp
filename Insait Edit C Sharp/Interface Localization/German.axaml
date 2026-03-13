@@ -30,6 +30,7 @@
     <x:String x:Key="Tooltip.Redo">Wiederholen (Ctrl+Y)</x:String>
     <x:String x:Key="Tooltip.NewWindow">Neues Fenster</x:String>
     <x:String x:Key="Tooltip.Restart">Anwendung neu starten</x:String>
+    <x:String x:Key="Tooltip.UserAgreement">Nutzungsvereinbarung</x:String>
     <x:String x:Key="Tooltip.PreviewAxaml">AXAML-Design Vorschau (Ctrl+Shift+P)</x:String>
     <x:String x:Key="Sidebar.Explorer">Explorer (Ctrl+Shift+E)</x:String>
     <x:String x:Key="Sidebar.Search">Suche (Ctrl+Shift+F)</x:String>
@@ -537,6 +538,11 @@
     <x:String x:Key="PreviewError.Hint">Text ist auswählbar — Ctrl+A zum Alles auswählen</x:String>
     <x:String x:Key="PreviewError.Copy">Kopieren</x:String>
 
+    <!-- UserAgreementWindow -->
+    <x:String x:Key="UserAgreement.Footer">Durch die Nutzung von Insait Edit stimmen Sie diesen Bedingungen zu.</x:String>
+    <x:String x:Key="UserAgreement.Close">Schließen</x:String>
+    <x:String x:Key="UserAgreement.Accept">Akzeptieren</x:String>
+
     <!-- CompoundRunWindow -->
     <x:String x:Key="Compound.Title">Kombinierte Ausführungskonfigurationen</x:String>
     <x:String x:Key="Compound.Subtitle">Mehrere Projekte gleichzeitig ausführen</x:String>
@@ -822,6 +828,18 @@
     <x:String x:Key="Account.SearchRepos">Repositories durchsuchen...</x:String>
     <x:String x:Key="Account.LoadMore">Mehr laden</x:String>
     <x:String x:Key="Account.SignOut">Abmelden</x:String>
+    <x:String x:Key="Account.DeviceCodeInstr">Diesen Code auf GitHub eingeben:</x:String>
+    <x:String x:Key="Account.DeviceCodeHint">Ein Browserfenster sollte sich geöffnet haben. Falls nicht, gehen Sie zu github.com/login/device</x:String>
+    <x:String x:Key="Account.ClickToSignIn">Klicken Sie auf „Anmelden", um GitHub im Browser zu öffnen.</x:String>
+    <x:String x:Key="Account.TokenAlt">Oder Personal Access Token verwenden:</x:String>
+    <x:String x:Key="Account.LoginWithToken">Mit Token anmelden</x:String>
+    <x:String x:Key="Account.GetToken">Token abrufen</x:String>
+    <x:String x:Key="Account.UseToken">Token verwenden</x:String>
+    <x:String x:Key="Account.HideToken">Token-Eingabe ausblenden</x:String>
+    <x:String x:Key="Account.UseTokenTooltip">Mit Personal Access Token anmelden</x:String>
+    <x:String x:Key="Account.Refresh">Aktualisieren</x:String>
+    <x:String x:Key="Account.ViewOnGitHub">Auf GitHub anzeigen</x:String>
+    <x:String x:Key="Account.Loading">Wird geladen...</x:String>
 
     <!-- GitPanelControl -->
     <x:String x:Key="GitPanel.LocalChanges">Lokale Änderungen</x:String>

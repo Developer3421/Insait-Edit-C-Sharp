@@ -58,8 +58,59 @@ public partial class AccountPanelControl : UserControl
     private void ApplyLocalization()
     {
         var L = (Func<string, string>)LocalizationService.Get;
-        var header = this.FindControl<TextBlock>("HeaderTitleText");
-        if (header != null) header.Text = L("Account.Title");
+
+        SetText("HeaderTitleText",    L("Account.Title"));
+        SetText("SignInTitleText",     L("Account.SignInTitle"));
+        SetText("SignInDescText",      L("Account.SignInDesc"));
+        SetText("DeviceCodeInstrText", L("Account.DeviceCodeInstr"));
+        SetText("DeviceCodeHintText",  L("Account.DeviceCodeHint"));
+        SetText("ClickToSignInText",   L("Account.ClickToSignIn"));
+        SetText("TokenAltText",        L("Account.TokenAlt"));
+        SetText("PublicReposLabel",    L("Account.PublicRepos"));
+        SetText("FollowersLabel",      L("Account.Followers"));
+        SetText("FollowingLabel",      L("Account.Following"));
+        SetText("YourReposLabel",      L("Account.YourRepos"));
+        SetText("SignOutText",         L("Account.SignOut"));
+
+        SetContent("SignInButton",      L("Account.SignInBtn"));
+        SetContent("LoginWithTokenBtn", L("Account.LoginWithToken"));
+        SetContent("GetTokenBtn",       L("Account.GetToken"));
+        SetContent("ShowTokenButton",   L("Account.UseToken"));
+        SetContent("LoadMoreButton",    L("Account.LoadMore"));
+
+        SetTooltip("RefreshButton",      L("Account.Refresh"));
+        SetTooltip("ViewOnGitHubButton", L("Account.ViewOnGitHub"));
+        SetTooltip("ShowTokenButton",    L("Account.UseTokenTooltip"));
+
+        var searchBox = this.FindControl<TextBox>("RepoSearchBox");
+        if (searchBox != null) searchBox.Watermark = L("Account.SearchRepos");
+
+        var loadingText = this.FindControl<TextBlock>("LoadingText");
+        if (loadingText != null && loadingText.Text == "Loading...")
+            loadingText.Text = L("Account.Loading");
+    }
+
+    private void SetText(string name, string value)
+    {
+        var tb = this.FindControl<TextBlock>(name);
+        if (tb != null) tb.Text = value;
+    }
+
+    private void SetContent(string name, string value)
+    {
+        var btn = this.FindControl<Button>(name);
+        if (btn != null) btn.Content = value;
+    }
+
+    private static void SetTooltip(Control? ctrl, string value)
+    {
+        if (ctrl != null) ToolTip.SetTip(ctrl, value);
+    }
+
+    private void SetTooltip(string name, string value)
+    {
+        var ctrl = this.FindControl<Control>(name);
+        SetTooltip(ctrl, value);
     }
     
     private void OnLoginStatusChanged(object? sender, string status)
@@ -479,7 +530,9 @@ public partial class AccountPanelControl : UserControl
         
         if (showTokenButton != null)
         {
-            showTokenButton.Content = tokenPanel?.IsVisible == true ? "Hide Token Input" : "Use Token Instead";
+            showTokenButton.Content = tokenPanel?.IsVisible == true
+                ? LocalizationService.Get("Account.HideToken")
+                : LocalizationService.Get("Account.UseToken");
         }
     }
     

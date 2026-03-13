@@ -23,6 +23,7 @@ public class EditorTab : INotifyPropertyChanged
     private bool _hasWarnings;
     private int _errorCount;
     private int _warningCount;
+    private bool _isWelcomeTab;
 
     public string Id 
     { 
@@ -94,7 +95,21 @@ public class EditorTab : INotifyPropertyChanged
     /// Gets the display name for the tab (with * if dirty)
     /// </summary>
     public string DisplayFileName => IsDirty ? $"● {FileName}" : FileName;
-    
+
+    /// <summary>True when this tab is the special Start/Welcome page.</summary>
+    public bool IsWelcomeTab
+    {
+        get => _isWelcomeTab;
+        set
+        {
+            if (SetProperty(ref _isWelcomeTab, value))
+                OnPropertyChanged(nameof(IsNotWelcomeTab));
+        }
+    }
+
+    /// <summary>True when this tab is a regular file tab (not the Start page).</summary>
+    public bool IsNotWelcomeTab => !_isWelcomeTab;
+
     /// <summary>Whether this file has errors in the Problems list.</summary>
     public bool HasErrors
     {
@@ -226,4 +241,3 @@ public class EditorTab : INotifyPropertyChanged
         };
     }
 }
-

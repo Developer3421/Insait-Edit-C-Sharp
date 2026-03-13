@@ -103,10 +103,10 @@
         <!-- Header -->
         <Border Grid.Row="0" Padding="12,10" Background="#12DCC4FF" BorderBrush="{StaticResource AccountBorderBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="ACCOUNT" FontSize="11" FontWeight="SemiBold" 
+                <TextBlock Name="HeaderTitleText" Text="ACCOUNT" FontSize="11" FontWeight="SemiBold"
                            Foreground="{StaticResource AccountTextMutedBrush}" VerticalAlignment="Center"
                            LetterSpacing="1"/>
-                <Button Grid.Column="1" Classes="icon-btn" ToolTip.Tip="Refresh" Name="RefreshButton" Click="Refresh_Click">
+                <Button Grid.Column="1" Classes="icon-btn" Name="RefreshButton" Click="Refresh_Click">
                     <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
                 </Button>
             </Grid>
@@ -121,9 +121,9 @@
                     <Border Background="#20548AF7" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12">
                             <TextBlock Text="🔗" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Sign in with GitHub" FontSize="16" FontWeight="SemiBold"
+                            <TextBlock Name="SignInTitleText" Text="Sign in with GitHub" FontSize="16" FontWeight="SemiBold"
                                        Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Connect your GitHub account to access your repositories."
+                            <TextBlock Name="SignInDescText" Text="Connect your GitHub account to access your repositories."
                                        FontSize="12" Foreground="{StaticResource AccountTextMutedBrush}"
                                        TextWrapping="Wrap" TextAlignment="Center"/>
                         </StackPanel>
@@ -136,28 +136,28 @@
                     <StackPanel Name="DeviceCodePanel" Spacing="8" IsVisible="False">
                         <Border Background="#30BB9A6F" CornerRadius="8" Padding="12">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Enter this code on GitHub:" FontSize="12" 
+                                <TextBlock Name="DeviceCodeInstrText" Text="Enter this code on GitHub:" FontSize="12" 
                                            Foreground="{StaticResource AccountTextBrush}" TextAlignment="Center"/>
                                 <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="12,8">
                                     <TextBlock Name="DeviceCodeText" Text="XXXX-XXXX" FontSize="24" FontWeight="Bold"
                                                Foreground="{StaticResource AccountYellowBrush}" 
                                                HorizontalAlignment="Center" FontFamily="Consolas"/>
                                 </Border>
-                                <TextBlock Text="A browser window should have opened. If not, go to github.com/login/device"
+                                <TextBlock Name="DeviceCodeHintText" Text="A browser window should have opened. If not, go to github.com/login/device"
                                            FontSize="10" Foreground="{StaticResource AccountTextMutedBrush}"
                                            TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
                     
-                    <TextBlock Text="Click 'Sign in' to open GitHub in your browser."
+                    <TextBlock Name="ClickToSignInText" Text="Click 'Sign in' to open GitHub in your browser."
                                FontSize="11" Foreground="{StaticResource AccountTextMutedBrush}"
                                TextAlignment="Center" TextWrapping="Wrap"/>
                     
                     <!-- Token Input Panel (alternative method) -->
                     <StackPanel Name="TokenInputPanel" Spacing="8" IsVisible="False">
                         <Separator Background="{StaticResource AccountBorderBrush}" Height="1" Margin="0,8"/>
-                        <TextBlock Text="Or use Personal Access Token:" FontSize="12" 
+                        <TextBlock Name="TokenAltText" Text="Or use Personal Access Token:" FontSize="12" 
                                    Foreground="{StaticResource AccountTextBrush}" FontWeight="SemiBold"/>
                         <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8,6">
                             <TextBox Name="TokenInputBox" Watermark="ghp_xxxxxxxxxxxx"
@@ -166,9 +166,9 @@
                                      FontSize="12"/>
                         </Border>
                         <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                            <Button Grid.Column="0" Classes="account-primary" Content="Login with Token" 
+                            <Button Grid.Column="0" Name="LoginWithTokenBtn" Classes="account-primary" Content="Login with Token" 
                                     Click="SignIn_Click" HorizontalAlignment="Stretch" Margin="0,0,4,0"/>
-                            <Button Grid.Column="1" Classes="account-secondary" Content="Get Token" 
+                            <Button Grid.Column="1" Name="GetTokenBtn" Classes="account-secondary" Content="Get Token" 
                                     Click="GetToken_Click" ToolTip.Tip="Open GitHub to create a token"/>
                         </Grid>
                     </StackPanel>
@@ -211,7 +211,7 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Name="ReposCountText" Text="0" FontSize="16" FontWeight="Bold"
                                            Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Public Repos" FontSize="10" 
+                                <TextBlock Name="PublicReposLabel" Text="Public Repos" FontSize="10" 
                                            Foreground="{StaticResource AccountTextMutedBrush}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -219,7 +219,7 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Name="FollowersCountText" Text="0" FontSize="16" FontWeight="Bold"
                                            Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Followers" FontSize="10" 
+                                <TextBlock Name="FollowersLabel" Text="Followers" FontSize="10" 
                                            Foreground="{StaticResource AccountTextMutedBrush}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -227,7 +227,7 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock Name="FollowingCountText" Text="0" FontSize="16" FontWeight="Bold"
                                            Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Following" FontSize="10" 
+                                <TextBlock Name="FollowingLabel" Text="Following" FontSize="10" 
                                            Foreground="{StaticResource AccountTextMutedBrush}" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -235,9 +235,9 @@
                     
                     <!-- Repositories Section -->
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBlock Classes="section-header" Text="YOUR REPOSITORIES"/>
-                        <Button Grid.Column="1" Classes="icon-btn" ToolTip.Tip="View on GitHub" 
-                                Name="ViewOnGitHubButton" Click="ViewOnGitHub_Click" VerticalAlignment="Bottom" Margin="0,0,0,4">
+                        <TextBlock Name="YourReposLabel" Classes="section-header" Text="YOUR REPOSITORIES"/>
+                        <Button Grid.Column="1" Classes="icon-btn" Name="ViewOnGitHubButton"
+                                Click="ViewOnGitHub_Click" VerticalAlignment="Bottom" Margin="0,0,0,4">
                             <TextBlock Text="🌐" FontSize="12" FontFamily="Segoe UI Emoji"/>
                         </Button>
                     </Grid>
@@ -310,7 +310,7 @@
                             HorizontalAlignment="Stretch" Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                             <TextBlock Text="🚪" FontSize="12" FontFamily="Segoe UI Emoji"/>
-                            <TextBlock Text="Sign out"/>
+                            <TextBlock Name="SignOutText" Text="Sign out"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>

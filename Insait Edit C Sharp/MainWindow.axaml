@@ -81,6 +81,26 @@
             <Setter Property="Background" Value="#20FFDAB0"/>
         </Style>
 
+        <!-- Styled title-bar action buttons (orange/purple) -->
+        <Style Selector="Button#NewWindowButton:pointerover">
+            <Setter Property="Background" Value="#FFA07040"/>
+        </Style>
+        <Style Selector="Button#NewWindowButton:pressed">
+            <Setter Property="Background" Value="#FF5A3E1A"/>
+        </Style>
+        <Style Selector="Button#RestartButton:pointerover">
+            <Setter Property="Background" Value="#FF8B62BE"/>
+        </Style>
+        <Style Selector="Button#RestartButton:pressed">
+            <Setter Property="Background" Value="#FF4A306E"/>
+        </Style>
+        <Style Selector="Button#UserAgreementButton:pointerover">
+            <Setter Property="Background" Value="#FF564270"/>
+        </Style>
+        <Style Selector="Button#UserAgreementButton:pressed">
+            <Setter Property="Background" Value="#FF2E2048"/>
+        </Style>
+
         <!-- Toolbar button style -->
         <Style Selector="Button.toolbar-button">
             <Setter Property="Height" Value="32"/>
@@ -330,6 +350,12 @@
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
         </Style>
+        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+        </Style>
+        <Style Selector="TextBox:focus-within /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+        </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
@@ -339,6 +365,12 @@
         </Style>
         <!-- AI Chat Input: custom dark bg override -->
         <Style Selector="TextBox#AIChatInput /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF1A1628"/>
+        </Style>
+        <Style Selector="TextBox#AIChatInput:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF1A1628"/>
+        </Style>
+        <Style Selector="TextBox#AIChatInput:focus-within /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="#FF1A1628"/>
         </Style>
         <!-- SelectableTextBlock: visible selection in dark theme -->
@@ -627,18 +659,53 @@
                 <!-- Right: window controls -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
 
+                    <!-- User Agreement -->
+                    <Button Name="UserAgreementButton"
+                            Padding="0" Click="UserAgreementButton_Click"
+                            ToolTip.Tip="User Agreement"
+                            Width="34" Height="28"
+                            Background="#FF3E3050"
+                            Foreground="White"
+                            CornerRadius="4"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            Margin="0,0,4,0">
+                        <TextBlock Text="📜" FontSize="14" FontFamily="Segoe UI Emoji"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+
+                    <!-- Separator -->
+                    <Border Width="1" Height="16" Background="#FF4A4060" Margin="2,0" VerticalAlignment="Center"/>
+
                     <!-- New Window -->
-                    <Button Name="NewWindowButton" Classes="window-control"
+                    <Button Name="NewWindowButton"
                             Padding="0" Click="NewWindowButton_Click"
-                            ToolTip.Tip="New Window">
+                            ToolTip.Tip="New Window"
+                            Width="34" Height="28"
+                            Background="#FF7B5C2A"
+                            Foreground="White"
+                            CornerRadius="4"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            Margin="4,0,0,0">
                         <TextBlock Text="🗗" FontSize="14" FontFamily="Segoe UI Emoji"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
 
                     <!-- Restart -->
-                    <Button Name="RestartButton" Classes="window-control"
+                    <Button Name="RestartButton"
                             Padding="0" Click="RestartButton_Click"
-                            ToolTip.Tip="Restart Application">
+                            ToolTip.Tip="Restart Application"
+                            Width="34" Height="28"
+                            Background="#FF6B4A9A"
+                            Foreground="White"
+                            CornerRadius="4"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            Margin="2,0,0,0">
                         <TextBlock Text="↺" FontSize="16"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
@@ -1191,10 +1258,17 @@
                                     <Button Classes="tab-button" 
                                             Tag="{Binding}"
                                             Click="TabButton_Click">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <!-- Home icon shown only for the Start/Welcome tab -->
+                                            <TextBlock Text="🏠" FontSize="12"
+                                                       FontFamily="Segoe UI Emoji, Segoe UI"
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsWelcomeTab}"/>
+                                            <!-- Language badge shown only for regular file tabs -->
                                             <TextBlock Text="{Binding Language}" FontSize="10" Opacity="0.55"
                                                        Foreground="{StaticResource AccentGreenBrush}" 
-                                                       VerticalAlignment="Center"/>
+                                                       VerticalAlignment="Center"
+                                                       IsVisible="{Binding IsNotWelcomeTab}"/>
                                             <TextBlock Text="{Binding DisplayFileName}" FontSize="13"
                                                        FontWeight="Regular"
                                                        VerticalAlignment="Center"/>

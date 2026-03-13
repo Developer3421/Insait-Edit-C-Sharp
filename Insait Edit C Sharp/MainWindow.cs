@@ -46,39 +46,6 @@ public partial class MainWindow
             Dispatcher.UIThread.Post(() => { _isBuildInProgress = false; UpdateBuildButtons(); _viewModel.StatusText = e.Result.Success ? "Publish succeeded" : "Publish failed — see Build output"; });
     }
 
-    private void InitializeDebugService()
-    {
-        _debugService.OutputReceived += (_, e) =>
-            Dispatcher.UIThread.Post(() => AppendRunOutput(e.Output));
-
-        _debugService.SessionStarted += (_, _) =>
-            Dispatcher.UIThread.Post(() =>
-            {
-                SwitchToolWindowPanel("run");
-                _viewModel.StatusText = "Debug session started";
-            });
-
-        _debugService.Continued += (_, _) =>
-            Dispatcher.UIThread.Post(() => _viewModel.StatusText = "Debugging…");
-
-        _debugService.Stopped += (_, e) =>
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (!string.IsNullOrWhiteSpace(e.FilePath) && File.Exists(e.FilePath))
-                {
-                    OpenFileInEditor(e.FilePath);
-                    _insaitEditor?.GoToLine(e.Line, e.Column > 0 ? e.Column : 1);
-                }
-
-                var location = !string.IsNullOrWhiteSpace(e.FilePath)
-                    ? $"{Path.GetFileName(e.FilePath)}:{e.Line}"
-                    : e.Reason;
-                _viewModel.StatusText = $"Paused at {location}";
-            });
-
-        _debugService.SessionEnded += (_, _) =>
-            Dispatcher.UIThread.Post(() => _viewModel.StatusText = "Debug session ended");
-    }
 
     private void UpdateBuildOutput()
     {
@@ -358,6 +325,20 @@ public partial class MainWindow
         }
     }
 
+    private async Task RunProjectInDebugModeAsync()
+    {
+        var path = GetCurrentProjectPath();
+        if (string.IsNullOrEmpty(path)) { _viewModel.StatusText = "No project loaded"; return; }
+        SwitchToolWindowPanel("run");
+        var cfg = await GetDebugRunConfigurationAsync();
+        if (cfg != null) await RunWithConfigurationAsync(cfg);
+        else
+        {
+            _viewModel.StatusText = "Running project (Debug)...";
+            await _buildService.BuildAndRunAsync(path, "Debug");
+        }
+    }
+
     private async Task RunWithConfigurationAsync(RunConfiguration config)
     {
         SwitchToolWindowPanel("run");
@@ -370,111 +351,6 @@ public partial class MainWindow
         _runConfigService.RunCompleted -= OnRunCompleted;
     }
 
-    private async Task StartDebuggingAsync()
-    {
-        // F5 while paused at a breakpoint → Continue (resume execution).
-        if (_debugService.IsDebugging)
-        {
-            if (_debugService.IsPaused)
-            {
-                await _debugService.ContinueAsync();
-                return;
-            }
-            _viewModel.StatusText = "Debug session already active";
-            return;
-        }
-
-        var config = await GetDebugConfigurationAsync();
-        if (config == null)
-        {
-            _viewModel.StatusText = "No runnable project found for debugging";
-            return;
-        }
-
-        await SaveAllFilesAsync();
-        ClearRunOutput();
-        SwitchToolWindowPanel("run");
-
-        var result = await _debugService.StartDebuggingAsync(config);
-        if (!result.Success)
-            _viewModel.StatusText = $"Debug start failed: {result.ErrorMessage}";
-    }
-
-    private async Task StopDebuggingAsync()
-    {
-        if (_debugService.IsDebugging)
-        {
-            await _debugService.StopDebuggingAsync();
-            _viewModel.StatusText = "Debugging stopped";
-            return;
-        }
-
-        StopRunningProcess();
-    }
-
-    private async Task StepOverAsync()
-    {
-        if (!_debugService.IsDebugging)
-        {
-            _viewModel.StatusText = "No active debug session";
-            return;
-        }
-
-        await _debugService.StepOverAsync();
-        _viewModel.StatusText = "Step over";
-    }
-
-    private async Task StepIntoAsync()
-    {
-        if (!_debugService.IsDebugging)
-        {
-            _viewModel.StatusText = "No active debug session";
-            return;
-        }
-
-        await _debugService.StepIntoAsync();
-        _viewModel.StatusText = "Step into";
-    }
-
-    private async Task StepOutAsync()
-    {
-        if (!_debugService.IsDebugging)
-        {
-            _viewModel.StatusText = "No active debug session";
-            return;
-        }
-
-        await _debugService.StepOutAsync();
-        _viewModel.StatusText = "Step out";
-    }
-
-    private async Task<RunConfiguration?> GetDebugConfigurationAsync()
-    {
-        var path = GetCurrentProjectPath();
-        if (string.IsNullOrWhiteSpace(path))
-            return null;
-
-        await _runConfigService.LoadConfigurationsAsync(path);
-
-        var activeConfiguration = _runConfigService.ActiveConfiguration;
-        if (activeConfiguration != null)
-            return activeConfiguration;
-
-        var projectFile = FindProjectFile(path);
-        if (string.IsNullOrWhiteSpace(projectFile))
-            return null;
-
-        var projectDirectory = Path.GetDirectoryName(projectFile) ?? string.Empty;
-        return new RunConfiguration
-        {
-            Name = Path.GetFileNameWithoutExtension(projectFile),
-            ProjectPath = projectFile,
-            WorkingDirectory = projectDirectory,
-            Configuration = "Debug",
-            OutputType = "Exe",
-            IsDefault = true
-        };
-    }
 
     private async Task<RunConfiguration?> GetRunConfigurationAsync()
     {
@@ -504,6 +380,39 @@ public partial class MainWindow
             ProjectPath = projectFile,
             WorkingDirectory = projectDirectory,
             Configuration = "Release",
+            OutputType = "Exe",
+            IsDefault = true
+        };
+    }
+
+    private async Task<RunConfiguration?> GetDebugRunConfigurationAsync()
+    {
+        var path = GetCurrentProjectPath();
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+
+        await _runConfigService.LoadConfigurationsAsync(path);
+
+        var activeConfiguration = _runConfigService.ActiveConfiguration;
+        if (activeConfiguration != null)
+        {
+            if (string.Equals(activeConfiguration.Configuration, "Debug", StringComparison.OrdinalIgnoreCase))
+                return activeConfiguration;
+
+            return CloneWithConfiguration(activeConfiguration, "Debug");
+        }
+
+        var projectFile = FindProjectFile(path);
+        if (string.IsNullOrWhiteSpace(projectFile))
+            return null;
+
+        var projectDirectory = Path.GetDirectoryName(projectFile) ?? string.Empty;
+        return new RunConfiguration
+        {
+            Name = Path.GetFileNameWithoutExtension(projectFile),
+            ProjectPath = projectFile,
+            WorkingDirectory = projectDirectory,
+            Configuration = "Debug",
             OutputType = "Exe",
             IsDefault = true
         };
@@ -542,12 +451,6 @@ public partial class MainWindow
 
     private void StopRunningProcess()
     {
-        if (_debugService.IsDebugging)
-        {
-            _ = _debugService.StopDebuggingAsync();
-            _viewModel.StatusText = "Debugging stopped";
-            return;
-        }
 
         _runConfigService.Stop();
         _viewModel.StatusText = "Stopped";
@@ -948,7 +851,7 @@ public partial class MainWindow
     // Toolbar
     private async void BuildProject_Click(object? sender, RoutedEventArgs e) => await BuildProjectAsync();
     private async void RunProject_Click(object? sender, RoutedEventArgs e) => await RunProjectAsync();
-    private async void DebugProject_Click(object? sender, RoutedEventArgs e) => await StartDebuggingAsync();
+    private async void DebugProject_Click(object? sender, RoutedEventArgs e) => await RunProjectInDebugModeAsync();
     private async void Publish_Click(object? sender, RoutedEventArgs e) => await ShowPublishWindowAsync();
     private async void MsixManager_Click(object? sender, RoutedEventArgs e) => await ShowMsixManagerWindowAsync();
     private void CancelBuild_Click(object? sender, RoutedEventArgs e) { _buildService.CancelBuild(); _publishService.Cancel(); StopRunningProcess(); _viewModel.StatusText = "Build cancelled"; }
@@ -1005,8 +908,10 @@ public partial class MainWindow
         _viewModel.CloseTab(tab);
         if (_insaitEditor != null)
         {
-            if (_viewModel.ActiveTab != null) _insaitEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
-            else _insaitEditor.SetContent(string.Empty, "plaintext");
+            if (_viewModel.ActiveTab != null)
+                ShowTabInEditor(_viewModel.ActiveTab);
+            else
+                _insaitEditor.SetContent(string.Empty, "plaintext");
         }
         UpdateWelcomeScreenVisibility();
         UpdateAxamlPreviewButton();

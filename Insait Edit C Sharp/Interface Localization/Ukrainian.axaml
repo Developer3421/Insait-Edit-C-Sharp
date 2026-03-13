@@ -30,6 +30,7 @@
     <x:String x:Key="Tooltip.Redo">Повторити (Ctrl+Y)</x:String>
     <x:String x:Key="Tooltip.NewWindow">Нове вікно</x:String>
     <x:String x:Key="Tooltip.Restart">Перезапустити додаток</x:String>
+    <x:String x:Key="Tooltip.UserAgreement">Угода користувача</x:String>
     <x:String x:Key="Tooltip.PreviewAxaml">Попередній перегляд AXAML (Ctrl+Shift+P)</x:String>
     <x:String x:Key="Sidebar.Explorer">Провідник (Ctrl+Shift+E)</x:String>
     <x:String x:Key="Sidebar.Search">Пошук (Ctrl+Shift+F)</x:String>
@@ -537,6 +538,11 @@
     <x:String x:Key="PreviewError.Hint">Текст можна виділити — Ctrl+A для виділення всього</x:String>
     <x:String x:Key="PreviewError.Copy">Копіювати</x:String>
 
+    <!-- ── UserAgreementWindow ──────────────────────────────────── -->
+    <x:String x:Key="UserAgreement.Footer">Використовуючи Insait Edit, ви погоджуєтесь з цими умовами.</x:String>
+    <x:String x:Key="UserAgreement.Close">Закрити</x:String>
+    <x:String x:Key="UserAgreement.Accept">Прийняти</x:String>
+
     <!-- ── 13. CompoundRunWindow ─────────────────────────────────── -->
     <x:String x:Key="Compound.Title">Комплексні конфігурації запуску</x:String>
     <x:String x:Key="Compound.Subtitle">Запуск кількох проєктів одночасно</x:String>
@@ -822,6 +828,18 @@
     <x:String x:Key="Account.SearchRepos">Пошук репозиторіїв...</x:String>
     <x:String x:Key="Account.LoadMore">Завантажити більше</x:String>
     <x:String x:Key="Account.SignOut">Вийти</x:String>
+    <x:String x:Key="Account.DeviceCodeInstr">Введіть цей код на GitHub:</x:String>
+    <x:String x:Key="Account.DeviceCodeHint">Браузер мав відкритися. Якщо ні — перейдіть на github.com/login/device</x:String>
+    <x:String x:Key="Account.ClickToSignIn">Натисніть «Увійти», щоб відкрити GitHub у браузері.</x:String>
+    <x:String x:Key="Account.TokenAlt">Або використайте персональний токен доступу:</x:String>
+    <x:String x:Key="Account.LoginWithToken">Увійти з токеном</x:String>
+    <x:String x:Key="Account.GetToken">Отримати токен</x:String>
+    <x:String x:Key="Account.UseToken">Використати токен</x:String>
+    <x:String x:Key="Account.HideToken">Приховати поле токена</x:String>
+    <x:String x:Key="Account.UseTokenTooltip">Увійти з персональним токеном доступу</x:String>
+    <x:String x:Key="Account.Refresh">Оновити</x:String>
+    <x:String x:Key="Account.ViewOnGitHub">Переглянути на GitHub</x:String>
+    <x:String x:Key="Account.Loading">Завантаження...</x:String>
 
     <!-- ── 20. GitPanelControl ───────────────────────────────────── -->
     <x:String x:Key="GitPanel.LocalChanges">Локальні зміни</x:String>

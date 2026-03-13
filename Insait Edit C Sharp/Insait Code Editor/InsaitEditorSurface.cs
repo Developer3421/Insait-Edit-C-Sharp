@@ -96,11 +96,6 @@ internal sealed class InsaitEditorSurface : Control
     // ── Diagnostics ──────────────────────────────────────────────────────
     private List<DiagnosticSpan> _diagnostics = new();
 
-    // ── Breakpoints ──────────────────────────────────────────────────────
-    private const double BreakpointColWidth = 16.0;
-    private static readonly Color BreakpointColor       = Color.Parse("#FFF38BA8");
-    private static readonly Color BreakpointActiveColor = Color.Parse("#FFFF5555");
-
     // ── Live Template Session ──────────────────────────────────────────
     private LiveTemplateSession? _templateSession;
 
@@ -147,9 +142,6 @@ internal sealed class InsaitEditorSurface : Control
         _cursorTimer.Tick += (_, _) => { _cursorVisible = !_cursorVisible; InvalidateVisual(); };
         _cursorTimer.Start();
 
-        // Redraw when any breakpoint changes (keeps multi-file state in sync)
-        Services.BreakpointService.BreakpointsChanged += (_, _) =>
-            Dispatcher.UIThread.Post(InvalidateVisual);
 
         InitWorkspace();
     }
@@ -551,7 +543,7 @@ internal sealed class InsaitEditorSurface : Control
         _lineHeight = testText.Height + LinePad * 2;
 
         int gutterDigits = Math.Max(3, _lines.Count.ToString().Length);
-        _gutterWidth = gutterDigits * _charWidth + GutterPad * 2 + DiagGutterWidth + BreakpointColWidth;
+        _gutterWidth = gutterDigits * _charWidth + GutterPad * 2 + DiagGutterWidth;
 
         // background
         ctx.FillRectangle(new SolidColorBrush(InsaitEditorColors.Background), bounds);
@@ -585,19 +577,6 @@ internal sealed class InsaitEditorSurface : Control
 
             DrawSelection(ctx, li, y);
 
-            // breakpoint circle
-            var bpFilePath = FilePath ?? string.Empty;
-            if (!string.IsNullOrEmpty(bpFilePath) && Services.BreakpointService.Has(bpFilePath, li + 1))
-            {
-                double bpCx = BreakpointColWidth / 2.0;
-                double bpCy = y + _lineHeight / 2.0;
-                double bpR  = Math.Min(BreakpointColWidth, _lineHeight) / 2.0 - 2;
-                var bpBrush = new SolidColorBrush(BreakpointActiveColor);
-                ctx.FillRectangle(bpBrush, new Rect(bpCx - bpR, bpCy - bpR, bpR * 2, bpR * 2));
-                // draw red filled circle via ellipse geometry
-                var eg = new EllipseGeometry(new Rect(bpCx - bpR, bpCy - bpR, bpR * 2, bpR * 2));
-                ctx.DrawGeometry(bpBrush, null, eg);
-            }
 
             // gutter diagnostic icon
             if (diagLineSet.TryGetValue(li, out var sev))
@@ -618,7 +597,7 @@ internal sealed class InsaitEditorSurface : Control
                     System.Globalization.CultureInfo.InvariantCulture,
                     FlowDirection.LeftToRight, typeface, FontSize - 2,
                     new SolidColorBrush(iconClr));
-                ctx.DrawText(ft, new Point(BreakpointColWidth + 3, y + LinePad + 1));
+                ctx.DrawText(ft, new Point(3, y + LinePad + 1));
             }
 
             // line number
@@ -921,22 +900,7 @@ internal sealed class InsaitEditorSurface : Control
         Focus();
         var pt = e.GetPosition(this);
 
-        // ── Click in breakpoint column (leftmost BreakpointColWidth px) ──
-        if (pt.X < BreakpointColWidth)
-        {
-            PositionFromPoint(pt, out int bpLi, out _);
-            var bpFile = FilePath ?? string.Empty;
-            if (!string.IsNullOrEmpty(bpFile))
-            {
-                Services.BreakpointService.Toggle(bpFile, bpLi + 1);
-                InvalidateVisual();
-            }
-            e.Handled = true;
-            base.OnPointerPressed(e);
-            return;
-        }
-
-        if (pt.X < DiagGutterWidth + BreakpointColWidth + 4)
+        if (pt.X < DiagGutterWidth + 4)
         {
             PositionFromPoint(pt, out int gli, out _);
             var gd = _diagnostics.FirstOrDefault(d => d.Line - 1 == gli);

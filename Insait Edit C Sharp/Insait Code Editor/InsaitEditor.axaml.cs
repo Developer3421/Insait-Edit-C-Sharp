@@ -1178,13 +1178,6 @@ public partial class InsaitEditor : UserControl
             if (diag != null) { _ = ShowQuickFixAsync(diag); e.Handled = true; return; }
         }
 
-        if (e.Key == Key.F9)
-        {
-            var (bpLine, _) = _surface.CursorPosition;
-            if (!string.IsNullOrEmpty(_currentFilePath))
-                BreakpointService.Toggle(_currentFilePath, bpLine);
-            e.Handled = true; return;
-        }
 
         if (e.Key == Key.I && e.KeyModifiers.HasFlag(KeyModifiers.Control)
                            && e.KeyModifiers.HasFlag(KeyModifiers.Shift))

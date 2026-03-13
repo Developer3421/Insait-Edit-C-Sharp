@@ -54,7 +54,6 @@ public partial class MenuWindow : Window
             ("✏️", "Edit", LocalizationService.Get("Menu.Edit")),
             ("👁️", "View", LocalizationService.Get("Menu.View")),
             ("🔨", "Build", LocalizationService.Get("Menu.Build")),
-            ("🐛", "Debug", LocalizationService.Get("Menu.Debug")),
             ("🔧", "Tools", LocalizationService.Get("Menu.Tools")),
             ("❓", "Help", LocalizationService.Get("Menu.Help")),
             ("🌐", "Language", LocalizationService.Get("Lang.Language")),
@@ -133,9 +132,6 @@ public partial class MenuWindow : Window
                 break;
             case "Build":
                 CreateBuildContent(contentPanel);
-                break;
-            case "Debug":
-                CreateDebugContent(contentPanel);
                 break;
             case "Tools":
                 CreateToolsContent(contentPanel);
@@ -257,24 +253,6 @@ public partial class MenuWindow : Window
         AddMenuItem(panel, LocalizationService.Get("Menu.Publish"), "", () => _mainWindow.ExecuteMenuAction("Publish"));
     }
 
-    private void CreateDebugContent(StackPanel panel)
-    {
-        AddHeader(panel, LocalizationService.Get("Menu.DebugHeader"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.StartDebugging"), "F5", () => _mainWindow.ExecuteMenuAction("StartDebugging"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.StartWithout"), "Ctrl+F5", () => _mainWindow.ExecuteMenuAction("StartWithoutDebugging"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.StopDebugging"), "Shift+F5", () => _mainWindow.ExecuteMenuAction("StopDebugging"));
-
-        AddSeparator(panel);
-        AddHeader(panel, LocalizationService.Get("Menu.Breakpoints"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.ToggleBreakpoint"), "F9", () => _mainWindow.ExecuteMenuAction("ToggleBreakpoint"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.DeleteAllBreakpoints"), "Ctrl+Shift+F9", () => _mainWindow.ExecuteMenuAction("DeleteAllBreakpoints"));
-
-        AddSeparator(panel);
-        AddHeader(panel, LocalizationService.Get("Menu.Step"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.StepOver"), "F10", () => _mainWindow.ExecuteMenuAction("StepOver"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.StepInto"), "F11", () => _mainWindow.ExecuteMenuAction("StepInto"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.StepOut"), "Shift+F11", () => _mainWindow.ExecuteMenuAction("StepOut"));
-    }
 
     private void CreateToolsContent(StackPanel panel)
     {

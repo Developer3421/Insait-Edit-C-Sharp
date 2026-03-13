@@ -1,0 +1,113 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.UserAgreementWindow"
+        Title="User Agreement"
+        Width="680" Height="520"
+        MinWidth="480" MinHeight="360"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        CanResize="True"
+        Background="#FF1F1A24"
+        FontFamily="Segoe UI, Arial, Tahoma">
+
+    <Window.Styles>
+        <!-- Custom window control button -->
+        <Style Selector="Button.win-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+        </Style>
+        <Style Selector="Button.win-btn:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF"/>
+        </Style>
+        <!-- Action button -->
+        <Style Selector="Button.action-btn">
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FF5A4A80"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.action-btn:pointerover">
+            <Setter Property="Background" Value="#FF4E3E6A"/>
+        </Style>
+        <Style Selector="Button.action-btn.accept">
+            <Setter Property="Background" Value="#FF8B5CF6"/>
+            <Setter Property="BorderBrush" Value="#FFAB82FF"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.action-btn.accept:pointerover">
+            <Setter Property="Background" Value="#FFA07BFF"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="36,*,Auto">
+
+        <!-- Title bar -->
+        <Border Grid.Row="0" Background="#FF2A2040"
+                PointerPressed="TitleBar_PointerPressed">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" Margin="12,0,0,0">
+                    <TextBlock Text="📜" FontSize="14" FontFamily="Segoe UI Emoji"
+                               Foreground="#FFFFC09F" VerticalAlignment="Center"/>
+                    <TextBlock Name="TitleText" Text="User Agreement"
+                               FontSize="13" FontWeight="SemiBold"
+                               Foreground="#FFFFC09F" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Grid.Column="2" Classes="win-btn"
+                        Click="Close_Click">
+                    <TextBlock Text="✕" FontSize="11" Foreground="#FF9E90B0"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- Agreement text -->
+        <Border Grid.Row="1" Background="#FF1F1A24"
+                BorderBrush="#FF3E3050" BorderThickness="0,1,0,1">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="0">
+                <SelectableTextBlock Name="AgreementText"
+                               FontFamily="Segoe UI, Arial, Tahoma"
+                               FontSize="12.5"
+                               Foreground="#FFD0C8E0"
+                               TextWrapping="Wrap"
+                               Margin="24,18,24,18"
+                               LineHeight="22"
+                               SelectionBrush="#60FFC09F"
+                               SelectionForegroundBrush="#FF1F1A24"/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="#FF241E30"
+                BorderBrush="#FF3E3050" BorderThickness="0,1,0,0"
+                Padding="16,10">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0"
+                           Name="FooterText"
+                           Text="By using Insait Edit you agree to these terms."
+                           FontSize="11" Foreground="#FF7A6E90"
+                           VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Name="CloseBtn" Classes="action-btn"
+                        Margin="0,0,8,0" Click="Close_Click">
+                    <TextBlock Name="CloseBtnText" Text="Close"/>
+                </Button>
+                <Button Grid.Column="2" Name="AcceptBtn" Classes="action-btn accept"
+                        Click="Accept_Click">
+                    <TextBlock Name="AcceptBtnText" Text="Accept"/>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
+

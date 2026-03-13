@@ -175,8 +175,15 @@ public partial class MainWindow
             return;
         }
 
-        // Hide the welcome screen when a file is opened
+        // Update welcome/empty screen visibility (depends on whether this is a start tab)
         UpdateWelcomeScreenVisibility();
+
+        // Welcome tab — just show the overlay page, don't push anything to the editor
+        if (tab.IsWelcomeTab)
+        {
+            UpdateTabButtonStyles();
+            return;
+        }
 
         // Capture local reference to avoid closure issues
         var editor = _insaitEditor;
@@ -363,8 +370,6 @@ public partial class MainWindow
         _publishService.Cancel();
         _runConfigService.Stop();
 
-        if (_debugService.IsDebugging)
-            await _debugService.StopDebuggingAsync();
 
         if (_terminalControl != null)
         {

@@ -29,6 +29,7 @@
     <x:String x:Key="Tooltip.Redo">Yinele (Ctrl+Y)</x:String>
     <x:String x:Key="Tooltip.NewWindow">Yeni Pencere</x:String>
     <x:String x:Key="Tooltip.Restart">Uygulamayı Yeniden Başlat</x:String>
+    <x:String x:Key="Tooltip.UserAgreement">Kullanıcı Sözleşmesi</x:String>
     <x:String x:Key="Tooltip.PreviewAxaml">AXAML Önizleme (Ctrl+Shift+P)</x:String>
     <x:String x:Key="Sidebar.Explorer">Gezgin (Ctrl+Shift+E)</x:String>
     <x:String x:Key="Sidebar.Search">Ara (Ctrl+Shift+F)</x:String>
@@ -533,6 +534,11 @@
     <x:String x:Key="PreviewError.Hint">Metin seçilebilir — Tümünü seçmek için Ctrl+A</x:String>
     <x:String x:Key="PreviewError.Copy">Kopyala</x:String>
 
+    <!-- UserAgreementWindow -->
+    <x:String x:Key="UserAgreement.Footer">Insait Edit'i kullanarak bu koşulları kabul etmiş olursunuz.</x:String>
+    <x:String x:Key="UserAgreement.Close">Kapat</x:String>
+    <x:String x:Key="UserAgreement.Accept">Kabul Et</x:String>
+
     <!-- CompoundRunWindow -->
     <x:String x:Key="Compound.Title">Bileşik Çalıştırma Yapılandırmaları</x:String>
     <x:String x:Key="Compound.Subtitle">Birden fazla projeyi aynı anda çalıştır</x:String>
@@ -818,6 +824,18 @@
     <x:String x:Key="Account.SearchRepos">Depo ara...</x:String>
     <x:String x:Key="Account.LoadMore">Daha fazla yükle</x:String>
     <x:String x:Key="Account.SignOut">Çıkış Yap</x:String>
+    <x:String x:Key="Account.DeviceCodeInstr">Bu kodu GitHub'a girin:</x:String>
+    <x:String x:Key="Account.DeviceCodeHint">Bir tarayıcı penceresi açılmış olmalıydı. Açılmadıysa github.com/login/device adresine gidin</x:String>
+    <x:String x:Key="Account.ClickToSignIn">GitHub'ı tarayıcıda açmak için 'Giriş Yap'a tıklayın.</x:String>
+    <x:String x:Key="Account.TokenAlt">Veya Kişisel Erişim Jetonu kullanın:</x:String>
+    <x:String x:Key="Account.LoginWithToken">Jetonla Giriş Yap</x:String>
+    <x:String x:Key="Account.GetToken">Jeton Al</x:String>
+    <x:String x:Key="Account.UseToken">Jeton Kullan</x:String>
+    <x:String x:Key="Account.HideToken">Jeton Girişini Gizle</x:String>
+    <x:String x:Key="Account.UseTokenTooltip">Kişisel Erişim Jetonu ile giriş yap</x:String>
+    <x:String x:Key="Account.Refresh">Yenile</x:String>
+    <x:String x:Key="Account.ViewOnGitHub">GitHub'da görüntüle</x:String>
+    <x:String x:Key="Account.Loading">Yükleniyor...</x:String>
 
     <!-- GitPanelControl -->
     <x:String x:Key="GitPanel.LocalChanges">Yerel Değişiklikler</x:String>
