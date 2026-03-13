@@ -7,7 +7,7 @@
         <StackPanel Spacing="0" MaxWidth="720">
 
             <!-- Application Icon -->
-            <TextBlock Text="APPLICATION ICON" Classes="section-header" Margin="0,4,0,10"/>
+            <TextBlock Text="{DynamicResource ProjectProps.General.AppIconHeader}" Classes="section-header" Margin="0,4,0,10"/>
             <Border Background="#FF1C1530" BorderBrush="#FF3A2E52" BorderThickness="1"
                     CornerRadius="8" Padding="16,14" Margin="0,0,0,4">
                 <Grid ColumnDefinitions="88,*">
@@ -24,31 +24,31 @@
                         </Panel>
                     </Border>
                     <StackPanel Grid.Column="1" Margin="16,0,0,0" Spacing="8" VerticalAlignment="Center">
-                        <TextBlock Text="Application icon file (.ico)" Classes="prop-label" Margin="0"/>
+                        <TextBlock Text="{DynamicResource ProjectProps.General.AppIconFile}" Classes="prop-label" Margin="0"/>
                         <Grid ColumnDefinitions="*,Auto,Auto">
                             <TextBox Name="AppIconPathBox" Grid.Column="0" Watermark="Path to .ico file…"/>
                             <Button Grid.Column="1" Name="BrowseIconButton"
-                                    Content="Browse…" Classes="small-btn"
-                                    Margin="6,0,0,0" ToolTip.Tip="Select .ico file"/>
+                                    Content="{DynamicResource Common.Browse}" Classes="small-btn"
+                                    Margin="6,0,0,0" ToolTip.Tip="{DynamicResource ProjectProps.General.SelectIconTooltip}"/>
                             <Button Grid.Column="2" Name="ClearIconButton"
                                     Content="✕" Width="34" Classes="small-btn"
-                                    Margin="4,0,0,0" ToolTip.Tip="Clear icon"/>
+                                    Margin="4,0,0,0" ToolTip.Tip="{DynamicResource Publish.ClearIcon}"/>
                         </Grid>
-                        <TextBlock Text="The .ico file is embedded as the application icon in the executable."
+                        <TextBlock Text="{DynamicResource ProjectProps.General.AppIconHint}"
                                    Classes="info-text"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Assembly -->
-            <TextBlock Text="ASSEMBLY" Classes="section-header"/>
-            <TextBlock Text="Assembly name" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.General.AssemblyHeader}" Classes="section-header"/>
+            <TextBlock Text="{DynamicResource ProjectProps.AssemblyName}" Classes="prop-label"/>
             <TextBox Name="AssemblyNameBox" Watermark="e.g. MyApp" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Default namespace" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.DefaultNamespace}" Classes="prop-label"/>
             <TextBox Name="DefaultNamespaceBox" Watermark="e.g. MyApp" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Target framework" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.TargetFramework}" Classes="prop-label"/>
             <ComboBox Name="TargetFrameworkCombo" HorizontalAlignment="Stretch" Margin="0,0,0,12">
                 <ComboBoxItem Content="net10.0"/>
                 <ComboBoxItem Content="net9.0"/>
@@ -64,7 +64,7 @@
                 <ComboBoxItem Content="net462"/>
             </ComboBox>
 
-            <TextBlock Text="Output type" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.OutputType}" Classes="prop-label"/>
             <ComboBox Name="OutputTypeCombo" HorizontalAlignment="Stretch" Margin="0,0,0,12">
                 <ComboBoxItem Content="Console Application" Tag="Exe"/>
                 <ComboBoxItem Content="Windows Application" Tag="WinExe"/>
@@ -72,8 +72,8 @@
             </ComboBox>
 
             <!-- Code -->
-            <TextBlock Text="CODE" Classes="section-header"/>
-            <TextBlock Text="C# language version" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.General.CodeHeader}" Classes="section-header"/>
+            <TextBlock Text="{DynamicResource ProjectProps.LangVersion}" Classes="prop-label"/>
             <ComboBox Name="LangVersionCombo" HorizontalAlignment="Stretch" Margin="0,0,0,12">
                 <ComboBoxItem Content="Default (latest major)"/>
                 <ComboBoxItem Content="Latest"/>
@@ -87,7 +87,7 @@
                 <ComboBoxItem Content="7.3"/>
             </ComboBox>
 
-            <TextBlock Text="Nullable reference types" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Nullable}" Classes="prop-label"/>
             <ComboBox Name="NullableCombo" HorizontalAlignment="Stretch" Margin="0,0,0,12">
                 <ComboBoxItem Content="enable"/>
                 <ComboBoxItem Content="disable"/>
@@ -95,12 +95,12 @@
                 <ComboBoxItem Content="annotations"/>
             </ComboBox>
 
-            <CheckBox Name="ImplicitUsingsCheck" Content="Enable implicit usings" Margin="0,4,0,10"/>
-            <CheckBox Name="AllowUnsafeCheck"    Content="Allow unsafe code"       Margin="0,0,0,10"/>
+            <CheckBox Name="ImplicitUsingsCheck" Content="{DynamicResource ProjectProps.ImplicitUsings}" Margin="0,4,0,10"/>
+            <CheckBox Name="AllowUnsafeCheck"    Content="{DynamicResource ProjectProps.AllowUnsafe}"    Margin="0,0,0,10"/>
 
             <!-- Application -->
-            <TextBlock Text="APPLICATION" Classes="section-header"/>
-            <TextBlock Text="Startup object" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.General.AppHeader}" Classes="section-header"/>
+            <TextBlock Text="{DynamicResource ProjectProps.General.StartupObject}" Classes="prop-label"/>
             <TextBox Name="StartupObjectBox" Watermark="(default)" Margin="0,0,0,12"/>
 
         </StackPanel>

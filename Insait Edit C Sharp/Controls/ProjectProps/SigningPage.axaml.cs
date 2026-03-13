@@ -15,8 +15,7 @@ public partial class SigningPage : UserControl
         BrowseKeyButton.Click += BrowseKey_Click;
     }
 
-    private void InitializeComponent() =>
-        Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
+
 
     private async void BrowseKey_Click(object? sender, RoutedEventArgs e)
     {

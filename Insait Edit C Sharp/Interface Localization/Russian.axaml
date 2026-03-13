@@ -662,6 +662,23 @@
     <x:String x:Key="ProjectProps.Apply">Применить</x:String>
     <x:String x:Key="ProjectProps.OK">OK</x:String>
     <x:String x:Key="ProjectProps.Cancel">Отмена</x:String>
+    <!-- PackagePage fields -->
+    <x:String x:Key="ProjectProps.Pkg.Header">ПАКЕТ / NUGET</x:String>
+    <x:String x:Key="ProjectProps.Pkg.GenerateOnBuild">Генерировать NuGet-пакет при сборке</x:String>
+    <x:String x:Key="ProjectProps.Pkg.PackageId">Идентификатор пакета</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Version">Версия</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Authors">Авторы</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Company">Компания</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Product">Продукт</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Description">Описание</x:String>
+    <x:String x:Key="ProjectProps.Pkg.LinksHeader">ССЫЛКИ И МЕТАДАННЫЕ</x:String>
+    <x:String x:Key="ProjectProps.Pkg.RepositoryUrl">URL репозитория</x:String>
+    <x:String x:Key="ProjectProps.Pkg.LicenseExpression">Лицензионное выражение (SPDX)</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Tags">Теги (через точку с запятой)</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkAuthors">Имя автора</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkCompany">Моя компания</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkProduct">Мой продукт</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkDescription">Краткое описание</x:String>
 
     <!-- MsixManagerWindow -->
     <x:String x:Key="Msix.Title">Менеджер пакетов MSIX</x:String>
@@ -923,5 +940,147 @@
     <x:String x:Key="AutoFix.CannotApply">Невозможно применить это исправление автоматически</x:String>
     <x:String x:Key="AutoFix.Inserted">Вставлено: {0}</x:String>
     <x:String x:Key="AutoFix.OpenWindow">Автоисправление</x:String>
+
+    <!-- ── AxamlLiveHost (code-behind fallback messages) ────────────── -->
+    <x:String x:Key="LiveHost.CannotRender">⚠  Отображение невозможно — показываю структуру</x:String>
+    <x:String x:Key="LiveHost.XmlError">Ошибка XML: </x:String>
+    <x:String x:Key="LiveHost.FileNotFound">Файл не найден: </x:String>
+    <x:String x:Key="LiveHost.EmptyXaml">Пустое содержимое XAML.</x:String>
+
+    <!-- ── ProjectProps page inner labels ──────────────────────── -->
+    <!-- GeneralPage -->
+    <x:String x:Key="ProjectProps.General.AppIconHeader">ЗНАЧОК ПРИЛОЖЕНИЯ</x:String>
+    <x:String x:Key="ProjectProps.General.AppIconFile">Файл значка приложения (.ico)</x:String>
+    <x:String x:Key="ProjectProps.General.AppIconHint">Файл .ico встраивается как значок приложения в исполняемый файл.</x:String>
+    <x:String x:Key="ProjectProps.General.SelectIconTooltip">Выбрать файл .ico</x:String>
+    <x:String x:Key="ProjectProps.General.AssemblyHeader">СБОРКА</x:String>
+    <x:String x:Key="ProjectProps.General.CodeHeader">КОД</x:String>
+    <x:String x:Key="ProjectProps.General.AppHeader">ПРИЛОЖЕНИЕ</x:String>
+    <x:String x:Key="ProjectProps.General.StartupObject">Стартовый объект</x:String>
+    <!-- BuildPage -->
+    <x:String x:Key="ProjectProps.Build.Header">КОНФИГУРАЦИЯ СБОРКИ</x:String>
+    <x:String x:Key="ProjectProps.Build.Configuration">Конфигурация</x:String>
+    <x:String x:Key="ProjectProps.Build.PlatformTarget">Целевая платформа</x:String>
+    <x:String x:Key="ProjectProps.Build.CompilerHeader">ПАРАМЕТРЫ КОМПИЛЯТОРА</x:String>
+    <x:String x:Key="ProjectProps.Build.Optimize">Оптимизировать код</x:String>
+    <x:String x:Key="ProjectProps.Build.WarningsAsErrors">Рассматривать предупреждения как ошибки</x:String>
+    <x:String x:Key="ProjectProps.Build.WarningLevel">Уровень предупреждений</x:String>
+    <x:String x:Key="ProjectProps.Build.SuppressWarnings">Подавить конкретные предупреждения (через точку с запятой)</x:String>
+    <x:String x:Key="ProjectProps.Build.OutputHeader">ВЫВОД</x:String>
+    <x:String x:Key="ProjectProps.Build.OutputPath">Путь вывода</x:String>
+    <x:String x:Key="ProjectProps.Build.IntermediateOutput">Путь промежуточного вывода</x:String>
+    <x:String x:Key="ProjectProps.Build.GenerateDocXml">Создавать XML-файл документации</x:String>
+    <!-- DebugPage -->
+    <x:String x:Key="ProjectProps.Debug.LaunchHeader">ЗАПУСК</x:String>
+    <x:String x:Key="ProjectProps.Debug.LaunchProfile">Профиль запуска</x:String>
+    <x:String x:Key="ProjectProps.Debug.AppArguments">Аргументы приложения</x:String>
+    <x:String x:Key="ProjectProps.Debug.WorkingDir">Рабочий каталог</x:String>
+    <x:String x:Key="ProjectProps.Debug.WatermarkArgs">Аргументы командной строки</x:String>
+    <x:String x:Key="ProjectProps.Debug.WatermarkWorkDir">Каталог проекта</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnableNativeDebug">Включить отладку машинного кода</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnableSqlDebug">Включить отладку SQL Server</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarsHeader">ПЕРЕМЕННЫЕ СРЕДЫ</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarsHint">Переменные, передаваемые процессу отладки:</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarName">Имя</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarValue">Значение</x:String>
+    <x:String x:Key="ProjectProps.Debug.AddEnvVar">Добавить переменную среды</x:String>
+    <!-- SigningPage -->
+    <x:String x:Key="ProjectProps.Sign.Header">ПОДПИСЬ СБОРКИ</x:String>
+    <x:String x:Key="ProjectProps.Sign.SignAssembly">Подписать сборку</x:String>
+    <x:String x:Key="ProjectProps.Sign.KeyFile">Файл ключа строгого имени (.snk / .pfx)</x:String>
+    <x:String x:Key="ProjectProps.Sign.SelectKey">Выбрать файл ключа</x:String>
+    <x:String x:Key="ProjectProps.Sign.DelaySign">Только отложенная подпись</x:String>
+    <x:String x:Key="ProjectProps.Sign.AboutTitle">ℹ  О подписи сборки</x:String>
+    <x:String x:Key="ProjectProps.Sign.AboutText">Ключ строгого имени уникально идентифицирует вашу сборку и предотвращает её модификацию. Используйте отложенную подпись для подписания позже в конвейере сборки.</x:String>
+
+    <!-- ── SolutionPropertiesWindow ──────────────────────────────── -->
+    <x:String x:Key="SolProps.Title">Свойства решения</x:String>
+    <x:String x:Key="SolProps.NavCategory">РЕШЕНИЕ</x:String>
+    <x:String x:Key="SolProps.NavGeneral">Общие</x:String>
+    <x:String x:Key="SolProps.NavBuildCfg">Конфигурации сборки</x:String>
+    <x:String x:Key="SolProps.NavProjects">Проекты</x:String>
+    <x:String x:Key="SolProps.Close">Закрыть</x:String>
+    <x:String x:Key="SolProps.SearchPlaceholder">🔍  Поиск настроек…</x:String>
+    <x:String x:Key="SolProps.BuildCfg.Header">КОНФИГУРАЦИИ РЕШЕНИЯ</x:String>
+    <x:String x:Key="SolProps.BuildCfg.Hint">Конфигурации сборки считываются из файла .sln (GlobalSection SolutionConfigurationPlatforms).</x:String>
+    <x:String x:Key="SolProps.General.IdentityHeader">ИДЕНТИФИКАЦИЯ</x:String>
+    <x:String x:Key="SolProps.General.Name">Имя</x:String>
+    <x:String x:Key="SolProps.General.FullPath">Полный путь</x:String>
+    <x:String x:Key="SolProps.General.FormatVersion">Версия формата</x:String>
+    <x:String x:Key="SolProps.General.VsVersion">Версия Visual Studio</x:String>
+    <x:String x:Key="SolProps.General.VsMinVersion">Минимальная версия Visual Studio</x:String>
+    <x:String x:Key="SolProps.Projects.Header">ПРОЕКТЫ В РЕШЕНИИ</x:String>
+    <x:String x:Key="SolProps.Projects.Hint">Проекты, перечисленные в этом файле решения.</x:String>
+
+    <!-- ── SettingsPanelControl ──────────────────────────────────── -->
+    <x:String x:Key="Settings.Header">НАСТРОЙКИ</x:String>
+    <x:String x:Key="Settings.ResetTooltip">Сбросить до значений по умолчанию</x:String>
+    <x:String x:Key="Settings.DotNetSdkTitle">📦 .NET SDK</x:String>
+    <x:String x:Key="Settings.DotNetSdkDesc">Путь к каталогу установки .NET SDK</x:String>
+    <x:String x:Key="Settings.GitHubCliTitle">🐙 GitHub CLI (gh)</x:String>
+    <x:String x:Key="Settings.GitHubCliDesc">Путь к исполняемому файлу GitHub CLI для терминала и интеграции с GitHub Copilot</x:String>
+    <x:String x:Key="Settings.CopilotCliTitle">🤖 Copilot CLI</x:String>
+    <x:String x:Key="Settings.CopilotCliDesc">Путь к автономному исполняемому файлу GitHub Copilot CLI</x:String>
+    <x:String x:Key="Settings.SignToolTitle">🔏 SignTool</x:String>
+    <x:String x:Key="Settings.SignToolDesc">Путь к signtool.exe для подписи пакетов (MSIX, ClickOnce и т.д.)</x:String>
+    <x:String x:Key="Settings.MSBuildTitle">🔨 MSBuild</x:String>
+    <x:String x:Key="Settings.MSBuildDesc">Путь к MSBuild.exe для сборки проектов вне dotnet CLI</x:String>
+    <x:String x:Key="Settings.AutoDetect">🔍  Автоопределение всех путей</x:String>
+    <x:String x:Key="Settings.Save">💾  Сохранить настройки</x:String>
+
+    <!-- ── Gemini AI Windows ─────────────────────────────────────── -->
+    <x:String x:Key="Gemini.Lang.Title">🌐  Добавить перевод — шаг 1 из 2</x:String>
+    <x:String x:Key="Gemini.Lang.Prompt">Введите название языка, который вы хотите добавить:</x:String>
+    <x:String x:Key="Gemini.Lang.FieldLabel">Название языка</x:String>
+    <x:String x:Key="Gemini.Lang.Hint">Перевод создаётся Google Gemini AI на основе вашего английского словаря. Убедитесь, что ваш API-ключ задан в Меню &gt; Настройки &gt; Gemini.</x:String>
+    <x:String x:Key="Gemini.Lang.Cancel">Отмена</x:String>
+    <x:String x:Key="Gemini.Lang.Next">Далее →</x:String>
+    <x:String x:Key="Gemini.Model.Title">Шаг 2 — выбор модели Gemini</x:String>
+    <x:String x:Key="Gemini.Model.TargetLang">Целевой язык:</x:String>
+    <x:String x:Key="Gemini.Model.FieldLabel">Модель Gemini</x:String>
+    <x:String x:Key="Gemini.Model.AvailableTypes">Доступные типы моделей:</x:String>
+    <x:String x:Key="Gemini.Model.ProModels">Pro-модели: gemini-1.5-pro, gemini-2.0-pro-exp (выше качество, медленнее, дороже)</x:String>
+    <x:String x:Key="Gemini.Model.FlashModels">Flash-модели: gemini-1.5-flash, gemini-2.0-flash (быстрее, дешевле, отлично для перевода)</x:String>
+    <x:String x:Key="Gemini.Model.Tip">Совет: gemini-2.0-flash рекомендуется для задач перевода.</x:String>
+    <x:String x:Key="Gemini.Model.Cancel">Отмена</x:String>
+    <x:String x:Key="Gemini.Model.Generate">Создать перевод</x:String>
+    <x:String x:Key="Gemini.Settings.Title">Настройки Gemini API</x:String>
+    <x:String x:Key="Gemini.Settings.ApiKeyLabel">Ключ Google Gemini API</x:String>
+    <x:String x:Key="Gemini.Settings.ApiKeyHint">Получите бесплатный ключ на: https://aistudio.google.com/app/apikey</x:String>
+    <x:String x:Key="Gemini.Settings.ShowKey">Показать ключ</x:String>
+    <x:String x:Key="Gemini.Settings.Cancel">Отмена</x:String>
+    <x:String x:Key="Gemini.Settings.Save">💾  Сохранить</x:String>
+
+    <!-- ── Roslyn / Code tools windows ──────────────────────────── -->
+    <x:String x:Key="GenMember.Title">Создать член</x:String>
+    <x:String x:Key="GenMember.Subtitle">Выберите тип члена для генерации:</x:String>
+    <x:String x:Key="GenMember.Property">Свойство</x:String>
+    <x:String x:Key="GenMember.Method">Метод</x:String>
+    <x:String x:Key="GenMember.AsyncMethod">Асинхронный метод</x:String>
+    <x:String x:Key="GenMember.Field">Поле</x:String>
+    <x:String x:Key="GenMember.Event">Событие</x:String>
+    <x:String x:Key="GenMember.Footer">Член будет вставлен в целевой тип</x:String>
+    <x:String x:Key="GenType.Title">Создать тип</x:String>
+    <x:String x:Key="GenType.Prompt">Выберите тип для создания:</x:String>
+    <x:String x:Key="GenType.Class">Класс</x:String>
+    <x:String x:Key="GenType.Struct">Структура</x:String>
+    <x:String x:Key="GenType.Interface">Интерфейс</x:String>
+    <x:String x:Key="GenType.Enum">Перечисление</x:String>
+    <x:String x:Key="GenType.Record">Запись</x:String>
+    <x:String x:Key="GenType.Footer">Тип будет добавлен в текущий файл</x:String>
+    <x:String x:Key="GotoDef.Title">📍 Перейти к определению</x:String>
+    <x:String x:Key="GotoDef.Close">Закрыть</x:String>
+    <x:String x:Key="Rename.Title">✏ Переименовать символ</x:String>
+    <x:String x:Key="Rename.NewName">Новое имя:</x:String>
+    <x:String x:Key="Rename.PreviewChanges">Предпросмотр изменений</x:String>
+    <x:String x:Key="Rename.Cancel">Отмена</x:String>
+    <x:String x:Key="Rename.Rename">Переименовать</x:String>
+    <x:String x:Key="Completion.Header">Roslyn IntelliSense</x:String>
+    <x:String x:Key="Completion.CloseTooltip">Закрыть (Esc)</x:String>
+    <x:String x:Key="Completion.Keys">  Tab/Enter ⏎  Esc ✕</x:String>
+    <x:String x:Key="QuickFix.Header">Быстрое исправление</x:String>
+    <x:String x:Key="QuickFix.Footer">Enter ⏎ применить   Esc ✕ закрыть</x:String>
+    <x:String x:Key="RoslynTools.Title">Инструменты Roslyn</x:String>
+    <x:String x:Key="RoslynTools.Navigate">Дважды кликните или нажмите Enter для перехода</x:String>
 
 </ResourceDictionary>

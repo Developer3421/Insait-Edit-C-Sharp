@@ -6,34 +6,34 @@
                   Padding="28,16,28,28">
         <StackPanel Spacing="0" MaxWidth="720">
 
-            <TextBlock Text="LAUNCH" Classes="section-header" Margin="0,4,0,10"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Debug.LaunchHeader}" Classes="section-header" Margin="0,4,0,10"/>
 
-            <TextBlock Text="Launch profile" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Debug.LaunchProfile}" Classes="prop-label"/>
             <ComboBox Name="DebugLaunchProfileCombo" HorizontalAlignment="Stretch" Margin="0,0,0,12">
                 <ComboBoxItem Content="Project"/>
                 <ComboBoxItem Content="IIS Express"/>
             </ComboBox>
 
-            <TextBlock Text="Application arguments" Classes="prop-label"/>
-            <TextBox Name="DebugArgsBox" Watermark="Command line arguments" Margin="0,0,0,12"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Debug.AppArguments}" Classes="prop-label"/>
+            <TextBox Name="DebugArgsBox" Watermark="{DynamicResource ProjectProps.Debug.WatermarkArgs}" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Working directory" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Debug.WorkingDir}" Classes="prop-label"/>
             <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-                <TextBox Name="DebugWorkingDirBox" Grid.Column="0" Watermark="Project directory"/>
+                <TextBox Name="DebugWorkingDirBox" Grid.Column="0" Watermark="{DynamicResource ProjectProps.Debug.WatermarkWorkDir}"/>
                 <Button Grid.Column="1" Name="BrowseDebugDirButton"
                         Content="…" Width="38" Classes="small-btn"
-                        Margin="6,0,0,0" ToolTip.Tip="Browse folder"/>
+                        Margin="6,0,0,0" ToolTip.Tip="{DynamicResource Common.Browse}"/>
             </Grid>
 
             <CheckBox Name="EnableNativeDebugCheck"
-                      Content="Enable native code debugging"
+                      Content="{DynamicResource ProjectProps.Debug.EnableNativeDebug}"
                       Margin="0,4,0,10"/>
             <CheckBox Name="EnableSqlDebugCheck"
-                      Content="Enable SQL Server debugging"
+                      Content="{DynamicResource ProjectProps.Debug.EnableSqlDebug}"
                       Margin="0,0,0,10"/>
 
-            <TextBlock Text="ENVIRONMENT VARIABLES" Classes="section-header"/>
-            <TextBlock Text="Variables passed to the debug process:"
+            <TextBlock Text="{DynamicResource ProjectProps.Debug.EnvVarsHeader}" Classes="section-header"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Debug.EnvVarsHint}"
                        Classes="info-text" Margin="0,0,0,10"/>
 
             <Border Background="#FF1C1530" BorderBrush="#FF3A2E52" BorderThickness="1"
@@ -42,17 +42,17 @@
                     <!-- Header row -->
                     <Grid Grid.Row="0" ColumnDefinitions="*,*,40"
                           Background="#FF17112A">
-                        <TextBlock Grid.Column="0" Text="Name"
+                        <TextBlock Grid.Column="0" Text="{DynamicResource ProjectProps.Debug.EnvVarName}"
                                    FontSize="11" FontWeight="SemiBold"
                                    Foreground="#FF9080A8" Margin="12,8"/>
-                        <TextBlock Grid.Column="1" Text="Value"
+                        <TextBlock Grid.Column="1" Text="{DynamicResource ProjectProps.Debug.EnvVarValue}"
                                    FontSize="11" FontWeight="SemiBold"
                                    Foreground="#FF9080A8" Margin="12,8"/>
                         <Button Grid.Column="2" Name="AddEnvVarButton"
                                 Content="+" Width="36" Height="32"
                                 Classes="small-btn"
                                 Margin="2" Padding="0"
-                                ToolTip.Tip="Add environment variable"/>
+                                ToolTip.Tip="{DynamicResource ProjectProps.Debug.AddEnvVar}"/>
                     </Grid>
                     <!-- Rows -->
                     <ItemsControl Grid.Row="1" Name="EnvVarsList" Margin="0,4"/>

@@ -337,6 +337,15 @@
             <Setter Property="Foreground" Value="{StaticResource AppTextMutedBrush}"/>
             <Setter Property="Opacity" Value="1"/>
         </Style>
+        <!-- AI Chat Input: custom dark bg override -->
+        <Style Selector="TextBox#AIChatInput /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF1A1628"/>
+        </Style>
+        <!-- SelectableTextBlock: visible selection in dark theme -->
+        <Style Selector="SelectableTextBlock">
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+        </Style>
     </Window.Styles>
 
     <!-- Window Background -->
@@ -582,6 +591,33 @@
                             Margin="2,0,0,0">
                         <TextBlock Text="↪" FontSize="16"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Separator -->
+                    <Border Width="1" Height="20" Background="#FF3E3050" Margin="8,0"/>
+                    
+                    <!-- Recent Projects Button -->
+                    <Button Name="RecentProjectsButton"
+                            ToolTip.Tip="Recent Projects"
+                            Click="RecentProjects_Click"
+                            Background="#FF2E2840"
+                            Foreground="White"
+                            CornerRadius="5"
+                            Height="28"
+                            Padding="10,0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            BorderBrush="#FF4A4060"
+                            BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                            <TextBlock Text="🕐" FontSize="13" FontFamily="Segoe UI Emoji"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="Recent" FontSize="11" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="▾" FontSize="10" Foreground="#FFFFC09F"
+                                       VerticalAlignment="Center" Margin="2,0,0,0"/>
+                        </StackPanel>
                     </Button>
                 </StackPanel>
 
@@ -1005,6 +1041,90 @@
                                     CornerRadius="1"
                                     IsHitTestVisible="False"/>
                         </Canvas>
+
+                        <!-- Empty Project Overlay (shown in the file-tree panel when project has no files) -->
+                        <Border Name="FileTreeEmptyOverlay"
+                                IsVisible="False"
+                                Background="#FF241E2C"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Spacing="10" Margin="12">
+                                <!-- Icon -->
+                                <Border Width="56" Height="56" CornerRadius="14"
+                                        HorizontalAlignment="Center">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#FF89B4FA" Offset="0"/>
+                                            <GradientStop Color="#FF5A8FE0" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <TextBlock Text="📂" FontSize="26"
+                                               FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Title -->
+                                <TextBlock Text="Project is Empty"
+                                           FontSize="13" FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center">
+                                    <TextBlock.Foreground>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#FF89B4FA" Offset="0"/>
+                                            <GradientStop Color="#FFDCC4FF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
+
+                                <!-- Subtitle -->
+                                <TextBlock Text="No source files found.&#10;Create a file to get started."
+                                           FontSize="11"
+                                           Foreground="{StaticResource AppTextMutedBrush}"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           Opacity="0.75"/>
+
+                                <!-- Add New File button -->
+                                <Button x:Name="FileTreeAddFileBtn"
+                                        Click="EmptyProjectAddFile_Click"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,6,0,0"
+                                        Padding="14,8"
+                                        CornerRadius="8"
+                                        Cursor="Hand">
+                                    <Button.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#FF4A7FC4" Offset="0"/>
+                                            <GradientStop Color="#FF3A6AAF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                    <Button.Foreground>
+                                        <SolidColorBrush Color="#FFF0E8F4"/>
+                                    </Button.Foreground>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="📄" FontSize="13"
+                                                   FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Text="Add New File"
+                                                   FontSize="12" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Keyboard hint -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                            Spacing="4" Opacity="0.4" Margin="0,2,0,0">
+                                    <Border Background="#30FFFFFF" CornerRadius="3" Padding="4,1">
+                                        <TextBlock Text="Ctrl+Shift+A" FontSize="9"
+                                                   Foreground="{StaticResource AppTextMutedBrush}"
+                                                   FontFamily="Consolas"/>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
                     </Panel>
                     </Grid>
                 
@@ -1319,7 +1439,166 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-                
+
+                <!-- Empty Project Panel — shown when a project is loaded but no files exist -->
+                <Border Grid.Row="1"
+                        x:Name="EmptyProjectPanel"
+                        IsVisible="False"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ZIndex="10">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#FF1F1A24" Offset="0"/>
+                            <GradientStop Color="#FF1A1F2A" Offset="0.5"/>
+                            <GradientStop Color="#FF1F1A24" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <!-- Decorative blue glow -->
+                        <Ellipse Width="500" Height="500"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Opacity="0.04">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#FF89B4FA" Offset="0"/>
+                                    <GradientStop Color="Transparent" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Spacing="28" MaxWidth="480">
+                            <!-- Icon -->
+                            <Border Width="80" Height="80" CornerRadius="20"
+                                    HorizontalAlignment="Center">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#FF89B4FA" Offset="0"/>
+                                        <GradientStop Color="#FF5A8FE0" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="📂" FontSize="40"
+                                           FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Title and subtitle -->
+                            <StackPanel HorizontalAlignment="Center" Spacing="8">
+                                <TextBlock x:Name="EmptyProjectTitle"
+                                           Text="Project is Empty"
+                                           FontSize="28" FontWeight="Bold"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Foreground>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#FF89B4FA" Offset="0"/>
+                                            <GradientStop Color="#FFDCC4FF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </TextBlock.Foreground>
+                                </TextBlock>
+                                <TextBlock x:Name="EmptyProjectSubtitle"
+                                           Text="No files in this project yet. Create or add a file to get started."
+                                           FontSize="13"
+                                           Foreground="{StaticResource AppTextMutedBrush}"
+                                           HorizontalAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"/>
+                                <TextBlock x:Name="EmptyProjectPath"
+                                           Text=""
+                                           FontSize="11"
+                                           FontFamily="Consolas"
+                                           Foreground="{StaticResource AppTextMutedBrush}"
+                                           HorizontalAlignment="Center"
+                                           Opacity="0.55"
+                                           TextWrapping="Wrap"
+                                           TextAlignment="Center"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+
+                            <!-- Action buttons -->
+                            <Grid ColumnDefinitions="*,*" HorizontalAlignment="Center"
+                                  Width="360" Margin="0,4,0,0">
+                                <!-- Add New File -->
+                                <Button Grid.Column="0" x:Name="EmptyProjectAddFileBtn"
+                                        Click="EmptyProjectAddFile_Click"
+                                        Margin="0,0,8,0"
+                                        Padding="0" BorderThickness="0"
+                                        Background="Transparent" Cursor="Hand">
+                                    <Border CornerRadius="12" Padding="18,16" BorderThickness="1.5">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#6089B4FA" Offset="0"/>
+                                                <GradientStop Color="#3089B4FA" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#1889B4FA" Offset="0"/>
+                                                <GradientStop Color="#0889B4FA" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="📄" FontSize="28"
+                                                       FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="EmptyProjectAddFileText"
+                                                       Text="Add New File"
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource AccentBlueBrush}"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Button>
+
+                                <!-- Open in Explorer -->
+                                <Button Grid.Column="1" x:Name="EmptyProjectOpenExplorerBtn"
+                                        Click="EmptyProjectOpenExplorer_Click"
+                                        Margin="8,0,0,0"
+                                        Padding="0" BorderThickness="0"
+                                        Background="Transparent" Cursor="Hand">
+                                    <Border CornerRadius="12" Padding="18,16" BorderThickness="1.5">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#60A6E3A1" Offset="0"/>
+                                                <GradientStop Color="#30A6E3A1" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#18A6E3A1" Offset="0"/>
+                                                <GradientStop Color="#08A6E3A1" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                                            <TextBlock Text="📁" FontSize="28"
+                                                       FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="EmptyProjectExplorerText"
+                                                       Text="Open in Explorer"
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource AccentGreenBrush}"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Button>
+                            </Grid>
+
+                            <!-- Keyboard hint -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                        Spacing="6" Opacity="0.45">
+                                <Border Background="#30FFFFFF" CornerRadius="4" Padding="5,2">
+                                    <TextBlock Text="Ctrl+Shift+A" FontSize="10"
+                                               Foreground="{StaticResource AppTextMutedBrush}"
+                                               FontFamily="Consolas"/>
+                                </Border>
+                                <TextBlock Text="Add New Item" FontSize="11"
+                                           Foreground="{StaticResource AppTextMutedBrush}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
                 <!-- Resize grip for terminal -->
                 <GridSplitter Grid.Row="2" Height="5" Name="BottomPanelSplitter" Classes="tool-splitter"
                               ResizeDirection="Rows" HorizontalAlignment="Stretch"/>

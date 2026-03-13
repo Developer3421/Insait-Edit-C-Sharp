@@ -11,10 +11,12 @@ public partial class SolutionGeneralPage : UserControl
 
     public void Populate(string solutionPath, List<string> lines)
     {
-        SetBox("NameBox",       Path.GetFileNameWithoutExtension(solutionPath));
-        SetBox("PathBox",       solutionPath);
-        SetBox("FormatBox",     FirstMatch(lines, "Format Version ") );
-        SetBox("VsVersionBox",  FirstMatch(lines, "VisualStudioVersion = "));
+        SetBox("NameBox",         Path.GetFileNameWithoutExtension(solutionPath));
+        SetBox("DirBox",          Path.GetDirectoryName(solutionPath) ?? solutionPath);
+        SetBox("FileNameBox",     Path.GetFileName(solutionPath));
+        SetBox("PathBox",         solutionPath);
+        SetBox("FormatBox",       FirstMatch(lines, "Format Version "));
+        SetBox("VsVersionBox",    FirstMatch(lines, "VisualStudioVersion = "));
         SetBox("VsMinVersionBox", FirstMatch(lines, "MinimumVisualStudioVersion = "));
     }
 

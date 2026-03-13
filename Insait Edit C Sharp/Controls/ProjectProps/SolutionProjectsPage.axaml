@@ -1,4 +1,4 @@
-﻿﻿﻿<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Insait_Edit_C_Sharp.Controls.ProjectProps"
              x:Class="Insait_Edit_C_Sharp.Controls.ProjectProps.SolutionProjectsPage"
@@ -7,11 +7,11 @@
         <TextBlock DockPanel.Dock="Top"
                    Classes="section-header"
                    Margin="28,20,28,10"
-                   Text="PROJECTS IN SOLUTION"/>
+                   Text="{DynamicResource SolProps.Projects.Header}"/>
         <TextBlock DockPanel.Dock="Top"
                    Classes="info-text"
                    Margin="28,0,28,12"
-                   Text="Projects listed in this solution file."/>
+                   Text="{DynamicResource SolProps.Projects.Hint}"/>
         <ScrollViewer Padding="28,0,28,16"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">

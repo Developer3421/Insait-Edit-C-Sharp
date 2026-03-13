@@ -662,6 +662,23 @@
     <x:String x:Key="ProjectProps.Apply">Застосувати</x:String>
     <x:String x:Key="ProjectProps.OK">OK</x:String>
     <x:String x:Key="ProjectProps.Cancel">Скасувати</x:String>
+    <!-- PackagePage fields -->
+    <x:String x:Key="ProjectProps.Pkg.Header">ПАКЕТ / NUGET</x:String>
+    <x:String x:Key="ProjectProps.Pkg.GenerateOnBuild">Генерувати NuGet-пакет під час збірки</x:String>
+    <x:String x:Key="ProjectProps.Pkg.PackageId">Ідентифікатор пакету</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Version">Версія</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Authors">Автори</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Company">Компанія</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Product">Продукт</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Description">Опис</x:String>
+    <x:String x:Key="ProjectProps.Pkg.LinksHeader">ПОСИЛАННЯ ТА МЕТАДАНІ</x:String>
+    <x:String x:Key="ProjectProps.Pkg.RepositoryUrl">URL репозиторію</x:String>
+    <x:String x:Key="ProjectProps.Pkg.LicenseExpression">Ліцензійний вираз (SPDX)</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Tags">Теги (через крапку з комою)</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkAuthors">Ім'я автора</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkCompany">Моя компанія</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkProduct">Мій продукт</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkDescription">Короткий опис</x:String>
 
     <!-- ── 17. MsixManagerWindow ─────────────────────────────────── -->
     <x:String x:Key="Msix.Title">Менеджер пакетів MSIX</x:String>
@@ -822,7 +839,9 @@
     <x:String x:Key="Diag.LineCol">Рядок {0}, Стовпець {1}</x:String>
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn готовий</x:String>
 
+    <!-- LED Panel Designer -->
 
+    <!-- nanoFramework Project -->
 
     <!-- ── AxamlPreview extra ─────────────────────────────────────── -->
     <x:String x:Key="AxamlPreview.LivePreview">✔ Живий перегляд</x:String>
@@ -921,5 +940,147 @@
     <x:String x:Key="AutoFix.CannotApply">Неможливо застосувати це виправлення автоматично</x:String>
     <x:String x:Key="AutoFix.Inserted">Вставлено: {0}</x:String>
     <x:String x:Key="AutoFix.OpenWindow">Автовиправлення</x:String>
+
+    <!-- ── AxamlLiveHost (code-behind fallback messages) ────────────── -->
+    <x:String x:Key="LiveHost.CannotRender">⚠  Не вдалося відрендерити — показую структуру</x:String>
+    <x:String x:Key="LiveHost.XmlError">Помилка XML: </x:String>
+    <x:String x:Key="LiveHost.FileNotFound">Файл не знайдено: </x:String>
+    <x:String x:Key="LiveHost.EmptyXaml">Порожній вміст XAML.</x:String>
+
+    <!-- ── ProjectProps page inner labels ──────────────────────── -->
+    <!-- GeneralPage -->
+    <x:String x:Key="ProjectProps.General.AppIconHeader">ЗНАЧОК ЗАСТОСУНКУ</x:String>
+    <x:String x:Key="ProjectProps.General.AppIconFile">Файл значка застосунку (.ico)</x:String>
+    <x:String x:Key="ProjectProps.General.AppIconHint">Файл .ico вбудовується як значок застосунку у виконуваний файл.</x:String>
+    <x:String x:Key="ProjectProps.General.SelectIconTooltip">Вибрати файл .ico</x:String>
+    <x:String x:Key="ProjectProps.General.AssemblyHeader">ЗБІРКА</x:String>
+    <x:String x:Key="ProjectProps.General.CodeHeader">КОД</x:String>
+    <x:String x:Key="ProjectProps.General.AppHeader">ЗАСТОСУНОК</x:String>
+    <x:String x:Key="ProjectProps.General.StartupObject">Стартовий об'єкт</x:String>
+    <!-- BuildPage -->
+    <x:String x:Key="ProjectProps.Build.Header">КОНФІГУРАЦІЯ ЗБІРКИ</x:String>
+    <x:String x:Key="ProjectProps.Build.Configuration">Конфігурація</x:String>
+    <x:String x:Key="ProjectProps.Build.PlatformTarget">Цільова платформа</x:String>
+    <x:String x:Key="ProjectProps.Build.CompilerHeader">ПАРАМЕТРИ КОМПІЛЯТОРА</x:String>
+    <x:String x:Key="ProjectProps.Build.Optimize">Оптимізувати код</x:String>
+    <x:String x:Key="ProjectProps.Build.WarningsAsErrors">Вважати попередження помилками</x:String>
+    <x:String x:Key="ProjectProps.Build.WarningLevel">Рівень попереджень</x:String>
+    <x:String x:Key="ProjectProps.Build.SuppressWarnings">Придушити окремі попередження (через крапку з комою)</x:String>
+    <x:String x:Key="ProjectProps.Build.OutputHeader">ВИВІД</x:String>
+    <x:String x:Key="ProjectProps.Build.OutputPath">Шлях виводу</x:String>
+    <x:String x:Key="ProjectProps.Build.IntermediateOutput">Шлях проміжного виводу</x:String>
+    <x:String x:Key="ProjectProps.Build.GenerateDocXml">Генерувати XML-файл документації</x:String>
+    <!-- DebugPage -->
+    <x:String x:Key="ProjectProps.Debug.LaunchHeader">ЗАПУСК</x:String>
+    <x:String x:Key="ProjectProps.Debug.LaunchProfile">Профіль запуску</x:String>
+    <x:String x:Key="ProjectProps.Debug.AppArguments">Аргументи застосунку</x:String>
+    <x:String x:Key="ProjectProps.Debug.WorkingDir">Робоча директорія</x:String>
+    <x:String x:Key="ProjectProps.Debug.WatermarkArgs">Аргументи командного рядка</x:String>
+    <x:String x:Key="ProjectProps.Debug.WatermarkWorkDir">Директорія проєкту</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnableNativeDebug">Увімкнути налагодження нативного коду</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnableSqlDebug">Увімкнути налагодження SQL Server</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarsHeader">ЗМІННІ СЕРЕДОВИЩА</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarsHint">Змінні, що передаються процесу налагодження:</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarName">Ім'я</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarValue">Значення</x:String>
+    <x:String x:Key="ProjectProps.Debug.AddEnvVar">Додати змінну середовища</x:String>
+    <!-- SigningPage -->
+    <x:String x:Key="ProjectProps.Sign.Header">ПІДПИС ЗБІРКИ</x:String>
+    <x:String x:Key="ProjectProps.Sign.SignAssembly">Підписати збірку</x:String>
+    <x:String x:Key="ProjectProps.Sign.KeyFile">Файл ключа строгого імені (.snk / .pfx)</x:String>
+    <x:String x:Key="ProjectProps.Sign.SelectKey">Вибрати файл ключа</x:String>
+    <x:String x:Key="ProjectProps.Sign.DelaySign">Лише відкладений підпис</x:String>
+    <x:String x:Key="ProjectProps.Sign.AboutTitle">ℹ  Про підпис збірки</x:String>
+    <x:String x:Key="ProjectProps.Sign.AboutText">Ключ строгого імені унікально ідентифікує вашу збірку та запобігає її модифікації. Використовуйте відкладений підпис для підписання пізніше під час конвеєра збірки.</x:String>
+
+    <!-- ── SolutionPropertiesWindow ──────────────────────────────── -->
+    <x:String x:Key="SolProps.Title">Властивості рішення</x:String>
+    <x:String x:Key="SolProps.NavCategory">РІШЕННЯ</x:String>
+    <x:String x:Key="SolProps.NavGeneral">Загальне</x:String>
+    <x:String x:Key="SolProps.NavBuildCfg">Конфігурації збірки</x:String>
+    <x:String x:Key="SolProps.NavProjects">Проєкти</x:String>
+    <x:String x:Key="SolProps.Close">Закрити</x:String>
+    <x:String x:Key="SolProps.SearchPlaceholder">🔍  Пошук налаштувань…</x:String>
+    <x:String x:Key="SolProps.BuildCfg.Header">КОНФІГУРАЦІЇ РІШЕННЯ</x:String>
+    <x:String x:Key="SolProps.BuildCfg.Hint">Конфігурації збірки зчитуються з файлу .sln (GlobalSection SolutionConfigurationPlatforms).</x:String>
+    <x:String x:Key="SolProps.General.IdentityHeader">ІДЕНТИЧНІСТЬ</x:String>
+    <x:String x:Key="SolProps.General.Name">Ім'я</x:String>
+    <x:String x:Key="SolProps.General.FullPath">Повний шлях</x:String>
+    <x:String x:Key="SolProps.General.FormatVersion">Версія формату</x:String>
+    <x:String x:Key="SolProps.General.VsVersion">Версія Visual Studio</x:String>
+    <x:String x:Key="SolProps.General.VsMinVersion">Мінімальна версія Visual Studio</x:String>
+    <x:String x:Key="SolProps.Projects.Header">ПРОЄКТИ В РІШЕННІ</x:String>
+    <x:String x:Key="SolProps.Projects.Hint">Проєкти, перелічені в цьому файлі рішення.</x:String>
+
+    <!-- ── SettingsPanelControl ──────────────────────────────────── -->
+    <x:String x:Key="Settings.Header">НАЛАШТУВАННЯ</x:String>
+    <x:String x:Key="Settings.ResetTooltip">Скинути до стандартних</x:String>
+    <x:String x:Key="Settings.DotNetSdkTitle">📦 .NET SDK</x:String>
+    <x:String x:Key="Settings.DotNetSdkDesc">Шлях до каталогу встановлення .NET SDK</x:String>
+    <x:String x:Key="Settings.GitHubCliTitle">🐙 GitHub CLI (gh)</x:String>
+    <x:String x:Key="Settings.GitHubCliDesc">Шлях до виконуваного файлу GitHub CLI для термінала та інтеграції з GitHub Copilot</x:String>
+    <x:String x:Key="Settings.CopilotCliTitle">🤖 Copilot CLI</x:String>
+    <x:String x:Key="Settings.CopilotCliDesc">Шлях до окремого виконуваного файлу GitHub Copilot CLI</x:String>
+    <x:String x:Key="Settings.SignToolTitle">🔏 SignTool</x:String>
+    <x:String x:Key="Settings.SignToolDesc">Шлях до signtool.exe для підпису пакетів (MSIX, ClickOnce тощо)</x:String>
+    <x:String x:Key="Settings.MSBuildTitle">🔨 MSBuild</x:String>
+    <x:String x:Key="Settings.MSBuildDesc">Шлях до MSBuild.exe для збірки проєктів поза dotnet CLI</x:String>
+    <x:String x:Key="Settings.AutoDetect">🔍  Автовизначення всіх шляхів</x:String>
+    <x:String x:Key="Settings.Save">💾  Зберегти налаштування</x:String>
+
+    <!-- ── Gemini AI Windows ─────────────────────────────────────── -->
+    <x:String x:Key="Gemini.Lang.Title">🌐  Додати переклад — крок 1 з 2</x:String>
+    <x:String x:Key="Gemini.Lang.Prompt">Введіть назву мови, яку ви хочете додати:</x:String>
+    <x:String x:Key="Gemini.Lang.FieldLabel">Назва мови</x:String>
+    <x:String x:Key="Gemini.Lang.Hint">Переклад генерується Google Gemini AI на основі вашого англійського словника. Переконайтеся, що ваш API-ключ встановлено в Меню &gt; Налаштування &gt; Gemini.</x:String>
+    <x:String x:Key="Gemini.Lang.Cancel">Скасувати</x:String>
+    <x:String x:Key="Gemini.Lang.Next">Далі →</x:String>
+    <x:String x:Key="Gemini.Model.Title">Крок 2 — вибір моделі Gemini</x:String>
+    <x:String x:Key="Gemini.Model.TargetLang">Цільова мова:</x:String>
+    <x:String x:Key="Gemini.Model.FieldLabel">Модель Gemini</x:String>
+    <x:String x:Key="Gemini.Model.AvailableTypes">Доступні типи моделей:</x:String>
+    <x:String x:Key="Gemini.Model.ProModels">Pro-моделі: gemini-1.5-pro, gemini-2.0-pro-exp (вища якість, повільніше, дорожче)</x:String>
+    <x:String x:Key="Gemini.Model.FlashModels">Flash-моделі: gemini-1.5-flash, gemini-2.0-flash (швидше, дешевше, відмінно для перекладу)</x:String>
+    <x:String x:Key="Gemini.Model.Tip">Порада: gemini-2.0-flash рекомендовано для завдань перекладу.</x:String>
+    <x:String x:Key="Gemini.Model.Cancel">Скасувати</x:String>
+    <x:String x:Key="Gemini.Model.Generate">Генерувати переклад</x:String>
+    <x:String x:Key="Gemini.Settings.Title">Налаштування Gemini API</x:String>
+    <x:String x:Key="Gemini.Settings.ApiKeyLabel">Ключ Google Gemini API</x:String>
+    <x:String x:Key="Gemini.Settings.ApiKeyHint">Отримайте безкоштовний ключ на: https://aistudio.google.com/app/apikey</x:String>
+    <x:String x:Key="Gemini.Settings.ShowKey">Показати ключ</x:String>
+    <x:String x:Key="Gemini.Settings.Cancel">Скасувати</x:String>
+    <x:String x:Key="Gemini.Settings.Save">💾  Зберегти</x:String>
+
+    <!-- ── Roslyn / Code tools windows ──────────────────────────── -->
+    <x:String x:Key="GenMember.Title">Генерувати член</x:String>
+    <x:String x:Key="GenMember.Subtitle">Оберіть тип члена для генерації:</x:String>
+    <x:String x:Key="GenMember.Property">Властивість</x:String>
+    <x:String x:Key="GenMember.Method">Метод</x:String>
+    <x:String x:Key="GenMember.AsyncMethod">Асинхронний метод</x:String>
+    <x:String x:Key="GenMember.Field">Поле</x:String>
+    <x:String x:Key="GenMember.Event">Подія</x:String>
+    <x:String x:Key="GenMember.Footer">Член буде вставлено в цільовий тип</x:String>
+    <x:String x:Key="GenType.Title">Генерувати тип</x:String>
+    <x:String x:Key="GenType.Prompt">Оберіть тип для створення:</x:String>
+    <x:String x:Key="GenType.Class">Клас</x:String>
+    <x:String x:Key="GenType.Struct">Структура</x:String>
+    <x:String x:Key="GenType.Interface">Інтерфейс</x:String>
+    <x:String x:Key="GenType.Enum">Перерахування</x:String>
+    <x:String x:Key="GenType.Record">Запис</x:String>
+    <x:String x:Key="GenType.Footer">Тип буде додано до поточного файлу</x:String>
+    <x:String x:Key="GotoDef.Title">📍 Перейти до визначення</x:String>
+    <x:String x:Key="GotoDef.Close">Закрити</x:String>
+    <x:String x:Key="Rename.Title">✏ Перейменувати символ</x:String>
+    <x:String x:Key="Rename.NewName">Нова назва:</x:String>
+    <x:String x:Key="Rename.PreviewChanges">Попередній перегляд змін</x:String>
+    <x:String x:Key="Rename.Cancel">Скасувати</x:String>
+    <x:String x:Key="Rename.Rename">Перейменувати</x:String>
+    <x:String x:Key="Completion.Header">Roslyn IntelliSense</x:String>
+    <x:String x:Key="Completion.CloseTooltip">Закрити (Esc)</x:String>
+    <x:String x:Key="Completion.Keys">  Tab/Enter ⏎  Esc ✕</x:String>
+    <x:String x:Key="QuickFix.Header">Швидке виправлення</x:String>
+    <x:String x:Key="QuickFix.Footer">Enter ⏎ застосувати   Esc ✕ відхилити</x:String>
+    <x:String x:Key="RoslynTools.Title">Інструменти Roslyn</x:String>
+    <x:String x:Key="RoslynTools.Navigate">Двічі клацніть або натисніть Enter для переходу</x:String>
 
 </ResourceDictionary>

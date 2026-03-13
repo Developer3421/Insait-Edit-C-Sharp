@@ -6,42 +6,42 @@
                   Padding="28,16,28,28">
         <StackPanel Spacing="0" MaxWidth="720">
 
-            <TextBlock Text="PACKAGE / NUGET" Classes="section-header" Margin="0,4,0,10"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.Header}" Classes="section-header" Margin="0,4,0,10"/>
 
             <CheckBox Name="GeneratePackageCheck"
-                      Content="Generate NuGet package on build"
+                      Content="{DynamicResource ProjectProps.Pkg.GenerateOnBuild}"
                       Margin="0,0,0,16"/>
 
-            <TextBlock Text="Package ID" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.PackageId}" Classes="prop-label"/>
             <TextBox Name="PackageIdBox" Watermark="e.g. MyCompany.MyLib" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Version" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.Version}" Classes="prop-label"/>
             <TextBox Name="PackageVersionBox" Watermark="1.0.0" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Authors" Classes="prop-label"/>
-            <TextBox Name="AuthorsBox" Watermark="Author name" Margin="0,0,0,12"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.Authors}" Classes="prop-label"/>
+            <TextBox Name="AuthorsBox" Watermark="{DynamicResource ProjectProps.Pkg.WatermarkAuthors}" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Company" Classes="prop-label"/>
-            <TextBox Name="CompanyBox" Watermark="My Company" Margin="0,0,0,12"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.Company}" Classes="prop-label"/>
+            <TextBox Name="CompanyBox" Watermark="{DynamicResource ProjectProps.Pkg.WatermarkCompany}" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Product" Classes="prop-label"/>
-            <TextBox Name="ProductBox" Watermark="My Product" Margin="0,0,0,12"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.Product}" Classes="prop-label"/>
+            <TextBox Name="ProductBox" Watermark="{DynamicResource ProjectProps.Pkg.WatermarkProduct}" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Description" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.Description}" Classes="prop-label"/>
             <TextBox Name="PackageDescriptionBox"
-                     Watermark="Short description"
+                     Watermark="{DynamicResource ProjectProps.Pkg.WatermarkDescription}"
                      Height="76" AcceptsReturn="True" TextWrapping="Wrap"
                      Margin="0,0,0,12"/>
 
-            <TextBlock Text="LINKS &amp; METADATA" Classes="section-header"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.LinksHeader}" Classes="section-header"/>
 
-            <TextBlock Text="Repository URL" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.RepositoryUrl}" Classes="prop-label"/>
             <TextBox Name="RepositoryUrlBox" Watermark="https://github.com/…" Margin="0,0,0,12"/>
 
-            <TextBlock Text="License expression (SPDX)" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.LicenseExpression}" Classes="prop-label"/>
             <TextBox Name="LicenseExpressionBox" Watermark="MIT" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Tags (semicolon-separated)" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Pkg.Tags}" Classes="prop-label"/>
             <TextBox Name="PackageTagsBox" Watermark="tag1;tag2" Margin="0,0,0,12"/>
 
         </StackPanel>

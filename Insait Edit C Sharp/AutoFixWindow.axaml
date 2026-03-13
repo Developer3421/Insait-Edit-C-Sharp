@@ -117,6 +117,9 @@
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>

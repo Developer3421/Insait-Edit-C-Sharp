@@ -6,15 +6,15 @@
                   Padding="28,16,28,28">
         <StackPanel Spacing="0" MaxWidth="720">
 
-            <TextBlock Text="BUILD CONFIGURATION" Classes="section-header" Margin="0,4,0,10"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.Header}" Classes="section-header" Margin="0,4,0,10"/>
 
-            <TextBlock Text="Configuration" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.Configuration}" Classes="prop-label"/>
             <ComboBox Name="ConfigurationCombo" HorizontalAlignment="Stretch" Margin="0,0,0,12">
                 <ComboBoxItem Content="Debug"/>
                 <ComboBoxItem Content="Release"/>
             </ComboBox>
 
-            <TextBlock Text="Platform target" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.PlatformTarget}" Classes="prop-label"/>
             <ComboBox Name="PlatformCombo" HorizontalAlignment="Stretch" Margin="0,0,0,12">
                 <ComboBoxItem Content="Any CPU"/>
                 <ComboBoxItem Content="x64"/>
@@ -22,12 +22,12 @@
                 <ComboBoxItem Content="ARM64"/>
             </ComboBox>
 
-            <TextBlock Text="COMPILER OPTIONS" Classes="section-header"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.CompilerHeader}" Classes="section-header"/>
 
-            <CheckBox Name="OptimizeCheck"          Content="Optimize code"              Margin="0,4,0,10"/>
-            <CheckBox Name="WarningsAsErrorsCheck"  Content="Treat warnings as errors"   Margin="0,0,0,12"/>
+            <CheckBox Name="OptimizeCheck"         Content="{DynamicResource ProjectProps.Build.Optimize}"          Margin="0,4,0,10"/>
+            <CheckBox Name="WarningsAsErrorsCheck" Content="{DynamicResource ProjectProps.Build.WarningsAsErrors}"   Margin="0,0,0,12"/>
 
-            <TextBlock Text="Warning level" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.WarningLevel}" Classes="prop-label"/>
             <ComboBox Name="WarningLevelCombo" HorizontalAlignment="Stretch" Margin="0,0,0,12">
                 <ComboBoxItem Content="0 — No warnings" Tag="0"/>
                 <ComboBoxItem Content="1"               Tag="1"/>
@@ -37,23 +37,23 @@
                 <ComboBoxItem Content="5"               Tag="5"/>
             </ComboBox>
 
-            <TextBlock Text="Suppress specific warnings (semicolon-separated)" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.SuppressWarnings}" Classes="prop-label"/>
             <TextBox Name="NoWarnBox" Watermark="e.g. CS1591;CS0618" Margin="0,0,0,12"/>
 
-            <TextBlock Text="OUTPUT" Classes="section-header"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.OutputHeader}" Classes="section-header"/>
 
-            <TextBlock Text="Output path" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.OutputPath}" Classes="prop-label"/>
             <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
                 <TextBox Name="OutputPathBox" Grid.Column="0" Watermark="bin\$(Configuration)\"/>
                 <Button Grid.Column="1" Name="BrowseOutputButton"
                         Content="…" Width="38" Classes="small-btn" Margin="6,0,0,0"
-                        ToolTip.Tip="Browse folder"/>
+                        ToolTip.Tip="{DynamicResource Common.Browse}"/>
             </Grid>
 
-            <TextBlock Text="Intermediate output path" Classes="prop-label"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Build.IntermediateOutput}" Classes="prop-label"/>
             <TextBox Name="IntermediateOutputPathBox" Watermark="obj\" Margin="0,0,0,12"/>
 
-            <CheckBox Name="GenerateDocXmlCheck" Content="Generate XML documentation file" Margin="0,4,0,10"/>
+            <CheckBox Name="GenerateDocXmlCheck" Content="{DynamicResource ProjectProps.Build.GenerateDocXml}" Margin="0,4,0,10"/>
 
         </StackPanel>
     </ScrollViewer>

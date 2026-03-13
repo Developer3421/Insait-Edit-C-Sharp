@@ -83,6 +83,8 @@
             <Setter Property="Background" Value="{StaticResource SettingsBgBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource SettingsTextBrush}"/>
             <Setter Property="CaretBrush" Value="{StaticResource SettingsTextBrush}"/>
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="CornerRadius" Value="6,0,0,6"/>
@@ -99,10 +101,10 @@
         <Border Grid.Row="0" Padding="12,10" Background="#12DCC4FF" 
                 BorderBrush="{StaticResource SettingsBorderBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Name="HeaderTitleText" Text="SETTINGS" FontSize="11" FontWeight="SemiBold" 
+                <TextBlock Name="HeaderTitleText" Text="{DynamicResource Settings.Header}" FontSize="11" FontWeight="SemiBold" 
                            Foreground="{StaticResource SettingsTextMutedBrush}" VerticalAlignment="Center"
                            LetterSpacing="1"/>
-                <Button Grid.Column="1" Classes="icon-btn" ToolTip.Tip="Reset to defaults" 
+                <Button Grid.Column="1" Classes="icon-btn" ToolTip.Tip="{DynamicResource Settings.ResetTooltip}" 
                         Name="ResetButton" Click="Reset_Click">
                     <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
                 </Button>
@@ -114,10 +116,10 @@
             <StackPanel Margin="12" Spacing="4">
                 
                 <!-- .NET SDK Path -->
-                <TextBlock Text="📦 .NET SDK" FontSize="13" FontWeight="SemiBold" 
+                <TextBlock Text="{DynamicResource Settings.DotNetSdkTitle}" FontSize="13" FontWeight="SemiBold" 
                            Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
                            FontFamily="Segoe UI Emoji"/>
-                <TextBlock Text="Path to the .NET SDK installation directory" FontSize="11" 
+                <TextBlock Text="{DynamicResource Settings.DotNetSdkDesc}" FontSize="11" 
                            Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
                 <Grid ColumnDefinitions="*,Auto">
@@ -134,10 +136,10 @@
                 <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
                 
                 <!-- GitHub CLI Path -->
-                <TextBlock Text="🐙 GitHub CLI (gh)" FontSize="13" FontWeight="SemiBold" 
+                <TextBlock Text="{DynamicResource Settings.GitHubCliTitle}" FontSize="13" FontWeight="SemiBold" 
                            Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
                            FontFamily="Segoe UI Emoji"/>
-                <TextBlock Text="Path to the GitHub CLI executable for terminal &amp; GitHub Copilot integration" 
+                <TextBlock Text="{DynamicResource Settings.GitHubCliDesc}" 
                            FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
                 <Grid ColumnDefinitions="*,Auto">
@@ -153,10 +155,10 @@
                 
                 <!-- Copilot CLI Path -->
                 <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
-                <TextBlock Text="🤖 Copilot CLI" FontSize="13" FontWeight="SemiBold" 
+                <TextBlock Text="{DynamicResource Settings.CopilotCliTitle}" FontSize="13" FontWeight="SemiBold" 
                            Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
                            FontFamily="Segoe UI Emoji"/>
-                <TextBlock Text="Path to the standalone GitHub Copilot CLI executable" 
+                <TextBlock Text="{DynamicResource Settings.CopilotCliDesc}" 
                            FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
                 <Grid ColumnDefinitions="*,Auto">
@@ -173,10 +175,10 @@
                 <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
                 
                 <!-- SignTool Path -->
-                <TextBlock Text="🔏 SignTool" FontSize="13" FontWeight="SemiBold" 
+                <TextBlock Text="{DynamicResource Settings.SignToolTitle}" FontSize="13" FontWeight="SemiBold" 
                            Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
                            FontFamily="Segoe UI Emoji"/>
-                <TextBlock Text="Path to signtool.exe for signing packages (MSIX, ClickOnce, etc.)" 
+                <TextBlock Text="{DynamicResource Settings.SignToolDesc}" 
                            FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
                 <Grid ColumnDefinitions="*,Auto">
@@ -193,10 +195,10 @@
                 <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
                 
                 <!-- MSBuild Path -->
-                <TextBlock Text="🔨 MSBuild" FontSize="13" FontWeight="SemiBold" 
+                <TextBlock Text="{DynamicResource Settings.MSBuildTitle}" FontSize="13" FontWeight="SemiBold" 
                            Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
                            FontFamily="Segoe UI Emoji"/>
-                <TextBlock Text="Path to MSBuild.exe for building projects outside of dotnet CLI" 
+                <TextBlock Text="{DynamicResource Settings.MSBuildDesc}" 
                            FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
                 <Grid ColumnDefinitions="*,Auto">
@@ -213,12 +215,12 @@
                 <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,16"/>
                 
                 <!-- Auto-detect Button -->
-                <Button Classes="settings-secondary" Content="🔍  Auto-detect all paths" 
+                <Button Classes="settings-secondary" Content="{DynamicResource Settings.AutoDetect}" 
                         Name="AutoDetectButton" Click="AutoDetect_Click" HorizontalAlignment="Stretch"
                         Margin="0,0,0,8" ToolTip.Tip="Try to find tools automatically"/>
                 
                 <!-- Save Button -->
-                <Button Classes="settings-primary" Content="💾  Save Settings" 
+                <Button Classes="settings-primary" Content="{DynamicResource Settings.Save}" 
                         Name="SaveButton" Click="Save_Click" HorizontalAlignment="Stretch"
                         Margin="0,0,0,8"/>
                 

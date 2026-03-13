@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Insait_Edit_C_Sharp.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +37,11 @@ public partial class AxamlLiveHost : UserControl
         InitializeComponent();
     }
 
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
     // ── public API ─────────────────────────────────────────────────────
 
     /// <summary>Result of last load attempt.</summary>
@@ -47,7 +53,7 @@ public partial class AxamlLiveHost : UserControl
     {
         if (!File.Exists(filePath))
         {
-            LastError    = $"File not found: {filePath}";
+            LastError    = $"{LocalizationService.Get("LiveHost.FileNotFound")}{filePath}";
             IsLiveRender = false;
             SetContent(BuildFallback(string.Empty, LastError));
             return;
@@ -73,7 +79,7 @@ public partial class AxamlLiveHost : UserControl
 
         if (string.IsNullOrWhiteSpace(xaml))
         {
-            LastError = "Empty XAML content.";
+            LastError = LocalizationService.Get("LiveHost.EmptyXaml");
             SetContent(BuildFallback(string.Empty, LastError));
             return;
         }
@@ -413,7 +419,7 @@ public partial class AxamlLiveHost : UserControl
                 Padding         = new Thickness(12, 8),
                 Child = new TextBlock
                 {
-                    Text         = $"⚠  Cannot render — showing structure\n{reason.Split('\n').FirstOrDefault()}",
+                    Text         = $"{LocalizationService.Get("LiveHost.CannotRender")}\n{reason.Split('\n').FirstOrDefault()}",
                     Foreground   = new SolidColorBrush(Color.Parse("#FFF38BA8")),
                     FontSize     = 11,
                     TextWrapping = TextWrapping.Wrap,
@@ -441,7 +447,7 @@ public partial class AxamlLiveHost : UserControl
         {
             root.Children.Add(new TextBlock
             {
-                Text       = $"XML error: {ex.Message}",
+                Text       = $"{LocalizationService.Get("LiveHost.XmlError")}{ex.Message}",
                 Foreground = new SolidColorBrush(Color.Parse("#FFF38BA8")),
                 FontSize   = 11,
                 Margin     = new Thickness(12),

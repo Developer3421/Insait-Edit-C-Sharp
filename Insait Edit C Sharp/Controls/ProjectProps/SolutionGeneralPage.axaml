@@ -2,30 +2,118 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Insait_Edit_C_Sharp.Controls.ProjectProps.SolutionGeneralPage"
              Background="#FF1A1520">
-    <ScrollViewer Padding="28,16,28,16"
+
+    <UserControl.Styles>
+        <!-- section-header and prop-label duplicated here so page works standalone too -->
+        <Style Selector="TextBlock.section-header">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#FF6A5888"/>
+            <Setter Property="LetterSpacing" Value="1.5"/>
+            <Setter Property="Margin" Value="0,20,0,8"/>
+        </Style>
+        <Style Selector="TextBlock.prop-label">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="#FF9080A8"/>
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#FF1C1530"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3A2E50"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CaretBrush" Value="#FFFFC09F"/>
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF1C1530"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="#88FFC09F"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer Padding="28,8,28,24"
                   HorizontalScrollBarVisibility="Disabled"
                   VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="0" MaxWidth="600" HorizontalAlignment="Left">
+        <StackPanel Spacing="0" MaxWidth="660" HorizontalAlignment="Left">
 
-            <TextBlock Text="IDENTITY" Classes="section-header"/>
+            <!-- ─── IDENTITY ─── -->
+            <TextBlock Text="IDENTITY" Classes="section-header" Margin="0,8,0,8"/>
+            <Border Background="#FF1C1530" BorderBrush="#FF3A2E50" BorderThickness="1"
+                    CornerRadius="8" Padding="18,14" Margin="0,0,0,0">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="140,*" RowSpacing="10">
+                    <!-- Name -->
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Solution name" Classes="prop-label"
+                               VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="0" Grid.Column="1"
+                             x:Name="NameBox" IsReadOnly="True"
+                             ToolTip.Tip="Solution name (read-only)"
+                             FontWeight="SemiBold"/>
+                    <!-- Directory -->
+                    <TextBlock Grid.Row="1" Grid.Column="0"
+                               Text="Directory" Classes="prop-label"
+                               VerticalAlignment="Top" Margin="0,8,0,0"/>
+                    <TextBox Grid.Row="1" Grid.Column="1"
+                             x:Name="DirBox" IsReadOnly="True"
+                             TextWrapping="Wrap" AcceptsReturn="False"
+                             ToolTip.Tip="Solution directory (read-only)"/>
+                    <!-- File -->
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="File name" Classes="prop-label"
+                               VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="2" Grid.Column="1"
+                             x:Name="FileNameBox" IsReadOnly="True"
+                             FontFamily="Cascadia Code, Consolas, monospace"
+                             ToolTip.Tip="Solution file name"/>
+                    <!-- Full path -->
+                    <TextBlock Grid.Row="3" Grid.Column="0"
+                               Text="Full path" Classes="prop-label"
+                               VerticalAlignment="Top" Margin="0,8,0,0"/>
+                    <TextBox Grid.Row="3" Grid.Column="1"
+                             x:Name="PathBox" IsReadOnly="True"
+                             TextWrapping="Wrap" AcceptsReturn="False"
+                             FontFamily="Cascadia Code, Consolas, monospace"
+                             FontSize="11"
+                             ToolTip.Tip="Full solution file path"/>
+                </Grid>
+            </Border>
 
-            <TextBlock Text="Name" Classes="prop-label"/>
-            <TextBox Name="NameBox" Margin="0,0,0,14"
-                     IsReadOnly="True" ToolTip.Tip="Solution name (readonly)"/>
-
-            <TextBlock Text="Full Path" Classes="prop-label"/>
-            <TextBox Name="PathBox" Margin="0,0,0,14"
-                     IsReadOnly="True" ToolTip.Tip="Solution file path"/>
-
-            <TextBlock Text="Format Version" Classes="prop-label"/>
-            <TextBox Name="FormatBox" Margin="0,0,0,14" IsReadOnly="True"/>
-
-            <TextBlock Text="Visual Studio Version" Classes="prop-label"/>
-            <TextBox Name="VsVersionBox" Margin="0,0,0,14" IsReadOnly="True"/>
-
-            <TextBlock Text="Minimum Visual Studio Version" Classes="prop-label"/>
-            <TextBox Name="VsMinVersionBox" Margin="0,0,0,14" IsReadOnly="True"/>
+            <!-- ─── FORMAT / VERSION ─── -->
+            <TextBlock Text="FORMAT &amp; VISUAL STUDIO VERSION" Classes="section-header"/>
+            <Border Background="#FF1C1530" BorderBrush="#FF3A2E50" BorderThickness="1"
+                    CornerRadius="8" Padding="18,14">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="200,*" RowSpacing="10">
+                    <!-- Format -->
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Solution format" Classes="prop-label"
+                               VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="0" Grid.Column="1"
+                             x:Name="FormatBox" IsReadOnly="True"
+                             FontFamily="Cascadia Code, Consolas, monospace"/>
+                    <!-- VS Version -->
+                    <TextBlock Grid.Row="1" Grid.Column="0"
+                               Text="Visual Studio version" Classes="prop-label"
+                               VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="1"
+                             x:Name="VsVersionBox" IsReadOnly="True"
+                             FontFamily="Cascadia Code, Consolas, monospace"/>
+                    <!-- VS Min Version -->
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="Minimum VS version" Classes="prop-label"
+                               VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="2" Grid.Column="1"
+                             x:Name="VsMinVersionBox" IsReadOnly="True"
+                             FontFamily="Cascadia Code, Consolas, monospace"/>
+                </Grid>
+            </Border>
 
         </StackPanel>
     </ScrollViewer>
 </UserControl>
+

@@ -17,6 +17,31 @@
         <SolidColorBrush x:Key="DlgMuted"    Color="#FF9E90B0"/>
     </Window.Resources>
 
+    <Window.Styles>
+        <!-- TextBox styles -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{StaticResource DlgSurface}"/>
+            <Setter Property="Foreground" Value="{StaticResource DlgText}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource DlgBorder}"/>
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="{StaticResource DlgText}"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="{StaticResource DlgSurface}"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource DlgAccent}"/>
+        </Style>
+        <!-- Button hover -->
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#FF3E3050"/>
+        </Style>
+        <Style Selector="Button#RenameButton:pointerover">
+            <Setter Property="Background" Value="#FF7C3AED"/>
+        </Style>
+    </Window.Styles>
+
     <Border Background="{StaticResource DlgBg}"
             BorderBrush="{StaticResource DlgBorder}"
             BorderThickness="1" CornerRadius="8"
@@ -25,7 +50,7 @@
 
             <!-- Title -->
             <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                <TextBlock Text="✏ Rename Symbol"
+                <TextBlock Text="{DynamicResource Rename.Title}"
                            FontSize="16" FontWeight="SemiBold"
                            Foreground="{StaticResource DlgText}"/>
                 <TextBlock x:Name="OldNameText"
@@ -35,7 +60,7 @@
 
             <!-- New name input -->
             <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,0,0,12">
-                <TextBlock Grid.Column="0" Text="New name:"
+                <TextBlock Grid.Column="0" Text="{DynamicResource Rename.NewName}"
                            FontSize="13" VerticalAlignment="Center"
                            Foreground="{StaticResource DlgText}" Margin="0,0,10,0"/>
                 <TextBox Grid.Column="1" x:Name="NewNameInput"
@@ -48,7 +73,7 @@
 
             <!-- Preview checkbox -->
             <CheckBox Grid.Row="2" x:Name="PreviewCheckBox"
-                      Content="Preview changes" IsChecked="True"
+                      Content="{DynamicResource Rename.PreviewChanges}" IsChecked="True"
                       Foreground="{StaticResource DlgText}" FontSize="12"
                       Margin="0,0,0,8"/>
 
@@ -65,13 +90,13 @@
             <!-- Buttons -->
             <StackPanel Grid.Row="4" Orientation="Horizontal"
                         HorizontalAlignment="Right" Spacing="10">
-                <Button x:Name="CancelButton" Content="Cancel"
+                <Button x:Name="CancelButton" Content="{DynamicResource Rename.Cancel}"
                         Width="90" Height="32" FontSize="12"
                         Background="{StaticResource DlgSurface}"
                         Foreground="{StaticResource DlgText}"
                         BorderBrush="{StaticResource DlgBorder}"
                         CornerRadius="4" Click="OnCancel"/>
-                <Button x:Name="RenameButton" Content="Rename"
+                <Button x:Name="RenameButton" Content="{DynamicResource Rename.Rename}"
                         Width="90" Height="32" FontSize="12"
                         Background="{StaticResource DlgAccent}"
                         Foreground="White"

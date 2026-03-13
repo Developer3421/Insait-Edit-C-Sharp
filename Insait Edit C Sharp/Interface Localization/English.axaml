@@ -57,6 +57,9 @@
     <x:String x:Key="Tooltip.RefreshAnalysis">Refresh Analysis</x:String>
     <x:String x:Key="Tooltip.ClearProblems">Clear Problems</x:String>
     <x:String x:Key="Problems.NoProblems">No problems detected. Press Analyze to check for issues.</x:String>
+    <x:String x:Key="Problems.Errors">{0} Errors</x:String>
+    <x:String x:Key="Problems.Warnings">{0} Warnings</x:String>
+    <x:String x:Key="Problems.Messages">0 Messages</x:String>
     <x:String x:Key="Output.BuildPlaceholder">Build output will appear here...</x:String>
     <x:String x:Key="Output.RunPlaceholder">Run output will appear here...</x:String>
     <x:String x:Key="Status.GitBranch">Git Branch</x:String>
@@ -294,9 +297,6 @@
     <x:String x:Key="Search.Case">Case</x:String>
     <x:String x:Key="Search.Regex">Regex</x:String>
     <x:String x:Key="Search.Word">Word</x:String>
-    <x:String x:Key="Problems.Errors">{0} Errors</x:String>
-    <x:String x:Key="Problems.Warnings">{0} Warnings</x:String>
-    <x:String x:Key="Problems.Messages">0 Messages</x:String>
 
     <!-- ── 2. WelcomeWindow ──────────────────────────────────────── -->
     <x:String x:Key="Welcome.Title">Welcome to Insait Edit</x:String>
@@ -662,6 +662,23 @@
     <x:String x:Key="ProjectProps.Apply">Apply</x:String>
     <x:String x:Key="ProjectProps.OK">OK</x:String>
     <x:String x:Key="ProjectProps.Cancel">Cancel</x:String>
+    <!-- PackagePage fields -->
+    <x:String x:Key="ProjectProps.Pkg.Header">PACKAGE / NUGET</x:String>
+    <x:String x:Key="ProjectProps.Pkg.GenerateOnBuild">Generate NuGet package on build</x:String>
+    <x:String x:Key="ProjectProps.Pkg.PackageId">Package ID</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Version">Version</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Authors">Authors</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Company">Company</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Product">Product</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Description">Description</x:String>
+    <x:String x:Key="ProjectProps.Pkg.LinksHeader">LINKS &amp; METADATA</x:String>
+    <x:String x:Key="ProjectProps.Pkg.RepositoryUrl">Repository URL</x:String>
+    <x:String x:Key="ProjectProps.Pkg.LicenseExpression">License expression (SPDX)</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Tags">Tags (semicolon-separated)</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkAuthors">Author name</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkCompany">My Company</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkProduct">My Product</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkDescription">Short description</x:String>
 
     <!-- ── 17. MsixManagerWindow ─────────────────────────────────── -->
     <x:String x:Key="Msix.Title">MSIX Package Manager</x:String>
@@ -822,6 +839,10 @@
     <x:String x:Key="Diag.LineCol">Line {0}, Col {1}</x:String>
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn ready</x:String>
 
+    <!-- LED Panel Designer -->
+
+    <!-- nanoFramework Project -->
+
     <!-- ── AxamlPreview extra ─────────────────────────────────────── -->
     <x:String x:Key="AxamlPreview.LivePreview">✔ Live preview</x:String>
     <x:String x:Key="AxamlPreview.FallbackView">⚠ Fallback view</x:String>
@@ -919,5 +940,147 @@
     <x:String x:Key="AutoFix.CannotApply">Cannot apply this fix automatically</x:String>
     <x:String x:Key="AutoFix.Inserted">Inserted: {0}</x:String>
     <x:String x:Key="AutoFix.OpenWindow">Auto Fix</x:String>
+
+    <!-- ── AxamlLiveHost (code-behind fallback messages) ────────────── -->
+    <x:String x:Key="LiveHost.CannotRender">⚠  Cannot render — showing structure</x:String>
+    <x:String x:Key="LiveHost.XmlError">XML error: </x:String>
+    <x:String x:Key="LiveHost.FileNotFound">File not found: </x:String>
+    <x:String x:Key="LiveHost.EmptyXaml">Empty XAML content.</x:String>
+
+    <!-- ── ProjectProps page inner labels ──────────────────────── -->
+    <!-- GeneralPage -->
+    <x:String x:Key="ProjectProps.General.AppIconHeader">APPLICATION ICON</x:String>
+    <x:String x:Key="ProjectProps.General.AppIconFile">Application icon file (.ico)</x:String>
+    <x:String x:Key="ProjectProps.General.AppIconHint">The .ico file is embedded as the application icon in the executable.</x:String>
+    <x:String x:Key="ProjectProps.General.SelectIconTooltip">Select .ico file</x:String>
+    <x:String x:Key="ProjectProps.General.AssemblyHeader">ASSEMBLY</x:String>
+    <x:String x:Key="ProjectProps.General.CodeHeader">CODE</x:String>
+    <x:String x:Key="ProjectProps.General.AppHeader">APPLICATION</x:String>
+    <x:String x:Key="ProjectProps.General.StartupObject">Startup object</x:String>
+    <!-- BuildPage -->
+    <x:String x:Key="ProjectProps.Build.Header">BUILD CONFIGURATION</x:String>
+    <x:String x:Key="ProjectProps.Build.Configuration">Configuration</x:String>
+    <x:String x:Key="ProjectProps.Build.PlatformTarget">Platform target</x:String>
+    <x:String x:Key="ProjectProps.Build.CompilerHeader">COMPILER OPTIONS</x:String>
+    <x:String x:Key="ProjectProps.Build.Optimize">Optimize code</x:String>
+    <x:String x:Key="ProjectProps.Build.WarningsAsErrors">Treat warnings as errors</x:String>
+    <x:String x:Key="ProjectProps.Build.WarningLevel">Warning level</x:String>
+    <x:String x:Key="ProjectProps.Build.SuppressWarnings">Suppress specific warnings (semicolon-separated)</x:String>
+    <x:String x:Key="ProjectProps.Build.OutputHeader">OUTPUT</x:String>
+    <x:String x:Key="ProjectProps.Build.OutputPath">Output path</x:String>
+    <x:String x:Key="ProjectProps.Build.IntermediateOutput">Intermediate output path</x:String>
+    <x:String x:Key="ProjectProps.Build.GenerateDocXml">Generate XML documentation file</x:String>
+    <!-- DebugPage -->
+    <x:String x:Key="ProjectProps.Debug.LaunchHeader">LAUNCH</x:String>
+    <x:String x:Key="ProjectProps.Debug.LaunchProfile">Launch profile</x:String>
+    <x:String x:Key="ProjectProps.Debug.AppArguments">Application arguments</x:String>
+    <x:String x:Key="ProjectProps.Debug.WorkingDir">Working directory</x:String>
+    <x:String x:Key="ProjectProps.Debug.WatermarkArgs">Command line arguments</x:String>
+    <x:String x:Key="ProjectProps.Debug.WatermarkWorkDir">Project directory</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnableNativeDebug">Enable native code debugging</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnableSqlDebug">Enable SQL Server debugging</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarsHeader">ENVIRONMENT VARIABLES</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarsHint">Variables passed to the debug process:</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarName">Name</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarValue">Value</x:String>
+    <x:String x:Key="ProjectProps.Debug.AddEnvVar">Add environment variable</x:String>
+    <!-- SigningPage -->
+    <x:String x:Key="ProjectProps.Sign.Header">ASSEMBLY SIGNING</x:String>
+    <x:String x:Key="ProjectProps.Sign.SignAssembly">Sign the assembly</x:String>
+    <x:String x:Key="ProjectProps.Sign.KeyFile">Strong name key file (.snk / .pfx)</x:String>
+    <x:String x:Key="ProjectProps.Sign.SelectKey">Select key file</x:String>
+    <x:String x:Key="ProjectProps.Sign.DelaySign">Delay sign only</x:String>
+    <x:String x:Key="ProjectProps.Sign.AboutTitle">ℹ  About assembly signing</x:String>
+    <x:String x:Key="ProjectProps.Sign.AboutText">A strong name key uniquely identifies your assembly and prevents tampering. Use delay signing to sign later during a build pipeline.</x:String>
+
+    <!-- ── SolutionPropertiesWindow ──────────────────────────────── -->
+    <x:String x:Key="SolProps.Title">Solution Properties</x:String>
+    <x:String x:Key="SolProps.NavCategory">SOLUTION</x:String>
+    <x:String x:Key="SolProps.NavGeneral">General</x:String>
+    <x:String x:Key="SolProps.NavBuildCfg">Build Configurations</x:String>
+    <x:String x:Key="SolProps.NavProjects">Projects</x:String>
+    <x:String x:Key="SolProps.Close">Close</x:String>
+    <x:String x:Key="SolProps.SearchPlaceholder">🔍  Search settings…</x:String>
+    <x:String x:Key="SolProps.BuildCfg.Header">SOLUTION CONFIGURATIONS</x:String>
+    <x:String x:Key="SolProps.BuildCfg.Hint">Build configurations read from the .sln file (GlobalSection SolutionConfigurationPlatforms).</x:String>
+    <x:String x:Key="SolProps.General.IdentityHeader">IDENTITY</x:String>
+    <x:String x:Key="SolProps.General.Name">Name</x:String>
+    <x:String x:Key="SolProps.General.FullPath">Full Path</x:String>
+    <x:String x:Key="SolProps.General.FormatVersion">Format Version</x:String>
+    <x:String x:Key="SolProps.General.VsVersion">Visual Studio Version</x:String>
+    <x:String x:Key="SolProps.General.VsMinVersion">Minimum Visual Studio Version</x:String>
+    <x:String x:Key="SolProps.Projects.Header">PROJECTS IN SOLUTION</x:String>
+    <x:String x:Key="SolProps.Projects.Hint">Projects listed in this solution file.</x:String>
+
+    <!-- ── SettingsPanelControl ──────────────────────────────────── -->
+    <x:String x:Key="Settings.Header">SETTINGS</x:String>
+    <x:String x:Key="Settings.ResetTooltip">Reset to defaults</x:String>
+    <x:String x:Key="Settings.DotNetSdkTitle">📦 .NET SDK</x:String>
+    <x:String x:Key="Settings.DotNetSdkDesc">Path to the .NET SDK installation directory</x:String>
+    <x:String x:Key="Settings.GitHubCliTitle">🐙 GitHub CLI (gh)</x:String>
+    <x:String x:Key="Settings.GitHubCliDesc">Path to the GitHub CLI executable for terminal &amp; GitHub Copilot integration</x:String>
+    <x:String x:Key="Settings.CopilotCliTitle">🤖 Copilot CLI</x:String>
+    <x:String x:Key="Settings.CopilotCliDesc">Path to the standalone GitHub Copilot CLI executable</x:String>
+    <x:String x:Key="Settings.SignToolTitle">🔏 SignTool</x:String>
+    <x:String x:Key="Settings.SignToolDesc">Path to signtool.exe for signing packages (MSIX, ClickOnce, etc.)</x:String>
+    <x:String x:Key="Settings.MSBuildTitle">🔨 MSBuild</x:String>
+    <x:String x:Key="Settings.MSBuildDesc">Path to MSBuild.exe for building projects outside of dotnet CLI</x:String>
+    <x:String x:Key="Settings.AutoDetect">🔍  Auto-detect all paths</x:String>
+    <x:String x:Key="Settings.Save">💾  Save Settings</x:String>
+
+    <!-- ── Gemini AI Windows ─────────────────────────────────────── -->
+    <x:String x:Key="Gemini.Lang.Title">🌐  Add Custom Translation — Step 1 of 2</x:String>
+    <x:String x:Key="Gemini.Lang.Prompt">Enter the name of the language you want to add:</x:String>
+    <x:String x:Key="Gemini.Lang.FieldLabel">Language Name</x:String>
+    <x:String x:Key="Gemini.Lang.Hint">The translation is generated by Google Gemini AI using your English dictionary. Make sure your API key is set in Menu &gt; Settings &gt; Gemini.</x:String>
+    <x:String x:Key="Gemini.Lang.Cancel">Cancel</x:String>
+    <x:String x:Key="Gemini.Lang.Next">Next →</x:String>
+    <x:String x:Key="Gemini.Model.Title">Step 2 - Choose Gemini Model</x:String>
+    <x:String x:Key="Gemini.Model.TargetLang">Target language:</x:String>
+    <x:String x:Key="Gemini.Model.FieldLabel">Gemini Model</x:String>
+    <x:String x:Key="Gemini.Model.AvailableTypes">Available model types:</x:String>
+    <x:String x:Key="Gemini.Model.ProModels">Pro models: gemini-1.5-pro, gemini-2.0-pro-exp (higher quality, slower, more expensive)</x:String>
+    <x:String x:Key="Gemini.Model.FlashModels">Flash models: gemini-1.5-flash, gemini-2.0-flash (faster, cheaper, great for translation)</x:String>
+    <x:String x:Key="Gemini.Model.Tip">Tip: gemini-2.0-flash is recommended for translation tasks.</x:String>
+    <x:String x:Key="Gemini.Model.Cancel">Cancel</x:String>
+    <x:String x:Key="Gemini.Model.Generate">Generate Translation</x:String>
+    <x:String x:Key="Gemini.Settings.Title">Gemini API Settings</x:String>
+    <x:String x:Key="Gemini.Settings.ApiKeyLabel">Google Gemini API Key</x:String>
+    <x:String x:Key="Gemini.Settings.ApiKeyHint">Get your free key at: https://aistudio.google.com/app/apikey</x:String>
+    <x:String x:Key="Gemini.Settings.ShowKey">Show key</x:String>
+    <x:String x:Key="Gemini.Settings.Cancel">Cancel</x:String>
+    <x:String x:Key="Gemini.Settings.Save">💾  Save</x:String>
+
+    <!-- ── Roslyn / Code tools windows ──────────────────────────── -->
+    <x:String x:Key="GenMember.Title">Generate Member</x:String>
+    <x:String x:Key="GenMember.Subtitle">Choose member to generate:</x:String>
+    <x:String x:Key="GenMember.Property">Property</x:String>
+    <x:String x:Key="GenMember.Method">Method</x:String>
+    <x:String x:Key="GenMember.AsyncMethod">Async Method</x:String>
+    <x:String x:Key="GenMember.Field">Field</x:String>
+    <x:String x:Key="GenMember.Event">Event</x:String>
+    <x:String x:Key="GenMember.Footer">Member will be inserted into the target type</x:String>
+    <x:String x:Key="GenType.Title">Generate Type</x:String>
+    <x:String x:Key="GenType.Prompt">Choose type to create:</x:String>
+    <x:String x:Key="GenType.Class">Class</x:String>
+    <x:String x:Key="GenType.Struct">Struct</x:String>
+    <x:String x:Key="GenType.Interface">Interface</x:String>
+    <x:String x:Key="GenType.Enum">Enum</x:String>
+    <x:String x:Key="GenType.Record">Record</x:String>
+    <x:String x:Key="GenType.Footer">Type will be appended to the current file</x:String>
+    <x:String x:Key="GotoDef.Title">📍 Go to Definition</x:String>
+    <x:String x:Key="GotoDef.Close">Close</x:String>
+    <x:String x:Key="Rename.Title">✏ Rename Symbol</x:String>
+    <x:String x:Key="Rename.NewName">New name:</x:String>
+    <x:String x:Key="Rename.PreviewChanges">Preview changes</x:String>
+    <x:String x:Key="Rename.Cancel">Cancel</x:String>
+    <x:String x:Key="Rename.Rename">Rename</x:String>
+    <x:String x:Key="Completion.Header">Roslyn IntelliSense</x:String>
+    <x:String x:Key="Completion.CloseTooltip">Close (Esc)</x:String>
+    <x:String x:Key="Completion.Keys">  Tab/Enter ⏎  Esc ✕</x:String>
+    <x:String x:Key="QuickFix.Header">Quick Fix</x:String>
+    <x:String x:Key="QuickFix.Footer">Enter ⏎ apply   Esc ✕ dismiss</x:String>
+    <x:String x:Key="RoslynTools.Title">Roslyn Tools</x:String>
+    <x:String x:Key="RoslynTools.Navigate">Double-click or Enter to navigate</x:String>
 
 </ResourceDictionary>

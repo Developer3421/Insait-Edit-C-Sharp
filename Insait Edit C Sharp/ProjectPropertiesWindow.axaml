@@ -1,8 +1,8 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="Insait_Edit_C_Sharp.SolutionPropertiesWindow"
-        Title="Solution Properties"
-        Width="860" Height="560"
+        x:Class="Insait_Edit_C_Sharp.ProjectPropertiesWindow"
+        Title="Project Properties"
+        Width="880" Height="580"
         WindowStartupLocation="CenterOwner"
         CanResize="True"
         SystemDecorations="None"
@@ -53,12 +53,30 @@
         <Style Selector="Button.action-btn:pointerover">
             <Setter Property="Background" Value="#FF3A2E58"/>
         </Style>
+        <!-- Small inline button (Browse / Clear) -->
+        <Style Selector="Button.small-btn">
+            <Setter Property="Background" Value="#FF2A2040"/>
+            <Setter Property="Foreground" Value="#FFD0C8E0"/>
+            <Setter Property="BorderBrush" Value="#FF3A2E50"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.small-btn:pointerover">
+            <Setter Property="Background" Value="#FF3A2E58"/>
+            <Setter Property="BorderBrush" Value="#FF7C3AED"/>
+        </Style>
+        <Style Selector="Button.small-btn:pressed">
+            <Setter Property="Background" Value="#FF5B3A8A"/>
+        </Style>
         <Style Selector="Button.primary-btn">
             <Setter Property="Background" Value="#FFFFC09F"/>
             <Setter Property="Foreground" Value="#FF1A1520"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="26,8"/>
+            <Setter Property="Padding" Value="22,8"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="13"/>
@@ -158,10 +176,10 @@
                     <Border Grid.Column="0" Width="4" Background="#FFFFC09F"
                             Margin="0,9,0,9" VerticalAlignment="Stretch"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12,0">
-                        <TextBlock Text="🗒" FontSize="16" VerticalAlignment="Center"
+                        <TextBlock Text="⚙" FontSize="16" VerticalAlignment="Center"
                                    Foreground="#FFFFC09F"/>
                         <StackPanel VerticalAlignment="Center" Spacing="1">
-                            <TextBlock Name="TitleText" Text="{DynamicResource SolProps.Title}"
+                            <TextBlock Name="TitleText" Text="Project Properties"
                                        FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                             <TextBlock Name="SubTitleText" Text=""
                                        FontSize="10" Foreground="#FF7A6898"/>
@@ -180,36 +198,89 @@
             </Border>
 
             <!-- BODY -->
-            <DockPanel Grid.Row="1" Background="#FF1A1520">
-                <!-- Page header -->
-                <Border DockPanel.Dock="Top"
-                        Background="#FF1C1530"
-                        BorderBrush="#FF2A2040" BorderThickness="0,0,0,1"
-                        Padding="28,13">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="📁" FontSize="18" VerticalAlignment="Center"
-                                   Foreground="#FFFFC09F" FontFamily="Segoe UI Emoji"/>
-                        <TextBlock Name="PageTitle"
-                                   Text="{DynamicResource SolProps.NavProjects}"
-                                   FontSize="19" FontWeight="SemiBold"
-                                   Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
-                    </StackPanel>
+            <Grid Grid.Row="1" ColumnDefinitions="220,1,*">
+
+                <!-- LEFT NAV -->
+                <Border Grid.Column="0" Background="#FF131017">
+                    <DockPanel>
+                        <Border DockPanel.Dock="Top" Margin="10,10,10,2">
+                            <TextBox Name="NavSearchBox"
+                                     Classes="nav-search"
+                                     Watermark="🔍  Search settings…"/>
+                        </Border>
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                      VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="0" Margin="0,6,0,10">
+                                <TextBlock Text="GENERAL" Classes="nav-category"/>
+                                <Button Name="NavGeneral" Classes="nav-btn active">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="⚙️" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="General" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Name="NavBuild" Classes="nav-btn">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="🔨" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Build" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Name="NavDebug" Classes="nav-btn">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="🐛" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Debug" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <TextBlock Text="PUBLISH" Classes="nav-category"/>
+                                <Button Name="NavPackage" Classes="nav-btn">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="📦" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Package / NuGet" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Name="NavSigning" Classes="nav-btn">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="🔏" FontSize="14" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Signing" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
                 </Border>
-                <!-- Projects content fills remaining space -->
-                <Panel Name="PageHost" Background="#FF1A1520"/>
-            </DockPanel>
+
+                <!-- SEPARATOR -->
+                <Border Grid.Column="1" Background="#FF2A2040"/>
+
+                <!-- RIGHT: page title + host -->
+                <DockPanel Grid.Column="2" Background="#FF1A1520">
+                    <Border DockPanel.Dock="Top"
+                            Background="#FF1C1530"
+                            BorderBrush="#FF2A2040" BorderThickness="0,0,0,1"
+                            Padding="28,13">
+                        <TextBlock Name="PageTitle"
+                                   Text="General"
+                                   FontSize="19" FontWeight="SemiBold"
+                                   Foreground="#FFF0E8F4"/>
+                    </Border>
+                    <Panel Name="PageHost" Background="#FF1A1520"/>
+                </DockPanel>
+            </Grid>
 
             <!-- FOOTER -->
             <Border Grid.Row="2"
                     Background="#FF131017"
                     BorderBrush="#FF2A2040" BorderThickness="0,1,0,0"
                     Padding="22,0" CornerRadius="0,0,10,10">
-                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                <Grid ColumnDefinitions="*,Auto,12,Auto,12,Auto" VerticalAlignment="Center">
                     <TextBlock Name="StatusLabel" Grid.Column="0"
                                Text="" FontSize="11"
                                Foreground="#FF8B7EA8" VerticalAlignment="Center"/>
-                    <Button Name="CloseFooterButton" Grid.Column="1"
-                            Content="{DynamicResource SolProps.Close}" Classes="primary-btn"/>
+                    <Button Name="ApplyButton" Grid.Column="1"
+                            Content="Apply" Classes="action-btn"/>
+                    <Button Name="OkButton" Grid.Column="3"
+                            Content="OK" Classes="primary-btn"/>
+                    <Button Name="CancelButton" Grid.Column="5"
+                            Content="Cancel" Classes="action-btn"/>
                 </Grid>
             </Border>
 

@@ -13,6 +13,23 @@
         WindowStartupLocation="Manual"
         TransparencyLevelHint="Transparent">
 
+    <Window.Styles>
+        <!-- ListBox item styles -->
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#20DCC4FF"/>
+        </Style>
+    </Window.Styles>
+
     <Border Background="#FF1A1525"
             BorderBrush="#FF7C3AED"
             BorderThickness="1"
@@ -27,7 +44,7 @@
             <Border Grid.Row="0" Padding="10,5" Background="#18DCC4FF" CornerRadius="6,6,0,0">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <TextBlock Text="💡" FontSize="11"/>
-                    <TextBlock x:Name="HeaderText" Text="Quick Fix"
+                    <TextBlock x:Name="HeaderText" Text="{DynamicResource QuickFix.Header}"
                                FontSize="10" FontWeight="SemiBold" Foreground="#FF9E90B0"/>
                 </StackPanel>
             </Border>
@@ -41,23 +58,7 @@
                      Padding="2,2"
                      Focusable="False"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto">
-                <ListBox.Styles>
-                    <Style Selector="ListBoxItem">
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="MinHeight" Value="0"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Cursor" Value="Hand"/>
-                    </Style>
-                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-                        <Setter Property="Background" Value="Transparent"/>
-                    </Style>
-                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                        <Setter Property="Background" Value="Transparent"/>
-                    </Style>
-                </ListBox.Styles>
-            </ListBox>
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
 
             <!-- Description/explanation panel -->
             <Border Grid.Row="2" x:Name="DescriptionPanel"
@@ -80,7 +81,7 @@
 
             <!-- Footer -->
             <Border Grid.Row="3" Padding="10,4" Background="#10DCC4FF" CornerRadius="0,0,6,6">
-                <TextBlock Text="Enter ⏎ apply   Esc ✕ dismiss"
+                <TextBlock Text="{DynamicResource QuickFix.Footer}"
                            FontSize="9" Foreground="#60DCC4FF"/>
             </Border>
         </Grid>

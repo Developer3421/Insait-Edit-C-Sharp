@@ -281,22 +281,35 @@ public partial class MainWindow
         return null;
     }
 
+    // All project-file extensions that the Properties window understands.
+    // MSBuild-based (.csproj, .fsproj, .vbproj, .nfproj) get full editing;
+    // others (.pyproj, .esproj, .njsproj, .sqlproj, …) open with basic info.
+    private static readonly string[] _projectExtensions =
+    {
+        ".csproj", ".fsproj", ".vbproj", ".nfproj",
+        ".pyproj", ".esproj", ".njsproj", ".sqlproj",
+        ".vcxproj", ".wixproj", ".shproj",
+    };
+
     private string? FindProjectFile(string directoryOrFile)
     {
         if (File.Exists(directoryOrFile))
         {
             var ext = Path.GetExtension(directoryOrFile).ToLowerInvariant();
-            if (ext is ".csproj" or ".nfproj" or ".fsproj" or ".vbproj")
+            if (_projectExtensions.Contains(ext))
                 return directoryOrFile;
         }
 
         var dir = File.Exists(directoryOrFile) ? Path.GetDirectoryName(directoryOrFile) : directoryOrFile;
         if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) return null;
 
-        return Directory.GetFiles(dir, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault()
-            ?? Directory.GetFiles(dir, "*.fsproj", SearchOption.TopDirectoryOnly).FirstOrDefault()
-            ?? Directory.GetFiles(dir, "*.nfproj", SearchOption.TopDirectoryOnly).FirstOrDefault()
-            ?? Directory.GetFiles(dir, "*.vbproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+        // Search in priority order: C# first, then others
+        foreach (var ext in _projectExtensions)
+        {
+            var found = Directory.GetFiles(dir, $"*{ext}", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (found != null) return found;
+        }
+        return null;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -359,8 +372,14 @@ public partial class MainWindow
 
     private async Task StartDebuggingAsync()
     {
+        // F5 while paused at a breakpoint → Continue (resume execution).
         if (_debugService.IsDebugging)
         {
+            if (_debugService.IsPaused)
+            {
+                await _debugService.ContinueAsync();
+                return;
+            }
             _viewModel.StatusText = "Debug session already active";
             return;
         }
@@ -874,7 +893,8 @@ public partial class MainWindow
                 TextWrapping = TextWrapping.Wrap,
                 FontSize = 12,
                 Foreground = Brushes.White,
-                SelectionBrush = new SolidColorBrush(Color.Parse("#664FC3F7"))
+                SelectionBrush = new SolidColorBrush(Color.Parse("#60FFC09F")),
+                SelectionForegroundBrush = new SolidColorBrush(Color.Parse("#FF1F1A24"))
             }
         });
     }
@@ -884,32 +904,13 @@ public partial class MainWindow
     // ═══════════════════════════════════════════════════════════
     private async Task<string?> ShowInputDialogAsync(string title, string prompt, string defaultValue = "")
     {
-        var dialog = new Window
-        {
-            Title = title,
-            Width = 420,
-            Height = 150,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-            ShowInTaskbar = false,
-            SystemDecorations = SystemDecorations.BorderOnly
-        };
-        string? result = null;
-        var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto"), Margin = new Thickness(20) };
-        var label = new TextBlock { Text = prompt, Margin = new Thickness(0, 0, 0, 8) };
-        var input = new TextBox { Text = defaultValue };
-        var btns = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right, Spacing = 8, Margin = new Thickness(0, 12, 0, 0) };
-        var ok = new Button { Content = "OK", Width = 80 };
-        var cncl = new Button { Content = "Cancel", Width = 80 };
-        ok.Click += (_, _) => { result = input.Text; dialog.Close(); };
-        cncl.Click += (_, _) => dialog.Close();
-        input.KeyDown += (_, e) => { if (e.Key == Key.Enter) { result = input.Text; dialog.Close(); } };
-        btns.Children.Add(ok); btns.Children.Add(cncl);
-        Grid.SetRow(label, 0); Grid.SetRow(input, 1); Grid.SetRow(btns, 2);
-        grid.Children.Add(label); grid.Children.Add(input); grid.Children.Add(btns);
-        dialog.Content = grid;
+        var icon = title.Contains("Rename") ? "✏️"
+                 : title.Contains("Folder") ? "📁"
+                 : title.StartsWith("New ") ? "📄"
+                 : "✏️";
+        var dialog = new InputDialog(title, prompt, defaultValue, icon);
         await dialog.ShowDialog(this);
-        return result;
+        return dialog.Result;
     }
 
     private async Task<bool> ShowConfirmDialogAsync(string title, string message)
@@ -1081,16 +1082,57 @@ public partial class MainWindow
     private void ContextMenu_Properties_Click(object? sender, RoutedEventArgs e)
     {
         var item = GetSelectedTreeItem();
-        if (item?.ItemType == FileTreeItemType.Solution)
+        if (item == null) return;
+
+        // Solution → SolutionPropertiesWindow
+        if (item.ItemType == FileTreeItemType.Solution)
         {
-            new SolutionPropertiesWindow(item.FullPath).ShowDialog(this); return;
+            new SolutionPropertiesWindow(item.FullPath).ShowDialog(this);
+            return;
         }
-        if (item?.ItemType == FileTreeItemType.Project)
+
+        // Determine the project file:
+        //   1. Item is itself a project node
+        //   2. Walk the tree model's ParentItem chain looking for a Project ancestor
+        //   3. Fallback: walk the file-system directory tree upward
+        string? projectFile = null;
+
+        if (item.ItemType == FileTreeItemType.Project)
         {
-            var pf = FindProjectFile(item.FullPath);
-            if (!string.IsNullOrEmpty(pf)) { new ProjectPropertiesWindow(pf).ShowDialog(this); return; }
+            projectFile = FindProjectFile(item.FullPath);
         }
-        _viewModel.StatusText = "Properties coming soon...";
+        else
+        {
+            // Traverse tree parent chain
+            var current = item.ParentItem;
+            while (current != null)
+            {
+                if (current.ItemType == FileTreeItemType.Project)
+                {
+                    projectFile = FindProjectFile(current.FullPath);
+                    break;
+                }
+                current = current.ParentItem;
+            }
+
+            // Filesystem fallback
+            if (string.IsNullOrEmpty(projectFile))
+            {
+                var startDir = item.IsDirectory
+                    ? item.FullPath
+                    : Path.GetDirectoryName(item.FullPath);
+                if (!string.IsNullOrEmpty(startDir))
+                    projectFile = FindProjectFileInParents(startDir);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(projectFile))
+        {
+            new ProjectPropertiesWindow(projectFile).ShowDialog(this);
+            return;
+        }
+
+        _viewModel.StatusText = "No project file found for selected item";
     }
 
     // ═══════════════════════════════════════════════════════════

@@ -70,6 +70,10 @@ public partial class MainWindow : Window
 
         ActivateFileTreeService();
 
+        // Keep the file-tree empty overlay in sync whenever the root collection changes
+        _viewModel.FileTreeItems.CollectionChanged += (_, _) =>
+            Dispatcher.UIThread.Post(UpdateWelcomeScreenVisibility);
+
         // Set initial window position for restore
         _restoreSize = new Size(Width, Height);
 
@@ -1069,10 +1073,72 @@ public partial class MainWindow : Window
 
     private void UpdateWelcomeScreenVisibility()
     {
-        var panel = this.FindControl<Border>("WelcomeScreenPanel");
-        if (panel == null) return;
-        panel.IsVisible = _viewModel.ActiveTab == null;
+        var welcomePanel = this.FindControl<Border>("WelcomeScreenPanel");
+        var emptyPanel   = this.FindControl<Border>("EmptyProjectPanel");
+        var treeOverlay  = this.FindControl<Border>("FileTreeEmptyOverlay");
+
+        bool hasProject  = !string.IsNullOrEmpty(_projectPath ?? _viewModel.CurrentProjectPath);
+        bool hasOpenTab  = _viewModel.ActiveTab != null;
+        bool treeEmpty   = hasProject && IsFileTreeEffectivelyEmpty();
+
+        // Welcome screen: no active tab AND no project loaded
+        if (welcomePanel != null)
+            welcomePanel.IsVisible = !hasOpenTab && !hasProject;
+
+        // Empty project panel (editor area): no active tab BUT a project IS loaded
+        if (emptyPanel != null)
+        {
+            emptyPanel.IsVisible = !hasOpenTab && hasProject;
+
+            if (!hasOpenTab && hasProject)
+            {
+                var pathText = this.FindControl<TextBlock>("EmptyProjectPath");
+                if (pathText != null)
+                    pathText.Text = _projectPath ?? _viewModel.CurrentProjectPath ?? "";
+            }
+        }
+
+        // File-tree overlay: project loaded but no source files visible
+        if (treeOverlay != null)
+            treeOverlay.IsVisible = treeEmpty;
     }
+
+    /// <summary>
+    /// Returns true when the file-tree has no user-editable items —
+    /// either completely empty, or contains only virtual folders
+    /// (Dependencies, Properties, SpecialFolder) with no actual files.
+    /// </summary>
+    private bool IsFileTreeEffectivelyEmpty()
+    {
+        if (_viewModel.FileTreeItems.Count == 0) return true;
+        if (_viewModel.FileTreeItems.Count > 1) return false;
+
+        // Single root node — check whether any real file exists under it
+        return !FileTreeHasRealFiles(_viewModel.FileTreeItems[0]);
+    }
+
+    private static bool FileTreeHasRealFiles(FileTreeItem item)
+    {
+        // Virtual / system-only items that don't count as "real" content
+        if (item.ItemType is FileTreeItemType.DependenciesFolder
+                          or FileTreeItemType.NuGetPackage)
+            return false;
+
+        // Any actual file that is not a virtual node counts
+        if (!item.IsDirectory)
+            return true;
+
+        // Recurse into children
+        foreach (var child in item.Children)
+        {
+            if (FileTreeHasRealFiles(child))
+                return true;
+        }
+
+        return false;
+    }
+
+
 
     private void ApplyWelcomeScreenLocalization(Func<string, string> L)
     {
@@ -1132,6 +1198,69 @@ public partial class MainWindow : Window
         if (!string.IsNullOrEmpty(result))
             await LoadProjectAsync(result);
     }
+
+    // ─────────────────────────────────────────────────────────
+    //  Recent Projects button (title bar)
+    // ─────────────────────────────────────────────────────────
+
+    private async void RecentProjects_Click(object? sender, RoutedEventArgs e)
+    {
+        var win = new RecentProjectsWindow();
+        await win.ShowDialog(this);
+
+        if (!string.IsNullOrEmpty(win.SelectedProjectPath))
+        {
+            // Add to recent list and load
+            var svc = new Services.RecentProjectsService();
+            svc.AddRecentProject(win.SelectedProjectPath);
+
+            await LoadProjectAsync(win.SelectedProjectPath);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  Empty Project Panel — button handlers
+    // ═══════════════════════════════════════════════════════════
+
+    private async void EmptyProjectAddFile_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!TryGetWritableTargetDirectory(out var targetDir))
+            return;
+
+        var addItemWindow = new AddNewItemWindow(targetDir);
+        var result = await addItemWindow.ShowDialog<string?>(this);
+        if (!string.IsNullOrEmpty(result))
+        {
+            RefreshFileTree();
+            OpenFileInEditor(result);
+            _viewModel.StatusText = $"Created: {Path.GetFileName(result)}";
+        }
+    }
+
+    private void EmptyProjectOpenExplorer_Click(object? sender, RoutedEventArgs e)
+    {
+        var path = _projectPath ?? _viewModel.CurrentProjectPath;
+        if (string.IsNullOrEmpty(path)) return;
+
+        var dir = Directory.Exists(path) ? path : Path.GetDirectoryName(path);
+        if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir)) return;
+
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"\"{dir}\"",
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = $"Error opening explorer: {ex.Message}";
+        }
+    }
+
+
 
     #region Undo / Redo
 
@@ -3513,6 +3642,25 @@ ExecuteMenuAction(string action)
             return;
         }
 
+        // Even if the workspace is not physically empty, check if only build artefacts
+        // remain (bin/, obj/, .vs/, .git/, …). If so, delete everything and clear state.
+        if (!workspaceDeleted && !string.IsNullOrEmpty(workspaceRoot) && Directory.Exists(workspaceRoot)
+            && IsWorkspaceEffectivelyEmpty(workspaceRoot))
+        {
+            if (!preparedWorkspaceRootDeletion)
+            {
+                await PrepareWorkspaceRootDeletionAsync(workspaceRoot);
+                preparedWorkspaceRootDeletion = true;
+            }
+            await TryDeleteDirectoryWithRetriesAsync(workspaceRoot!);
+            workspaceDeleted = !string.IsNullOrEmpty(workspaceRoot) && !Directory.Exists(workspaceRoot);
+            if (workspaceDeleted)
+            {
+                ClearWorkspaceState("Project is empty. Create a new project or solution.");
+                return;
+            }
+        }
+
         if (deleteWorkspaceRoot && preparedWorkspaceRootDeletion)
         {
             ActivateFileTreeService();
@@ -3672,10 +3820,25 @@ ExecuteMenuAction(string action)
         return projectName ?? "MyNamespace";
     }
 
+    private static readonly string[] _allProjectPatterns =
+    {
+        "*.csproj", "*.fsproj", "*.vbproj", "*.nfproj",
+        "*.pyproj", "*.esproj", "*.njsproj", "*.sqlproj",
+        "*.vcxproj", "*.wixproj", "*.shproj",
+    };
+
     private string? FindProjectFileInParents(string directory)
     {
         var dir = new DirectoryInfo(directory);
-        while (dir != null) { var f = dir.GetFiles("*.csproj").FirstOrDefault(); if (f != null) return f.FullName; dir = dir.Parent; }
+        while (dir != null)
+        {
+            foreach (var pattern in _allProjectPatterns)
+            {
+                var f = dir.GetFiles(pattern).FirstOrDefault();
+                if (f != null) return f.FullName;
+            }
+            dir = dir.Parent;
+        }
         return null;
     }
 

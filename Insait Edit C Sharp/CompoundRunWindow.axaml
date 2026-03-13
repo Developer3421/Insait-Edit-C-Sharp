@@ -58,6 +58,9 @@
             <Setter Property="BorderBrush" Value="#FF3E3050"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="#FFF0E8F4"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="#FF352840"/>

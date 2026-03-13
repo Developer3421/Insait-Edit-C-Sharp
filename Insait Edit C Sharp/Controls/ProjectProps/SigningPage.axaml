@@ -6,31 +6,31 @@
                   Padding="28,16,28,28">
         <StackPanel Spacing="0" MaxWidth="720">
 
-            <TextBlock Text="ASSEMBLY SIGNING" Classes="section-header" Margin="0,4,0,10"/>
+            <TextBlock Text="{DynamicResource ProjectProps.Sign.Header}" Classes="section-header" Margin="0,4,0,10"/>
 
             <CheckBox Name="SignAssemblyCheck"
-                      Content="Sign the assembly"
+                      Content="{DynamicResource ProjectProps.Sign.SignAssembly}"
                       Margin="0,0,0,18"/>
 
             <StackPanel Name="SignDetailsPanel" IsVisible="False" Spacing="0">
-                <TextBlock Text="Strong name key file (.snk / .pfx)" Classes="prop-label"/>
+                <TextBlock Text="{DynamicResource ProjectProps.Sign.KeyFile}" Classes="prop-label"/>
                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
                     <TextBox Name="KeyFileBox" Grid.Column="0" Watermark="Path to .snk / .pfx file"/>
                     <Button Grid.Column="1" Name="BrowseKeyButton"
-                            Content="Browse…" Classes="small-btn"
-                            Margin="6,0,0,0" ToolTip.Tip="Select key file"/>
+                            Content="{DynamicResource Common.Browse}" Classes="small-btn"
+                            Margin="6,0,0,0" ToolTip.Tip="{DynamicResource ProjectProps.Sign.SelectKey}"/>
                 </Grid>
                 <CheckBox Name="DelaySignCheck"
-                          Content="Delay sign only"
+                          Content="{DynamicResource ProjectProps.Sign.DelaySign}"
                           Margin="0,4,0,10"/>
                 <Border Background="#FF1C1530" BorderBrush="#FF3A2E52" BorderThickness="1"
                         CornerRadius="7" Padding="14,10" Margin="0,8,0,0">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="ℹ  About assembly signing"
+                        <TextBlock Text="{DynamicResource ProjectProps.Sign.AboutTitle}"
                                    FontWeight="SemiBold" FontSize="12"
                                    Foreground="#FF9080A8"/>
                         <TextBlock FontSize="11" Foreground="#FF6A5888" TextWrapping="Wrap"
-                                   Text="A strong name key uniquely identifies your assembly and prevents tampering. Use delay signing to sign later during a build pipeline."/>
+                                   Text="{DynamicResource ProjectProps.Sign.AboutText}"/>
                     </StackPanel>
                 </Border>
             </StackPanel>

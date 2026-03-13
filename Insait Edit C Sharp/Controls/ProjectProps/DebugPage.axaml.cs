@@ -14,8 +14,6 @@ public partial class DebugPage : UserControl
         AddEnvVarButton.Click      += AddEnvVar_Click;
     }
 
-    private void InitializeComponent() =>
-        Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
 
     private async void BrowseDebugDir_Click(object? sender, RoutedEventArgs e)
     {

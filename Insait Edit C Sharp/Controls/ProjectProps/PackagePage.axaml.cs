@@ -9,8 +9,6 @@ public partial class PackagePage : UserControl
 {
     public PackagePage() { InitializeComponent(); }
 
-    private void InitializeComponent() =>
-        Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
 
     public void Populate(XElement? pg, string projectPath)
     {

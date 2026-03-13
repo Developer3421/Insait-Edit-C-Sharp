@@ -24,7 +24,7 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="⚡" FontSize="14" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TitleText" Text="Generate Type"
+                        <TextBlock x:Name="TitleText" Text="{DynamicResource GenType.Title}"
                                    FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
@@ -37,7 +37,7 @@
 
             <!-- Type options -->
             <StackPanel Grid.Row="1" Margin="16,12" Spacing="4">
-                <TextBlock Text="Choose type to create:" FontSize="11"
+                <TextBlock Text="{DynamicResource GenType.Prompt}" FontSize="11"
                            Foreground="#FF9E90B0" Margin="0,0,0,8"
                            FontFamily="Cascadia Code, Consolas, monospace"/>
 
@@ -45,7 +45,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBlock Text="📦" FontSize="16" VerticalAlignment="Center"/>
                         <StackPanel>
-                            <TextBlock x:Name="LblClass" Text="Class" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="LblClass" Text="{DynamicResource GenType.Class}" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
                             <TextBlock Text="public class with empty body" FontSize="10" Foreground="#FF9E90B0"/>
                         </StackPanel>
                     </StackPanel>
@@ -55,7 +55,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBlock Text="📐" FontSize="16" VerticalAlignment="Center"/>
                         <StackPanel>
-                            <TextBlock x:Name="LblStruct" Text="Struct" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="LblStruct" Text="{DynamicResource GenType.Struct}" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
                             <TextBlock Text="public struct with empty body" FontSize="10" Foreground="#FF9E90B0"/>
                         </StackPanel>
                     </StackPanel>
@@ -65,7 +65,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBlock Text="🔌" FontSize="16" VerticalAlignment="Center"/>
                         <StackPanel>
-                            <TextBlock x:Name="LblInterface" Text="Interface" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="LblInterface" Text="{DynamicResource GenType.Interface}" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
                             <TextBlock Text="public interface with empty body" FontSize="10" Foreground="#FF9E90B0"/>
                         </StackPanel>
                     </StackPanel>
@@ -75,7 +75,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBlock Text="🔢" FontSize="16" VerticalAlignment="Center"/>
                         <StackPanel>
-                            <TextBlock x:Name="LblEnum" Text="Enum" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="LblEnum" Text="{DynamicResource GenType.Enum}" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
                             <TextBlock Text="public enum with empty body" FontSize="10" Foreground="#FF9E90B0"/>
                         </StackPanel>
                     </StackPanel>
@@ -85,7 +85,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <TextBlock Text="📝" FontSize="16" VerticalAlignment="Center"/>
                         <StackPanel>
-                            <TextBlock x:Name="LblRecord" Text="Record" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="LblRecord" Text="{DynamicResource GenType.Record}" FontSize="13" Foreground="#FFF0E8F4" FontWeight="SemiBold"/>
                             <TextBlock Text="public record (positional)" FontSize="10" Foreground="#FF9E90B0"/>
                         </StackPanel>
                     </StackPanel>
@@ -94,7 +94,7 @@
 
             <!-- Footer -->
             <Border Grid.Row="2" Padding="14,6" Background="#10DCC4FF" CornerRadius="0,0,10,10">
-                <TextBlock x:Name="FooterText" Text="Type will be appended to the current file"
+                <TextBlock x:Name="FooterText" Text="{DynamicResource GenType.Footer}"
                            FontSize="10" Foreground="#FF9E90B0"
                            FontFamily="Cascadia Code, Consolas, monospace"
                            HorizontalAlignment="Center"/>

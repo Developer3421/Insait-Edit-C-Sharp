@@ -586,6 +586,7 @@
 
     <!-- PublishWindow -->
     <x:String x:Key="Publish.Title">Projeyi Yayınla</x:String>
+    <x:String x:Key="Publish.TitleBar">Projeyi Yayınla</x:String>
     <x:String x:Key="Publish.Project">Proje</x:String>
     <x:String x:Key="Publish.DeploymentMode">Dağıtım Modu</x:String>
     <x:String x:Key="Publish.FrameworkDependent">Çerçeveye bağımlı (hedefte .NET çalışma zamanı gerekir)</x:String>
@@ -594,15 +595,30 @@
     <x:String x:Key="Publish.TargetRuntime">Hedef Çalışma Zamanı</x:String>
     <x:String x:Key="Publish.TargetFramework">Hedef Çerçeve</x:String>
     <x:String x:Key="Publish.OutputFolder">Çıktı Klasörü</x:String>
+    <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
     <x:String x:Key="Publish.Options">Yayınlama Seçenekleri</x:String>
     <x:String x:Key="Publish.SingleFile">Tek dosya</x:String>
+    <x:String x:Key="Publish.SingleFileTooltip">Uygulamayı tek bir yürütülebilir dosyada paketler</x:String>
     <x:String x:Key="Publish.ReadyToRun">ReadyToRun derlemeyi etkinleştir</x:String>
+    <x:String x:Key="Publish.ReadyToRunTooltip">Daha hızlı başlatma için derlemeleri yerel koda önceden derler</x:String>
     <x:String x:Key="Publish.Trim">Kullanılmayan derlemeleri kırp</x:String>
+    <x:String x:Key="Publish.TrimTooltip">Boyutu azaltmak için kullanılmayan kodu kaldırır (yansımayı etkileyebilir)</x:String>
     <x:String x:Key="Publish.Compression">Tek dosyada sıkıştırma</x:String>
+    <x:String x:Key="Publish.CompressionTooltip">Boyutu azaltmak için tek dosyayı sıkıştırır</x:String>
     <x:String x:Key="Publish.NativeLibs">Yerel kütüphaneleri dahil et</x:String>
+    <x:String x:Key="Publish.NativeLibsTooltip">Yerel kitaplıkları tek dosyaya paketler</x:String>
     <x:String x:Key="Publish.CleanOutput">🗑 Yayınlamadan önce çıktı klasörünü temizle</x:String>
     <x:String x:Key="Publish.CleanOutputTooltip">Temiz bir derleme için yayınlamadan önce çıktı klasöründeki tüm dosyaları siler</x:String>
+    <x:String x:Key="Publish.PublishProfile">Yayınlama Profili (İsteğe bağlı)</x:String>
+    <x:String x:Key="Publish.NewProfile">+ Yeni Profil</x:String>
+    <x:String x:Key="Publish.ProfileHint">Properties/PublishProfiles klasöründeki mevcut yayınlama profillerini kullanın</x:String>
     <x:String x:Key="Publish.QuickPresets">Hızlı Ön Ayarlar</x:String>
+    <x:String x:Key="Publish.PresetWinX64">🪟 Windows x64</x:String>
+    <x:String x:Key="Publish.PresetWinArm64">🪟 Windows ARM64</x:String>
+    <x:String x:Key="Publish.PresetLinuxX64">🐧 Linux x64</x:String>
+    <x:String x:Key="Publish.PresetMacX64">🍎 macOS x64</x:String>
+    <x:String x:Key="Publish.PresetMacArm64">🍎 macOS ARM64</x:String>
+    <x:String x:Key="Publish.PresetPortable">📱 Taşınabilir</x:String>
     <x:String x:Key="Publish.EstimatedSize">Tahmini çıktı boyutu yayınlamadan sonra görünecek</x:String>
     <x:String x:Key="Publish.Cancel">İptal</x:String>
     <x:String x:Key="Publish.Publish">📦 Yayınla</x:String>
@@ -642,6 +658,23 @@
     <x:String x:Key="ProjectProps.Apply">Uygula</x:String>
     <x:String x:Key="ProjectProps.OK">Tamam</x:String>
     <x:String x:Key="ProjectProps.Cancel">İptal</x:String>
+    <!-- PackagePage fields -->
+    <x:String x:Key="ProjectProps.Pkg.Header">PAKET / NUGET</x:String>
+    <x:String x:Key="ProjectProps.Pkg.GenerateOnBuild">Derlemede NuGet paketi oluştur</x:String>
+    <x:String x:Key="ProjectProps.Pkg.PackageId">Paket Kimliği</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Version">Sürüm</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Authors">Yazarlar</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Company">Şirket</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Product">Ürün</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Description">Açıklama</x:String>
+    <x:String x:Key="ProjectProps.Pkg.LinksHeader">BAĞLANTILAR VE META VERİ</x:String>
+    <x:String x:Key="ProjectProps.Pkg.RepositoryUrl">Depo URL'si</x:String>
+    <x:String x:Key="ProjectProps.Pkg.LicenseExpression">Lisans ifadesi (SPDX)</x:String>
+    <x:String x:Key="ProjectProps.Pkg.Tags">Etiketler (noktalı virgülle ayrılmış)</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkAuthors">Yazar adı</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkCompany">Şirketim</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkProduct">Ürünüm</x:String>
+    <x:String x:Key="ProjectProps.Pkg.WatermarkDescription">Kısa açıklama</x:String>
 
     <!-- MsixManagerWindow -->
     <x:String x:Key="Msix.Title">MSIX Paket Yöneticisi</x:String>
@@ -903,5 +936,151 @@
     <x:String x:Key="AutoFix.CannotApply">Bu düzeltme otomatik olarak uygulanamaz</x:String>
     <x:String x:Key="AutoFix.Inserted">Eklendi: {0}</x:String>
     <x:String x:Key="AutoFix.OpenWindow">Otomatik Düzeltme</x:String>
+
+    <!-- ── AxamlLiveHost (code-behind fallback messages) ────────────── -->
+    <x:String x:Key="LiveHost.CannotRender">⚠  Oluşturulamıyor — yapı gösteriliyor</x:String>
+    <x:String x:Key="LiveHost.XmlError">XML hatası: </x:String>
+    <x:String x:Key="LiveHost.FileNotFound">Dosya bulunamadı: </x:String>
+    <x:String x:Key="LiveHost.EmptyXaml">Boş XAML içeriği.</x:String>
+
+    <!-- Previously missing alias keys -->
+    <x:String x:Key="RecentProjects">Son Projeler</x:String>
+    <x:String x:Key="DefaultTitle">Hızlı Düzeltme</x:String>
+
+    <!-- ── ProjectProps page inner labels ──────────────────────── -->
+    <!-- GeneralPage -->
+    <x:String x:Key="ProjectProps.General.AppIconHeader">UYGULAMA SİMGESİ</x:String>
+    <x:String x:Key="ProjectProps.General.AppIconFile">Uygulama simge dosyası (.ico)</x:String>
+    <x:String x:Key="ProjectProps.General.AppIconHint">.ico dosyası yürütülebilir dosyaya uygulama simgesi olarak gömülür.</x:String>
+    <x:String x:Key="ProjectProps.General.SelectIconTooltip">.ico dosyası seç</x:String>
+    <x:String x:Key="ProjectProps.General.AssemblyHeader">ASSEMBLY</x:String>
+    <x:String x:Key="ProjectProps.General.CodeHeader">KOD</x:String>
+    <x:String x:Key="ProjectProps.General.AppHeader">UYGULAMA</x:String>
+    <x:String x:Key="ProjectProps.General.StartupObject">Başlangıç nesnesi</x:String>
+    <!-- BuildPage -->
+    <x:String x:Key="ProjectProps.Build.Header">DERLEME YAPILANDIRMASI</x:String>
+    <x:String x:Key="ProjectProps.Build.Configuration">Yapılandırma</x:String>
+    <x:String x:Key="ProjectProps.Build.PlatformTarget">Hedef platform</x:String>
+    <x:String x:Key="ProjectProps.Build.CompilerHeader">DERLEYİCİ SEÇENEKLERİ</x:String>
+    <x:String x:Key="ProjectProps.Build.Optimize">Kodu optimize et</x:String>
+    <x:String x:Key="ProjectProps.Build.WarningsAsErrors">Uyarıları hata olarak kabul et</x:String>
+    <x:String x:Key="ProjectProps.Build.WarningLevel">Uyarı düzeyi</x:String>
+    <x:String x:Key="ProjectProps.Build.SuppressWarnings">Belirli uyarıları gizle (noktalı virgülle ayrılmış)</x:String>
+    <x:String x:Key="ProjectProps.Build.OutputHeader">ÇIKTI</x:String>
+    <x:String x:Key="ProjectProps.Build.OutputPath">Çıktı yolu</x:String>
+    <x:String x:Key="ProjectProps.Build.IntermediateOutput">Ara çıktı yolu</x:String>
+    <x:String x:Key="ProjectProps.Build.GenerateDocXml">XML belgesi dosyası oluştur</x:String>
+    <!-- DebugPage -->
+    <x:String x:Key="ProjectProps.Debug.LaunchHeader">BAŞLATMA</x:String>
+    <x:String x:Key="ProjectProps.Debug.LaunchProfile">Başlatma profili</x:String>
+    <x:String x:Key="ProjectProps.Debug.AppArguments">Uygulama bağımsız değişkenleri</x:String>
+    <x:String x:Key="ProjectProps.Debug.WorkingDir">Çalışma dizini</x:String>
+    <x:String x:Key="ProjectProps.Debug.WatermarkArgs">Komut satırı bağımsız değişkenleri</x:String>
+    <x:String x:Key="ProjectProps.Debug.WatermarkWorkDir">Proje dizini</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnableNativeDebug">Yerel kod hata ayıklamayı etkinleştir</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnableSqlDebug">SQL Server hata ayıklamayı etkinleştir</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarsHeader">ORTAM DEĞİŞKENLERİ</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarsHint">Hata ayıklama işlemine aktarılan değişkenler:</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarName">Ad</x:String>
+    <x:String x:Key="ProjectProps.Debug.EnvVarValue">Değer</x:String>
+    <x:String x:Key="ProjectProps.Debug.AddEnvVar">Ortam değişkeni ekle</x:String>
+    <!-- SigningPage -->
+    <x:String x:Key="ProjectProps.Sign.Header">ASSEMBLY İMZALAMA</x:String>
+    <x:String x:Key="ProjectProps.Sign.SignAssembly">Assembly'yi imzala</x:String>
+    <x:String x:Key="ProjectProps.Sign.KeyFile">Güçlü ad anahtar dosyası (.snk / .pfx)</x:String>
+    <x:String x:Key="ProjectProps.Sign.SelectKey">Anahtar dosyasını seç</x:String>
+    <x:String x:Key="ProjectProps.Sign.DelaySign">Yalnızca gecikmeli imzala</x:String>
+    <x:String x:Key="ProjectProps.Sign.AboutTitle">ℹ  Assembly imzalama hakkında</x:String>
+    <x:String x:Key="ProjectProps.Sign.AboutText">Güçlü ad anahtarı derlemenizi benzersiz şekilde tanımlar ve kurcalamayı önler. Derleme işlem hattında daha sonra imzalamak için gecikmeli imzalamayı kullanın.</x:String>
+
+    <!-- ── SolutionPropertiesWindow ──────────────────────────────── -->
+    <x:String x:Key="SolProps.Title">Çözüm Özellikleri</x:String>
+    <x:String x:Key="SolProps.NavCategory">ÇÖZÜM</x:String>
+    <x:String x:Key="SolProps.NavGeneral">Genel</x:String>
+    <x:String x:Key="SolProps.NavBuildCfg">Derleme Yapılandırmaları</x:String>
+    <x:String x:Key="SolProps.NavProjects">Projeler</x:String>
+    <x:String x:Key="SolProps.Close">Kapat</x:String>
+    <x:String x:Key="SolProps.SearchPlaceholder">🔍  Ayarları ara…</x:String>
+    <x:String x:Key="SolProps.BuildCfg.Header">ÇÖZÜM YAPILANDIRMALARI</x:String>
+    <x:String x:Key="SolProps.BuildCfg.Hint">Derleme yapılandırmaları .sln dosyasından okunur (GlobalSection SolutionConfigurationPlatforms).</x:String>
+    <x:String x:Key="SolProps.General.IdentityHeader">KİMLİK</x:String>
+    <x:String x:Key="SolProps.General.Name">Ad</x:String>
+    <x:String x:Key="SolProps.General.FullPath">Tam Yol</x:String>
+    <x:String x:Key="SolProps.General.FormatVersion">Format Sürümü</x:String>
+    <x:String x:Key="SolProps.General.VsVersion">Visual Studio Sürümü</x:String>
+    <x:String x:Key="SolProps.General.VsMinVersion">Minimum Visual Studio Sürümü</x:String>
+    <x:String x:Key="SolProps.Projects.Header">ÇÖZÜMDEKİ PROJELER</x:String>
+    <x:String x:Key="SolProps.Projects.Hint">Bu çözüm dosyasında listelenen projeler.</x:String>
+
+    <!-- ── SettingsPanelControl ──────────────────────────────────── -->
+    <x:String x:Key="Settings.Header">AYARLAR</x:String>
+    <x:String x:Key="Settings.ResetTooltip">Varsayılanlara sıfırla</x:String>
+    <x:String x:Key="Settings.DotNetSdkTitle">📦 .NET SDK</x:String>
+    <x:String x:Key="Settings.DotNetSdkDesc">.NET SDK kurulum dizinine giden yol</x:String>
+    <x:String x:Key="Settings.GitHubCliTitle">🐙 GitHub CLI (gh)</x:String>
+    <x:String x:Key="Settings.GitHubCliDesc">Terminal ve GitHub Copilot entegrasyonu için GitHub CLI yürütülebilir dosyasının yolu</x:String>
+    <x:String x:Key="Settings.CopilotCliTitle">🤖 Copilot CLI</x:String>
+    <x:String x:Key="Settings.CopilotCliDesc">Bağımsız GitHub Copilot CLI yürütülebilir dosyasının yolu</x:String>
+    <x:String x:Key="Settings.SignToolTitle">🔏 SignTool</x:String>
+    <x:String x:Key="Settings.SignToolDesc">Paketleri imzalamak için signtool.exe yolu (MSIX, ClickOnce, vb.)</x:String>
+    <x:String x:Key="Settings.MSBuildTitle">🔨 MSBuild</x:String>
+    <x:String x:Key="Settings.MSBuildDesc">dotnet CLI dışında proje derlemek için MSBuild.exe yolu</x:String>
+    <x:String x:Key="Settings.AutoDetect">🔍  Tüm yolları otomatik algıla</x:String>
+    <x:String x:Key="Settings.Save">💾  Ayarları Kaydet</x:String>
+
+    <!-- ── Gemini AI Windows ─────────────────────────────────────── -->
+    <x:String x:Key="Gemini.Lang.Title">🌐  Özel Çeviri Ekle — Adım 1/2</x:String>
+    <x:String x:Key="Gemini.Lang.Prompt">Eklemek istediğiniz dilin adını girin:</x:String>
+    <x:String x:Key="Gemini.Lang.FieldLabel">Dil Adı</x:String>
+    <x:String x:Key="Gemini.Lang.Hint">Çeviri, İngilizce sözlüğünüzü kullanarak Google Gemini AI tarafından oluşturulur. API anahtarınızın Menü &gt; Ayarlar &gt; Gemini'de ayarlandığından emin olun.</x:String>
+    <x:String x:Key="Gemini.Lang.Cancel">İptal</x:String>
+    <x:String x:Key="Gemini.Lang.Next">İleri →</x:String>
+    <x:String x:Key="Gemini.Model.Title">Adım 2 - Gemini Modeli Seç</x:String>
+    <x:String x:Key="Gemini.Model.TargetLang">Hedef dil:</x:String>
+    <x:String x:Key="Gemini.Model.FieldLabel">Gemini Modeli</x:String>
+    <x:String x:Key="Gemini.Model.AvailableTypes">Kullanılabilir model türleri:</x:String>
+    <x:String x:Key="Gemini.Model.ProModels">Pro modeller: gemini-1.5-pro, gemini-2.0-pro-exp (daha yüksek kalite, daha yavaş, daha pahalı)</x:String>
+    <x:String x:Key="Gemini.Model.FlashModels">Flash modeller: gemini-1.5-flash, gemini-2.0-flash (daha hızlı, daha ucuz, çeviri için harika)</x:String>
+    <x:String x:Key="Gemini.Model.Tip">İpucu: Çeviri görevleri için gemini-2.0-flash önerilir.</x:String>
+    <x:String x:Key="Gemini.Model.Cancel">İptal</x:String>
+    <x:String x:Key="Gemini.Model.Generate">Çeviri Oluştur</x:String>
+    <x:String x:Key="Gemini.Settings.Title">Gemini API Ayarları</x:String>
+    <x:String x:Key="Gemini.Settings.ApiKeyLabel">Google Gemini API Anahtarı</x:String>
+    <x:String x:Key="Gemini.Settings.ApiKeyHint">Ücretsiz anahtarınızı şu adresten alın: https://aistudio.google.com/app/apikey</x:String>
+    <x:String x:Key="Gemini.Settings.ShowKey">Anahtarı göster</x:String>
+    <x:String x:Key="Gemini.Settings.Cancel">İptal</x:String>
+    <x:String x:Key="Gemini.Settings.Save">💾  Kaydet</x:String>
+
+    <!-- ── Roslyn / Code tools windows ──────────────────────────── -->
+    <x:String x:Key="GenMember.Title">Üye Oluştur</x:String>
+    <x:String x:Key="GenMember.Subtitle">Oluşturulacak üyeyi seçin:</x:String>
+    <x:String x:Key="GenMember.Property">Özellik</x:String>
+    <x:String x:Key="GenMember.Method">Metot</x:String>
+    <x:String x:Key="GenMember.AsyncMethod">Async Metot</x:String>
+    <x:String x:Key="GenMember.Field">Alan</x:String>
+    <x:String x:Key="GenMember.Event">Olay</x:String>
+    <x:String x:Key="GenMember.Footer">Üye hedef türe eklenecek</x:String>
+    <x:String x:Key="GenType.Title">Tür Oluştur</x:String>
+    <x:String x:Key="GenType.Prompt">Oluşturulacak türü seçin:</x:String>
+    <x:String x:Key="GenType.Class">Sınıf</x:String>
+    <x:String x:Key="GenType.Struct">Yapı</x:String>
+    <x:String x:Key="GenType.Interface">Arayüz</x:String>
+    <x:String x:Key="GenType.Enum">Numaralandırma</x:String>
+    <x:String x:Key="GenType.Record">Kayıt</x:String>
+    <x:String x:Key="GenType.Footer">Tür geçerli dosyaya eklenecek</x:String>
+    <x:String x:Key="GotoDef.Title">📍 Tanıma Git</x:String>
+    <x:String x:Key="GotoDef.Close">Kapat</x:String>
+    <x:String x:Key="Rename.Title">✏ Sembolü Yeniden Adlandır</x:String>
+    <x:String x:Key="Rename.NewName">Yeni ad:</x:String>
+    <x:String x:Key="Rename.PreviewChanges">Değişiklikleri önizle</x:String>
+    <x:String x:Key="Rename.Cancel">İptal</x:String>
+    <x:String x:Key="Rename.Rename">Yeniden Adlandır</x:String>
+    <x:String x:Key="Completion.Header">Roslyn IntelliSense</x:String>
+    <x:String x:Key="Completion.CloseTooltip">Kapat (Esc)</x:String>
+    <x:String x:Key="Completion.Keys">  Tab/Enter ⏎  Esc ✕</x:String>
+    <x:String x:Key="QuickFix.Header">Hızlı Düzeltme</x:String>
+    <x:String x:Key="QuickFix.Footer">Enter ⏎ uygula   Esc ✕ kapat</x:String>
+    <x:String x:Key="RoslynTools.Title">Roslyn Araçları</x:String>
+    <x:String x:Key="RoslynTools.Navigate">Gezinmek için çift tıklayın veya Enter'a basın</x:String>
 
 </ResourceDictionary>

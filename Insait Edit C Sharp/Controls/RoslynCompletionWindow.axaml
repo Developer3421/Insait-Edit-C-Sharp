@@ -13,6 +13,28 @@
         WindowStartupLocation="Manual"
         TransparencyLevelHint="Transparent">
 
+    <Window.Styles>
+        <!-- ListBox item styles -->
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <!-- Close button hover -->
+        <Style Selector="Button#CloseCompletionBtn:pointerover">
+            <Setter Property="Background" Value="#30F38BA8"/>
+            <Setter Property="Foreground" Value="#FFF38BA8"/>
+        </Style>
+    </Window.Styles>
+
     <Border Background="#FF1A1525"
             BorderBrush="#FF6C3FAA"
             BorderThickness="1"
@@ -28,7 +50,7 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="✦" FontSize="11" Foreground="#FF8B5CF6"/>
-                        <TextBlock x:Name="HeaderText" Text="Roslyn IntelliSense"
+                        <TextBlock x:Name="HeaderText" Text="{DynamicResource Completion.Header}"
                                    FontSize="10" FontWeight="SemiBold" Foreground="#FF9E90B0"/>
                     </StackPanel>
                     <Button x:Name="CloseCompletionBtn"
@@ -44,14 +66,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Focusable="False"
-                            ToolTip.Tip="Close (Esc)">
-                        <Button.Styles>
-                            <Style Selector="Button:pointerover">
-                                <Setter Property="Background" Value="#30F38BA8"/>
-                                <Setter Property="Foreground" Value="#FFF38BA8"/>
-                            </Style>
-                        </Button.Styles>
-                    </Button>
+                            ToolTip.Tip="{DynamicResource Completion.CloseTooltip}"/>
                 </Grid>
             </Border>
 
@@ -64,23 +79,7 @@
                      Padding="2,2"
                      Focusable="False"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto">
-                <ListBox.Styles>
-                    <Style Selector="ListBoxItem">
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="MinHeight" Value="0"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Cursor" Value="Hand"/>
-                    </Style>
-                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-                        <Setter Property="Background" Value="Transparent"/>
-                    </Style>
-                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                        <Setter Property="Background" Value="Transparent"/>
-                    </Style>
-                </ListBox.Styles>
-            </ListBox>
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
 
             <!-- Footer -->
             <Border Grid.Row="2" Padding="10,4" Background="#10DCC4FF" CornerRadius="0,0,6,6">

@@ -13,8 +13,6 @@ public partial class BuildPage : UserControl
         BrowseOutputButton.Click += BrowseOutput_Click;
     }
 
-    private void InitializeComponent() =>
-        Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(this);
 
     private async void BrowseOutput_Click(object? sender, RoutedEventArgs e)
     {

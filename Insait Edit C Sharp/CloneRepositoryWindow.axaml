@@ -10,6 +10,14 @@
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="#FF352840"/>
         </Style>
+        <Style Selector="TextBox">
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="#FFF0E8F4"/>
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#FF3E3050"/>
+        </Style>
     </Window.Styles>
     <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
         <Grid RowDefinitions="40,*,Auto">

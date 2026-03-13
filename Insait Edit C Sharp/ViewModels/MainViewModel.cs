@@ -1079,12 +1079,12 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private bool ShouldIgnorePath(string path)
     {
         var lowerPath = path.ToLowerInvariant();
-        return lowerPath.Contains("\\bin\\") ||
-               lowerPath.Contains("\\obj\\") ||
-               lowerPath.Contains("\\.git\\") ||
-               lowerPath.Contains("\\.vs\\") ||
-               lowerPath.Contains("\\.idea\\") ||
-               lowerPath.Contains("\\node_modules\\");
+        return lowerPath.Contains("\\bin\\") || lowerPath.EndsWith("\\bin") ||
+               lowerPath.Contains("\\obj\\") || lowerPath.EndsWith("\\obj") ||
+               lowerPath.Contains("\\.git\\") || lowerPath.EndsWith("\\.git") ||
+               lowerPath.Contains("\\.vs\\")  || lowerPath.EndsWith("\\.vs")  ||
+               lowerPath.Contains("\\.idea\\") || lowerPath.EndsWith("\\.idea") ||
+               lowerPath.Contains("\\node_modules\\") || lowerPath.EndsWith("\\node_modules");
     }
 
     private void RequestDebouncedRefresh()

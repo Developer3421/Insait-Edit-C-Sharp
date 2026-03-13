@@ -124,6 +124,9 @@
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}"/>
         </Style>
         <Style Selector="TextBox.search-box /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>

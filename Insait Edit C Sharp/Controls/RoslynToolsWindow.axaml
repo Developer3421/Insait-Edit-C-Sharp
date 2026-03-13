@@ -8,6 +8,27 @@
         SystemDecorations="BorderOnly"
         Background="Transparent">
 
+    <Window.Styles>
+        <!-- ListBox item styles -->
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FF5B3A8A"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#30DCC4FF"/>
+        </Style>
+        <!-- Close button hover -->
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#30DCC4FF"/>
+        </Style>
+    </Window.Styles>
+
     <Border Background="#FF1A1525"
             BorderBrush="#FF6C3FAA"
             BorderThickness="1"
@@ -22,7 +43,7 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="⚙" FontSize="16" Foreground="#FF8B5CF6"/>
-                        <TextBlock x:Name="TitleText" Text="Roslyn Tools"
+                        <TextBlock x:Name="TitleText" Text="{DynamicResource RoslynTools.Title}"
                                    FontSize="14" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
                     </StackPanel>
                     <Button Grid.Column="1" Content="✕" FontSize="12"
@@ -51,30 +72,14 @@
                      Foreground="#FFF0E8F4"
                      BorderThickness="0"
                      Padding="4"
-                     Focusable="True">
-                <ListBox.Styles>
-                    <Style Selector="ListBoxItem">
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="MinHeight" Value="0"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Cursor" Value="Hand"/>
-                    </Style>
-                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-                        <Setter Property="Background" Value="#FF5B3A8A"/>
-                    </Style>
-                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-                        <Setter Property="Background" Value="#30DCC4FF"/>
-                    </Style>
-                </ListBox.Styles>
-            </ListBox>
+                     Focusable="True"/>
 
             <!-- Footer -->
             <Border Grid.Row="3" Background="#FF201A2E" Padding="14,8"
                     CornerRadius="0,0,6,6">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <TextBlock x:Name="StatusText" Text="" FontSize="10" Foreground="#FF9E90B0"/>
-                    <TextBlock Text="Double-click or Enter to navigate" FontSize="10" Foreground="#60DCC4FF"/>
+                    <TextBlock Text="{DynamicResource RoslynTools.Navigate}" FontSize="10" Foreground="#60DCC4FF"/>
                 </StackPanel>
             </Border>
         </Grid>

@@ -6,11 +6,11 @@
         <TextBlock DockPanel.Dock="Top"
                    Classes="section-header"
                    Margin="28,20,28,10"
-                   Text="SOLUTION CONFIGURATIONS"/>
+                   Text="{DynamicResource SolProps.BuildCfg.Header}"/>
         <TextBlock DockPanel.Dock="Top"
                    Classes="info-text"
                    Margin="28,0,28,12"
-                   Text="Build configurations read from the .sln file (GlobalSection SolutionConfigurationPlatforms)."/>
+                   Text="{DynamicResource SolProps.BuildCfg.Hint}"/>
         <ScrollViewer Padding="28,0,28,16"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">

@@ -432,6 +432,44 @@ public partial class MainWindow
         return false;
     }
 
+    /// <summary>
+    /// Returns true when the workspace directory contains no user files —
+    /// only standard build / IDE artefact directories (bin, obj, .vs, .git, etc.).
+    /// Used to decide whether to auto-delete the workspace root after the user
+    /// deletes all visible project items.
+    /// </summary>
+    internal static bool IsWorkspaceEffectivelyEmpty(string workspaceRoot)
+    {
+        if (!Directory.Exists(workspaceRoot)) return true;
+        return !HasUserFilesInDirectory(workspaceRoot);
+    }
+
+    private static readonly HashSet<string> _buildArtifactDirNames =
+        new(StringComparer.OrdinalIgnoreCase)
+        { "bin", "obj", ".vs", ".git", ".github", ".idea", ".vscode", "node_modules" };
+
+    private static bool HasUserFilesInDirectory(string directory)
+    {
+        try
+        {
+            // Any file at this level counts as a user file
+            if (Directory.EnumerateFiles(directory).Any())
+                return true;
+
+            // Recurse into non-ignored subdirectories
+            foreach (var subDir in Directory.EnumerateDirectories(directory))
+            {
+                var dirName = Path.GetFileName(subDir);
+                if (_buildArtifactDirNames.Contains(dirName)) continue;
+                if (HasUserFilesInDirectory(subDir)) return true;
+            }
+        }
+        catch { /* ignore access / io errors during the check */ }
+
+        return false;
+    }
+
+
     private string? GetWorkspaceRootDirectory()
     {
         var path = _projectPath ?? _viewModel.CurrentProjectPath;
