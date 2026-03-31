@@ -24,6 +24,7 @@ public partial class PublishProgressWindow : Window
     private readonly Stopwatch _stopwatch = new();
     private DispatcherTimer? _elapsedTimer;
     private bool _isPublishing;
+    private bool _isCancelling;
     private PublishResult? _result;
 
     /// <summary>The result of the publish operation. Null if not yet completed.</summary>
@@ -39,6 +40,7 @@ public partial class PublishProgressWindow : Window
 
         SetupEventHandlers();
         ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(ApplyLocalization);
     }
 
     private void InitializeComponent()
@@ -48,14 +50,18 @@ public partial class PublishProgressWindow : Window
 
     private void ApplyLocalization()
     {
-        var L = (Func<string, string>)LocalizationService.Get;
+        var currentTitle = GetCurrentWindowTitle();
+        Title = currentTitle;
 
         var titleText = this.FindControl<TextBlock>("TitleText");
-        if (titleText != null) titleText.Text = L("PublishProgress.Title");
+        if (titleText != null) titleText.Text = currentTitle;
 
         var projectNameText = this.FindControl<TextBlock>("ProjectNameText");
         if (projectNameText != null)
             projectNameText.Text = Path.GetFileNameWithoutExtension(_profile.ProjectPath);
+
+        UpdateLocalizedStatus();
+        UpdateLocalizedResultInfo();
     }
 
     private void SetupEventHandlers()
@@ -100,6 +106,7 @@ public partial class PublishProgressWindow : Window
     public async void StartPublish()
     {
         _isPublishing = true;
+        _isCancelling = false;
         UpdateUIState();
 
         // Wire events
@@ -154,8 +161,7 @@ public partial class PublishProgressWindow : Window
     {
         Dispatcher.UIThread.Post(() =>
         {
-            SetStatus("⏳", LocalizationService.Get("PublishProgress.Publishing"),
-                      _profile.Configuration + " | " + (_profile.RuntimeIdentifier ?? "Portable"));
+            SetStatus("⏳", LocalizationService.Get("PublishProgress.Publishing"), BuildPublishDetail());
         });
     }
 
@@ -213,6 +219,7 @@ public partial class PublishProgressWindow : Window
     private void OnFinished()
     {
         UpdateUIState();
+        _isCancelling = false;
 
         var progressBar = this.FindControl<ProgressBar>("PublishProgressBar");
         if (progressBar != null)
@@ -224,9 +231,6 @@ public partial class PublishProgressWindow : Window
 
         if (_result != null && _result.Success)
         {
-            SetStatus("✅", LocalizationService.Get("PublishProgress.Succeeded"),
-                      _profile.OutputPath);
-
             if (progressBar != null)
                 progressBar.Foreground = Avalonia.Media.Brushes.LimeGreen;
 
@@ -234,39 +238,15 @@ public partial class PublishProgressWindow : Window
             var resultPanel = this.FindControl<StackPanel>("ResultInfoPanel");
             if (resultPanel != null) resultPanel.IsVisible = true;
 
-            var sizeText = this.FindControl<TextBlock>("OutputSizeText");
-            if (sizeText != null && Directory.Exists(_profile.OutputPath))
-            {
-                var size = GetDirectorySize(_profile.OutputPath);
-                sizeText.Text = $"📊 {FormatFileSize(size)}";
-            }
-
-            var pathText = this.FindControl<TextBlock>("OutputPathText");
-            if (pathText != null) pathText.Text = _profile.OutputPath;
-
-            var titleText = this.FindControl<TextBlock>("TitleText");
-            if (titleText != null) titleText.Text = LocalizationService.Get("PublishProgress.SucceededTitle");
+            UpdateLocalizedResultInfo();
         }
         else
         {
-            // Extract error count from output for a more specific message
-            var outputText = _output.ToString();
-            var errorCount = outputText.Split('\n')
-                .Count(l => l.Contains(" error ", StringComparison.OrdinalIgnoreCase)
-                         || l.Contains(": error ", StringComparison.OrdinalIgnoreCase));
-
-            var detailMsg = errorCount > 0
-                ? $"{errorCount} compilation error(s) — see console output below"
-                : (_result?.ErrorMessage ?? "Unknown error");
-
-            SetStatus("❌", LocalizationService.Get("PublishProgress.Failed"), detailMsg);
-
             if (progressBar != null)
                 progressBar.Foreground = Avalonia.Media.Brushes.IndianRed;
-
-            var titleText = this.FindControl<TextBlock>("TitleText");
-            if (titleText != null) titleText.Text = LocalizationService.Get("PublishProgress.FailedTitle");
         }
+
+        ApplyLocalization();
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -275,6 +255,7 @@ public partial class PublishProgressWindow : Window
 
     private void CancelPublish_Click(object? sender, RoutedEventArgs e)
     {
+        _isCancelling = true;
         _publishService.Cancel();
         SetStatus("🚫", LocalizationService.Get("PublishProgress.Cancelling"));
     }
@@ -318,9 +299,93 @@ public partial class PublishProgressWindow : Window
     {
         if (_isPublishing)
         {
+            _isCancelling = true;
             _publishService.Cancel();
         }
         Close();
+    }
+
+    private string GetCurrentWindowTitle()
+    {
+        if (_result?.Success == true)
+            return LocalizationService.Get("PublishProgress.SucceededTitle");
+
+        if (_result != null)
+            return LocalizationService.Get("PublishProgress.FailedTitle");
+
+        return LocalizationService.Get("PublishProgress.Title");
+    }
+
+    private void UpdateLocalizedStatus()
+    {
+        if (_result?.Success == true)
+        {
+            SetStatus("✅", LocalizationService.Get("PublishProgress.Succeeded"), _profile.OutputPath);
+            return;
+        }
+
+        if (_result != null)
+        {
+            SetStatus("❌", LocalizationService.Get("PublishProgress.Failed"), BuildFailureDetailMessage());
+            return;
+        }
+
+        if (_isPublishing)
+        {
+            if (_isCancelling)
+            {
+                SetStatus("🚫", LocalizationService.Get("PublishProgress.Cancelling"));
+                return;
+            }
+
+            SetStatus("⏳", LocalizationService.Get("PublishProgress.Publishing"), BuildPublishDetail());
+            return;
+        }
+
+        SetStatus("⏳", LocalizationService.Get("PublishProgress.Preparing"));
+    }
+
+    private void UpdateLocalizedResultInfo()
+    {
+        var sizeText = this.FindControl<TextBlock>("OutputSizeText");
+        if (sizeText != null)
+        {
+            if (_result?.Success == true && Directory.Exists(_profile.OutputPath))
+            {
+                var size = GetDirectorySize(_profile.OutputPath);
+                sizeText.Text = string.Format(LocalizationService.Get("PublishProgress.OutputSize"), FormatFileSize(size));
+            }
+            else
+            {
+                sizeText.Text = string.Empty;
+            }
+        }
+
+        var pathText = this.FindControl<TextBlock>("OutputPathText");
+        if (pathText != null)
+        {
+            pathText.Text = _result?.Success == true ? _profile.OutputPath : string.Empty;
+        }
+    }
+
+    private string BuildPublishDetail()
+    {
+        return _profile.Configuration + " | " + (_profile.RuntimeIdentifier ?? LocalizationService.Get("PublishProgress.PortableRuntime"));
+    }
+
+    private string BuildFailureDetailMessage()
+    {
+        var outputText = _output.ToString();
+        var errorCount = outputText.Split('\n')
+            .Count(l => l.Contains(" error ", StringComparison.OrdinalIgnoreCase)
+                     || l.Contains(": error ", StringComparison.OrdinalIgnoreCase));
+
+        if (errorCount > 0)
+        {
+            return string.Format(LocalizationService.Get("PublishProgress.CompilationErrors"), errorCount);
+        }
+
+        return _result?.ErrorMessage ?? LocalizationService.Get("PublishProgress.UnknownError");
     }
 
     // ═══════════════════════════════════════════════════════════

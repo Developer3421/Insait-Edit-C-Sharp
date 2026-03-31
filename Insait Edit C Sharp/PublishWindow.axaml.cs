@@ -35,12 +35,21 @@ public partial class PublishWindow : Window
         SetupEventHandlers();
         LoadData();
         ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
     }
 
     private void ApplyLocalization()
     {
         var L = (Func<string, string>)LocalizationService.Get;
         Title = L("Publish.Title");
+
+        LoadRuntimeIdentifiers(GetSelectedRuntimeIdentifier());
+
+        var selectedProject = GetSelectedProjectPath();
+        if (!string.IsNullOrEmpty(selectedProject))
+        {
+            _ = LoadPublishProfiles(selectedProject, GetSelectedPublishProfileName());
+        }
     }
 
     private void InitializeComponent()
@@ -187,19 +196,28 @@ public partial class PublishWindow : Window
         }
     }
 
-    private void LoadRuntimeIdentifiers()
+    private void LoadRuntimeIdentifiers(string? selectedRuntimeIdentifier = null)
     {
         var runtimeCombo = this.FindControl<ComboBox>("RuntimeComboBox");
         if (runtimeCombo == null) return;
 
+        var L = (Func<string, string>)LocalizationService.Get;
         var rids = PublishService.GetAvailableRuntimeIdentifiers();
-        var items = new List<string> { "(Portable - Any OS)" };
+        var items = new List<string> { L("Publish.PortableRuntime") };
         items.AddRange(rids.Where(r => r.IsCommon && !string.IsNullOrEmpty(r.Rid)).Select(r => $"{r.Rid} - {r.DisplayName}"));
         items.Add("---");
         items.AddRange(rids.Where(r => !r.IsCommon && !string.IsNullOrEmpty(r.Rid)).Select(r => $"{r.Rid} - {r.DisplayName}"));
 
         runtimeCombo.ItemsSource = items;
-        runtimeCombo.SelectedIndex = 0;
+
+        if (string.IsNullOrEmpty(selectedRuntimeIdentifier))
+        {
+            runtimeCombo.SelectedIndex = 0;
+            return;
+        }
+
+        var selectedIndex = items.FindIndex(item => item.StartsWith(selectedRuntimeIdentifier + " ", StringComparison.OrdinalIgnoreCase));
+        runtimeCombo.SelectedIndex = selectedIndex >= 0 ? selectedIndex : 0;
     }
 
     private async void ProjectCombo_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -229,16 +247,25 @@ public partial class PublishWindow : Window
         }
     }
 
-    private async Task LoadPublishProfiles(string projectPath)
+    private async Task LoadPublishProfiles(string projectPath, string? selectedProfile = null)
     {
         var profileCombo = this.FindControl<ComboBox>("PublishProfileComboBox");
         if (profileCombo == null) return;
 
+        var L = (Func<string, string>)LocalizationService.Get;
         var profiles = await _publishService.GetPublishProfilesAsync(projectPath);
-        var items = new List<string> { "(None - Use settings below)" };
+        var items = new List<string> { L("Publish.ProfileNone") };
         items.AddRange(profiles);
 
         profileCombo.ItemsSource = items;
+
+        if (!string.IsNullOrEmpty(selectedProfile))
+        {
+            var selectedIndex = items.FindIndex(item => string.Equals(item, selectedProfile, StringComparison.Ordinal));
+            profileCombo.SelectedIndex = selectedIndex >= 0 ? selectedIndex : 0;
+            return;
+        }
+
         profileCombo.SelectedIndex = 0;
     }
 
@@ -362,7 +389,7 @@ public partial class PublishWindow : Window
     {
         var dialog = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Select Output Folder",
+            Title = LocalizationService.Get("Publish.BrowseOutputDialogTitle"),
             AllowMultiple = false
         });
 
@@ -378,14 +405,15 @@ public partial class PublishWindow : Window
 
     private async void BrowseIcon_Click(object? sender, RoutedEventArgs e)
     {
+        var L = (Func<string, string>)LocalizationService.Get;
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Select Application Icon (.ico)",
+            Title = L("Publish.BrowseIconDialogTitle"),
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("Icon files") { Patterns = new[] { "*.ico" } },
-                new FilePickerFileType("All files")  { Patterns = new[] { "*.*" } }
+                new FilePickerFileType(L("Publish.IconFileType")) { Patterns = new[] { "*.ico" } },
+                new FilePickerFileType(L("Publish.AllFiles"))  { Patterns = new[] { "*.*" } }
             }
         });
 
@@ -497,7 +525,7 @@ public partial class PublishWindow : Window
         var configuration = "Release";
         if (configCombo?.SelectedItem is ComboBoxItem configItem)
         {
-            configuration = configItem.Content?.ToString() ?? "Release";
+            configuration = configItem.Tag?.ToString() ?? configItem.Content?.ToString() ?? "Release";
         }
 
         // Get framework
@@ -528,6 +556,40 @@ public partial class PublishWindow : Window
             PublishProfileName = publishProfile,
             ApplicationIcon = string.IsNullOrWhiteSpace(iconPathBox?.Text) ? null : iconPathBox.Text
         };
+    }
+
+    private string? GetSelectedRuntimeIdentifier()
+    {
+        var runtimeCombo = this.FindControl<ComboBox>("RuntimeComboBox");
+        if (runtimeCombo?.SelectedItem is not string selectedRuntime)
+        {
+            return null;
+        }
+
+        if (selectedRuntime.StartsWith("(") || selectedRuntime.StartsWith("-"))
+        {
+            return null;
+        }
+
+        return selectedRuntime.Split(' ')[0];
+    }
+
+    private string? GetSelectedPublishProfileName()
+    {
+        var profileCombo = this.FindControl<ComboBox>("PublishProfileComboBox");
+        if (profileCombo?.SelectedItem is not string selectedProfile || selectedProfile.StartsWith("("))
+        {
+            return null;
+        }
+
+        return selectedProfile;
+    }
+
+    private string? GetSelectedProjectPath()
+    {
+        var projectCombo = this.FindControl<ComboBox>("ProjectComboBox");
+        var selectedIndex = projectCombo?.SelectedIndex ?? -1;
+        return selectedIndex >= 0 && selectedIndex < _projects.Count ? _projects[selectedIndex] : null;
     }
 }
 

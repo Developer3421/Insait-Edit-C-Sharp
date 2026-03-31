@@ -602,10 +602,18 @@
     <x:String x:Key="Publish.FrameworkDependent">Зависимый от фреймворка (требуется .NET на целевой машине)</x:String>
     <x:String x:Key="Publish.SelfContained">Автономный (включает среду .NET)</x:String>
     <x:String x:Key="Publish.Configuration">Конфигурация</x:String>
+    <x:String x:Key="Publish.ConfigurationRelease">Release</x:String>
+    <x:String x:Key="Publish.ConfigurationDebug">Debug</x:String>
     <x:String x:Key="Publish.TargetRuntime">Целевая платформа</x:String>
     <x:String x:Key="Publish.TargetFramework">Целевой фреймворк</x:String>
     <x:String x:Key="Publish.OutputFolder">Папка вывода</x:String>
     <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
+    <x:String x:Key="Publish.PortableRuntime">(Портативный - любая ОС)</x:String>
+    <x:String x:Key="Publish.ProfileNone">(Нет — использовать параметры ниже)</x:String>
+    <x:String x:Key="Publish.BrowseOutputDialogTitle">Выбрать папку вывода</x:String>
+    <x:String x:Key="Publish.BrowseIconDialogTitle">Выбрать иконку приложения (.ico)</x:String>
+    <x:String x:Key="Publish.IconFileType">Файлы иконок</x:String>
+    <x:String x:Key="Publish.AllFiles">Все файлы</x:String>
     <x:String x:Key="Publish.Options">Параметры публикации</x:String>
     <x:String x:Key="Publish.SingleFile">Один файл</x:String>
     <x:String x:Key="Publish.SingleFileTooltip">Объединяет приложение в один исполняемый файл</x:String>
@@ -640,12 +648,19 @@
 
     <!-- PublishProgressWindow -->
     <x:String x:Key="PublishProgress.Title">Публикация...</x:String>
+    <x:String x:Key="PublishProgress.Preparing">Подготовка к публикации...</x:String>
     <x:String x:Key="PublishProgress.Publishing">Публикация проекта...</x:String>
     <x:String x:Key="PublishProgress.Succeeded">Публикация завершена успешно!</x:String>
     <x:String x:Key="PublishProgress.SucceededTitle">✅ Публикация завершена</x:String>
     <x:String x:Key="PublishProgress.Failed">Публикация не удалась</x:String>
     <x:String x:Key="PublishProgress.FailedTitle">❌ Публикация не удалась</x:String>
     <x:String x:Key="PublishProgress.Cancelling">Отмена...</x:String>
+    <x:String x:Key="PublishProgress.ConsoleOutput">📋 Вывод консоли</x:String>
+    <x:String x:Key="PublishProgress.ClearOutput">🗑 Очистить</x:String>
+    <x:String x:Key="PublishProgress.CompilationErrors">{0} ошибок компиляции — см. вывод консоли ниже</x:String>
+    <x:String x:Key="PublishProgress.UnknownError">Неизвестная ошибка</x:String>
+    <x:String x:Key="PublishProgress.OutputSize">📊 {0}</x:String>
+    <x:String x:Key="PublishProgress.PortableRuntime">Портативный</x:String>
     <x:String x:Key="PublishProgress.OpenFolder">📂 Открыть папку</x:String>
     <x:String x:Key="PublishProgress.Cancel">⏹ Отмена</x:String>
     <x:String x:Key="PublishProgress.Close">Закрыть</x:String>

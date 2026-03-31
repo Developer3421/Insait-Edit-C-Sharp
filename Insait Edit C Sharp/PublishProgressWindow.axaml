@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.PublishProgressWindow"
-        Title="Publishing..."
+        Title="{DynamicResource PublishProgress.Title}"
         Width="720"
         Height="520"
         MinWidth="500"
@@ -62,7 +62,7 @@
                                 VerticalAlignment="Center" Margin="14,0">
                         <TextBlock Text="📦" FontSize="15" FontFamily="Segoe UI Emoji"
                                    VerticalAlignment="Center"/>
-                        <TextBlock Name="TitleText" Text="Publishing..."
+                        <TextBlock Name="TitleText" Text="{DynamicResource PublishProgress.Title}"
                                    FontSize="13" FontWeight="SemiBold"
                                    Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
                     </StackPanel>
@@ -88,7 +88,7 @@
                                    Text="⏳" FontSize="20" FontFamily="Segoe UI Emoji"
                                    VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Name="StatusText" Text="Preparing to publish..."
+                            <TextBlock Name="StatusText" Text="{DynamicResource PublishProgress.Preparing}"
                                        FontSize="13" FontWeight="SemiBold"
                                        Foreground="#FFF0E8F4"/>
                             <TextBlock Name="StatusDetail" Text=""
@@ -129,11 +129,11 @@
                     <Grid RowDefinitions="Auto,*">
                         <Border Grid.Row="0" Background="#FF222030" Padding="10,6">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Text="📋 Console Output" FontSize="11"
+                                <TextBlock Text="{DynamicResource PublishProgress.ConsoleOutput}" FontSize="11"
                                            Foreground="#FF9E90B0"
                                            VerticalAlignment="Center"/>
                                 <Button Name="ClearOutputButton" Grid.Column="1"
-                                        Content="🗑 Clear" FontSize="10"
+                                        Content="{DynamicResource PublishProgress.ClearOutput}" FontSize="10"
                                         Background="Transparent"
                                         Foreground="#FF9E90B0"
                                         Padding="6,2" Cursor="Hand"
@@ -177,15 +177,15 @@
                     <!-- Buttons -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                         <!-- Cancel button (during publish) -->
-                        <Button Name="CancelPublishButton" Content="⏹ Cancel"
+                        <Button Name="CancelPublishButton" Content="{DynamicResource PublishProgress.Cancel}"
                                 Classes="cancel-button"/>
                         
                         <!-- Open Folder button (after publish) -->
-                        <Button Name="OpenFolderButton" Content="📂 Open Folder"
+                        <Button Name="OpenFolderButton" Content="{DynamicResource PublishProgress.OpenFolder}"
                                 Classes="primary-button" IsVisible="False"/>
 
                         <!-- Close button -->
-                        <Button Name="CloseWindowButton" Content="Close"
+                        <Button Name="CloseWindowButton" Content="{DynamicResource PublishProgress.Close}"
                                 Classes="action-button"/>
                     </StackPanel>
                 </Grid>

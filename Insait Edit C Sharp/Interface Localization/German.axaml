@@ -602,10 +602,18 @@
     <x:String x:Key="Publish.FrameworkDependent">Framework-abhängig (.NET-Runtime erforderlich)</x:String>
     <x:String x:Key="Publish.SelfContained">Eigenständig (.NET-Runtime enthalten)</x:String>
     <x:String x:Key="Publish.Configuration">Konfiguration</x:String>
+    <x:String x:Key="Publish.ConfigurationRelease">Release</x:String>
+    <x:String x:Key="Publish.ConfigurationDebug">Debug</x:String>
     <x:String x:Key="Publish.TargetRuntime">Ziellaufzeit</x:String>
     <x:String x:Key="Publish.TargetFramework">Zielframework</x:String>
     <x:String x:Key="Publish.OutputFolder">Ausgabeordner</x:String>
     <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
+    <x:String x:Key="Publish.PortableRuntime">(Portabel - beliebiges Betriebssystem)</x:String>
+    <x:String x:Key="Publish.ProfileNone">(Keins - Einstellungen unten verwenden)</x:String>
+    <x:String x:Key="Publish.BrowseOutputDialogTitle">Ausgabeordner auswählen</x:String>
+    <x:String x:Key="Publish.BrowseIconDialogTitle">Anwendungssymbol (.ico) auswählen</x:String>
+    <x:String x:Key="Publish.IconFileType">Symboldateien</x:String>
+    <x:String x:Key="Publish.AllFiles">Alle Dateien</x:String>
     <x:String x:Key="Publish.Options">Veröffentlichungsoptionen</x:String>
     <x:String x:Key="Publish.SingleFile">Einzeldatei erstellen</x:String>
     <x:String x:Key="Publish.SingleFileTooltip">Bündelt die Anwendung in eine einzige ausführbare Datei</x:String>
@@ -640,12 +648,19 @@
 
     <!-- PublishProgressWindow -->
     <x:String x:Key="PublishProgress.Title">Veröffentlichung...</x:String>
+    <x:String x:Key="PublishProgress.Preparing">Veröffentlichung wird vorbereitet...</x:String>
     <x:String x:Key="PublishProgress.Publishing">Projekt wird veröffentlicht...</x:String>
     <x:String x:Key="PublishProgress.Succeeded">Veröffentlichung erfolgreich!</x:String>
     <x:String x:Key="PublishProgress.SucceededTitle">✅ Veröffentlichung erfolgreich</x:String>
     <x:String x:Key="PublishProgress.Failed">Veröffentlichung fehlgeschlagen</x:String>
     <x:String x:Key="PublishProgress.FailedTitle">❌ Veröffentlichung fehlgeschlagen</x:String>
     <x:String x:Key="PublishProgress.Cancelling">Abbrechen...</x:String>
+    <x:String x:Key="PublishProgress.ConsoleOutput">📋 Konsolenausgabe</x:String>
+    <x:String x:Key="PublishProgress.ClearOutput">🗑 Leeren</x:String>
+    <x:String x:Key="PublishProgress.CompilationErrors">{0} Kompilierungsfehler — siehe Konsolenausgabe unten</x:String>
+    <x:String x:Key="PublishProgress.UnknownError">Unbekannter Fehler</x:String>
+    <x:String x:Key="PublishProgress.OutputSize">📊 {0}</x:String>
+    <x:String x:Key="PublishProgress.PortableRuntime">Portabel</x:String>
     <x:String x:Key="PublishProgress.OpenFolder">📂 Ordner öffnen</x:String>
     <x:String x:Key="PublishProgress.Cancel">⏹ Abbrechen</x:String>
     <x:String x:Key="PublishProgress.Close">Schließen</x:String>

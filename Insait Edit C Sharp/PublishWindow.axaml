@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.PublishWindow"
-        Title="Publish Project"
+        Title="{DynamicResource Publish.Title}"
         Width="700"
         Height="650"
         WindowStartupLocation="CenterOwner"
@@ -72,7 +72,7 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
                         <TextBlock Text="📦" FontSize="16" VerticalAlignment="Center"/>
-                        <TextBlock Text="Publish Project" FontSize="13" FontWeight="SemiBold" 
+                        <TextBlock Text="{DynamicResource Publish.TitleBar}" FontSize="13" FontWeight="SemiBold" 
                                    Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
                     </StackPanel>
                     <Button Grid.Column="1" Background="Transparent" Foreground="#FF9E90B0"
@@ -88,17 +88,17 @@
                 <StackPanel Margin="20" Spacing="20">
                     <!-- Project Selection -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Project" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
+                        <TextBlock Text="{DynamicResource Publish.Project}" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                         <ComboBox Name="ProjectComboBox" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
                     <!-- Deployment Mode -->
                     <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Deployment Mode" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
-                            <RadioButton Content="Framework-dependent (requires .NET runtime on target)" 
+                            <TextBlock Text="{DynamicResource Publish.DeploymentMode}" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
+                            <RadioButton Content="{DynamicResource Publish.FrameworkDependent}" 
                                          Name="FrameworkDependentRadio" IsChecked="True" GroupName="DeploymentMode"/>
-                            <RadioButton Content="Self-contained (includes .NET runtime)" 
+                            <RadioButton Content="{DynamicResource Publish.SelfContained}" 
                                          Name="SelfContainedRadio" GroupName="DeploymentMode"/>
                         </StackPanel>
                     </Border>
@@ -106,29 +106,29 @@
                     <!-- Target Runtime -->
                     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto">
                         <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,8,0">
-                            <TextBlock Text="Configuration" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
+                            <TextBlock Text="{DynamicResource Publish.Configuration}" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                             <ComboBox Name="ConfigurationComboBox" HorizontalAlignment="Stretch">
-                                <ComboBoxItem Content="Release" IsSelected="True"/>
-                                <ComboBoxItem Content="Debug"/>
+                                <ComboBoxItem Content="{DynamicResource Publish.ConfigurationRelease}" Tag="Release" IsSelected="True"/>
+                                <ComboBoxItem Content="{DynamicResource Publish.ConfigurationDebug}" Tag="Debug"/>
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Spacing="6" Margin="8,0,0,0">
-                            <TextBlock Text="Target Runtime" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
+                            <TextBlock Text="{DynamicResource Publish.TargetRuntime}" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                             <ComboBox Name="RuntimeComboBox" HorizontalAlignment="Stretch"/>
                         </StackPanel>
                     </Grid>
 
                     <!-- Target Framework -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Target Framework" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
+                        <TextBlock Text="{DynamicResource Publish.TargetFramework}" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                         <ComboBox Name="FrameworkComboBox" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
                     <!-- Output Path -->
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Output Folder" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
+                        <TextBlock Text="{DynamicResource Publish.OutputFolder}" FontWeight="SemiBold" Foreground="#FFF0E8F4" FontSize="13"/>
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBox Grid.Column="0" Name="OutputPathBox" Watermark="bin\publish"/>
+                            <TextBox Grid.Column="0" Name="OutputPathBox" Watermark="{DynamicResource Publish.OutputPlaceholder}"/>
                             <Button Grid.Column="1" Content="📁" Classes="action-button" Margin="8,0,0,0" Width="40" Name="BrowseOutputButton"/>
                         </Grid>
                     </StackPanel>
@@ -136,7 +136,7 @@
                     <!-- Application Icon -->
                     <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBlock Text="Application Icon (.ico)" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
+                            <TextBlock Text="{DynamicResource Publish.ApplicationIcon}" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <!-- Icon preview -->
                                 <Border Grid.Column="0" Width="48" Height="48" CornerRadius="8"
@@ -150,16 +150,16 @@
                                                IsVisible="False"/>
                                     </Panel>
                                 </Border>
-                                <TextBox Grid.Column="1" Name="IconPathBox" Watermark="(none — uses default icon)"
+                                <TextBox Grid.Column="1" Name="IconPathBox" Watermark="{DynamicResource Publish.IconPlaceholder}"
                                          IsReadOnly="True" VerticalAlignment="Center"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                     <Button Content="📁" Classes="action-button" Margin="8,0,0,0" Width="40" 
-                                            Name="BrowseIconButton" ToolTip.Tip="Browse for .ico file"/>
+                                            Name="BrowseIconButton" ToolTip.Tip="{DynamicResource Publish.BrowseIcon}"/>
                                     <Button Content="✕" Classes="action-button" Margin="4,0,0,0" Width="32"
-                                            Name="ClearIconButton" ToolTip.Tip="Clear icon" FontSize="11"/>
+                                            Name="ClearIconButton" ToolTip.Tip="{DynamicResource Publish.ClearIcon}" FontSize="11"/>
                                 </StackPanel>
                             </Grid>
-                            <TextBlock Text="Select an .ico file to embed as the application icon in the published executable"
+                            <TextBlock Text="{DynamicResource Publish.IconHint}"
                                        FontSize="11" Foreground="#FF9E90B0" FontStyle="Italic"/>
                         </StackPanel>
                     </Border>
@@ -167,26 +167,26 @@
                     <!-- Publish Options -->
                     <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12" x:CompileBindings="False">
-                            <TextBlock Text="Publish Options" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
+                            <TextBlock Text="{DynamicResource Publish.Options}" FontWeight="SemiBold" Foreground="#FFFFC09F" FontSize="13"/>
                             
-                            <CheckBox Content="Produce single file" Name="SingleFileCheck" ToolTip.Tip="Bundles the application into a single executable"/>
+                            <CheckBox Content="{DynamicResource Publish.SingleFile}" Name="SingleFileCheck" ToolTip.Tip="{DynamicResource Publish.SingleFileTooltip}"/>
                             
-                            <CheckBox Content="Enable ReadyToRun compilation" Name="ReadyToRunCheck" 
-                                      ToolTip.Tip="Pre-compiles assemblies to native code for faster startup"/>
+                            <CheckBox Content="{DynamicResource Publish.ReadyToRun}" Name="ReadyToRunCheck" 
+                                      ToolTip.Tip="{DynamicResource Publish.ReadyToRunTooltip}"/>
                             
-                            <CheckBox Content="Trim unused assemblies" Name="TrimCheck" 
-                                      ToolTip.Tip="Removes unused code to reduce size (may affect reflection)"/>
+                            <CheckBox Content="{DynamicResource Publish.Trim}" Name="TrimCheck" 
+                                      ToolTip.Tip="{DynamicResource Publish.TrimTooltip}"/>
                             
-                            <CheckBox Content="Enable compression in single file" Name="CompressionCheck" 
-                                      ToolTip.Tip="Compresses the single file to reduce size" IsEnabled="{Binding #SingleFileCheck.IsChecked, FallbackValue=False}"/>
+                            <CheckBox Content="{DynamicResource Publish.Compression}" Name="CompressionCheck" 
+                                      ToolTip.Tip="{DynamicResource Publish.CompressionTooltip}" IsEnabled="{Binding #SingleFileCheck.IsChecked, FallbackValue=False}"/>
                             
-                            <CheckBox Content="Include native libraries for self-extract" Name="NativeLibrariesCheck"
-                                      ToolTip.Tip="Bundles native libraries into the single file" IsEnabled="{Binding #SingleFileCheck.IsChecked, FallbackValue=False}"/>
+                            <CheckBox Content="{DynamicResource Publish.NativeLibs}" Name="NativeLibrariesCheck"
+                                      ToolTip.Tip="{DynamicResource Publish.NativeLibsTooltip}" IsEnabled="{Binding #SingleFileCheck.IsChecked, FallbackValue=False}"/>
                             
                             <Border Height="1" Background="#FF3E3050" Margin="0,4"/>
                             
-                            <CheckBox Content="🗑 Clean output folder before publish" Name="CleanOutputCheck" IsChecked="True"
-                                      ToolTip.Tip="Deletes all files in the output folder before publishing to ensure a clean build"/>
+                            <CheckBox Content="{DynamicResource Publish.CleanOutput}" Name="CleanOutputCheck" IsChecked="True"
+                                      ToolTip.Tip="{DynamicResource Publish.CleanOutputTooltip}"/>
                         </StackPanel>
                     </Border>
 
@@ -194,11 +194,11 @@
                     <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="8">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Text="Publish Profile (Optional)" FontWeight="SemiBold" Foreground="#FF89B4FA" FontSize="13"/>
-                                <Button Grid.Column="1" Content="+ New Profile" Classes="action-button" FontSize="11" Name="NewProfileButton"/>
+                                <TextBlock Text="{DynamicResource Publish.PublishProfile}" FontWeight="SemiBold" Foreground="#FF89B4FA" FontSize="13"/>
+                                <Button Grid.Column="1" Content="{DynamicResource Publish.NewProfile}" Classes="action-button" FontSize="11" Name="NewProfileButton"/>
                             </Grid>
                             <ComboBox Name="PublishProfileComboBox" HorizontalAlignment="Stretch"/>
-                            <TextBlock Text="Use existing publish profiles from Properties/PublishProfiles folder" 
+                            <TextBlock Text="{DynamicResource Publish.ProfileHint}" 
                                        FontSize="11" Foreground="#FF9E90B0" FontStyle="Italic"/>
                         </StackPanel>
                     </Border>
@@ -206,14 +206,14 @@
                     <!-- Quick Presets -->
                     <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="Quick Presets" FontWeight="SemiBold" Foreground="#FFA6E3A1" FontSize="13"/>
+                            <TextBlock Text="{DynamicResource Publish.QuickPresets}" FontWeight="SemiBold" Foreground="#FFA6E3A1" FontSize="13"/>
                             <WrapPanel Orientation="Horizontal">
-                                <Button Content="🪟 Windows x64" Classes="action-button" Margin="0,0,8,8" Name="PresetWinX64Button"/>
-                                <Button Content="🪟 Windows ARM64" Classes="action-button" Margin="0,0,8,8" Name="PresetWinArm64Button"/>
-                                <Button Content="🐧 Linux x64" Classes="action-button" Margin="0,0,8,8" Name="PresetLinuxX64Button"/>
-                                <Button Content="🍎 macOS x64" Classes="action-button" Margin="0,0,8,8" Name="PresetMacX64Button"/>
-                                <Button Content="🍎 macOS ARM64" Classes="action-button" Margin="0,0,8,8" Name="PresetMacArm64Button"/>
-                                <Button Content="📱 Portable" Classes="action-button" Margin="0,0,8,8" Name="PresetPortableButton"/>
+                                <Button Content="{DynamicResource Publish.PresetWinX64}" Classes="action-button" Margin="0,0,8,8" Name="PresetWinX64Button"/>
+                                <Button Content="{DynamicResource Publish.PresetWinArm64}" Classes="action-button" Margin="0,0,8,8" Name="PresetWinArm64Button"/>
+                                <Button Content="{DynamicResource Publish.PresetLinuxX64}" Classes="action-button" Margin="0,0,8,8" Name="PresetLinuxX64Button"/>
+                                <Button Content="{DynamicResource Publish.PresetMacX64}" Classes="action-button" Margin="0,0,8,8" Name="PresetMacX64Button"/>
+                                <Button Content="{DynamicResource Publish.PresetMacArm64}" Classes="action-button" Margin="0,0,8,8" Name="PresetMacArm64Button"/>
+                                <Button Content="{DynamicResource Publish.PresetPortable}" Classes="action-button" Margin="0,0,8,8" Name="PresetPortableButton"/>
                             </WrapPanel>
                         </StackPanel>
                     </Border>
@@ -225,12 +225,12 @@
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="📊" FontSize="14" VerticalAlignment="Center"/>
-                        <TextBlock Text="Estimated output size will appear after publish" FontSize="11" 
+                        <TextBlock Text="{DynamicResource Publish.EstimatedSize}" FontSize="11" 
                                    Foreground="#FF9E90B0" VerticalAlignment="Center" Name="EstimatedSizeText"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                        <Button Content="Cancel" Classes="action-button" Name="CancelButton"/>
-                        <Button Content="📦 Publish" Classes="primary-button" Name="PublishButton"/>
+                        <Button Content="{DynamicResource Publish.Cancel}" Classes="action-button" Name="CancelButton"/>
+                        <Button Content="{DynamicResource Publish.Publish}" Classes="primary-button" Name="PublishButton"/>
                     </StackPanel>
                 </Grid>
             </Border>

@@ -602,10 +602,18 @@
     <x:String x:Key="Publish.FrameworkDependent">Framework-dependent (requires .NET runtime on target)</x:String>
     <x:String x:Key="Publish.SelfContained">Self-contained (includes .NET runtime)</x:String>
     <x:String x:Key="Publish.Configuration">Configuration</x:String>
+    <x:String x:Key="Publish.ConfigurationRelease">Release</x:String>
+    <x:String x:Key="Publish.ConfigurationDebug">Debug</x:String>
     <x:String x:Key="Publish.TargetRuntime">Target Runtime</x:String>
     <x:String x:Key="Publish.TargetFramework">Target Framework</x:String>
     <x:String x:Key="Publish.OutputFolder">Output Folder</x:String>
     <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
+    <x:String x:Key="Publish.PortableRuntime">(Portable - Any OS)</x:String>
+    <x:String x:Key="Publish.ProfileNone">(None - Use settings below)</x:String>
+    <x:String x:Key="Publish.BrowseOutputDialogTitle">Select Output Folder</x:String>
+    <x:String x:Key="Publish.BrowseIconDialogTitle">Select Application Icon (.ico)</x:String>
+    <x:String x:Key="Publish.IconFileType">Icon files</x:String>
+    <x:String x:Key="Publish.AllFiles">All files</x:String>
     <x:String x:Key="Publish.Options">Publish Options</x:String>
     <x:String x:Key="Publish.SingleFile">Produce single file</x:String>
     <x:String x:Key="Publish.SingleFileTooltip">Bundles the application into a single executable</x:String>
@@ -640,12 +648,19 @@
 
     <!-- ── 15b. PublishProgressWindow ────────────────────────────── -->
     <x:String x:Key="PublishProgress.Title">Publishing...</x:String>
+    <x:String x:Key="PublishProgress.Preparing">Preparing to publish...</x:String>
     <x:String x:Key="PublishProgress.Publishing">Publishing project...</x:String>
     <x:String x:Key="PublishProgress.Succeeded">Publish succeeded!</x:String>
     <x:String x:Key="PublishProgress.SucceededTitle">✅ Publish Succeeded</x:String>
     <x:String x:Key="PublishProgress.Failed">Publish failed</x:String>
     <x:String x:Key="PublishProgress.FailedTitle">❌ Publish Failed</x:String>
     <x:String x:Key="PublishProgress.Cancelling">Cancelling...</x:String>
+    <x:String x:Key="PublishProgress.ConsoleOutput">📋 Console Output</x:String>
+    <x:String x:Key="PublishProgress.ClearOutput">🗑 Clear</x:String>
+    <x:String x:Key="PublishProgress.CompilationErrors">{0} compilation error(s) — see console output below</x:String>
+    <x:String x:Key="PublishProgress.UnknownError">Unknown error</x:String>
+    <x:String x:Key="PublishProgress.OutputSize">📊 {0}</x:String>
+    <x:String x:Key="PublishProgress.PortableRuntime">Portable</x:String>
     <x:String x:Key="PublishProgress.OpenFolder">📂 Open Folder</x:String>
     <x:String x:Key="PublishProgress.Cancel">⏹ Cancel</x:String>
     <x:String x:Key="PublishProgress.Close">Close</x:String>

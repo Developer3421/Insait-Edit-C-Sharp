@@ -602,10 +602,18 @@
     <x:String x:Key="Publish.FrameworkDependent">Залежний від фреймворку (потрібен .NET на цільовій машині)</x:String>
     <x:String x:Key="Publish.SelfContained">Автономний (включає середовище .NET)</x:String>
     <x:String x:Key="Publish.Configuration">Конфігурація</x:String>
+    <x:String x:Key="Publish.ConfigurationRelease">Release</x:String>
+    <x:String x:Key="Publish.ConfigurationDebug">Debug</x:String>
     <x:String x:Key="Publish.TargetRuntime">Цільова платформа</x:String>
     <x:String x:Key="Publish.TargetFramework">Цільовий фреймворк</x:String>
     <x:String x:Key="Publish.OutputFolder">Вихідна тека</x:String>
     <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
+    <x:String x:Key="Publish.PortableRuntime">(Портативний - будь-яка ОС)</x:String>
+    <x:String x:Key="Publish.ProfileNone">(Немає — використати параметри нижче)</x:String>
+    <x:String x:Key="Publish.BrowseOutputDialogTitle">Вибрати вихідну теку</x:String>
+    <x:String x:Key="Publish.BrowseIconDialogTitle">Вибрати іконку додатку (.ico)</x:String>
+    <x:String x:Key="Publish.IconFileType">Файли іконок</x:String>
+    <x:String x:Key="Publish.AllFiles">Усі файли</x:String>
     <x:String x:Key="Publish.Options">Параметри публікації</x:String>
     <x:String x:Key="Publish.SingleFile">Один файл</x:String>
     <x:String x:Key="Publish.SingleFileTooltip">Збирає додаток в один виконуваний файл</x:String>
@@ -640,12 +648,19 @@
 
     <!-- ── 15b. PublishProgressWindow ────────────────────────────── -->
     <x:String x:Key="PublishProgress.Title">Публікація...</x:String>
+    <x:String x:Key="PublishProgress.Preparing">Підготовка до публікації...</x:String>
     <x:String x:Key="PublishProgress.Publishing">Публікація проєкту...</x:String>
     <x:String x:Key="PublishProgress.Succeeded">Публікація успішна!</x:String>
     <x:String x:Key="PublishProgress.SucceededTitle">✅ Публікація успішна</x:String>
     <x:String x:Key="PublishProgress.Failed">Публікація не вдалася</x:String>
     <x:String x:Key="PublishProgress.FailedTitle">❌ Публікація не вдалася</x:String>
     <x:String x:Key="PublishProgress.Cancelling">Скасування...</x:String>
+    <x:String x:Key="PublishProgress.ConsoleOutput">📋 Вивід консолі</x:String>
+    <x:String x:Key="PublishProgress.ClearOutput">🗑 Очистити</x:String>
+    <x:String x:Key="PublishProgress.CompilationErrors">{0} помилок компіляції — див. вивід консолі нижче</x:String>
+    <x:String x:Key="PublishProgress.UnknownError">Невідома помилка</x:String>
+    <x:String x:Key="PublishProgress.OutputSize">📊 {0}</x:String>
+    <x:String x:Key="PublishProgress.PortableRuntime">Портативний</x:String>
     <x:String x:Key="PublishProgress.OpenFolder">📂 Відкрити теку</x:String>
     <x:String x:Key="PublishProgress.Cancel">⏹ Скасувати</x:String>
     <x:String x:Key="PublishProgress.Close">Закрити</x:String>

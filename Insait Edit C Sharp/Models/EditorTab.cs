@@ -14,7 +14,6 @@ public class EditorTab : INotifyPropertyChanged
     private string _filePath = string.Empty;
     private string _content = string.Empty;
     private string _language = "plaintext";
-    private bool _isDirty;
     private bool _isActive;
     private int _cursorLine = 1;
     private int _cursorColumn = 1;
@@ -54,19 +53,19 @@ public class EditorTab : INotifyPropertyChanged
         get => _language; 
         set => SetProperty(ref _language, value); 
     }
-    
-    public bool IsDirty 
-    { 
-        get => _isDirty; 
-        set 
-        { 
-            if (SetProperty(ref _isDirty, value))
+
+    public bool IsDirty
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
             {
                 OnPropertyChanged(nameof(DisplayFileName));
             }
-        } 
+        }
     }
-    
+
     public bool IsActive 
     { 
         get => _isActive; 

@@ -598,10 +598,18 @@
     <x:String x:Key="Publish.FrameworkDependent">Çerçeveye bağımlı (hedefte .NET çalışma zamanı gerekir)</x:String>
     <x:String x:Key="Publish.SelfContained">Bağımsız (.NET çalışma zamanı dahil)</x:String>
     <x:String x:Key="Publish.Configuration">Yapılandırma</x:String>
+    <x:String x:Key="Publish.ConfigurationRelease">Release</x:String>
+    <x:String x:Key="Publish.ConfigurationDebug">Debug</x:String>
     <x:String x:Key="Publish.TargetRuntime">Hedef Çalışma Zamanı</x:String>
     <x:String x:Key="Publish.TargetFramework">Hedef Çerçeve</x:String>
     <x:String x:Key="Publish.OutputFolder">Çıktı Klasörü</x:String>
     <x:String x:Key="Publish.OutputPlaceholder">bin\publish</x:String>
+    <x:String x:Key="Publish.PortableRuntime">(Taşınabilir - herhangi bir işletim sistemi)</x:String>
+    <x:String x:Key="Publish.ProfileNone">(Yok - aşağıdaki ayarları kullan)</x:String>
+    <x:String x:Key="Publish.BrowseOutputDialogTitle">Çıktı Klasörünü Seç</x:String>
+    <x:String x:Key="Publish.BrowseIconDialogTitle">Uygulama Simgesini Seç (.ico)</x:String>
+    <x:String x:Key="Publish.IconFileType">Simge dosyaları</x:String>
+    <x:String x:Key="Publish.AllFiles">Tüm dosyalar</x:String>
     <x:String x:Key="Publish.Options">Yayınlama Seçenekleri</x:String>
     <x:String x:Key="Publish.SingleFile">Tek dosya</x:String>
     <x:String x:Key="Publish.SingleFileTooltip">Uygulamayı tek bir yürütülebilir dosyada paketler</x:String>
@@ -636,12 +644,19 @@
 
     <!-- PublishProgressWindow -->
     <x:String x:Key="PublishProgress.Title">Yayınlanıyor...</x:String>
+    <x:String x:Key="PublishProgress.Preparing">Yayınlamaya hazırlanıyor...</x:String>
     <x:String x:Key="PublishProgress.Publishing">Proje yayınlanıyor...</x:String>
     <x:String x:Key="PublishProgress.Succeeded">Yayınlama başarılı!</x:String>
     <x:String x:Key="PublishProgress.SucceededTitle">✅ Yayınlama Başarılı</x:String>
     <x:String x:Key="PublishProgress.Failed">Yayınlama başarısız</x:String>
     <x:String x:Key="PublishProgress.FailedTitle">❌ Yayınlama Başarısız</x:String>
     <x:String x:Key="PublishProgress.Cancelling">İptal ediliyor...</x:String>
+    <x:String x:Key="PublishProgress.ConsoleOutput">📋 Konsol Çıktısı</x:String>
+    <x:String x:Key="PublishProgress.ClearOutput">🗑 Temizle</x:String>
+    <x:String x:Key="PublishProgress.CompilationErrors">{0} derleme hatası — aşağıdaki konsol çıktısına bakın</x:String>
+    <x:String x:Key="PublishProgress.UnknownError">Bilinmeyen hata</x:String>
+    <x:String x:Key="PublishProgress.OutputSize">📊 {0}</x:String>
+    <x:String x:Key="PublishProgress.PortableRuntime">Taşınabilir</x:String>
     <x:String x:Key="PublishProgress.OpenFolder">📂 Klasörü Aç</x:String>
     <x:String x:Key="PublishProgress.Cancel">⏹ İptal</x:String>
     <x:String x:Key="PublishProgress.Close">Kapat</x:String>

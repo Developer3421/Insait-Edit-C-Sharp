@@ -77,7 +77,7 @@ internal sealed class InsaitEditorSurface : Control
     }
     public int    TotalLines   => _lines.Count;
     public int    VisibleLines => (int)(Bounds.Height / (_lineHeight > 0 ? _lineHeight : 20));
-    public double MaxLineWidth => _lines.Count > 0 ? _lines.Max(l => l.Length) * _charWidth : 0;
+    public double MaxLineWidth => _lines.Count > 0 ? _lines.Max(GetExpandedDisplayLength) * _charWidth : 0;
     public double ViewportWidth => Math.Max(0, Bounds.Width - _gutterWidth - 12);
 
     /// <summary>Returns the text of a line (0-based index). Empty string if out of range.</summary>
@@ -236,14 +236,18 @@ internal sealed class InsaitEditorSurface : Control
 
     public Rect GetCursorRect()
     {
-        double x = _gutterWidth + (_cursorCol - _scrollLeft) * _charWidth;
+        var displayCol = GetDisplayColumn(_lines[_cursorLine], _cursorCol);
+        double x = _gutterWidth + (displayCol - _scrollLeft) * _charWidth;
         double y = (_cursorLine - _scrollTop) * _lineHeight;
         return new Rect(x, y, _charWidth, _lineHeight);
     }
 
     public Rect GetCursorRectForPos(int line, int col)
     {
-        double x = _gutterWidth + (col - _scrollLeft) * _charWidth;
+        var safeLine = Math.Clamp(line, 0, _lines.Count - 1);
+        var safeCol = Math.Clamp(col, 0, _lines[safeLine].Length);
+        var displayCol = GetDisplayColumn(_lines[safeLine], safeCol);
+        double x = _gutterWidth + (displayCol - _scrollLeft) * _charWidth;
         double y = (line - _scrollTop) * _lineHeight;
         return new Rect(x, y, _charWidth, _lineHeight);
     }
@@ -637,9 +641,11 @@ internal sealed class InsaitEditorSurface : Control
         int ec = _selStartLine <= _selEndLine ? _selEndCol   : _selStartCol;
         if (li < sl || li > el) return;
 
-        double x1 = _gutterWidth + (li == sl ? (sc - _scrollLeft) * _charWidth : 0);
+        var lineText = _lines[li];
+        var startDisplayCol = li == sl ? GetDisplayColumn(lineText, sc) : 0;
+        double x1 = _gutterWidth + (startDisplayCol - _scrollLeft) * _charWidth;
         double x2 = li == el
-            ? _gutterWidth + (ec - _scrollLeft) * _charWidth
+            ? _gutterWidth + (GetDisplayColumn(lineText, ec) - _scrollLeft) * _charWidth
             : Bounds.Width;
         if (x2 > x1)
             ctx.FillRectangle(new SolidColorBrush(InsaitEditorColors.Selection),
@@ -651,7 +657,7 @@ internal sealed class InsaitEditorSurface : Control
         var lineText = _lines[li];
         if (lineText.Length == 0) return;
 
-        double xBase = _gutterWidth - _scrollLeft * _charWidth;
+        double x = _gutterWidth - _scrollLeft * _charWidth;
         int lineOff  = LineOffset(li);
 
         var spans = _classifiedSpans
@@ -662,43 +668,43 @@ internal sealed class InsaitEditorSurface : Control
 
         if (spans.Count == 0)
         {
-            var ft = new FormattedText(lineText,
+            var ft = new FormattedText(ExpandTabs(lineText),
                 System.Globalization.CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight, typeface, FontSize,
                 new SolidColorBrush(InsaitEditorColors.DefaultText));
-            ctx.DrawText(ft, new Point(xBase, y + LinePad));
+            ctx.DrawText(ft, new Point(x, y + LinePad));
             return;
         }
 
         int pos = lineOff;
         int end = lineOff + lineText.Length;
+        int displayCol = 0;
 
-        void Seg(int from, int to, Color color, bool bold = false)
+        void Seg(int from, int to, Color color)
         {
             int lf = Math.Max(from - lineOff, 0);
             int lt = Math.Min(to - lineOff, lineText.Length);
             if (lt <= lf) return;
-            var seg = lineText[lf..lt];
-            var tf = bold
-                ? new Typeface(typeface.FontFamily, typeface.Style, FontWeight.Bold)
-                : typeface;
+            var seg = ExpandTabs(lineText[lf..lt], ref displayCol);
             var ft = new FormattedText(seg,
                 System.Globalization.CultureInfo.InvariantCulture,
-                FlowDirection.LeftToRight, tf, FontSize, new SolidColorBrush(color));
-            ctx.DrawText(ft, new Point(xBase + lf * _charWidth, y + LinePad));
+                FlowDirection.LeftToRight, typeface, FontSize, new SolidColorBrush(color));
+            ctx.DrawText(ft, new Point(x, y + LinePad));
+            x += seg.Length * _charWidth;
         }
 
         foreach (var span in spans)
         {
-            if (span.TextSpan.Start > pos)
+            var spanStart = Math.Max(span.TextSpan.Start, pos);
+            var spanEnd = Math.Min(span.TextSpan.End, end);
+            if (spanEnd <= spanStart)
+                continue;
+
+            if (spanStart > pos)
                 Seg(pos, span.TextSpan.Start, InsaitEditorColors.DefaultText);
             var color = InsaitEditorColors.GetTokenColor(span.ClassificationType);
-            bool bold = span.ClassificationType is ClassificationTypeNames.Keyword
-                or ClassificationTypeNames.ControlKeyword
-                or ClassificationTypeNames.ClassName
-                or ClassificationTypeNames.RecordClassName;
-            Seg(span.TextSpan.Start, span.TextSpan.End, color, bold);
-            pos = span.TextSpan.End;
+            Seg(spanStart, spanEnd, color);
+            pos = spanEnd;
         }
         if (pos < end) Seg(pos, end, InsaitEditorColors.DefaultText);
     }
@@ -714,8 +720,8 @@ internal sealed class InsaitEditorSurface : Control
             if (d.StartOffset >= lineEnd || d.EndOffset <= lineOff) continue;
             int sc = Math.Max(d.StartOffset - lineOff, 0);
             int ec = Math.Min(d.EndOffset - lineOff, _lines[li].Length);
-            double x1 = _gutterWidth + (sc - _scrollLeft) * _charWidth;
-            double x2 = _gutterWidth + (ec - _scrollLeft) * _charWidth;
+            double x1 = _gutterWidth + (GetDisplayColumn(_lines[li], sc) - _scrollLeft) * _charWidth;
+            double x2 = _gutterWidth + (GetDisplayColumn(_lines[li], ec) - _scrollLeft) * _charWidth;
             var color = d.Severity switch
             {
                 DiagnosticSeverityKind.Error   => InsaitEditorColors.DiagError,
@@ -980,7 +986,8 @@ internal sealed class InsaitEditorSurface : Control
     private void PositionFromPoint(Point pt, out int lineIdx, out int colIdx)
     {
         lineIdx = Math.Clamp((int)(pt.Y / (_lineHeight > 0 ? _lineHeight : 20)) + _scrollTop, 0, _lines.Count - 1);
-        colIdx  = Math.Clamp((int)((pt.X - _gutterWidth) / (_charWidth > 0 ? _charWidth : 8)) + _scrollLeft, 0, _lines[lineIdx].Length);
+        var displayCol = Math.Max(0, (int)((pt.X - _gutterWidth) / (_charWidth > 0 ? _charWidth : 8)) + _scrollLeft);
+        colIdx = GetRawColumnFromDisplayColumn(_lines[lineIdx], displayCol);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -1296,6 +1303,88 @@ internal sealed class InsaitEditorSurface : Control
     private void RebuildLines() { _fullText = _fullText.Replace("\r\n", "\n").Replace("\r", "\n"); _lines.Clear(); _lines.AddRange(_fullText.Split('\n')); if (_lines.Count == 0) _lines.Add(string.Empty); ClampCursor(); ViewportChanged?.Invoke(this, EventArgs.Empty); }
     private int OffsetForPos(int line, int col) { int o = 0; for (int i = 0; i < line && i < _lines.Count; i++) o += _lines[i].Length + 1; return o + Math.Min(col, line < _lines.Count ? _lines[line].Length : 0); }
     private int LineOffset(int line) { int o = 0; for (int i = 0; i < line && i < _lines.Count; i++) o += _lines[i].Length + 1; return o; }
+
+    private static int GetExpandedDisplayLength(string text)
+    {
+        return GetDisplayColumn(text, text.Length);
+    }
+
+    private static int GetDisplayColumn(string text, int rawColumn)
+    {
+        rawColumn = Math.Clamp(rawColumn, 0, text.Length);
+        var displayCol = 0;
+        for (var i = 0; i < rawColumn; i++)
+        {
+            if (text[i] == '\t')
+            {
+                var spaces = (int)TabWidth - (displayCol % (int)TabWidth);
+                displayCol += spaces == 0 ? (int)TabWidth : spaces;
+            }
+            else
+            {
+                displayCol++;
+            }
+        }
+        return displayCol;
+    }
+
+    private static int GetRawColumnFromDisplayColumn(string text, int displayColumn)
+    {
+        displayColumn = Math.Max(0, displayColumn);
+        var rawCol = 0;
+        var currentDisplayCol = 0;
+
+        while (rawCol < text.Length)
+        {
+            var step = text[rawCol] == '\t'
+                ? Math.Max(1, (int)TabWidth - (currentDisplayCol % (int)TabWidth))
+                : 1;
+
+            if (currentDisplayCol + step > displayColumn)
+                break;
+
+            currentDisplayCol += step;
+            rawCol++;
+        }
+
+        return rawCol;
+    }
+
+    private static string ExpandTabs(string text)
+    {
+        var displayCol = 0;
+        return ExpandTabs(text, ref displayCol);
+    }
+
+    private static string ExpandTabs(string text, ref int displayCol)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        if (text.IndexOf('\t') < 0)
+        {
+            displayCol += text.Length;
+            return text;
+        }
+
+        var sb = new StringBuilder(text.Length);
+        foreach (var ch in text)
+        {
+            if (ch == '\t')
+            {
+                var spaces = Math.Max(1, (int)TabWidth - (displayCol % (int)TabWidth));
+                sb.Append(' ', spaces);
+                displayCol += spaces;
+            }
+            else
+            {
+                sb.Append(ch);
+                displayCol++;
+            }
+        }
+
+        return sb.ToString();
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     //  Roslyn / XML Classification (async, debounced)
