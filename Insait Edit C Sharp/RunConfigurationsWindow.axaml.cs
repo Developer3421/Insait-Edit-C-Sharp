@@ -30,11 +30,16 @@ public partial class RunConfigurationsWindow : Window
     }
 
     public RunConfigurationsWindow(string projectPath)
+        : this(projectPath, new RunConfigurationService())
+    {
+    }
+
+    public RunConfigurationsWindow(string projectPath, RunConfigurationService runConfigService)
     {
         InitializeComponent();
         
         _projectPath = projectPath;
-        _runConfigService = new RunConfigurationService();
+        _runConfigService = runConfigService;
         
         SetupEventHandlers();
         LoadConfigurations();
@@ -235,11 +240,6 @@ public partial class RunConfigurationsWindow : Window
         if (listBox != null)
         {
             listBox.ItemsSource = _configurations;
-            
-            if (_configurations.Count > 0)
-            {
-                listBox.SelectedIndex = 0;
-            }
         }
 
         // Bind compound configurations
@@ -250,6 +250,19 @@ public partial class RunConfigurationsWindow : Window
         var compoundList = this.FindControl<ListBox>("CompoundConfigsList");
         if (compoundList != null)
             compoundList.ItemsSource = _compoundConfigurations;
+
+        if (_runConfigService.ActiveCompoundConfiguration != null && compoundList != null)
+        {
+            compoundList.SelectedItem = _runConfigService.ActiveCompoundConfiguration;
+        }
+        else if (_runConfigService.ActiveConfiguration != null && listBox != null)
+        {
+            listBox.SelectedItem = _runConfigService.ActiveConfiguration;
+        }
+        else if (_configurations.Count > 0 && listBox != null)
+        {
+            listBox.SelectedIndex = 0;
+        }
 
         // Also load projects into combo box
         await LoadProjectsComboBox();
@@ -293,8 +306,48 @@ public partial class RunConfigurationsWindow : Window
         if (result != null && window.SelectedToRun != null)
         {
             _selectedCompound = window.SelectedToRun;
-            Close(window.SelectedToRun);  // pass compound back to MainWindow
+            _runConfigService.SetActiveCompoundConfiguration(window.SelectedToRun);
+            Close(new RunConfigurationDialogResult
+            {
+                ShouldRun = true,
+                CompoundConfiguration = window.SelectedToRun
+            });
         }
+    }
+
+    private void CloseWithSelection(bool shouldRun, bool startWithDebugging = false)
+    {
+        SaveCurrentConfiguration();
+
+        if (_selectedCompound != null)
+        {
+            _runConfigService.SetActiveCompoundConfiguration(_selectedCompound);
+            Close(new RunConfigurationDialogResult
+            {
+                ShouldRun = shouldRun,
+                StartWithDebugging = startWithDebugging,
+                CompoundConfiguration = _selectedCompound
+            });
+            return;
+        }
+
+        if (_selectedConfiguration != null)
+        {
+            _runConfigService.SetActiveConfiguration(_selectedConfiguration);
+            Close(new RunConfigurationDialogResult
+            {
+                ShouldRun = shouldRun,
+                StartWithDebugging = startWithDebugging,
+                RunConfiguration = _selectedConfiguration
+            });
+            return;
+        }
+
+        Close(new RunConfigurationDialogResult
+        {
+            ShouldRun = false,
+            StartWithDebugging = startWithDebugging
+        });
     }
 
     private async Task LoadProjectsComboBox()
@@ -575,32 +628,12 @@ public partial class RunConfigurationsWindow : Window
 
     private async void Run_Click(object? sender, RoutedEventArgs e)
     {
-        // If a compound is selected, close and signal compound run
-        if (_selectedCompound != null)
-        {
-            Close(_selectedCompound);
-            return;
-        }
-
-        SaveCurrentConfiguration();
-
-        if (_selectedConfiguration != null)
-        {
-            _runConfigService.SetActiveConfiguration(_selectedConfiguration);
-            Close(_selectedConfiguration);
-        }
+        CloseWithSelection(shouldRun: true);
     }
 
     private async void Debug_Click(object? sender, RoutedEventArgs e)
     {
-        SaveCurrentConfiguration();
-
-        if (_selectedConfiguration != null)
-        {
-            _runConfigService.SetActiveConfiguration(_selectedConfiguration);
-            // Mark for debugging
-            Close(_selectedConfiguration);
-        }
+        CloseWithSelection(shouldRun: true, startWithDebugging: true);
     }
 
     private void Apply_Click(object? sender, RoutedEventArgs e)
@@ -611,8 +644,15 @@ public partial class RunConfigurationsWindow : Window
 
     private void Ok_Click(object? sender, RoutedEventArgs e)
     {
-        SaveCurrentConfiguration();
-        Close(_selectedConfiguration);
+        CloseWithSelection(shouldRun: false);
     }
+}
+
+public class RunConfigurationDialogResult
+{
+    public bool ShouldRun { get; set; }
+    public bool StartWithDebugging { get; set; }
+    public RunConfiguration? RunConfiguration { get; set; }
+    public CompoundRunConfiguration? CompoundConfiguration { get; set; }
 }
 

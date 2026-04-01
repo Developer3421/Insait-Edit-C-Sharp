@@ -8,7 +8,6 @@ using Insait_Edit_C_Sharp.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Insait_Edit_C_Sharp;
 
@@ -37,13 +36,24 @@ public partial class CompoundRunWindow : Window
         SetupEventHandlers();
         LoadData();
         ApplyLocalization();
+        LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
     }
 
     private void ApplyLocalization()
     {
-        var L = (Func<string, string>)LocalizationService.Get;
         Title = L("Compound.Title");
+
+        if (_selected != null)
+        {
+            RebuildAvailableConfigsPanel(_selected);
+            UpdatePreview(_selected);
+        }
     }
+
+    private static string L(string key) => LocalizationService.Get(key);
+
+    private static string FormatLocalized(string key, params object?[] args)
+        => string.Format(LocalizationService.Get(key), args);
 
     private void InitializeComponent()
     {
@@ -201,10 +211,10 @@ public partial class CompoundRunWindow : Window
         {
             panel.Children.Add(new TextBlock
             {
-                Text = "No run configurations available. Open a solution with runnable projects first.",
+                Text = L("Compound.NoConfigsAvailable"),
                 Foreground = new SolidColorBrush(Color.Parse("#FF9399B2")),
                 FontSize = 12,
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(8)
             });
             return;
@@ -324,7 +334,7 @@ public partial class CompoundRunWindow : Window
         {
             panel.Children.Add(new TextBlock
             {
-                Text = "No projects selected — check at least one configuration above.",
+                Text = L("Compound.NoProjectsSelected"),
                 Foreground = new SolidColorBrush(Color.Parse("#FF6C7086")),
                 FontSize = 11,
                 FontStyle = FontStyle.Italic
@@ -332,10 +342,10 @@ public partial class CompoundRunWindow : Window
             return;
         }
 
-        var mode = compound.StartSequentially ? "Sequential" : "Parallel";
+        var mode = compound.StartSequentially ? L("Compound.ModeSequential") : L("Compound.ModeParallel");
         panel.Children.Add(new TextBlock
         {
-            Text = $"Mode: {mode}  •  {compound.Configurations.Count} project(s)",
+            Text = FormatLocalized("Compound.ModeSummary", mode, compound.Configurations.Count),
             FontSize = 11,
             Foreground = new SolidColorBrush(Color.Parse("#FFA6ADC8")),
             Margin = new Thickness(0, 0, 0, 8)
@@ -385,7 +395,7 @@ public partial class CompoundRunWindow : Window
         {
             panel.Children.Add(new TextBlock
             {
-                Text = $"⏱ {compound.DelayBetweenStartsMs} ms delay between starts",
+                Text = FormatLocalized("Compound.DelaySummary", compound.DelayBetweenStartsMs),
                 FontSize = 11,
                 Foreground = new SolidColorBrush(Color.Parse("#FF9399B2")),
                 Margin = new Thickness(0, 8, 0, 0)
@@ -396,7 +406,7 @@ public partial class CompoundRunWindow : Window
         {
             panel.Children.Add(new TextBlock
             {
-                Text = "⚠️ Stops on first failure",
+                Text = L("Compound.StopOnFailureSummary"),
                 FontSize = 11,
                 Foreground = new SolidColorBrush(Color.Parse("#FFFAB387")),
                 Margin = new Thickness(0, 4, 0, 0)
@@ -434,7 +444,7 @@ public partial class CompoundRunWindow : Window
     {
         var newCompound = new CompoundRunConfiguration
         {
-            Name = $"Compound #{_compounds.Count + 1}"
+            Name = FormatLocalized("Compound.DefaultName", _compounds.Count + 1)
         };
 
         _compounds.Add(newCompound);
@@ -461,7 +471,7 @@ public partial class CompoundRunWindow : Window
 
         var dup = new CompoundRunConfiguration
         {
-            Name = _selected.Name + " (Copy)",
+            Name = FormatLocalized("Compound.CopyName", _selected.Name),
             StartSequentially = _selected.StartSequentially,
             StopOnFailure = _selected.StopOnFailure,
             DelayBetweenStartsMs = _selected.DelayBetweenStartsMs,

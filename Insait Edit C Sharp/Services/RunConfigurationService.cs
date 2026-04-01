@@ -31,6 +31,7 @@ public class RunConfigurationService
 
     // Track all processes when running a compound configuration
     private readonly List<Process> _runningProcesses = new();
+    private readonly Dictionary<int, string> _runningProcessNames = new();
 
     public IReadOnlyList<RunConfiguration> Configurations => _configurations.AsReadOnly();
     public IReadOnlyList<CompoundRunConfiguration> CompoundConfigurations => _compoundConfigurations.AsReadOnly();
@@ -44,6 +45,9 @@ public class RunConfigurationService
     /// </summary>
     public async Task LoadConfigurationsAsync(string projectPath)
     {
+        var previousActiveConfiguration = _activeConfiguration;
+        var previousActiveCompoundConfiguration = _activeCompoundConfiguration;
+
         _configurations.Clear();
         
         // Find all runnable projects
@@ -95,6 +99,31 @@ public class RunConfigurationService
             }
         }
         
+        if (previousActiveCompoundConfiguration != null)
+        {
+            _activeCompoundConfiguration = _compoundConfigurations.FirstOrDefault(c =>
+                c.Name.Equals(previousActiveCompoundConfiguration.Name, StringComparison.OrdinalIgnoreCase))
+                ?? previousActiveCompoundConfiguration;
+            _activeConfiguration = null;
+            return;
+        }
+
+        if (previousActiveConfiguration != null)
+        {
+            _activeConfiguration = _configurations.FirstOrDefault(c =>
+                c.Name.Equals(previousActiveConfiguration.Name, StringComparison.OrdinalIgnoreCase) &&
+                c.ProjectPath.Equals(previousActiveConfiguration.ProjectPath, StringComparison.OrdinalIgnoreCase) &&
+                c.Configuration.Equals(previousActiveConfiguration.Configuration, StringComparison.OrdinalIgnoreCase))
+                ?? _configurations.FirstOrDefault(c =>
+                    c.ProjectPath.Equals(previousActiveConfiguration.ProjectPath, StringComparison.OrdinalIgnoreCase) &&
+                    c.Configuration.Equals(previousActiveConfiguration.Configuration, StringComparison.OrdinalIgnoreCase))
+                ?? _configurations.FirstOrDefault(c =>
+                    c.Name.Equals(previousActiveConfiguration.Name, StringComparison.OrdinalIgnoreCase))
+                ?? _configurations.FirstOrDefault(c => c.IsDefault)
+                ?? _configurations.FirstOrDefault();
+            return;
+        }
+
         // Set active configuration to first default
         _activeConfiguration = _configurations.FirstOrDefault(c => c.IsDefault) ?? _configurations.FirstOrDefault();
     }
@@ -321,6 +350,7 @@ public class RunConfigurationService
     public void SetActiveConfiguration(RunConfiguration config)
     {
         _activeConfiguration = config;
+        _activeCompoundConfiguration = null;
     }
 
     /// <summary>
@@ -329,6 +359,8 @@ public class RunConfigurationService
     public void SetActiveConfiguration(string name)
     {
         _activeConfiguration = _configurations.FirstOrDefault(c => c.Name == name);
+        if (_activeConfiguration != null)
+            _activeCompoundConfiguration = null;
     }
 
     /// <summary>
@@ -724,15 +756,26 @@ public class RunConfigurationService
             };
         }
 
+        if (compound.Configurations.Count == 0)
+        {
+            return new CompoundRunResult
+            {
+                Success = false,
+                ErrorMessage = "No configurations selected in the compound run."
+            };
+        }
+
         _outputBuffer.Clear();
         _cancellationTokenSource = new CancellationTokenSource();
         _runningProcesses.Clear();
+        _runningProcessNames.Clear();
 
         RunStarted?.Invoke(this, EventArgs.Empty);
         OnOutput($"╔══════════════════════════════════════════════════════════╗\n");
         OnOutput($"║  🚀 Compound Run: {compound.Name,-41}║\n");
         OnOutput($"╚══════════════════════════════════════════════════════════╝\n");
-        OnOutput($"Starting {compound.Configurations.Count} project(s) simultaneously...\n\n");
+        OnOutput($"Mode: {(compound.StartSequentially ? "Sequential" : "Parallel")}\n");
+        OnOutput($"Starting {compound.Configurations.Count} project(s) {(compound.StartSequentially ? "with staged startup" : "simultaneously")}...\n\n");
 
         var results = new List<(string Name, RunResult Result)>();
         var token = _cancellationTokenSource.Token;
@@ -741,7 +784,7 @@ public class RunConfigurationService
         {
             if (compound.StartSequentially)
             {
-                // Start one by one with optional delay
+                // Start one by one with optional delay between STARTS (not process exits)
                 foreach (var configName in compound.Configurations)
                 {
                     var config = _configurations.FirstOrDefault(c =>
@@ -753,8 +796,9 @@ public class RunConfigurationService
                     }
 
                     OnOutput($"▶ Starting: {config.Name}\n");
-                    var r = await StartSingleProcessAsync(config, token);
-                    results.Add((config.Name, r));
+                    var r = await StartSingleProcessAsync(config, token, waitForExit: false);
+                    if (!r.Success)
+                        results.Add((config.Name, r));
 
                     if (!r.Success && compound.StopOnFailure)
                     {
@@ -785,25 +829,18 @@ public class RunConfigurationService
                     tasks.Add(Task.Run(async () =>
                     {
                         OnOutput($"▶ Starting: {capturedConfig.Name}\n");
-                        var r = await StartSingleProcessAsync(capturedConfig, token);
+                        var r = await StartSingleProcessAsync(capturedConfig, token, waitForExit: false);
                         return (capturedConfig.Name, r);
                     }, token));
                 }
 
-                var allResults = await Task.WhenAll(tasks);
-                results.AddRange(allResults);
+                var startResults = await Task.WhenAll(tasks);
+                results.AddRange(startResults.Where(r => !r.Item2.Success));
             }
 
-            // Wait for all processes to finish (if not GUI)
-            var waitTasks = _runningProcesses
-                .Where(p => { try { return !p.HasExited; } catch { return false; } })
-                .Select(p => p.WaitForExitAsync(token))
-                .ToList();
+            results.AddRange(await WaitForTrackedProcessesAsync(token));
 
-            if (waitTasks.Count > 0)
-                await Task.WhenAll(waitTasks);
-
-            var allSuccess = results.All(r => r.Result.Success);
+            var allSuccess = results.Count > 0 && results.All(r => r.Result.Success);
             OnOutput($"\n══════════════════════════════════════════════════════════\n");
             OnOutput($"  Compound Run {(allSuccess ? "✅ Completed" : "❌ Finished with errors")}\n");
             foreach (var (name, res) in results)
@@ -844,15 +881,46 @@ public class RunConfigurationService
                 try { p.Dispose(); } catch { }
             }
             _runningProcesses.Clear();
+            _runningProcessNames.Clear();
             _runningProcess = null;
             RunStopped?.Invoke(this, EventArgs.Empty);
         }
     }
 
+    private async Task<List<(string Name, RunResult Result)>> WaitForTrackedProcessesAsync(CancellationToken token)
+    {
+        List<Process> processes;
+        lock (_runningProcesses)
+        {
+            processes = _runningProcesses.ToList();
+        }
+
+        var waitTasks = processes.Select(async process =>
+        {
+            await process.WaitForExitAsync(token);
+
+            var exit = process.ExitCode;
+            var success = exit == 0;
+            var name = _runningProcessNames.TryGetValue(process.Id, out var trackedName)
+                ? trackedName
+                : $"PID {process.Id}";
+
+            OnOutput($"└─── {(success ? "✅" : "❌")} {name} exited ({exit})\n");
+
+            return (name, new RunResult
+            {
+                Success = success,
+                ExitCode = exit
+            });
+        });
+
+        return (await Task.WhenAll(waitTasks)).ToList();
+    }
+
     /// <summary>
     /// Start a single process for a run configuration (used inside compound runs)
     /// </summary>
-    private async Task<RunResult> StartSingleProcessAsync(RunConfiguration config, CancellationToken token)
+    private async Task<RunResult> StartSingleProcessAsync(RunConfiguration config, CancellationToken token, bool waitForExit = true)
     {
         try
         {
@@ -924,7 +992,6 @@ public class RunConfigurationService
                 startInfo.EnvironmentVariables[env.Key] = env.Value;
 
             var process = new Process { StartInfo = startInfo };
-            lock (_runningProcesses) { _runningProcesses.Add(process); }
 
             if (startInfo.RedirectStandardOutput)
             {
@@ -945,6 +1012,12 @@ public class RunConfigurationService
 
             process.Start();
 
+            lock (_runningProcesses)
+            {
+                _runningProcesses.Add(process);
+                _runningProcessNames[process.Id] = config.Name;
+            }
+
             if (startInfo.RedirectStandardOutput)
             {
                 process.BeginOutputReadLine();
@@ -952,6 +1025,12 @@ public class RunConfigurationService
             }
 
             OnOutput($"  PID {process.Id} started\n");
+
+            if (!waitForExit)
+            {
+                OnOutput($"└─── 🚀 {config.Name} started\n");
+                return new RunResult { Success = true, ExitCode = 0 };
+            }
 
             // Wait until done or cancelled
             await process.WaitForExitAsync(token);
@@ -1001,6 +1080,8 @@ public class RunConfigurationService
                     catch { }
                 }
             }
+
+            _runningProcessNames.Clear();
 
             if (_runningProcesses.Count > 0)
                 OnOutput("\n══════ All processes stopped ══════\n");

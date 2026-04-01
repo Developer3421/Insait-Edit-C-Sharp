@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:services="using:Insait_Edit_C_Sharp.Services"
         x:Class="Insait_Edit_C_Sharp.CompoundRunWindow"
-        Title="Compound Run Configurations"
+        Title="{DynamicResource Compound.Title}"
         Width="900"
         Height="640"
         WindowStartupLocation="CenterOwner"
@@ -87,10 +87,10 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
                         <TextBlock Text="⚡" FontSize="16" VerticalAlignment="Center"/>
-                        <TextBlock Text="Compound Run Configurations" FontSize="13" FontWeight="SemiBold"
+                        <TextBlock Text="{DynamicResource Compound.Title}" FontSize="13" FontWeight="SemiBold"
                                    Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
                         <Border Background="#FF4A3D58" CornerRadius="4" Padding="6,2">
-                            <TextBlock Text="Run multiple projects simultaneously" FontSize="11"
+                            <TextBlock Text="{DynamicResource Compound.Subtitle}" FontSize="11"
                                        Foreground="#FF9E90B0" VerticalAlignment="Center"/>
                         </Border>
                     </StackPanel>
@@ -111,9 +111,9 @@
                         <!-- Header -->
                         <Border Grid.Row="0" Padding="12,10" BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Compound Configurations" FontWeight="SemiBold"
+                                <TextBlock Text="{DynamicResource Compound.Configurations}" FontWeight="SemiBold"
                                            Foreground="#FFFFC09F" FontSize="12"/>
-                                <TextBlock Text="Each compound config runs multiple projects at once"
+                                <TextBlock Text="{DynamicResource Compound.ConfigurationsDescription}"
                                            FontSize="10" Foreground="#FF9E90B0" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
@@ -132,7 +132,8 @@
                                         </StackPanel>
                                         <TextBlock FontSize="10" Foreground="#FF9E90B0" Margin="20,0,0,0">
                                             <Run Text="{Binding Configurations.Count}"/>
-                                            <Run Text=" project(s)"/>
+                                            <Run Text=" "/>
+                                            <Run Text="{DynamicResource Compound.ProjectCountSuffix}"/>
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
@@ -142,11 +143,11 @@
                         <!-- Add/Remove Buttons -->
                         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="8">
                             <Button Content="+" Classes="action-button" Width="36" Height="32"
-                                    ToolTip.Tip="New Compound Configuration" Name="AddCompoundButton"/>
+                                    ToolTip.Tip="{DynamicResource Compound.NewTooltip}" Name="AddCompoundButton"/>
                             <Button Content="−" Classes="action-button" Width="36" Height="32"
-                                    ToolTip.Tip="Remove Compound Configuration" Name="RemoveCompoundButton"/>
+                                    ToolTip.Tip="{DynamicResource Compound.RemoveTooltip}" Name="RemoveCompoundButton"/>
                             <Button Content="📋" Classes="action-button" Width="36" Height="32"
-                                    ToolTip.Tip="Duplicate" Name="DuplicateCompoundButton"/>
+                                    ToolTip.Tip="{DynamicResource Compound.DuplicateTooltip}" Name="DuplicateCompoundButton"/>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -161,10 +162,10 @@
                             <StackPanel HorizontalAlignment="Center" Spacing="12">
                                 <TextBlock Text="⚡" FontSize="48" HorizontalAlignment="Center"
                                            Foreground="#FF3E3050"/>
-                                <TextBlock Text="No compound configuration selected"
+                                <TextBlock Text="{DynamicResource Compound.EmptyTitle}"
                                            Foreground="#FF9E90B0" HorizontalAlignment="Center"
                                            FontSize="14"/>
-                                <TextBlock Text="Click '+' to create a new compound configuration"
+                                <TextBlock Text="{DynamicResource Compound.EmptyHint}"
                                            Foreground="#FF736886" HorizontalAlignment="Center"
                                            FontSize="12"/>
                             </StackPanel>
@@ -175,18 +176,18 @@
 
                             <!-- Name -->
                             <StackPanel Spacing="6">
-                                <TextBlock Text="Configuration Name" FontWeight="SemiBold"
+                                <TextBlock Text="{DynamicResource Compound.ConfigName}" FontWeight="SemiBold"
                                            Foreground="#FFF0E8F4" FontSize="12"/>
-                                <TextBox Name="CompoundNameBox" Watermark="e.g. Full Stack, Backend + Frontend"/>
+                                <TextBox Name="CompoundNameBox" Watermark="{DynamicResource Compound.NameWatermark}"/>
                             </StackPanel>
 
                             <!-- Projects to Run -->
                             <StackPanel Spacing="8">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <StackPanel Grid.Column="0" Spacing="2">
-                                        <TextBlock Text="Projects to Launch" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource Compound.ProjectsToLaunch}" FontWeight="SemiBold"
                                                    Foreground="#FFF0E8F4" FontSize="12"/>
-                                        <TextBlock Text="All selected projects will be launched simultaneously"
+                                        <TextBlock Text="{DynamicResource Compound.ProjectsDescription}"
                                                    FontSize="10" Foreground="#FF9E90B0"/>
                                     </StackPanel>
                                 </Grid>
@@ -203,22 +204,22 @@
                             <!-- Execution Options -->
                             <Border Background="#FF2A2230" CornerRadius="8" Padding="16">
                                 <StackPanel Spacing="12">
-                                    <TextBlock Text="Execution Options" FontWeight="SemiBold"
+                                    <TextBlock Text="{DynamicResource Compound.ExecutionOptions}" FontWeight="SemiBold"
                                                Foreground="#FFFFC09F" FontSize="12"/>
 
                                     <CheckBox Name="StartSequentiallyCheck"
-                                              Content="Start projects sequentially (one after another)"
+                                              Content="{DynamicResource Compound.Sequential}"
                                               IsCheckedChanged="StartSequentially_Changed"/>
 
                                     <StackPanel Name="SequentialOptions" Spacing="10" Margin="20,0,0,0">
                                         <CheckBox Name="StopOnFailureCheck"
-                                                  Content="Stop on first failure"
+                                                  Content="{DynamicResource Compound.StopOnFailure}"
                                                   IsEnabled="False"/>
 
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Delay between starts (ms)"
+                                            <TextBlock Text="{DynamicResource Compound.Delay}"
                                                        Foreground="#FFF0E8F4" FontSize="12"/>
-                                            <TextBox Name="DelayBox" Watermark="0"
+                                            <TextBox Name="DelayBox" Watermark="{DynamicResource Compound.DelayWatermark}"
                                                      IsEnabled="False"/>
                                         </StackPanel>
                                     </StackPanel>
@@ -228,7 +229,7 @@
                             <!-- Preview -->
                             <Border Background="#FF1A1520" CornerRadius="8" Padding="16" Name="PreviewPanel">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Text="Launch Preview" FontWeight="SemiBold"
+                                    <TextBlock Text="{DynamicResource Compound.LaunchPreview}" FontWeight="SemiBold"
                                                Foreground="#FFA6E3A1" FontSize="12"/>
                                     <StackPanel Name="PreviewItemsPanel" Spacing="6"/>
                                 </StackPanel>
@@ -243,15 +244,15 @@
             <Border Grid.Row="2" Background="#FF2A2230" Padding="16,12">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                        <Button Content="▶▶ Run All" Classes="primary-button" Name="RunAllButton"
-                                ToolTip.Tip="Build and run all projects in this compound configuration"/>
-                        <Button Content="■ Stop All" Classes="danger-button" Name="StopAllButton"
+                        <Button Content="{DynamicResource Compound.RunAll}" Classes="primary-button" Name="RunAllButton"
+                                ToolTip.Tip="{DynamicResource Compound.RunAllTooltip}"/>
+                        <Button Content="{DynamicResource Compound.StopAll}" Classes="danger-button" Name="StopAllButton"
                                 IsVisible="False"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                        <Button Content="Apply" Classes="action-button" Name="ApplyButton"/>
-                        <Button Content="Cancel" Classes="action-button" Name="CancelButton"/>
-                        <Button Content="OK" Classes="primary-button" Name="OkButton"/>
+                        <Button Content="{DynamicResource Compound.Apply}" Classes="action-button" Name="ApplyButton"/>
+                        <Button Content="{DynamicResource Compound.Cancel}" Classes="action-button" Name="CancelButton"/>
+                        <Button Content="{DynamicResource Compound.OK}" Classes="primary-button" Name="OkButton"/>
                     </StackPanel>
                 </Grid>
             </Border>

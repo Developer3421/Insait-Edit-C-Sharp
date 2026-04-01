@@ -316,6 +316,14 @@ public partial class MainWindow
         var path = GetCurrentProjectPath();
         if (string.IsNullOrEmpty(path)) { _viewModel.StatusText = "No project loaded"; return; }
         SwitchToolWindowPanel("run");
+
+        var activeCompound = _runConfigService.ActiveCompoundConfiguration;
+        if (activeCompound != null)
+        {
+            await RunCompoundConfigurationAsync(activeCompound);
+            return;
+        }
+
         var cfg = await GetRunConfigurationAsync();
         if (cfg != null) await RunWithConfigurationAsync(cfg);
         else
@@ -330,6 +338,14 @@ public partial class MainWindow
         var path = GetCurrentProjectPath();
         if (string.IsNullOrEmpty(path)) { _viewModel.StatusText = "No project loaded"; return; }
         SwitchToolWindowPanel("run");
+
+        var activeCompound = _runConfigService.ActiveCompoundConfiguration;
+        if (activeCompound != null)
+        {
+            await RunCompoundConfigurationAsync(activeCompound);
+            return;
+        }
+
         var cfg = await GetDebugRunConfigurationAsync();
         if (cfg != null) await RunWithConfigurationAsync(cfg);
         else
@@ -339,16 +355,40 @@ public partial class MainWindow
         }
     }
 
-    private async Task RunWithConfigurationAsync(RunConfiguration config)
+    private async Task RunWithConfigurationAsync(RunConfiguration config, bool withDebugging = false)
     {
         SwitchToolWindowPanel("run");
         _viewModel.StatusText = $"Running: {config.Name}";
         ClearRunOutput();
         _runConfigService.OutputReceived += OnRunOutput;
         _runConfigService.RunCompleted += OnRunCompleted;
-        await _runConfigService.RunConfigurationAsync(config);
-        _runConfigService.OutputReceived -= OnRunOutput;
-        _runConfigService.RunCompleted -= OnRunCompleted;
+        try
+        {
+            await _runConfigService.RunConfigurationAsync(config, withDebugging);
+        }
+        finally
+        {
+            _runConfigService.OutputReceived -= OnRunOutput;
+            _runConfigService.RunCompleted -= OnRunCompleted;
+        }
+    }
+
+    private async Task RunCompoundConfigurationAsync(CompoundRunConfiguration compound)
+    {
+        SwitchToolWindowPanel("run");
+        _viewModel.StatusText = $"Running compound: {compound.Name}";
+        ClearRunOutput();
+        _runConfigService.OutputReceived += OnRunOutput;
+        _runConfigService.RunCompleted += OnRunCompleted;
+        try
+        {
+            await _runConfigService.RunCompoundAsync(compound);
+        }
+        finally
+        {
+            _runConfigService.OutputReceived -= OnRunOutput;
+            _runConfigService.RunCompleted -= OnRunCompleted;
+        }
     }
 
 
@@ -358,7 +398,8 @@ public partial class MainWindow
         if (string.IsNullOrWhiteSpace(path))
             return null;
 
-        await _runConfigService.LoadConfigurationsAsync(path);
+        if (_runConfigService.Configurations.Count == 0)
+            await _runConfigService.LoadConfigurationsAsync(path);
 
         var activeConfiguration = _runConfigService.ActiveConfiguration;
         if (activeConfiguration != null)
@@ -391,7 +432,8 @@ public partial class MainWindow
         if (string.IsNullOrWhiteSpace(path))
             return null;
 
-        await _runConfigService.LoadConfigurationsAsync(path);
+        if (_runConfigService.Configurations.Count == 0)
+            await _runConfigService.LoadConfigurationsAsync(path);
 
         var activeConfiguration = _runConfigService.ActiveConfiguration;
         if (activeConfiguration != null)
@@ -456,15 +498,42 @@ public partial class MainWindow
         _viewModel.StatusText = "Stopped";
     }
 
+    private void UpdateRunConfigurationDisplay()
+    {
+        var nt = this.FindControl<TextBlock>("RunConfigNameText");
+        if (nt == null)
+            return;
+
+        nt.Text = _runConfigService.ActiveCompoundConfiguration?.Name
+            ?? _runConfigService.ActiveConfiguration?.Name
+            ?? "Default";
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  Run configs / Publish / Solution
     // ═══════════════════════════════════════════════════════════
     private async Task ShowRunConfigurationsAsync()
     {
         var path = GetCurrentProjectPath() ?? string.Empty;
-        await new RunConfigurationsWindow(path).ShowDialog(this);
-        var nt = this.FindControl<TextBlock>("RunConfigNameText");
-        if (nt != null) nt.Text = _runConfigService.ActiveConfiguration?.Name ?? "Default";
+        if (_runConfigService.Configurations.Count == 0 && !string.IsNullOrWhiteSpace(path))
+            await _runConfigService.LoadConfigurationsAsync(path);
+
+        var window = new RunConfigurationsWindow(path, _runConfigService);
+        var result = await window.ShowDialog<RunConfigurationDialogResult?>(this);
+
+        UpdateRunConfigurationDisplay();
+
+        if (result == null || !result.ShouldRun)
+            return;
+
+        if (result.CompoundConfiguration != null)
+        {
+            await RunCompoundConfigurationAsync(result.CompoundConfiguration);
+            return;
+        }
+
+        if (result.RunConfiguration != null)
+            await RunWithConfigurationAsync(result.RunConfiguration, result.StartWithDebugging);
     }
 
     private async Task ShowPublishWindowAsync()

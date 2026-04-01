@@ -5,7 +5,7 @@
         xmlns:models="using:Insait_Edit_C_Sharp.Models"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
         x:Class="Insait_Edit_C_Sharp.GitWindow"
-        Title="Git — Insait Edit"
+        Title="{DynamicResource Git.Title}"
         WindowStartupLocation="CenterOwner"
         SystemDecorations="None"
         Width="1100" Height="720"
@@ -241,17 +241,17 @@
                 <Border Grid.Row="0" Background="{StaticResource BgBrush}"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,6">
                     <Grid ColumnDefinitions="Auto,*,Auto">
-                        <TextBlock Grid.Column="0" Name="ScopeLabel" Text="Scope:" FontSize="11"
+                        <TextBlock Grid.Column="0" Name="ScopeLabel" Text="{DynamicResource Git.Scope}" FontSize="11"
                                    Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox Grid.Column="1" Name="ScopeCombo"
                                   Background="#FF252030" Foreground="{StaticResource TextBrush}"
                                   BorderBrush="{StaticResource BorderBrush}"
                                   FontSize="11" HorizontalAlignment="Stretch"
                                   SelectionChanged="ScopeCombo_SelectionChanged">
-                            <ComboBoxItem Content="📁 Solution (all projects)" Tag="solution"/>
+                            <ComboBoxItem Content="{DynamicResource Git.SolutionAll}" Tag="solution"/>
                         </ComboBox>
                         <Button Grid.Column="2" Classes="tb" Width="26" Height="26" Margin="4,0,0,0"
-                                Name="RefreshBtn" ToolTip.Tip="Refresh" Click="Refresh_Click">
+                                Name="RefreshBtn" ToolTip.Tip="{DynamicResource Git.Refresh}" Click="Refresh_Click">
                             <TextBlock Text="🔄" FontSize="12"/>
                         </Button>
                     </Grid>
@@ -262,35 +262,35 @@
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="4">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Orientation="Horizontal" Spacing="2">
-                            <Button Classes="tb" Name="CommitToolbarBtn" ToolTip.Tip="Focus commit message" Click="CommitToolbar_Click">
+                            <Button Classes="tb" Name="CommitToolbarBtn" ToolTip.Tip="{DynamicResource Git.FocusCommitMessage}" Click="CommitToolbar_Click">
                                 <TextBlock Text="✓" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
                             </Button>
-                            <Button Classes="tb" Name="PullBtn" ToolTip.Tip="Pull / Update" Click="Pull_Click">
+                            <Button Classes="tb" Name="PullBtn" ToolTip.Tip="{DynamicResource Git.Pull}" Click="Pull_Click">
                                 <TextBlock Text="↓" FontSize="15" FontWeight="Bold" Foreground="{StaticResource BlueBrush}"/>
                             </Button>
-                            <Button Classes="tb" Name="PushBtn" ToolTip.Tip="Push" Click="Push_Click">
+                            <Button Classes="tb" Name="PushBtn" ToolTip.Tip="{DynamicResource Git.Push}" Click="Push_Click">
                                 <TextBlock Text="↑" FontSize="15" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
                             </Button>
                             <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,6"/>
-                            <Button Classes="tb" Name="FetchBtn" ToolTip.Tip="Fetch" Click="Fetch_Click">
+                            <Button Classes="tb" Name="FetchBtn" ToolTip.Tip="{DynamicResource Git.Fetch}" Click="Fetch_Click">
                                 <TextBlock Text="⟳" FontSize="14"/>
                             </Button>
-                            <Button Classes="tb" Name="StashBtn" ToolTip.Tip="Stash" Click="Stash_Click">
+                            <Button Classes="tb" Name="StashBtn" ToolTip.Tip="{DynamicResource Git.Stash}" Click="Stash_Click">
                                 <TextBlock Text="📦" FontSize="12"/>
                             </Button>
-                            <Button Classes="tb" Name="PopStashBtn" ToolTip.Tip="Pop stash" Click="PopStash_Click">
+                            <Button Classes="tb" Name="PopStashBtn" ToolTip.Tip="{DynamicResource Git.PopStash}" Click="PopStash_Click">
                                 <TextBlock Text="📤" FontSize="12"/>
                             </Button>
-                            <Button Classes="tb" Name="RollbackBtn" ToolTip.Tip="Rollback all" Click="Rollback_Click">
+                            <Button Classes="tb" Name="RollbackBtn" ToolTip.Tip="{DynamicResource Git.Rollback}" Click="Rollback_Click">
                                 <TextBlock Text="↺" FontSize="13"/>
                             </Button>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
                             <!-- Create GitHub repo using GitHubAccountService -->
-                            <Button Classes="tb" Name="CreateRepoBtn" ToolTip.Tip="Create GitHub repository" Click="CreateRepo_Click">
+                            <Button Classes="tb" Name="CreateRepoBtn" ToolTip.Tip="{DynamicResource Git.CreateRepo}" Click="CreateRepo_Click">
                                 <TextBlock Text="🐙" FontSize="14"/>
                             </Button>
-                            <Button Classes="tb" ToolTip.Tip="Git console" Click="ConsoleTabFromToolbar_Click">
+                            <Button Classes="tb" ToolTip.Tip="{DynamicResource Git.Console}" Click="ConsoleTabFromToolbar_Click">
                                 <TextBlock Text="⌨" FontSize="13"/>
                             </Button>
                         </StackPanel>
@@ -336,8 +336,8 @@
                             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                                 <CheckBox Grid.Column="0" Name="SelectAllCheck"
                                           IsChecked="True" Click="SelectAll_Click"
-                                          ToolTip.Tip="Select / deselect all"/>
-                                <TextBlock Grid.Column="1" Text="Files to commit" FontSize="11"
+                                          ToolTip.Tip="{DynamicResource Git.SelectAll}"/>
+                                <TextBlock Grid.Column="1" Text="{DynamicResource Git.FilesToCommit}" FontSize="11"
                                            Foreground="{StaticResource MutedBrush}"
                                            VerticalAlignment="Center" Margin="6,0,0,0"/>
                                 <TextBlock Grid.Column="2" Name="SelectedCountLbl"
@@ -345,7 +345,7 @@
                                            Foreground="{StaticResource MutedBrush}"
                                            VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <Button Grid.Column="3" Classes="tb" Width="22" Height="22"
-                                        ToolTip.Tip="Stage selected" Click="StageSelected_Click">
+                                        ToolTip.Tip="{DynamicResource Git.StageSelected}" Click="StageSelected_Click">
                                     <TextBlock Text="+" FontSize="14" FontWeight="Bold"
                                                Foreground="{StaticResource GreenBrush}"/>
                                 </Button>
@@ -361,15 +361,15 @@
                                 <StackPanel Name="NoRepoPanel" Spacing="12" Margin="16,28"
                                             HorizontalAlignment="Center" IsVisible="True">
                                     <TextBlock Text="🔀" FontSize="40" HorizontalAlignment="Center" Opacity="0.3"/>
-                                    <TextBlock Text="No Git repository" FontSize="14" FontWeight="SemiBold"
+                                    <TextBlock Text="{DynamicResource Git.NoRepoTitle}" FontSize="14" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" Foreground="{StaticResource TextBrush}"/>
-                                    <TextBlock Text="Open a project with a Git repository&#10;or initialize a new one."
+                                    <TextBlock Text="{DynamicResource Git.NoRepoDescription}"
                                                FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
                                                Foreground="{StaticResource MutedBrush}" MaxWidth="220"/>
                                     <StackPanel Spacing="6" Margin="0,8,0,0">
-                                        <Button Classes="primary" Content="Initialize Repository"
+                                        <Button Classes="primary" Content="{DynamicResource Git.InitializeRepository}"
                                                 HorizontalAlignment="Stretch" Click="InitRepo_Click"/>
-                                        <Button Classes="sec" Content="Clone Repository…"
+                                        <Button Classes="sec" Content="{DynamicResource Git.CloneRepository}"
                                                 HorizontalAlignment="Stretch" Click="Clone_Click"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -379,9 +379,9 @@
                                             Margin="16,28" HorizontalAlignment="Center">
                                     <TextBlock Text="✓" FontSize="32" HorizontalAlignment="Center"
                                                Foreground="{StaticResource GreenBrush}" Opacity="0.6"/>
-                                    <TextBlock Text="Nothing to commit" FontSize="13" HorizontalAlignment="Center"
+                                     <TextBlock Text="{DynamicResource Git.NothingToCommit}" FontSize="13" HorizontalAlignment="Center"
                                                Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
-                                    <TextBlock Text="Working tree is clean" FontSize="11" HorizontalAlignment="Center"
+                                     <TextBlock Text="{DynamicResource Git.WorkingTreeClean}" FontSize="11" HorizontalAlignment="Center"
                                                Foreground="{StaticResource MutedBrush}"/>
                                 </StackPanel>
 
@@ -392,10 +392,10 @@
                                             <Border Classes="frow">
                                                 <Border.ContextMenu>
                                                     <ContextMenu>
-                                                        <MenuItem Header="Show Diff"  Click="CtxViewDiff_Click"/>
-                                                        <MenuItem Header="Discard"    Click="CtxDiscard_Click"/>
+                                                        <MenuItem Header="{DynamicResource Git.MenuShowDiff}"  Click="CtxViewDiff_Click"/>
+                                                        <MenuItem Header="{DynamicResource Git.MenuDiscard}"    Click="CtxDiscard_Click"/>
                                                         <Separator/>
-                                                        <MenuItem Header="Open File"  Click="CtxOpenFile_Click"/>
+                                                        <MenuItem Header="{DynamicResource Git.MenuOpenFile}"  Click="CtxOpenFile_Click"/>
                                                     </ContextMenu>
                                                 </Border.ContextMenu>
                                                 <Grid ColumnDefinitions="Auto,18,*,Auto">
@@ -422,7 +422,7 @@
                                                     </StackPanel>
                                                     <!-- Discard btn -->
                                                     <Button Grid.Column="3" Classes="tb" Width="18" Height="18"
-                                                            Tag="{Binding}" ToolTip.Tip="Discard"
+                                                            Tag="{Binding}" ToolTip.Tip="{DynamicResource Git.Discard}"
                                                             Click="DiscardFileBtn_Click">
                                                         <TextBlock Text="↺" FontSize="10"
                                                                    Foreground="{StaticResource MutedBrush}"/>
@@ -445,25 +445,25 @@
                     <StackPanel Spacing="6">
                         <TextBox Name="CommitMsgBox"
                                  TextChanged="CommitMsgBox_TextChanged"
-                                 Watermark="Commit message (Ctrl+Enter to commit)"
+                                 Watermark="{DynamicResource Git.CommitMessageWatermark}"
                                  AcceptsReturn="True" TextWrapping="Wrap"
                                  MinHeight="56" MaxHeight="110"
                                  Background="#FF252030"
                                  BorderBrush="{StaticResource BorderBrush}"
                                  FontSize="12" CornerRadius="4" Padding="8,6"/>
                         <Grid ColumnDefinitions="*,Auto">
-                            <Button Grid.Column="0" Classes="primary" Content="Commit"
+                            <Button Grid.Column="0" Classes="primary" Content="{DynamicResource Git.Commit}"
                                     Name="CommitBtn" Click="Commit_Click"
                                     IsEnabled="False" HorizontalAlignment="Stretch"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="6,0,0,0">
                                 <Button Classes="tb" Width="30" Height="30"
-                                        ToolTip.Tip="Commit and Push"
+                                        ToolTip.Tip="{DynamicResource Git.CommitAndPush}"
                                         Click="CommitPush_Click">
                                     <TextBlock Text="↑" FontSize="14" FontWeight="Bold"
                                                Foreground="{StaticResource GreenBrush}"/>
                                 </Button>
                                 <Button Classes="tb" Width="30" Height="30"
-                                        ToolTip.Tip="Amend last commit"
+                                        ToolTip.Tip="{DynamicResource Git.AmendLastCommit}"
                                         Click="Amend_Click">
                                     <TextBlock Text="✎" FontSize="12"
                                                Foreground="{StaticResource Yellow}"/>
@@ -496,30 +496,30 @@
                             <Button Classes="rtab active" Name="LogTabBtn" Click="LogTab_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="🕒" FontSize="11"/>
-                                    <TextBlock Text="Log" FontSize="12"/>
+                                    <TextBlock Text="{DynamicResource Git.TabLog}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Classes="rtab" Name="DiffTabBtn" Click="DiffTab_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="⟺" FontSize="11"/>
-                                    <TextBlock Text="Changes" FontSize="12"/>
+                                    <TextBlock Text="{DynamicResource Git.TabChanges}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Classes="rtab" Name="ConsoleTabBtn" Click="ConsoleTab_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="⌨" FontSize="11"/>
-                                    <TextBlock Text="Console" FontSize="12"/>
+                                    <TextBlock Text="{DynamicResource Git.Console}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
                                     Margin="0,0,8,0" VerticalAlignment="Center">
                             <Button Classes="tb" Width="24" Height="24"
-                                    Name="AllBranchesBtn" ToolTip.Tip="All branches"
+                                    Name="AllBranchesBtn" ToolTip.Tip="{DynamicResource Git.AllBranches}"
                                     Click="AllBranches_Click">
                                 <TextBlock Text="⎇" FontSize="11"/>
                             </Button>
-                            <TextBox Name="LogFilterBox" Watermark="Filter commits…"
+                            <TextBox Name="LogFilterBox" Watermark="{DynamicResource Git.FilterCommits}"
                                      Width="180" Height="24"
                                      Background="#FF252030"
                                      BorderBrush="{StaticResource BorderBrush}"
@@ -543,7 +543,7 @@
                                         BorderThickness="0,0,0,1" Padding="10,5">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <TextBlock Text="💻" FontSize="12"/>
-                                        <TextBlock Text="Local" FontSize="12" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource Git.Local}" FontSize="12" FontWeight="SemiBold"
                                                    Foreground="{StaticResource TextBrush}"/>
                                         <TextBlock Name="LocalBranchLabel" Text="(main)" FontSize="11"
                                                    Foreground="{StaticResource GreenBrush}"/>
@@ -557,13 +557,13 @@
                                                 <Border Classes="crow" PointerPressed="LocalCommit_PointerPressed">
                                                     <Border.ContextMenu>
                                                         <ContextMenu>
-                                                            <MenuItem Header="Checkout this revision" Click="CtxCheckoutRevision_Click"/>
-                                                            <MenuItem Header="New Branch from here…" Click="CtxNewBranchFromHere_Click"/>
+                                                             <MenuItem Header="{DynamicResource Git.MenuCheckoutRevision}" Click="CtxCheckoutRevision_Click"/>
+                                                             <MenuItem Header="{DynamicResource Git.MenuNewBranchFromHere}" Click="CtxNewBranchFromHere_Click"/>
                                                             <Separator/>
-                                                            <MenuItem Header="Cherry-Pick"  Click="CtxCherryPick_Click"/>
-                                                            <MenuItem Header="Revert Commit" Click="CtxRevertCommit_Click"/>
+                                                             <MenuItem Header="{DynamicResource Git.MenuCherryPick}"  Click="CtxCherryPick_Click"/>
+                                                             <MenuItem Header="{DynamicResource Git.MenuRevertCommit}" Click="CtxRevertCommit_Click"/>
                                                             <Separator/>
-                                                            <MenuItem Header="Copy Hash"    Click="CtxCopyHash_Click"/>
+                                                             <MenuItem Header="{DynamicResource Git.MenuCopyHash}"    Click="CtxCopyHash_Click"/>
                                                         </ContextMenu>
                                                     </Border.ContextMenu>
                                                     <Grid ColumnDefinitions="20,*">
@@ -610,7 +610,7 @@
                                         BorderThickness="0,0,0,1" Padding="10,5">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <TextBlock Text="☁" FontSize="12" Foreground="{StaticResource BlueBrush}"/>
-                                        <TextBlock Text="Remote" FontSize="12" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource Git.Remote}" FontSize="12" FontWeight="SemiBold"
                                                    Foreground="{StaticResource TextBrush}"/>
                                         <TextBlock Name="RemoteBranchLabel" Text="(origin/main)" FontSize="11"
                                                    Foreground="{StaticResource BlueBrush}"/>
@@ -682,7 +682,7 @@
                                         </StackPanel>
                                     </StackPanel>
                                     <TextBlock Name="CommitDetailPlaceholder"
-                                               Text="Select a commit to see details"
+                                               Text="{DynamicResource Git.CommitDetailPlaceholder}"
                                                FontSize="11" FontStyle="Italic"
                                                Foreground="{StaticResource MutedBrush}"/>
                                 </Panel>
@@ -723,7 +723,7 @@
                         <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
                                 BorderThickness="0,0,0,1" Padding="10,5">
-                            <TextBlock Name="DiffFileLabel" Text="Select a file to view diff"
+                            <TextBlock Name="DiffFileLabel" Text="{DynamicResource Git.SelectFileToViewDiff}"
                                        FontSize="11" FontStyle="Italic"
                                        Foreground="{StaticResource MutedBrush}"/>
                         </Border>
@@ -746,7 +746,7 @@
                                 BorderThickness="0,0,0,1" Padding="4,2">
                             <StackPanel Orientation="Horizontal" Spacing="2">
                                 <Button Classes="tb" Width="24" Height="24"
-                                        ToolTip.Tip="Clear" Click="ClearConsole_Click">
+                                        ToolTip.Tip="{DynamicResource Git.Clear}" Click="ClearConsole_Click">
                                     <TextBlock Text="🗑" FontSize="11"/>
                                 </Button>
                             </StackPanel>
@@ -754,7 +754,7 @@
                         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
                                       VerticalScrollBarVisibility="Auto" Name="ConsoleSV">
                             <SelectableTextBlock Name="ConsoleText"
-                                       Text="Git console ready…" Margin="8,4"
+                                       Text="{DynamicResource Git.ConsoleReady}" Margin="8,4"
                                        FontFamily="Consolas, monospace" FontSize="12"
                                        Foreground="{StaticResource GreenBrush}"
                                        TextWrapping="NoWrap"
@@ -771,7 +771,7 @@
     <Border Name="LoadingOverlay" Background="#CC1F1A24" IsVisible="False">
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
             <TextBlock Text="⏳" FontSize="28" HorizontalAlignment="Center"/>
-            <TextBlock Name="LoadingText" Text="Loading…" FontSize="12"
+            <TextBlock Name="LoadingText" Text="{DynamicResource Git.Loading}" FontSize="12"
                        Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center"/>
         </StackPanel>
     </Border>
