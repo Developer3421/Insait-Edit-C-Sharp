@@ -12,6 +12,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
+using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Models;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,6 +28,9 @@ public partial class MainWindow
     private Point _dragStart;
     private bool _dragStartedOnItem;   // true → normal TreeView click, no rubber-band
     private bool _isAdjustingFileTreeSelection;
+
+    // ── Last right-click screen position (for ExplorerNodeMenuWindow placement) ──
+    private PixelPoint _lastContextMenuPixelPoint;
 
     private static bool IsSelectableTreeItem(FileTreeItem? item) => item?.IsSelectableInTree == true;
 
@@ -59,6 +63,13 @@ public partial class MainWindow
 
     private void FileTreePanel_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        // Track right-click screen position so FileTreeContextMenu_Opening can place ExplorerNodeMenuWindow
+        if (e.GetCurrentPoint(null).Properties.IsRightButtonPressed)
+        {
+            _lastContextMenuPixelPoint = this.PointToScreen(e.GetPosition(this));
+            return; // let the ContextMenu mechanism handle the rest
+        }
+
         // Only left-button, no modifier keys that would be normal selection
         if (!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed) return;
 
@@ -348,86 +359,27 @@ public partial class MainWindow
 
     // ═══════════════════════════════════════════════════════════
     //  FileTreeContextMenu — Opening
+    //  Cancels the native Avalonia ContextMenu and opens the
+    //  dedicated ExplorerNodeMenuWindow instead.
     // ═══════════════════════════════════════════════════════════
     private void FileTreeContextMenu_Opening(object? sender, CancelEventArgs e)
     {
+        // Prevent the native ContextMenu from appearing
+        e.Cancel = true;
+
         var allSelected = GetSelectedTreeItems();
-        var count = allSelected.Count;
-        var item = allSelected.FirstOrDefault();
+        var item        = allSelected.FirstOrDefault();
 
-        bool isMulti = count > 1;
+        var win = new ExplorerNodeMenuWindow(this, item, allSelected);
 
-        // ── Multi-selection info header ──────────────────────
-        var infoLabel = this.FindControl<MenuItem>("ContextMenuMultiInfo");
-        var infoSep = this.FindControl<Control>("ContextMenuMultiInfoSeparator");
-        var infoText = this.FindControl<TextBlock>("ContextMenuMultiInfoText");
-        if (infoLabel != null) infoLabel.IsVisible = isMulti;
-        if (infoSep != null) infoSep.IsVisible = isMulti;
-        if (infoText != null && isMulti)
-        {
-            var files = allSelected.Count(x => !x.IsDirectory);
-            var folders = allSelected.Count(x => x.IsDirectory);
-            var parts = new List<string>();
-            if (files > 0) parts.Add(files + " file" + (files > 1 ? "s" : ""));
-            if (folders > 0) parts.Add(folders + " folder" + (folders > 1 ? "s" : ""));
-            infoText.Text = count + " items selected — " + string.Join(", ", parts);
-        }
+        // Position the window near the right-click point, clamped to screen bounds
+        var screenBounds = Screens.Primary?.Bounds ?? new PixelRect(0, 0, 1920, 1080);
+        int x = _lastContextMenuPixelPoint.X;
+        int y = _lastContextMenuPixelPoint.Y;
+        x = Math.Max(screenBounds.X, Math.Min(x, screenBounds.Right  - (int)win.Width));
+        y = Math.Max(screenBounds.Y, Math.Min(y, screenBounds.Bottom - (int)win.Height));
+        win.Position = new PixelPoint(x, y);
 
-        bool isSolution = item?.ItemType is FileTreeItemType.Solution or FileTreeItemType.SolutionFolder;
-        bool isProject = item?.ItemType is FileTreeItemType.Project;
-        bool isFolder = item?.IsDirectory == true && !isSolution && !isProject;
-        bool isFile = item != null && !item.IsDirectory;
-        bool hasProject = isSolution || isProject;
-
-        bool multiEditable = isMulti && allSelected.All(x =>
-            x.ItemType is not FileTreeItemType.Solution and
-                         not FileTreeItemType.SolutionFolder);
-
-        SetMenuItemVisible("ContextMenuRun", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuRunSeparator", isProject && !isMulti);
-
-        SetMenuItemVisible("ContextMenuNew", !isMulti && (isFile || isFolder || isProject));
-        SetMenuItemVisible("ContextMenuAdd", !isMulti && (hasProject || isSolution));
-        SetMenuItemVisible("ContextMenuAddSeparator", !isMulti && (hasProject || isSolution));
-
-        SetMenuItemVisible("ContextMenuBuild", hasProject && !isMulti);
-        SetMenuItemVisible("ContextMenuRebuild", hasProject && !isMulti);
-        SetMenuItemVisible("ContextMenuClean", hasProject && !isMulti);
-        SetMenuItemVisible("ContextMenuBuildSeparator", hasProject && !isMulti);
-
-        SetMenuItemVisible("ContextMenuNuGet", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuAddReference", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuNuGetSeparator", isProject && !isMulti);
-
-        SetMenuItemVisible("ContextMenuRemoveFromSolution", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuUnloadProject", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuRemoveSeparator", isProject && !isMulti);
-
-        bool canEdit = isFile || isFolder || isSolution || isProject || (isMulti && multiEditable);
-        SetMenuItemVisible("ContextMenuCut", canEdit);
-        SetMenuItemVisible("ContextMenuCopy", canEdit);
-        SetMenuItemVisible("ContextMenuPaste", !isMulti && (isFolder || isSolution || isProject));
-
-        SetMenuItemVisible("ContextMenuRename", !isMulti && (isFile || isFolder));
-
-        var deleteMenu = this.FindControl<MenuItem>("ContextMenuDelete");
-        if (deleteMenu != null)
-        {
-            deleteMenu.Header = isMulti ? "🗑️ Delete " + count + " Items..." : "🗑️ Safe Delete...";
-            deleteMenu.IsVisible = isFile || isFolder || isSolution || isProject || (isMulti && multiEditable);
-        }
-
-        SetMenuItemVisible("ContextMenuCopyPath", !isMulti && (isFile || isFolder));
-        SetMenuItemVisible("ContextMenuOpenExplorer", !isMulti && (isFile || isFolder));
-        SetMenuItemVisible("ContextMenuOpenTerminal", !isMulti && (isFile || isFolder));
-        SetMenuItemVisible("ContextMenuProperties", !isMulti && (isProject || isFile));
-        SetMenuItemVisible("ContextMenuGit", !isMulti && item != null);
-    }
-
-    // ── Допоміжний: показати/приховати пункт меню ───────────
-    private void SetMenuItemVisible(string name, bool visible)
-    {
-        var ctrl = this.FindControl<Control>(name);
-        if (ctrl != null) ctrl.IsVisible = visible;
+        _ = win.ShowDialog(this);
     }
 }

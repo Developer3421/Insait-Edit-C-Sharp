@@ -1744,6 +1744,118 @@ ExecuteMenuAction(string action)
         }
     }
 
+    /// <summary>
+    /// Execute a context-menu action dispatched from <see cref="Controls.ExplorerNodeMenuWindow"/>.
+    /// </summary>
+    public void ExecuteContextMenuAction(string action)
+    {
+        switch (action)
+        {
+            case "Run":
+                ContextMenu_RunProject_Click(null, new RoutedEventArgs());
+                break;
+            case "NewClass":
+                ContextMenu_NewClass_Click(null, new RoutedEventArgs());
+                break;
+            case "NewInterface":
+                ContextMenu_NewInterface_Click(null, new RoutedEventArgs());
+                break;
+            case "NewRecord":
+                ContextMenu_NewRecord_Click(null, new RoutedEventArgs());
+                break;
+            case "NewEnum":
+                ContextMenu_NewEnum_Click(null, new RoutedEventArgs());
+                break;
+            case "NewAvaloniaWindow":
+                ContextMenu_NewAvaloniaWindow_Click(null, new RoutedEventArgs());
+                break;
+            case "NewAvaloniaUserControl":
+                ContextMenu_NewAvaloniaUserControl_Click(null, new RoutedEventArgs());
+                break;
+            case "NewFile":
+                AddNewItem_Click(null, new RoutedEventArgs());
+                break;
+            case "NewFolder":
+                AddNewFolder_Click(null, new RoutedEventArgs());
+                break;
+            case "AddNewProject":
+                AddNewProject_Click(null, new RoutedEventArgs());
+                break;
+            case "AddExistingProject":
+                ContextMenu_AddExistingProject_Click(null, new RoutedEventArgs());
+                break;
+            case "AddExistingItem":
+                ContextMenu_AddExistingItem_Click(null, new RoutedEventArgs());
+                break;
+            case "Build":
+                ContextMenu_BuildProject_Click(null, new RoutedEventArgs());
+                break;
+            case "Rebuild":
+                ContextMenu_RebuildProject_Click(null, new RoutedEventArgs());
+                break;
+            case "Clean":
+                ContextMenu_CleanProject_Click(null, new RoutedEventArgs());
+                break;
+            case "NuGet":
+                ContextMenu_ManageNuGet_Click(null, new RoutedEventArgs());
+                break;
+            case "AddReference":
+                ContextMenu_AddReference_Click(null, new RoutedEventArgs());
+                break;
+            case "Cut":
+                ContextMenu_Cut_Click(null, new RoutedEventArgs());
+                break;
+            case "Copy":
+                ContextMenu_Copy_Click(null, new RoutedEventArgs());
+                break;
+            case "Paste":
+                ContextMenu_Paste_Click(null, new RoutedEventArgs());
+                break;
+            case "Rename":
+                RenameItem_Click(null, new RoutedEventArgs());
+                break;
+            case "Delete":
+                DeleteItem_Click(null, new RoutedEventArgs());
+                break;
+            case "RemoveFromSolution":
+                ContextMenu_RemoveFromSolution_Click(null, new RoutedEventArgs());
+                break;
+            case "UnloadProject":
+                ContextMenu_UnloadProject_Click(null, new RoutedEventArgs());
+                break;
+            case "CopyAbsolutePath":
+                CopyPath_Click(null, new RoutedEventArgs());
+                break;
+            case "CopyRelativePath":
+                ContextMenu_CopyRelativePath_Click(null, new RoutedEventArgs());
+                break;
+            case "CopyFileName":
+                ContextMenu_CopyFileName_Click(null, new RoutedEventArgs());
+                break;
+            case "OpenInExplorer":
+                OpenInExplorer_Click(null, new RoutedEventArgs());
+                break;
+            case "OpenInTerminal":
+                OpenInTerminal_Click(null, new RoutedEventArgs());
+                break;
+            case "GitCommit":
+                ContextMenu_GitCommit_Click(null, new RoutedEventArgs());
+                break;
+            case "GitHistory":
+                ContextMenu_GitHistory_Click(null, new RoutedEventArgs());
+                break;
+            case "GitRevert":
+                ContextMenu_GitRevert_Click(null, new RoutedEventArgs());
+                break;
+            case "Refresh":
+                RefreshTree_Click(null, new RoutedEventArgs());
+                break;
+            case "Properties":
+                ContextMenu_Properties_Click(null, new RoutedEventArgs());
+                break;
+        }
+    }
+
     private async Task OpenFolderAsync()
     {
         var topLevel = GetTopLevel(this);
