@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -63,7 +62,7 @@ public class GitService
     /// </summary>
     public async Task<GitResult> CloneAsync(string url, string localPath)
     {
-        var result = await RunGitCommandAsync($"clone \"{url}\" \"{localPath}\"", null);
+        var result = await RunGitCommandAsync($"clone \"{url}\" \"{localPath}\"");
         if (result.Success)
         {
             _repositoryPath = localPath;
@@ -204,6 +203,53 @@ public class GitService
             : $"diff -- \"{filePath}\"";
         
         var result = await RunGitCommandAsync(command);
+        return result.Success ? result.Output : string.Empty;
+    }
+
+    /// <summary>
+    /// Get a synthetic diff for an untracked text file.
+    /// </summary>
+    public async Task<string> GetUntrackedFileDiffAsync(string filePath)
+    {
+        if (string.IsNullOrEmpty(_repositoryPath))
+            return string.Empty;
+
+        var fullPath = Path.Combine(_repositoryPath, filePath);
+        if (!File.Exists(fullPath) || IsBinaryDiffExtension(fullPath))
+            return string.Empty;
+
+        try
+        {
+            var content = await File.ReadAllTextAsync(fullPath);
+            var normalized = content.Replace("\r\n", "\n");
+            var lines = normalized.Split('\n');
+
+            var builder = new StringBuilder();
+            builder.AppendLine($"diff --git a/{filePath} b/{filePath}");
+            builder.AppendLine("new file mode 100644");
+            builder.AppendLine("--- /dev/null");
+            builder.AppendLine($"+++ b/{filePath}");
+            builder.AppendLine($"@@ -0,0 +1,{lines.Length} @@");
+
+            foreach (var line in lines)
+                builder.Append('+').AppendLine(line);
+
+            return builder.ToString();
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Get the patch for a file that belongs to a specific commit.
+    /// </summary>
+    public async Task<string> GetCommitFileDiffAsync(string commitHash, string filePath)
+    {
+        var escapedHash = commitHash.Replace("\"", "\\\"");
+        var escapedPath = filePath.Replace("\"", "\\\"");
+        var result = await RunGitCommandAsync($"show --format= --find-renames --find-copies \"{escapedHash}\" -- \"{escapedPath}\"");
         return result.Success ? result.Output : string.Empty;
     }
 
@@ -742,7 +788,7 @@ public class GitService
     /// </summary>
     public async Task<bool> IsGitInstalledAsync()
     {
-        var result = await RunGitCommandAsync("--version", null);
+        var result = await RunGitCommandAsync("--version");
         return result.Success;
     }
 
@@ -751,8 +797,17 @@ public class GitService
     /// </summary>
     public async Task<string> GetGitVersionAsync()
     {
-        var result = await RunGitCommandAsync("--version", null);
+        var result = await RunGitCommandAsync("--version");
         return result.Success ? result.Output.Trim() : "Git not found";
+    }
+
+    /// <summary>
+    /// Check whether the repository already contains at least one commit.
+    /// </summary>
+    public async Task<bool> HasCommitsAsync()
+    {
+        var result = await RunGitCommandAsync("rev-parse --verify HEAD");
+        return result.Success;
     }
 
     #endregion
@@ -790,13 +845,13 @@ public class GitService
         var stageResult = await RunGitCommandAsync("add -A");
         if (!stageResult.Success) return stageResult;
 
-        // Set a default identity if git config is empty (needed on fresh systems)
-        var userName  = await GetConfigAsync("user.name",  global: true);
-        var userEmail = await GetConfigAsync("user.email", global: true);
+        // Set a default local identity if both local and global config are empty.
+        var userName = await GetConfigAsync("user.name") ?? await GetConfigAsync("user.name", global: true);
+        var userEmail = await GetConfigAsync("user.email") ?? await GetConfigAsync("user.email", global: true);
         if (string.IsNullOrWhiteSpace(userName))
-            await SetConfigAsync("user.name",  "Developer", global: true);
+            await SetConfigAsync("user.name",  "Developer");
         if (string.IsNullOrWhiteSpace(userEmail))
-            await SetConfigAsync("user.email", "dev@localhost", global: true);
+            await SetConfigAsync("user.email", "dev@localhost");
 
         var escapedMsg = message.Replace("\"", "\\\"");
         return await RunGitCommandAsync($"commit -m \"{escapedMsg}\"");
@@ -863,7 +918,8 @@ public class GitService
                 startInfo.WorkingDirectory = workingDirectory;
             }
 
-            using var process = new Process { StartInfo = startInfo };
+            using var process = new Process();
+            process.StartInfo = startInfo;
             process.Start();
 
             var output = await process.StandardOutput.ReadToEndAsync();
@@ -910,6 +966,15 @@ public class GitService
     private GitFileStatus ParseStatusChar(char status)
     {
         return ParseStatus(status);
+    }
+
+    private static bool IsBinaryDiffExtension(string path)
+    {
+        return Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".png" or ".jpg" or ".jpeg" or ".gif" or ".svg" or ".ico" or ".ttf" or ".otf" or ".woff" or ".woff2" => true,
+            _ => false
+        };
     }
 
     #endregion

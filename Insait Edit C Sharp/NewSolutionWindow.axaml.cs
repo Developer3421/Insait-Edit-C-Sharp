@@ -35,11 +35,11 @@ public partial class NewSolutionWindow : Window
         var slnFormat = this.FindControl<RadioButton>("SlnFormat");
         if (slnxFormat != null)
         {
-            slnxFormat.IsCheckedChanged += (s, e) => UpdateSolutionPathPreview();
+            slnxFormat.IsCheckedChanged += (_, _) => UpdateSolutionPathPreview();
         }
         if (slnFormat != null)
         {
-            slnFormat.IsCheckedChanged += (s, e) => UpdateSolutionPathPreview();
+            slnFormat.IsCheckedChanged += (_, _) => UpdateSolutionPathPreview();
         }
         
         UpdateSolutionPathPreview();
@@ -48,28 +48,28 @@ public partial class NewSolutionWindow : Window
 
     private void ApplyLocalization()
     {
-        var L = (Func<string, string>)LocalizationService.Get;
-        Title = L("NewSolution.Title");
+        var l = (Func<string, string>)LocalizationService.Get;
+        Title = l("NewSolution.Title");
         var titleBar = this.FindControl<TextBlock>("TitleBarText");
-        if (titleBar != null) titleBar.Text = L("NewSolution.Title");
+        if (titleBar != null) titleBar.Text = l("NewSolution.Title");
         var slnLabel = this.FindControl<TextBlock>("SolutionNameLabel");
-        if (slnLabel != null) slnLabel.Text = L("NewSolution.SolutionName");
+        if (slnLabel != null) slnLabel.Text = l("NewSolution.SolutionName");
         var locLabel = this.FindControl<TextBlock>("LocationLabel");
-        if (locLabel != null) locLabel.Text = L("NewSolution.Location");
+        if (locLabel != null) locLabel.Text = l("NewSolution.Location");
         var browseBtn = this.FindControl<Button>("BrowseButton");
-        if (browseBtn != null) browseBtn.Content = L("Common.Browse");
+        if (browseBtn != null) browseBtn.Content = l("Common.Browse");
         var createDirText = this.FindControl<TextBlock>("CreateSolutionDirText");
-        if (createDirText != null) createDirText.Text = L("NewSolution.CreateSolutionDir");
+        if (createDirText != null) createDirText.Text = l("NewSolution.CreateSolutionDir");
         var initGitText = this.FindControl<TextBlock>("InitGitRepoText");
-        if (initGitText != null) initGitText.Text = L("NewSolution.InitGitRepo");
+        if (initGitText != null) initGitText.Text = l("NewSolution.InitGitRepo");
         var fmtLabel = this.FindControl<TextBlock>("SolutionFormatLabel");
-        if (fmtLabel != null) fmtLabel.Text = L("NewSolution.SolutionFormat");
+        if (fmtLabel != null) fmtLabel.Text = l("NewSolution.SolutionFormat");
         var createdAt = this.FindControl<TextBlock>("CreatedAtLabel");
-        if (createdAt != null) createdAt.Text = L("NewSolution.CreatedAt");
+        if (createdAt != null) createdAt.Text = l("NewSolution.CreatedAt");
         var cancelBtn = this.FindControl<Button>("CancelButton");
-        if (cancelBtn != null) cancelBtn.Content = L("NewSolution.Cancel");
+        if (cancelBtn != null) cancelBtn.Content = l("NewSolution.Cancel");
         var createBtn = this.FindControl<Button>("CreateButton");
-        if (createBtn != null) createBtn.Content = L("NewSolution.Create");
+        if (createBtn != null) createBtn.Content = l("NewSolution.Create");
     }
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
@@ -218,31 +218,11 @@ public partial class NewSolutionWindow : Window
             // Initialize git if requested
             if (createGit?.IsChecked == true)
             {
-                try
+                var projectCreationGitService = new ProjectCreationGitService();
+                var gitSetupResult = await projectCreationGitService.EnsureRepositoryWithInitialCommitAsync(solutionDir);
+                if (!gitSetupResult.Success)
                 {
-                    var gitProcess = new Process
-                    {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "git",
-                            Arguments = "init",
-                            WorkingDirectory = solutionDir,
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true,
-                            CreateNoWindow = true
-                        }
-                    };
-                    gitProcess.Start();
-                    await gitProcess.WaitForExitAsync();
-
-                    // Create .gitignore
-                    var gitignorePath = Path.Combine(solutionDir, ".gitignore");
-                    await File.WriteAllTextAsync(gitignorePath, GetDotNetGitIgnore());
-                }
-                catch (Exception gitEx)
-                {
-                    Debug.WriteLine($"Git init failed: {gitEx.Message}");
+                    Debug.WriteLine($"Git setup failed: {gitSetupResult.Error}");
                     // Don't fail the whole operation for git errors
                 }
             }
@@ -264,7 +244,7 @@ public partial class NewSolutionWindow : Window
     /// <summary>
     /// Create a slnx file with modern XML format
     /// </summary>
-    private async Task CreateSlnxFileAsync(string filePath, string solutionName)
+    private async Task CreateSlnxFileAsync(string filePath, string _ = "")
     {
         var content = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Solution>\r\n</Solution>\r\n";
         Debug.WriteLine($"CreateSlnxFileAsync: Writing to {filePath}");
@@ -299,42 +279,4 @@ public partial class NewSolutionWindow : Window
         Debug.WriteLine($"CreateSlnFileAsync: File exists after write: {File.Exists(filePath)}");
     }
 
-    private static string GetDotNetGitIgnore()
-    {
-        return @"## .NET
-bin/
-obj/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-
-## Visual Studio
-.vs/
-*.rsuser
-*.vspscc
-*.vssscc
-.builds
-
-## JetBrains Rider
-.idea/
-*.sln.iml
-
-## User-specific files
-*.userprefs
-
-## Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-
-## NuGet
-packages/
-*.nupkg
-project.lock.json
-project.fragment.lock.json
-artifacts/
-";
-    }
 }

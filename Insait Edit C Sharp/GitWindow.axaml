@@ -692,7 +692,7 @@
                                 <ItemsControl Name="CommitFilesList" Margin="8,4">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="models:GitFileChange" x:CompileBindings="False">
-                                            <Border Classes="frow">
+                                            <Border Classes="frow" PointerPressed="File_PointerPressed">
                                                 <Grid ColumnDefinitions="18,*">
                                                     <TextBlock Grid.Column="0" Text="{Binding StatusIcon}"
                                                                FontSize="11" FontWeight="Bold"

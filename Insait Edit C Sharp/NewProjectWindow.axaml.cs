@@ -72,32 +72,32 @@ public partial class NewProjectWindow : Window
 
     private void ApplyLocalization()
     {
-        var L = (Func<string, string>)LocalizationService.Get;
-        Title = L("NewProject.Title");
+        var l = (Func<string, string>)LocalizationService.Get;
+        Title = l("NewProject.Title");
         var titleBar = this.FindControl<TextBlock>("TitleBarText");
-        if (titleBar != null) titleBar.Text = L("NewProject.Title");
+        if (titleBar != null) titleBar.Text = l("NewProject.Title");
         var selectTemplate = this.FindControl<TextBlock>("SelectTemplateText");
-        if (selectTemplate != null) selectTemplate.Text = L("NewProject.SelectTemplate");
+        if (selectTemplate != null) selectTemplate.Text = l("NewProject.SelectTemplate");
         var configure = this.FindControl<TextBlock>("ConfigureText");
-        if (configure != null) configure.Text = L("NewProject.Configure");
+        if (configure != null) configure.Text = l("NewProject.Configure");
         var projLabel = this.FindControl<TextBlock>("ProjectNameLabel");
-        if (projLabel != null) projLabel.Text = L("NewProject.ProjectName");
+        if (projLabel != null) projLabel.Text = l("NewProject.ProjectName");
         var locLabel = this.FindControl<TextBlock>("LocationLabel");
-        if (locLabel != null) locLabel.Text = L("NewProject.Location");
+        if (locLabel != null) locLabel.Text = l("NewProject.Location");
         var slnLabel = this.FindControl<TextBlock>("SolutionNameLabel");
-        if (slnLabel != null) slnLabel.Text = L("NewProject.SolutionName");
+        if (slnLabel != null) slnLabel.Text = l("NewProject.SolutionName");
         var fmtLabel = this.FindControl<TextBlock>("SolutionFormatLabel");
-        if (fmtLabel != null) fmtLabel.Text = L("NewProject.SolutionFormat");
+        if (fmtLabel != null) fmtLabel.Text = l("NewProject.SolutionFormat");
         var sameDir = this.FindControl<TextBlock>("PlaceSameDirText");
-        if (sameDir != null) sameDir.Text = L("NewProject.PlaceSameDir");
+        if (sameDir != null) sameDir.Text = l("NewProject.PlaceSameDir");
         var gitRepo = this.FindControl<TextBlock>("CreateGitRepoText");
-        if (gitRepo != null) gitRepo.Text = L("NewProject.CreateGitRepo");
+        if (gitRepo != null) gitRepo.Text = l("NewProject.CreateGitRepo");
         var browseBtn = this.FindControl<Button>("BrowseButton");
-        if (browseBtn != null) browseBtn.Content = L("Common.Browse");
+        if (browseBtn != null) browseBtn.Content = l("Common.Browse");
         var cancelBtn = this.FindControl<Button>("CancelButton");
-        if (cancelBtn != null) cancelBtn.Content = L("NewProject.Cancel");
+        if (cancelBtn != null) cancelBtn.Content = l("NewProject.Cancel");
         var createBtn = this.FindControl<Button>("CreateButton");
-        if (createBtn != null) createBtn.Content = L("NewProject.Create");
+        if (createBtn != null) createBtn.Content = l("NewProject.Create");
     }
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
@@ -351,13 +351,11 @@ public partial class NewProjectWindow : Window
                 // Initialize git if requested
                 if (createGit?.IsChecked == true)
                 {
-                    var gitService = new GitService();
-                    var initResult = await gitService.InitAsync(slnDir);
-                    if (initResult.Success)
+                    var projectCreationGitService = new ProjectCreationGitService();
+                    var gitSetupResult = await projectCreationGitService.EnsureRepositoryWithInitialCommitAsync(slnDir);
+                    if (!gitSetupResult.Success)
                     {
-                        // Make a full initial commit with every generated file so that
-                        // "Revert Commit" in GitWindow has a valid parent state to return to.
-                        await gitService.MakeInitialCommitAsync("Initial commit");
+                        Debug.WriteLine($"Git setup failed for '{slnDir}': {gitSetupResult.Error}");
                     }
                 }
 

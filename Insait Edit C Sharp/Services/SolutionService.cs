@@ -623,39 +623,12 @@ public class SolutionService
     /// </summary>
     public async Task<bool> InitializeGitAsync(string directory)
     {
-        try
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "git",
-                    Arguments = "init",
-                    WorkingDirectory = directory,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
+        var gitService = new ProjectCreationGitService();
+        var result = await gitService.EnsureRepositoryWithInitialCommitAsync(directory);
+        if (!result.Success)
+            Debug.WriteLine($"Error initializing git: {result.Error}");
 
-            process.Start();
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode == 0)
-            {
-                // Create .gitignore
-                var gitignorePath = Path.Combine(directory, ".gitignore");
-                await File.WriteAllTextAsync(gitignorePath, GetDotNetGitIgnore());
-            }
-
-            return process.ExitCode == 0;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error initializing git: {ex.Message}");
-            return false;
-        }
+        return result.Success;
     }
 
     /// <summary>
@@ -846,47 +819,4 @@ public class SolutionService
         return template.Trim().ToLowerInvariant();
     }
 
-    private static string GetDotNetGitIgnore()
-    {
-        return @"## .NET
-bin/
-obj/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-
-## Visual Studio
-.vs/
-*.rsuser
-*.vspscc
-*.vssscc
-.builds
-
-## JetBrains Rider
-.idea/
-*.sln.iml
-
-## User-specific files
-*.userprefs
-
-## Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-
-## NuGet
-packages/
-*.nupkg
-project.lock.json
-project.fragment.lock.json
-artifacts/
-
-## Test results
-[Tt]est[Rr]esult*/
-*.trx
-coverage/
-";
-    }
 }

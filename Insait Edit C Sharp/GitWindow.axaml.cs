@@ -270,11 +270,14 @@ public partial class GitWindow : Window
 
     private async void File_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (e.ClickCount == 2 && sender is StackPanel sp
-            && sp.DataContext is GitFileChange c)
+        if (e.ClickCount == 2 && sender is StyledElement element
+            && element.DataContext is GitFileChange c)
         {
             SwitchRightTab("diff");
-            await ShowFileDiffAsync(c);
+            if (sender is Border && _selectedCommit != null)
+                await ShowCommitFileDiffAsync(c);
+            else
+                await ShowFileDiffAsync(c);
         }
     }
 
@@ -309,9 +312,31 @@ public partial class GitWindow : Window
     private async Task ShowFileDiffAsync(GitFileChange change)
     {
         SetText("DiffFileLabel", change.FilePath);
-        var diff = await _git.GetFileDiffAsync(change.FilePath, staged: false);
-        if (string.IsNullOrEmpty(diff))
-            diff = await _git.GetFileDiffAsync(change.FilePath, staged: true);
+        string diff;
+
+        if (change.WorkTreeStatus == GitFileStatus.Untracked || change.IndexStatus == GitFileStatus.Untracked)
+        {
+            diff = await _git.GetUntrackedFileDiffAsync(change.FilePath);
+        }
+        else
+        {
+            diff = await _git.GetFileDiffAsync(change.FilePath, staged: false);
+            if (string.IsNullOrEmpty(diff))
+                diff = await _git.GetFileDiffAsync(change.FilePath, staged: true);
+        }
+
+        var t = this.FindControl<SelectableTextBlock>("DiffOutputText");
+        if (t != null) t.Text = string.IsNullOrEmpty(diff) ? L("Git.NoDiffAvailable") : diff;
+    }
+
+
+    private async Task ShowCommitFileDiffAsync(GitFileChange change)
+    {
+        if (_selectedCommit == null)
+            return;
+
+        SetText("DiffFileLabel", $"{change.FilePath} ({_selectedCommit.ShortHash})");
+        var diff = await _git.GetCommitFileDiffAsync(_selectedCommit.Hash, change.FilePath);
         var t = this.FindControl<SelectableTextBlock>("DiffOutputText");
         if (t != null) t.Text = string.IsNullOrEmpty(diff) ? L("Git.NoDiffAvailable") : diff;
     }
