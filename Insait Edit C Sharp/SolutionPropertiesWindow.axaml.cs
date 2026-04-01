@@ -1,7 +1,8 @@
 ﻿using Avalonia.Controls;
 using Insait_Edit_C_Sharp.Controls.ProjectProps;
+using Insait_Edit_C_Sharp.Services;
 using System.IO;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace Insait_Edit_C_Sharp;
 
@@ -17,7 +18,7 @@ public partial class SolutionPropertiesWindow : Window
         _solutionPath = solutionPath;
         _solutionDir = Path.GetDirectoryName(solutionPath) ?? solutionPath;
         SetupUI();
-        LoadSolution();
+        _ = LoadSolutionAsync();
     }
 
     private void SetupUI()
@@ -38,10 +39,12 @@ public partial class SolutionPropertiesWindow : Window
         host.Children.Add(_projectsPage);
     }
 
-    private void LoadSolution()
+    private async Task LoadSolutionAsync()
     {
         if (!File.Exists(_solutionPath)) return;
-        var lines = File.ReadAllLines(_solutionPath).ToList();
-        _projectsPage.Populate(lines, _solutionDir);
+
+        var solutionService = new SolutionService();
+        var projects = await solutionService.GetSolutionProjectEntriesAsync(_solutionPath);
+        _projectsPage.Populate(projects);
     }
 }

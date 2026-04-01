@@ -61,48 +61,23 @@ public class BuildService
 
         try
         {
-            // Use dotnet build command
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = SettingsPanelControl.ResolveDotNetExe(),
-                Arguments = $"build \"{targetFile}\" --configuration {configuration} --no-restore",
-                WorkingDirectory = Path.GetDirectoryName(targetFile) ?? projectPath,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
-            };
+            var buildAttempt = await ExecuteBuildProcessAsync(targetFile, configuration, projectPath, noRestore: true);
 
-            _buildProcess = new Process { StartInfo = startInfo };
-
-            _buildProcess.OutputDataReceived += (sender, e) =>
+            if (!buildAttempt.Success && RequiresRestore(buildAttempt))
             {
-                if (!string.IsNullOrEmpty(e.Data))
+                OnOutput("\n[INFO] Missing NuGet assets detected. Running restore and retrying build...\n");
+                var restoreSucceeded = await RestoreAsync(targetFile);
+                if (restoreSucceeded)
                 {
-                    _outputBuffer.AppendLine(e.Data);
-                    OnOutput(e.Data + "\n");
+                    _outputBuffer.Clear();
+                    _errorBuffer.Clear();
+                    OnOutput($"\n========== Build Retry: {Path.GetFileName(targetFile)} ==========" + "\n");
+                    buildAttempt = await ExecuteBuildProcessAsync(targetFile, configuration, projectPath, noRestore: true);
                 }
-            };
+            }
 
-            _buildProcess.ErrorDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    _errorBuffer.AppendLine(e.Data);
-                    OnOutput($"[ERROR] {e.Data}\n");
-                }
-            };
-
-            _buildProcess.Start();
-            _buildProcess.BeginOutputReadLine();
-            _buildProcess.BeginErrorReadLine();
-
-            await _buildProcess.WaitForExitAsync();
-
-            var exitCode = _buildProcess.ExitCode;
-            var success = exitCode == 0;
+            var exitCode = buildAttempt.ExitCode;
+            var success = buildAttempt.Success;
 
             OnOutput($"\n========== Build {(success ? "Succeeded" : "Failed")} ==========\n");
 
@@ -112,7 +87,7 @@ public class BuildService
                 ExitCode = exitCode,
                 Output = _outputBuffer.ToString(),
                 ErrorOutput = _errorBuffer.ToString(),
-                ErrorMessage = success ? null : "Build failed with errors"
+                ErrorMessage = success ? null : buildAttempt.ErrorMessage ?? "Build failed with errors"
             };
 
             BuildCompleted?.Invoke(this, new BuildCompletedEventArgs(result));
@@ -141,6 +116,70 @@ public class BuildService
             _buildProcess?.Dispose();
             _buildProcess = null;
         }
+    }
+
+    private async Task<BuildResult> ExecuteBuildProcessAsync(string targetFile, string configuration, string projectPath, bool noRestore)
+    {
+        var noRestoreArg = noRestore ? " --no-restore" : string.Empty;
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = SettingsPanelControl.ResolveDotNetExe(),
+            Arguments = $"build \"{targetFile}\" --configuration {configuration}{noRestoreArg}",
+            WorkingDirectory = Path.GetDirectoryName(targetFile) ?? projectPath,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8
+        };
+
+        _buildProcess = new Process { StartInfo = startInfo };
+
+        _buildProcess.OutputDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                _outputBuffer.AppendLine(e.Data);
+                OnOutput(e.Data + "\n");
+            }
+        };
+
+        _buildProcess.ErrorDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                _errorBuffer.AppendLine(e.Data);
+                OnOutput($"[ERROR] {e.Data}\n");
+            }
+        };
+
+        _buildProcess.Start();
+        _buildProcess.BeginOutputReadLine();
+        _buildProcess.BeginErrorReadLine();
+
+        await _buildProcess.WaitForExitAsync();
+
+        return new BuildResult
+        {
+            Success = _buildProcess.ExitCode == 0,
+            ExitCode = _buildProcess.ExitCode,
+            Output = _outputBuffer.ToString(),
+            ErrorOutput = _errorBuffer.ToString(),
+            ErrorMessage = _buildProcess.ExitCode == 0 ? null : "Build failed with errors"
+        };
+    }
+
+    private static bool RequiresRestore(BuildResult result)
+    {
+        if (result.Success)
+            return false;
+
+        var combinedOutput = (result.Output ?? string.Empty) + "\n" + (result.ErrorOutput ?? string.Empty);
+        return combinedOutput.Contains("NETSDK1004", StringComparison.OrdinalIgnoreCase)
+               || combinedOutput.Contains("project.assets.json", StringComparison.OrdinalIgnoreCase)
+               || combinedOutput.Contains("Führen Sie eine NuGet-Paketwiederherstellung aus", StringComparison.OrdinalIgnoreCase)
+               || combinedOutput.Contains("Run a NuGet package restore", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

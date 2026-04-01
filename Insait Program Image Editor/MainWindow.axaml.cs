@@ -1002,14 +1002,15 @@ public partial class MainWindow : Window
     // ═════════════════════════════════════════════════════════════════════
     private static async Task<string?> FindGhPathAsync()
     {
-        // Try common locations
-        string[] candidates =
-        {
-            @"C:\Program Files\GitHub CLI\gh.exe",
-            @"C:\Program Files (x86)\GitHub CLI\gh.exe",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Programs", "GitHub CLI", "gh.exe"),
-        };
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var candidates = GetProgramFilesRoots()
+            .Select(root => Path.Combine(root, "GitHub CLI", "gh.exe"))
+            .Concat(new[]
+            {
+                Path.Combine(localAppData, "Programs", "GitHub CLI", "gh.exe"),
+                Path.Combine(localAppData, "Programs", "gh", "gh.exe")
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
         foreach (var c in candidates)
             if (File.Exists(c)) return c;
@@ -1042,10 +1043,46 @@ public partial class MainWindow : Window
 
     private static string? FindWindowsTerminal()
     {
+        var wtInPath = FindExecutableInPath("wt.exe");
+        if (!string.IsNullOrWhiteSpace(wtInPath))
+            return wtInPath;
+
         var wtPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Microsoft", "WindowsApps", "wt.exe");
         return File.Exists(wtPath) ? wtPath : null;
+    }
+
+    private static string? FindExecutableInPath(string executableName)
+    {
+        var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        foreach (var path in pathEnv.Split(Path.PathSeparator))
+        {
+            var trimmedPath = path.Trim().Trim('"');
+            if (string.IsNullOrWhiteSpace(trimmedPath))
+                continue;
+
+            var candidate = Path.Combine(trimmedPath, executableName);
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> GetProgramFilesRoots()
+    {
+        return new[]
+        {
+            Environment.GetEnvironmentVariable("ProgramW6432"),
+            Environment.GetEnvironmentVariable("ProgramFiles"),
+            Environment.GetEnvironmentVariable("ProgramFiles(x86)"),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+        }
+        .Where(path => !string.IsNullOrWhiteSpace(path))
+        .Select(path => path!.Trim().Trim('"'))
+        .Distinct(StringComparer.OrdinalIgnoreCase);
     }
 
     // ═════════════════════════════════════════════════════════════════════

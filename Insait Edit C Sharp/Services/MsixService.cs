@@ -717,51 +717,7 @@ public class MsixService
 
     private static string? FindSignTool()
     {
-        // 0. Check user settings first
-        var fromSettings = SettingsPanelControl.ResolveSignToolExe();
-        if (fromSettings != null) return fromSettings;
-
-        // 1. PATH
-        try
-        {
-            var inPath = Process.Start(new ProcessStartInfo
-            {
-                FileName = "where", Arguments = "signtool.exe",
-                UseShellExecute = false, RedirectStandardOutput = true, CreateNoWindow = true
-            });
-            if (inPath != null)
-            {
-                var line = inPath.StandardOutput.ReadLine();
-                inPath.WaitForExit();
-                if (!string.IsNullOrEmpty(line) && File.Exists(line.Trim()))
-                    return line.Trim();
-            }
-        }
-        catch { /* ignore */ }
-
-        // 2. Windows SDK locations
-        var programFiles = new[]
-        {
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
-        };
-        foreach (var pf in programFiles)
-        {
-            var sdkBin = Path.Combine(pf, "Windows Kits", "10", "bin");
-            if (!Directory.Exists(sdkBin)) continue;
-            var versions = Directory.GetDirectories(sdkBin)
-                .Where(d => Regex.IsMatch(Path.GetFileName(d), @"^\d+\.\d+"))
-                .OrderByDescending(d => d).ToList();
-            foreach (var ver in versions)
-            {
-                foreach (var arch in new[] { "x64", "x86" })
-                {
-                    var candidate = Path.Combine(ver, arch, "signtool.exe");
-                    if (File.Exists(candidate)) return candidate;
-                }
-            }
-        }
-        return null;
+        return SettingsPanelControl.ResolveSignToolExe();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -881,22 +837,18 @@ public class MsixService
 
     private static string? FindMakeAppx()
     {
-        // Common SDK paths
-        var programFiles = new[]
-        {
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
-        };
+        var basePaths = GetWindowsSdkBinRoots()
+            .Concat(GetProgramFilesRoots().Select(root => Path.Combine(root, "Windows Kits", "10", "bin")))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var pf in programFiles)
+        foreach (var sdkDir in basePaths)
         {
-            var sdkDir = Path.Combine(pf, "Windows Kits", "10", "bin");
             if (!Directory.Exists(sdkDir)) continue;
 
-            // Pick newest SDK version
-            var versions = Directory.GetDirectories(sdkDir)
+            var versions = GetDirectoriesSafe(sdkDir)
                 .Where(d => Regex.IsMatch(Path.GetFileName(d), @"^\d+\.\d+"))
-                .OrderByDescending(d => d)
+                .OrderByDescending(GetVersionSortKey)
+                .ThenByDescending(d => d, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             foreach (var ver in versions)
@@ -909,6 +861,58 @@ public class MsixService
             }
         }
         return null;
+    }
+
+    private static IEnumerable<string> GetProgramFilesRoots()
+    {
+        return new[]
+        {
+            Environment.GetEnvironmentVariable("ProgramW6432"),
+            Environment.GetEnvironmentVariable("ProgramFiles"),
+            Environment.GetEnvironmentVariable("ProgramFiles(x86)"),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+        }
+        .Where(path => !string.IsNullOrWhiteSpace(path))
+        .Select(path => path!.Trim().Trim('"'))
+        .Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static IEnumerable<string> GetWindowsSdkBinRoots()
+    {
+        var candidates = new List<string>();
+
+        var versionBinPath = Environment.GetEnvironmentVariable("WindowsSdkVerBinPath");
+        if (!string.IsNullOrWhiteSpace(versionBinPath))
+            candidates.Add(versionBinPath);
+
+        var sdkDir = Environment.GetEnvironmentVariable("WindowsSdkDir");
+        if (!string.IsNullOrWhiteSpace(sdkDir))
+            candidates.Add(Path.Combine(sdkDir, "bin"));
+
+        return candidates
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(path => path.Trim().Trim('"'))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static IEnumerable<string> GetDirectoriesSafe(string path)
+    {
+        try
+        {
+            return Directory.GetDirectories(path);
+        }
+        catch
+        {
+            return Array.Empty<string>();
+        }
+    }
+
+    private static Version GetVersionSortKey(string path)
+    {
+        return Version.TryParse(Path.GetFileName(path), out var version)
+            ? version
+            : new Version(0, 0);
     }
 
     private static Task CreateZipMsixAsync(string sourceDir, string msixPath)

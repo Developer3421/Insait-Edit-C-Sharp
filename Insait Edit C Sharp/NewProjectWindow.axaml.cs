@@ -1,12 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp;
@@ -224,6 +222,7 @@ public partial class NewProjectWindow : Window
         var sameDir = this.FindControl<CheckBox>("CreateSolutionDir");
         var createGit = this.FindControl<CheckBox>("CreateGitRepo");
         var slnxFormatRadio = this.FindControl<RadioButton>("SlnxFormat");
+        var previewText = this.FindControl<TextBlock>("ProjectPathPreview");
 
         if (projectNameBox == null || locationBox == null) return;
 
@@ -257,54 +256,26 @@ public partial class NewProjectWindow : Window
         {
             Directory.CreateDirectory(projectDir);
 
-            // Run dotnet new
-            var templateName = _selectedTemplate switch
-            {
-                "console" => "console",
-                "classlib" => "classlib",
-                "avalonia" => "avalonia.app",
-                "fsharp-console" => "console",
-                "fsharp-empty" => "classlib",
-                "winforms" => "winforms",
-                "csharp-empty" => "classlib",
-                _ => "console"
-            };
+            var result = await SolutionService.RunDotNetNewAsync(location, projectDir, projectName, _selectedTemplate);
 
-            // F# templates need the --language flag
-            var isFSharp = _selectedTemplate is "fsharp-console" or "fsharp-empty";
-            var langArg = isFSharp ? " --language F#" : string.Empty;
+            Debug.WriteLine($"dotnet new output: {result.StandardOutput}");
+            Debug.WriteLine($"dotnet new error: {result.StandardError}");
+            Debug.WriteLine($"dotnet new exit code: {result.ExitCode}");
 
-            var process = new Process
+            if (result.ExitCode == 0)
             {
-                StartInfo = new ProcessStartInfo
+                var csprojPath = SolutionService.FindCreatedProjectFile(projectDir, _selectedTemplate, projectName);
+                if (csprojPath == null)
                 {
-                    FileName = SettingsPanelControl.ResolveDotNetExe(),
-                    Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"{langArg}",
-                    WorkingDirectory = location,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
+                    var templateName = SolutionService.GetTemplateShortName(_selectedTemplate);
+                    Debug.WriteLine($"Project file not found after 'dotnet new {templateName}'. Directory: {projectDir}");
+                    if (previewText != null)
+                    {
+                        previewText.Text = $"Error: project file was not created in {projectDir}";
+                    }
+                    return;
                 }
-            };
 
-            process.Start();
-            var output = await process.StandardOutput.ReadToEndAsync();
-            var error = await process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync();
-
-            Debug.WriteLine($"dotnet new output: {output}");
-            Debug.WriteLine($"dotnet new error: {error}");
-            Debug.WriteLine($"dotnet new exit code: {process.ExitCode}");
-
-            if (process.ExitCode == 0)
-            {
-                // F# projects use .fsproj; everything else uses .csproj.
-                string csprojPath;
-                {
-                    var projExt = _selectedTemplate is "fsharp-console" or "fsharp-empty" ? ".fsproj" : ".csproj";
-                    csprojPath = Path.Combine(projectDir, $"{projectName}{projExt}");
-                }
                 string? slnFilePath = null;
 
                 // If we have a current solution, use it
@@ -398,7 +369,12 @@ public partial class NewProjectWindow : Window
             }
             else
             {
-                Debug.WriteLine($"Failed to create project. Exit code: {process.ExitCode}");
+                Debug.WriteLine($"Failed to create project. Exit code: {result.ExitCode}");
+                if (previewText != null)
+                {
+                    var errorText = string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError;
+                    previewText.Text = $"Error: {errorText}";
+                }
             }
         }
         catch (Exception ex)
@@ -406,6 +382,10 @@ public partial class NewProjectWindow : Window
             // Show error dialog
             Debug.WriteLine($"Error creating project: {ex.Message}");
             Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            if (previewText != null)
+            {
+                previewText.Text = $"Error: {ex.Message}";
+            }
         }
     }
 }

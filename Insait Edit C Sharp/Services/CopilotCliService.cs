@@ -1235,59 +1235,37 @@ public class CopilotCliService
 
     private async Task<string?> FindGhPathAsync()
     {
-        // First, honour whatever the user saved in Settings.
-        // ResolveGhExe already handles the case where the user pointed at a directory.
         var fromSettings = SettingsPanelControl.ResolveGhExe();
-        if (!string.IsNullOrEmpty(fromSettings) && fromSettings != "gh")
+        if (!string.IsNullOrWhiteSpace(fromSettings) &&
+            !string.Equals(fromSettings, "gh", StringComparison.OrdinalIgnoreCase))
         {
             if (File.Exists(fromSettings))
                 return fromSettings;
-
-            if (Directory.Exists(fromSettings))
-            {
-                var inside = Path.Combine(fromSettings, "gh.exe");
-                if (File.Exists(inside))
-                    return inside;
-            }
         }
 
-        // fallback to well-known locations / PATH lookup
-        var possiblePaths = new[]
+        try
         {
-            "gh",
-            @"C:\Program Files\GitHub CLI\gh.exe",
-            @"C:\Program Files (x86)\GitHub CLI\gh.exe",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Programs\gh\gh.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"GitHub CLI\gh.exe")
-        };
-        foreach (var path in possiblePaths)
-        {
-            if (path == "gh")
+            var testProcess = new System.Diagnostics.Process
             {
-                try
+                StartInfo = new System.Diagnostics.ProcessStartInfo
                 {
-                    var testProcess = new System.Diagnostics.Process
-                    {
-                        StartInfo = new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = "gh",
-                            Arguments = "--version",
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                            CreateNoWindow = true
-                        }
-                    };
-                    testProcess.Start();
-                    await testProcess.WaitForExitAsync();
-                    if (testProcess.ExitCode == 0) return "gh";
+                    FileName = "gh",
+                    Arguments = "--version",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
                 }
-                catch { continue; }
-            }
-            else if (File.Exists(path))
-            {
-                return path;
-            }
+            };
+            testProcess.Start();
+            await testProcess.WaitForExitAsync();
+            if (testProcess.ExitCode == 0)
+                return "gh";
         }
+        catch
+        {
+            // ignore and fall through
+        }
+
         return null;
     }
 

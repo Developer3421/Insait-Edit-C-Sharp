@@ -76,25 +76,25 @@ public partial class SettingsPanelControl : UserControl
 
     /// <summary>
     /// Resolves the dotnet executable path from saved SDK path.
-    /// If the SDK path is set (e.g. C:\Program Files\dotnet\sdk\9.0.100),
+    /// If the SDK path is set (e.g. &lt;drive&gt;\Program Files\dotnet\sdk\9.0.100),
     /// walks up to find dotnet.exe. Falls back to "dotnet" (PATH lookup).
     /// </summary>
     public static string ResolveDotNetExe()
     {
         var sdk = GetDotNetSdkPath();
-        if (!string.IsNullOrWhiteSpace(sdk))
-        {
-            // Walk up from sdk version folder to find dotnet.exe
-            var dir = sdk;
-            for (int i = 0; i < 4; i++)
-            {
-                var candidate = Path.Combine(dir, "dotnet.exe");
-                if (File.Exists(candidate)) return candidate;
-                var parent = Path.GetDirectoryName(dir);
-                if (string.IsNullOrEmpty(parent) || parent == dir) break;
-                dir = parent;
-            }
-        }
+        var configuredDotNet = FindExecutableFromConfiguredPath(sdk, "dotnet.exe", searchParents: true);
+        if (!string.IsNullOrWhiteSpace(configuredDotNet))
+            return configuredDotNet;
+
+        var dotnetInPath = FindInPath("dotnet.exe");
+        if (!string.IsNullOrWhiteSpace(dotnetInPath))
+            return dotnetInPath;
+
+        var autoDetectedSdk = AutoDetectDotNetSdk();
+        var autoDetectedDotNet = FindExecutableFromConfiguredPath(autoDetectedSdk, "dotnet.exe", searchParents: true);
+        if (!string.IsNullOrWhiteSpace(autoDetectedDotNet))
+            return autoDetectedDotNet;
+
         return "dotnet";
     }
 
@@ -103,21 +103,14 @@ public partial class SettingsPanelControl : UserControl
     /// </summary>
     public static string ResolveGhExe()
     {
-        var gh = GetGitHubCliPath();
+        var gh = FindExecutableFromConfiguredPath(GetGitHubCliPath(), "gh.exe");
         if (!string.IsNullOrWhiteSpace(gh))
-        {
-            // if the user pointed directly at the executable, just return it
-            if (File.Exists(gh))
-                return gh;
+            return gh;
 
-            // if they gave a directory, look for gh.exe inside
-            if (Directory.Exists(gh))
-            {
-                var inside = Path.Combine(gh, "gh.exe");
-                if (File.Exists(inside))
-                    return inside;
-            }
-        }
+        var autoDetected = AutoDetectGitHubCli();
+        if (!string.IsNullOrWhiteSpace(autoDetected))
+            return autoDetected;
+
         return "gh";
     }
 
@@ -126,10 +119,8 @@ public partial class SettingsPanelControl : UserControl
     /// </summary>
     public static string? ResolveSignToolExe()
     {
-        var st = GetSignToolPath();
-        if (!string.IsNullOrWhiteSpace(st) && File.Exists(st))
-            return st;
-        return null;
+        return FindExecutableFromConfiguredPath(GetSignToolPath(), "signtool.exe")
+               ?? AutoDetectSignTool();
     }
 
     /// <summary>
@@ -137,10 +128,8 @@ public partial class SettingsPanelControl : UserControl
     /// </summary>
     public static string? ResolveMSBuildExe()
     {
-        var mb = GetMSBuildPath();
-        if (!string.IsNullOrWhiteSpace(mb) && File.Exists(mb))
-            return mb;
-        return null;
+        return FindExecutableFromConfiguredPath(GetMSBuildPath(), "MSBuild.exe")
+               ?? AutoDetectMSBuild();
     }
 
     // ──────────────────────────────────────────────────────
@@ -341,35 +330,34 @@ public partial class SettingsPanelControl : UserControl
 
     private static string? AutoDetectDotNetSdk()
     {
-        // Standard installation paths
-        var candidates = new[]
-        {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "sdk"),
-            @"C:\Program Files\dotnet\sdk",
-            @"C:\Program Files (x86)\dotnet\sdk"
-        };
+        var candidates = GetEnvironmentPaths("DOTNET_ROOT", "DOTNET_ROOT(x86)")
+            .Select(root => Path.Combine(root, "sdk"))
+            .Concat(GetProgramFilesRoots()
+            .Select(root => Path.Combine(root, "dotnet", "sdk"))
+            )
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var dir in candidates.Distinct())
+        foreach (var dir in candidates)
         {
             if (Directory.Exists(dir))
             {
-                // Return the latest SDK version sub-folder
-                var sdkVersions = Directory.GetDirectories(dir)
-                    .OrderByDescending(d => d)
+                var sdkVersions = GetDirectoriesSafe(dir)
+                    .OrderByDescending(GetVersionSortKey)
+                    .ThenByDescending(d => d, StringComparer.OrdinalIgnoreCase)
                     .FirstOrDefault();
                 return sdkVersions ?? dir;
             }
         }
 
-        // Try PATH
         var dotnetExe = FindInPath("dotnet.exe");
         if (dotnetExe != null)
         {
             var sdkDir = Path.Combine(Path.GetDirectoryName(dotnetExe)!, "sdk");
             if (Directory.Exists(sdkDir))
             {
-                var latest = Directory.GetDirectories(sdkDir)
-                    .OrderByDescending(d => d)
+                var latest = GetDirectoriesSafe(sdkDir)
+                    .OrderByDescending(GetVersionSortKey)
+                    .ThenByDescending(d => d, StringComparer.OrdinalIgnoreCase)
                     .FirstOrDefault();
                 return latest ?? sdkDir;
             }
@@ -380,13 +368,16 @@ public partial class SettingsPanelControl : UserControl
 
     private static string? AutoDetectGitHubCli()
     {
-        var candidates = new[]
-        {
-            @"C:\Program Files\GitHub CLI\gh.exe",
-            @"C:\Program Files (x86)\GitHub CLI\gh.exe",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "GitHub CLI", "gh.exe")
-        };
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var candidates = GetProgramFilesRoots()
+            .Select(root => Path.Combine(root, "GitHub CLI", "gh.exe"))
+            .Concat(new[]
+            {
+                Path.Combine(localAppData, "GitHub CLI", "gh.exe"),
+                Path.Combine(localAppData, "Programs", "GitHub CLI", "gh.exe"),
+                Path.Combine(localAppData, "Programs", "gh", "gh.exe")
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
         foreach (var path in candidates)
         {
@@ -398,13 +389,15 @@ public partial class SettingsPanelControl : UserControl
 
     private static string? AutoDetectCopilotCli()
     {
-        var candidates = new[]
-        {
-            @"C:\Program Files\Copilot\copilot.exe",
-            @"C:\Program Files (x86)\Copilot\copilot.exe",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Programs", "copilot", "copilot.exe")
-        };
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var candidates = GetProgramFilesRoots()
+            .Select(root => Path.Combine(root, "Copilot", "copilot.exe"))
+            .Concat(new[]
+            {
+                Path.Combine(localAppData, "Programs", "copilot", "copilot.exe"),
+                Path.Combine(localAppData, "Programs", "Copilot", "copilot.exe")
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
         foreach (var path in candidates)
         {
@@ -416,21 +409,19 @@ public partial class SettingsPanelControl : UserControl
 
     private static string? AutoDetectSignTool()
     {
-        // Windows SDK locations
-        var basePaths = new[]
-        {
-            @"C:\Program Files (x86)\Windows Kits\10\bin",
-            @"C:\Program Files\Windows Kits\10\bin"
-        };
+        var basePaths = GetWindowsSdkBinRoots()
+            .Concat(GetProgramFilesRoots()
+                .Select(root => Path.Combine(root, "Windows Kits", "10", "bin")))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
         foreach (var basePath in basePaths)
         {
             if (!Directory.Exists(basePath)) continue;
 
-            // Find the latest SDK version that contains signtool
-            var versionDirs = Directory.GetDirectories(basePath)
+            var versionDirs = GetDirectoriesSafe(basePath)
                 .Where(d => Path.GetFileName(d).StartsWith("10."))
-                .OrderByDescending(d => d)
+                .OrderByDescending(GetVersionSortKey)
+                .ThenByDescending(d => d, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
             foreach (var versionDir in versionDirs)
@@ -448,14 +439,30 @@ public partial class SettingsPanelControl : UserControl
 
     private static string? AutoDetectMSBuild()
     {
-        // VS 2022+ locations
-        var vsBasePaths = new[]
+        var msbuildFromEnv = Environment.GetEnvironmentVariable("MSBUILD_EXE_PATH");
+        if (!string.IsNullOrWhiteSpace(msbuildFromEnv) && File.Exists(msbuildFromEnv))
+            return msbuildFromEnv;
+
+        var vsInstallDir = Environment.GetEnvironmentVariable("VSINSTALLDIR");
+        if (!string.IsNullOrWhiteSpace(vsInstallDir))
         {
-            @"C:\Program Files\Microsoft Visual Studio\2022",
-            @"C:\Program Files (x86)\Microsoft Visual Studio\2022",
-            @"C:\Program Files\Microsoft Visual Studio\2019",
-            @"C:\Program Files (x86)\Microsoft Visual Studio\2019"
-        };
+            var envCandidates = new[]
+            {
+                Path.Combine(vsInstallDir, "MSBuild", "Current", "Bin", "MSBuild.exe"),
+                Path.Combine(vsInstallDir, "MSBuild", "Current", "Bin", "amd64", "MSBuild.exe")
+            };
+
+            foreach (var candidate in envCandidates)
+            {
+                if (File.Exists(candidate))
+                    return candidate;
+            }
+        }
+
+        var vsVersions = new[] { "2022", "2019" };
+        var vsBasePaths = GetProgramFilesRoots()
+            .SelectMany(root => vsVersions.Select(version => Path.Combine(root, "Microsoft Visual Studio", version)))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
         var editions = new[] { "Enterprise", "Professional", "Community", "BuildTools" };
 
@@ -483,11 +490,115 @@ public partial class SettingsPanelControl : UserControl
 
         foreach (var dir in pathEnv.Split(Path.PathSeparator))
         {
-            var fullPath = Path.Combine(dir, executable);
+            var trimmedDir = dir.Trim().Trim('"');
+            if (string.IsNullOrWhiteSpace(trimmedDir))
+                continue;
+
+            var fullPath = Path.Combine(trimmedDir, executable);
             if (File.Exists(fullPath)) return fullPath;
         }
 
         return null;
+    }
+
+    private static string? FindExecutableFromConfiguredPath(string? configuredPath, string executableName, bool searchParents = false)
+    {
+        if (string.IsNullOrWhiteSpace(configuredPath))
+            return null;
+
+        configuredPath = configuredPath.Trim().Trim('"');
+
+        if (File.Exists(configuredPath))
+            return configuredPath;
+
+        if (Directory.Exists(configuredPath))
+        {
+            var candidate = Path.Combine(configuredPath, executableName);
+            if (File.Exists(candidate))
+                return candidate;
+
+            if (searchParents)
+            {
+                var dir = configuredPath;
+                for (int i = 0; i < 6; i++)
+                {
+                    candidate = Path.Combine(dir, executableName);
+                    if (File.Exists(candidate))
+                        return candidate;
+
+                    var parent = Path.GetDirectoryName(dir);
+                    if (string.IsNullOrWhiteSpace(parent) || string.Equals(parent, dir, StringComparison.OrdinalIgnoreCase))
+                        break;
+
+                    dir = parent;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> GetProgramFilesRoots()
+    {
+        return new[]
+        {
+            Environment.GetEnvironmentVariable("ProgramW6432"),
+            Environment.GetEnvironmentVariable("ProgramFiles"),
+            Environment.GetEnvironmentVariable("ProgramFiles(x86)"),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+        }
+        .Where(path => !string.IsNullOrWhiteSpace(path))
+        .Select(path => path!.Trim().Trim('"'))
+        .Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static IEnumerable<string> GetEnvironmentPaths(params string[] variableNames)
+    {
+        return variableNames
+            .Select(Environment.GetEnvironmentVariable)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(path => path!.Trim().Trim('"'))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static IEnumerable<string> GetWindowsSdkBinRoots()
+    {
+        var candidates = new List<string>();
+
+        var versionBinPath = Environment.GetEnvironmentVariable("WindowsSdkVerBinPath");
+        if (!string.IsNullOrWhiteSpace(versionBinPath))
+            candidates.Add(versionBinPath);
+
+        var sdkDir = Environment.GetEnvironmentVariable("WindowsSdkDir");
+        if (!string.IsNullOrWhiteSpace(sdkDir))
+        {
+            candidates.Add(Path.Combine(sdkDir, "bin"));
+        }
+
+        return candidates
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(path => path.Trim().Trim('"'))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static IEnumerable<string> GetDirectoriesSafe(string path)
+    {
+        try
+        {
+            return Directory.GetDirectories(path);
+        }
+        catch
+        {
+            return Array.Empty<string>();
+        }
+    }
+
+    private static Version GetVersionSortKey(string path)
+    {
+        return Version.TryParse(Path.GetFileName(path), out var version)
+            ? version
+            : new Version(0, 0);
     }
 
     // ──────────────────────────────────────────────────────

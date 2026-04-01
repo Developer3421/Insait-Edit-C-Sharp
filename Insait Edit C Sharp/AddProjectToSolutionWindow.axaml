@@ -194,41 +194,6 @@
                                 </StackPanel>
                             </Button>
                             
-                            <Button Classes="template-btn" Name="WebApiTemplate" Margin="0,0,8,8"
-                                    Click="Template_Click" Tag="webapi">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="🌐" FontSize="24" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Web API" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
-                                    <TextBlock Text="RESTful service" FontSize="9" 
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            
-                            <Button Classes="template-btn" Name="XUnitTemplate" Margin="0,0,8,8"
-                                    Click="Template_Click" Tag="xunit">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="🧪" FontSize="24" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="xUnit Tests" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
-                                    <TextBlock Text="Unit test project" FontSize="9" 
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            
-                            <Button Classes="template-btn" Name="WpfTemplate" Margin="0,0,8,8"
-                                    Click="Template_Click" Tag="wpf">
-                                <StackPanel Width="120">
-                                    <TextBlock Text="🪟" FontSize="24" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="WPF App" FontSize="12" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Margin="0,6,0,2"/>
-                                    <TextBlock Text="Windows desktop" FontSize="9" 
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
 
                             <Button Classes="template-btn" Name="FSharpConsoleTemplate" Margin="0,0,8,8"
                                     Click="Template_Click" Tag="fsharp-console">

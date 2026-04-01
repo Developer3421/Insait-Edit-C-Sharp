@@ -26,6 +26,8 @@ public enum SolutionFormat
     Slnx
 }
 
+public record SolutionProjectEntry(string Name, string RelativePath, string FullPath, string? Guid = null, string? TypeGuid = null);
+
 /// <summary>
 /// Service for managing solutions and projects
 /// </summary>
@@ -122,33 +124,18 @@ public class SolutionService
             var projectDir = Path.Combine(location, projectName);
             Directory.CreateDirectory(projectDir);
 
-            var templateName = GetTemplateShortName(template);
+            var result = await RunDotNetNewAsync(location, projectDir, projectName, template);
 
-            var process = new Process
+            if (result.ExitCode != 0)
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    // settings-resolved
-                    FileName = SettingsPanelControl.ResolveDotNetExe(),
-                    Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"",
-                    WorkingDirectory = location,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
-            {
-                var error = await process.StandardError.ReadToEndAsync();
-                throw new Exception($"Failed to create project: {error}");
+                throw new Exception($"Failed to create project '{projectName}' from template '{GetTemplateShortName(template)}'. {result.StandardError}\n{result.StandardOutput}".Trim());
             }
 
-            var projectPath = Path.Combine(projectDir, $"{projectName}.csproj");
+            var projectPath = FindCreatedProjectFile(projectDir, template, projectName);
+            if (projectPath == null)
+            {
+                throw new FileNotFoundException($"Project was created, but no generated project file was found in '{projectDir}'.");
+            }
 
             // Add to solution if specified
             if (!string.IsNullOrEmpty(solutionPath) && File.Exists(solutionPath))
@@ -263,7 +250,7 @@ public class SolutionService
             var projectName = Path.GetFileNameWithoutExtension(projectPath);
 
             // Relative path with backslashes (standard .sln format)
-            var relativePath = Path.GetRelativePath(solutionDir, projectPath);
+            var relativePath = NormalizeSlnProjectPath(Path.GetRelativePath(solutionDir, projectPath));
             Debug.WriteLine($"relativePath: {relativePath}");
 
             var content = File.Exists(solutionPath)
@@ -280,11 +267,11 @@ public class SolutionService
             // Generate a new GUID for the project
             var projectGuid = Guid.NewGuid().ToString("B").ToUpper();
             // C# project type GUID
-            const string csharpTypeGuid = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}";
+            var projectTypeGuid = GetProjectTypeGuid(projectPath);
 
             // Project block to insert before "Global"
             var projectBlock =
-                $"Project(\"{csharpTypeGuid}\") = \"{projectName}\", \"{relativePath}\", \"{projectGuid}\"\r\n" +
+                $"Project(\"{projectTypeGuid}\") = \"{projectName}\", \"{relativePath}\", \"{projectGuid}\"\r\n" +
                 $"EndProject\r\n";
 
             // Insert project block before "Global" section
@@ -477,24 +464,37 @@ public class SolutionService
     /// </summary>
     public async Task<List<string>> GetSolutionProjectsAsync(string solutionPath)
     {
+        var entries = await GetSolutionProjectEntriesAsync(solutionPath);
+        return entries
+            .Select(entry => entry.FullPath)
+            .Where(File.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Get detailed list of projects in a solution (supports both .sln and .slnx)
+    /// </summary>
+    public async Task<List<SolutionProjectEntry>> GetSolutionProjectEntriesAsync(string solutionPath)
+    {
         var ext = Path.GetExtension(solutionPath).ToLowerInvariant();
-        
-        if (ext == ".slnx")
-        {
-            return await GetSlnxProjectsAsync(solutionPath);
-        }
-        else
-        {
-            return await GetSlnProjectsAsync(solutionPath);
-        }
+
+        var entries = ext == ".slnx"
+            ? await GetSlnxProjectEntriesAsync(solutionPath)
+            : await GetSlnProjectEntriesAsync(solutionPath);
+
+        return entries
+            .GroupBy(entry => entry.FullPath, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToList();
     }
 
     /// <summary>
     /// Get projects from slnx file
     /// </summary>
-    private async Task<List<string>> GetSlnxProjectsAsync(string solutionPath)
+    private async Task<List<SolutionProjectEntry>> GetSlnxProjectEntriesAsync(string solutionPath)
     {
-        var projects = new List<string>();
+        var projects = new List<SolutionProjectEntry>();
 
         try
         {
@@ -507,34 +507,23 @@ public class SolutionService
             var root = doc.Root;
             if (root == null) return projects;
 
-            // Get projects from root level
-            foreach (var projectElement in root.Elements("Project"))
+            foreach (var projectElement in root.Descendants("Project"))
             {
                 var pathAttr = projectElement.Attribute("Path")?.Value;
                 if (!string.IsNullOrEmpty(pathAttr))
                 {
-                    var projectFullPath = Path.GetFullPath(Path.Combine(solutionDir, pathAttr.Replace("/", "\\")));
-                    if (File.Exists(projectFullPath))
+                    var normalizedRelativePath = pathAttr.Replace('/', Path.DirectorySeparatorChar)
+                        .Replace('\\', Path.DirectorySeparatorChar);
+                    if (!IsSupportedProjectPath(normalizedRelativePath))
                     {
-                        projects.Add(projectFullPath);
+                        continue;
                     }
-                }
-            }
 
-            // Get projects from folders
-            foreach (var folder in root.Elements("Folder"))
-            {
-                foreach (var projectElement in folder.Elements("Project"))
-                {
-                    var pathAttr = projectElement.Attribute("Path")?.Value;
-                    if (!string.IsNullOrEmpty(pathAttr))
-                    {
-                        var projectFullPath = Path.GetFullPath(Path.Combine(solutionDir, pathAttr.Replace("/", "\\")));
-                        if (File.Exists(projectFullPath))
-                        {
-                            projects.Add(projectFullPath);
-                        }
-                    }
+                    var projectFullPath = Path.GetFullPath(Path.Combine(solutionDir, normalizedRelativePath));
+                    projects.Add(new SolutionProjectEntry(
+                        Path.GetFileNameWithoutExtension(projectFullPath),
+                        pathAttr.Replace('\\', '/'),
+                        projectFullPath));
                 }
             }
         }
@@ -549,53 +538,53 @@ public class SolutionService
     /// <summary>
     /// Get projects from sln file using dotnet CLI
     /// </summary>
-    private async Task<List<string>> GetSlnProjectsAsync(string solutionPath)
+    private async Task<List<SolutionProjectEntry>> GetSlnProjectEntriesAsync(string solutionPath)
     {
-        var projects = new List<string>();
+        var projects = new List<SolutionProjectEntry>();
 
         try
         {
             var solutionDir = Path.GetDirectoryName(solutionPath) ?? string.Empty;
 
-            var process = new Process
+            if (!File.Exists(solutionPath))
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    // settings-resolved
-                    FileName = SettingsPanelControl.ResolveDotNetExe(),
-                    Arguments = $"sln \"{solutionPath}\" list",
-                    WorkingDirectory = solutionDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
+                return projects;
+            }
 
-            process.Start();
-            var output = await process.StandardOutput.ReadToEndAsync();
-            await process.WaitForExitAsync();
+            var lines = await File.ReadAllLinesAsync(solutionPath, System.Text.Encoding.UTF8);
+            var projectRegex = new Regex(
+                @"^Project\(""(?<TypeGuid>\{[^}]+\})""\)\s*=\s*""(?<Name>[^""]+)""\s*,\s*""(?<Path>[^""]+)""\s*,\s*""(?<Guid>\{[^}]+\})""",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-            if (process.ExitCode == 0)
+            const string solutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
+
+            foreach (var rawLine in lines)
             {
-                var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                var foundProjects = false;
-
-                foreach (var line in lines)
+                var match = projectRegex.Match(rawLine.Trim());
+                if (!match.Success)
                 {
-                    if (line.Contains("---"))
-                    {
-                        foundProjects = true;
-                        continue;
-                    }
-
-                    if (foundProjects && !string.IsNullOrWhiteSpace(line))
-                    {
-                        var projectRelativePath = line.Trim();
-                        var projectFullPath = Path.GetFullPath(Path.Combine(solutionDir, projectRelativePath));
-                        projects.Add(projectFullPath);
-                    }
+                    continue;
                 }
+
+                var typeGuid = match.Groups["TypeGuid"].Value;
+                if (typeGuid.Equals(solutionFolderGuid, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var relativePath = NormalizeSlnProjectPath(match.Groups["Path"].Value);
+                if (!IsSupportedProjectPath(relativePath))
+                {
+                    continue;
+                }
+
+                var projectFullPath = Path.GetFullPath(Path.Combine(solutionDir, relativePath));
+                projects.Add(new SolutionProjectEntry(
+                    match.Groups["Name"].Value,
+                    relativePath,
+                    projectFullPath,
+                    match.Groups["Guid"].Value,
+                    typeGuid));
             }
         }
         catch (Exception ex)
@@ -604,6 +593,29 @@ public class SolutionService
         }
 
         return projects;
+    }
+
+    private static bool IsSupportedProjectPath(string relativePath)
+    {
+        return relativePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+               relativePath.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+               relativePath.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+               relativePath.EndsWith(".nfproj", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeSlnProjectPath(string relativePath)
+    {
+        return relativePath.Replace('/', '\\');
+    }
+
+    private static string GetProjectTypeGuid(string projectPath)
+    {
+        return Path.GetExtension(projectPath).ToLowerInvariant() switch
+        {
+            ".fsproj" => "{F2A71F9B-5D33-465A-A702-920D77279786}",
+            ".vbproj" => "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}",
+            _ => "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
+        };
     }
 
     /// <summary>
@@ -723,19 +735,102 @@ public class SolutionService
         }
     }
 
-    private string GetTemplateShortName(string template)
+    public static async Task<(int ExitCode, string StandardOutput, string StandardError)> RunDotNetNewAsync(string workingDirectory, string outputDirectory, string projectName, string template)
     {
-        return template.ToLowerInvariant() switch
+        var templateName = GetTemplateShortName(template);
+        var langArg = IsFSharpTemplate(template) ? " --language F#" : string.Empty;
+
+        using (var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                // settings-resolved
+                FileName = SettingsPanelControl.ResolveDotNetExe(),
+                Arguments = $"new {templateName} -n \"{projectName}\" -o \"{outputDirectory}\"{langArg}",
+                WorkingDirectory = workingDirectory,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            }
+        })
+        {
+            process.Start();
+
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+            var waitTask = process.WaitForExitAsync();
+
+            await Task.WhenAll(outputTask, errorTask, waitTask);
+
+            return (process.ExitCode, await outputTask, await errorTask);
+        }
+    }
+
+    public static bool IsFSharpTemplate(string template)
+    {
+        return NormalizeTemplateKey(template) is "fsharp-console" or "fsharp-empty";
+    }
+
+    public static string GetProjectExtension(string template)
+    {
+        return IsFSharpTemplate(template) ? ".fsproj" : ".csproj";
+    }
+
+    public static string? FindCreatedProjectFile(string projectDir, string template, string projectName)
+    {
+        var preferredExtension = GetProjectExtension(template);
+        var expectedProjectPath = Path.Combine(projectDir, $"{projectName}{preferredExtension}");
+        if (File.Exists(expectedProjectPath))
+        {
+            return expectedProjectPath;
+        }
+
+        var patterns = preferredExtension == ".fsproj"
+            ? new[] { "*.fsproj", "*.csproj" }
+            : new[] { "*.csproj", "*.fsproj" };
+
+        foreach (var pattern in patterns)
+        {
+            var topLevelMatch = Directory.GetFiles(projectDir, pattern, SearchOption.TopDirectoryOnly)
+                .FirstOrDefault();
+            if (topLevelMatch != null)
+            {
+                return topLevelMatch;
+            }
+        }
+
+        foreach (var pattern in patterns)
+        {
+            var nestedMatch = Directory.GetFiles(projectDir, pattern, SearchOption.AllDirectories)
+                .FirstOrDefault();
+            if (nestedMatch != null)
+            {
+                return nestedMatch;
+            }
+        }
+
+        return null;
+    }
+
+    public static string GetTemplateShortName(string template)
+    {
+        return NormalizeTemplateKey(template) switch
         {
             "console" => "console",
             "classlib" => "classlib",
+            "csharp-empty" => "classlib",
             "avalonia" => "avalonia.app",
+            "avalonia-app" => "avalonia.app",
+            "avaloniaapp" => "avalonia.app",
             "webapi" => "webapi",
             "xunit" => "xunit",
             "nunit" => "nunit",
             "mstest" => "mstest",
             "wpf" => "wpf",
             "winforms" => "winforms",
+            "fsharp-console" => "console",
+            "fsharp-empty" => "classlib",
             "blazorserver" => "blazorserver",
             "blazorwasm" => "blazorwasm",
             "worker" => "worker",
@@ -744,6 +839,11 @@ public class SolutionService
             "mvc" => "mvc",
             _ => template
         };
+    }
+
+    private static string NormalizeTemplateKey(string template)
+    {
+        return template.Trim().ToLowerInvariant();
     }
 
     private static string GetDotNetGitIgnore()

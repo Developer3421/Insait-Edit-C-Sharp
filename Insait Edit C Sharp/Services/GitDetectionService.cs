@@ -62,31 +62,26 @@ public class GitDetectionService : IDisposable
     /// </summary>
     private static string? FindGitExecutable()
     {
-        // Try common Git installation paths on Windows
+        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var commonAppData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+
         var possiblePaths = new List<string>
         {
-            // GitForWindows NuGet package paths (in output directory)
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tools", "git", "bin", "git.exe"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tools", "git", "cmd", "git.exe"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "runtimes", "win-x64", "native", "git.exe"),
-            
-            // Standard Git for Windows installation paths
-            @"C:\Program Files\Git\bin\git.exe",
-            @"C:\Program Files\Git\cmd\git.exe",
-            @"C:\Program Files (x86)\Git\bin\git.exe",
-            @"C:\Program Files (x86)\Git\cmd\git.exe",
-            
-            // Portable Git
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
-                "Programs", "Git", "bin", "git.exe"),
-            
-            // Scoop
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
-                "scoop", "apps", "git", "current", "bin", "git.exe"),
-            
-            // Chocolatey
-            @"C:\ProgramData\chocolatey\bin\git.exe",
+            Path.Combine(baseDirectory, "tools", "git", "bin", "git.exe"),
+            Path.Combine(baseDirectory, "tools", "git", "cmd", "git.exe"),
+            Path.Combine(baseDirectory, "runtimes", "win-x64", "native", "git.exe"),
+            Path.Combine(localAppData, "Programs", "Git", "bin", "git.exe"),
+            Path.Combine(userProfile, "scoop", "apps", "git", "current", "bin", "git.exe"),
+            Path.Combine(commonAppData, "chocolatey", "bin", "git.exe"),
         };
+
+        foreach (var programFilesRoot in GetProgramFilesRoots())
+        {
+            possiblePaths.Add(Path.Combine(programFilesRoot, "Git", "bin", "git.exe"));
+            possiblePaths.Add(Path.Combine(programFilesRoot, "Git", "cmd", "git.exe"));
+        }
 
         // Check environment variable
         var gitFromEnv = Environment.GetEnvironmentVariable("GIT_PATH");
@@ -137,6 +132,21 @@ public class GitDetectionService : IDisposable
         }
 
         return null;
+    }
+
+    private static IEnumerable<string> GetProgramFilesRoots()
+    {
+        return new[]
+        {
+            Environment.GetEnvironmentVariable("ProgramW6432"),
+            Environment.GetEnvironmentVariable("ProgramFiles"),
+            Environment.GetEnvironmentVariable("ProgramFiles(x86)"),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+        }
+        .Where(path => !string.IsNullOrWhiteSpace(path))
+        .Select(path => path!.Trim().Trim('"'))
+        .Distinct(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>

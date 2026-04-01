@@ -4,7 +4,6 @@ using System.IO;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp;
@@ -73,8 +72,7 @@ public partial class AddProjectToSolutionWindow : Window
         {
             _selectedTemplate = template;
             
-            var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate", 
-                                   "WebApiTemplate", "XUnitTemplate", "WpfTemplate",
+            var templates = new[] { "ConsoleTemplate", "ClassLibTemplate", "AvaloniaTemplate",
                                    "FSharpConsoleTemplate", "FSharpEmptyTemplate",
                                    "WinFormsTemplate", "CSharpEmptyTemplate" };
             foreach (var name in templates)
@@ -115,6 +113,7 @@ public partial class AddProjectToSolutionWindow : Window
     private async void Create_Click(object? sender, RoutedEventArgs e)
     {
         var projectNameBox = this.FindControl<TextBox>("ProjectNameBox");
+        var previewText = this.FindControl<TextBlock>("ProjectPathPreview");
         if (projectNameBox == null) return;
 
         var projectName = projectNameBox.Text?.Trim() ?? "NewProject";
@@ -129,49 +128,20 @@ public partial class AddProjectToSolutionWindow : Window
             var projectDir = Path.Combine(_solutionDir, projectName);
             Directory.CreateDirectory(projectDir);
 
-            // Determine template name
-            var templateName = _selectedTemplate switch
-            {
-                "console"        => "console",
-                "classlib"       => "classlib",
-                "avalonia"       => "avalonia.app",
-                "webapi"         => "webapi",
-                "xunit"          => "xunit",
-                "wpf"            => "wpf",
-                "fsharp-console" => "console",
-                "fsharp-empty"   => "classlib",
-                "winforms"       => "winforms",
-                "csharp-empty"   => "classlib",
-                _                => "console"
-            };
+            var result = await SolutionService.RunDotNetNewAsync(_solutionDir, projectDir, projectName, _selectedTemplate);
 
-            // F# templates need the --language flag
-            var isFSharp = _selectedTemplate is "fsharp-console" or "fsharp-empty";
-            var langArg  = isFSharp ? " --language F#" : string.Empty;
-
-            // Create project
-            var createProcess = new Process
+            if (result.ExitCode == 0)
             {
-                StartInfo = new ProcessStartInfo
+                var projectPath = SolutionService.FindCreatedProjectFile(projectDir, _selectedTemplate, projectName);
+                if (projectPath == null)
                 {
-                    FileName = SettingsPanelControl.ResolveDotNetExe(),
-                    Arguments = $"new {templateName} -n \"{projectName}\" -o \"{projectDir}\"{langArg}",
-                    WorkingDirectory = _solutionDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
+                    Debug.WriteLine($"Project file not found after creation in '{projectDir}'.");
+                    if (previewText != null)
+                    {
+                        previewText.Text = $"Error: project file was not created in {projectDir}";
+                    }
+                    return;
                 }
-            };
-
-            createProcess.Start();
-            await createProcess.WaitForExitAsync();
-
-            if (createProcess.ExitCode == 0)
-            {
-                // F# projects use .fsproj; all others use .csproj
-                var projExt = isFSharp ? ".fsproj" : ".csproj";
-                var projectPath = Path.Combine(projectDir, $"{projectName}{projExt}");
                 
                 // Add project to solution using SolutionService (supports both sln and slnx)
                 var solutionService = new SolutionService();
@@ -192,13 +162,21 @@ public partial class AddProjectToSolutionWindow : Window
             }
             else
             {
-                var error = await createProcess.StandardError.ReadToEndAsync();
-                Debug.WriteLine($"Error creating project: {error}");
+                var errorText = string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError;
+                Debug.WriteLine($"Error creating project: {errorText}");
+                if (previewText != null)
+                {
+                    previewText.Text = $"Error: {errorText}";
+                }
             }
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error creating project: {ex.Message}");
+            if (previewText != null)
+            {
+                previewText.Text = $"Error: {ex.Message}";
+            }
         }
     }
 }

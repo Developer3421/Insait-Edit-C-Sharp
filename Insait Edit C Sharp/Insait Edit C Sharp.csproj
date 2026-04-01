@@ -79,13 +79,6 @@
       <EmbeddedResource Include="React Ui\dist\**\*" Condition="Exists('React Ui\dist\')" />
       <Content Include="React Ui\dist\**\*" Condition="Exists('React Ui\dist\')" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
-    <ItemGroup>
-      <AvaloniaResource Include="Interface Localization\English.axaml" />
-      <AvaloniaResource Include="Interface Localization\Ukrainian.axaml" />
-      <AvaloniaResource Include="Interface Localization\German.axaml" />
-      <AvaloniaResource Include="Interface Localization\Russian.axaml" />
-      <AvaloniaResource Include="Interface Localization\Turkish.axaml" />
-    </ItemGroup>
 
     <ItemGroup>
       <None Remove="Icons\MaxButton.png" />

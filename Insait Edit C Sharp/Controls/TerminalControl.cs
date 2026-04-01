@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
@@ -752,37 +754,75 @@ public class TerminalControl : UserControl
     /// </summary>
     private static string? ResolveFullGhPath()
     {
-        // Check user settings first
         var fromSettings = SettingsPanelControl.ResolveGhExe();
-        if (fromSettings != "gh" && File.Exists(fromSettings))
+        if (!string.IsNullOrWhiteSpace(fromSettings) &&
+            !string.Equals(fromSettings, "gh", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(fromSettings, "gh.exe", StringComparison.OrdinalIgnoreCase) &&
+            File.Exists(fromSettings))
+        {
             return fromSettings;
+        }
 
-        // Search in PATH
-        var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";
-        foreach (var path in pathEnv.Split(';'))
+        return FindExecutableInPath("gh.exe");
+    }
+
+    private static string? FindExecutableInPath(string executableName)
+    {
+        var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        foreach (var path in pathEnv.Split(Path.PathSeparator))
         {
-            if (string.IsNullOrWhiteSpace(path)) continue;
-            var ghPath = Path.Combine(path.Trim(), "gh.exe");
-            if (File.Exists(ghPath))
-                return ghPath;
+            var trimmedPath = path.Trim().Trim('"');
+            if (string.IsNullOrWhiteSpace(trimmedPath))
+                continue;
+
+            var candidate = Path.Combine(trimmedPath, executableName);
+            if (File.Exists(candidate))
+                return candidate;
         }
-        
-        // Check common installation locations
-        var possiblePaths = new[]
-        {
-            @"C:\Program Files\GitHub CLI\gh.exe",
-            @"C:\Program Files (x86)\GitHub CLI\gh.exe",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Programs\gh\gh.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"GitHub CLI\gh.exe")
-        };
-        
-        foreach (var path in possiblePaths)
-        {
-            if (File.Exists(path))
-                return path;
-        }
-        
+
         return null;
+    }
+
+    private static IEnumerable<string> GetProgramFilesRoots()
+    {
+        return new[]
+        {
+            Environment.GetEnvironmentVariable("ProgramW6432"),
+            Environment.GetEnvironmentVariable("ProgramFiles"),
+            Environment.GetEnvironmentVariable("ProgramFiles(x86)"),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+        }
+        .Where(path => !string.IsNullOrWhiteSpace(path))
+        .Select(path => path!.Trim().Trim('"'))
+        .Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveGitBashExecutable()
+    {
+        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var candidates = GetProgramFilesRoots()
+            .SelectMany(root => new[]
+            {
+                Path.Combine(root, "Git", "bin", "bash.exe"),
+                Path.Combine(root, "Git", "usr", "bin", "bash.exe")
+            })
+            .Concat(new[]
+            {
+                Path.Combine(localAppData, "Programs", "Git", "bin", "bash.exe"),
+                Path.Combine(baseDirectory, "tools", "git", "bin", "bash.exe"),
+                Path.Combine(baseDirectory, "tools", "git", "usr", "bin", "bash.exe")
+            });
+
+        foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        var bashInPath = FindExecutableInPath("bash.exe");
+        return !string.IsNullOrWhiteSpace(bashInPath) ? bashInPath : "bash.exe";
     }
     
     /// <summary>
@@ -1149,7 +1189,7 @@ public class TerminalControl : UserControl
             TerminalShellType.PowerShell => "powershell.exe",
             TerminalShellType.PowerShellCore => "pwsh.exe",
             TerminalShellType.Cmd => "cmd.exe",
-            TerminalShellType.GitBash => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "bash.exe"),
+            TerminalShellType.GitBash => ResolveGitBashExecutable(),
             TerminalShellType.GitHubCli => FindGhExecutable(),
             _ => "cmd.exe"
         };
@@ -1157,56 +1197,10 @@ public class TerminalControl : UserControl
     
     private string FindGhExecutable()
     {
-        // Check user settings first
-        var fromSettings = SettingsPanelControl.ResolveGhExe();
-        if (fromSettings != "gh" && File.Exists(fromSettings))
-            return fromSettings;
+        var fullPath = ResolveFullGhPath();
+        if (!string.IsNullOrWhiteSpace(fullPath))
+            return fullPath;
 
-        // Try common locations for GitHub CLI
-        var possiblePaths = new[]
-        {
-            "gh.exe", // In PATH
-            @"C:\Program Files\GitHub CLI\gh.exe",
-            @"C:\Program Files (x86)\GitHub CLI\gh.exe",
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Programs\gh\gh.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"GitHub CLI\gh.exe")
-        };
-        
-        foreach (var path in possiblePaths)
-        {
-            if (path == "gh.exe")
-            {
-                // Check if gh is in PATH
-                try
-                {
-                    var testProcess = new Process
-                    {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "gh",
-                            Arguments = "--version",
-                            UseShellExecute = false,
-                            RedirectStandardOutput = true,
-                            CreateNoWindow = true
-                        }
-                    };
-                    testProcess.Start();
-                    testProcess.WaitForExit(1000);
-                    if (testProcess.ExitCode == 0)
-                        return "gh.exe";
-                }
-                catch
-                {
-                    // Continue to next path
-                }
-            }
-            else if (File.Exists(path))
-            {
-                return path;
-            }
-        }
-        
-        // Fallback to gh.exe (might be in PATH)
         return "gh.exe";
     }
     
