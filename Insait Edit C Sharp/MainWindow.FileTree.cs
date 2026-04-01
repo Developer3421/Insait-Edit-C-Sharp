@@ -26,6 +26,32 @@ public partial class MainWindow
     private bool _isDraggingSelection;
     private Point _dragStart;
     private bool _dragStartedOnItem;   // true → normal TreeView click, no rubber-band
+    private bool _isAdjustingFileTreeSelection;
+
+    private static bool IsSelectableTreeItem(FileTreeItem? item) => item?.IsSelectableInTree == true;
+
+    private static void RemoveTreeSelectionItems(TreeView tree, IEnumerable<FileTreeItem> items)
+    {
+        if (tree.SelectedItems == null) return;
+
+        foreach (var item in items.ToList())
+        {
+            item.IsSelected = false;
+            tree.SelectedItems.Remove(item);
+        }
+    }
+
+    private static void AddTreeSelectionItems(TreeView tree, IEnumerable<FileTreeItem> items)
+    {
+        if (tree.SelectedItems == null) return;
+
+        foreach (var item in items.Where(IsSelectableTreeItem).Distinct().ToList())
+        {
+            item.IsSelected = true;
+            if (!tree.SelectedItems.Contains(item))
+                tree.SelectedItems.Add(item);
+        }
+    }
 
     // ═══════════════════════════════════════════════════════════
     //  Panel pointer events — rubber-band drag selection
@@ -149,7 +175,7 @@ public partial class MainWindow
 
         foreach (var tvi in allTvi)
         {
-            if (tvi.DataContext is not FileTreeItem fi) continue;
+            if (tvi.DataContext is not FileTreeItem fi || !IsSelectableTreeItem(fi)) continue;
 
             // Get the row bounds relative to the panel
             var bounds = tvi.Bounds;
@@ -201,7 +227,7 @@ public partial class MainWindow
             tree.SelectedItems?.Clear();
 
         if (tree.SelectedItems == null) return;
-        foreach (var fi in toSelect)
+        foreach (var fi in toSelect.Where(IsSelectableTreeItem).Distinct())
         {
             if (!tree.SelectedItems.Contains(fi))
                 tree.SelectedItems.Add(fi);
@@ -215,17 +241,53 @@ public partial class MainWindow
     // ═══════════════════════════════════════════════════════════
     private void FileTreeView_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
+        if (_isAdjustingFileTreeSelection)
+            return;
+
+        if (sender is TreeView tree)
+        {
+            var invalidAdded = e.AddedItems
+                .OfType<FileTreeItem>()
+                .Where(item => !IsSelectableTreeItem(item))
+                .ToList();
+
+            if (invalidAdded.Count > 0)
+            {
+                var removedSelectable = e.RemovedItems
+                    .OfType<FileTreeItem>()
+                    .Where(IsSelectableTreeItem)
+                    .ToList();
+
+                var hasValidAdditions = e.AddedItems
+                    .OfType<FileTreeItem>()
+                    .Any(IsSelectableTreeItem);
+
+                _isAdjustingFileTreeSelection = true;
+                try
+                {
+                    RemoveTreeSelectionItems(tree, invalidAdded);
+
+                    if (!hasValidAdditions && removedSelectable.Count > 0)
+                        AddTreeSelectionItems(tree, removedSelectable);
+                }
+                finally
+                {
+                    _isAdjustingFileTreeSelection = false;
+                }
+            }
+        }
+
         // Зняти позначку з попередньо вибраних елементів
         foreach (var removed in e.RemovedItems)
         {
-            if (removed is FileTreeItem oldItem)
+            if (removed is FileTreeItem oldItem && IsSelectableTreeItem(oldItem))
                 oldItem.IsSelected = false;
         }
 
         // Позначити нові вибрані елементи
         foreach (var added in e.AddedItems)
         {
-            if (added is FileTreeItem newItem)
+            if (added is FileTreeItem newItem && IsSelectableTreeItem(newItem))
                 newItem.IsSelected = true;
         }
 

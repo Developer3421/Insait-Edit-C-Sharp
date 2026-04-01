@@ -569,11 +569,11 @@ public partial class MainWindow
         {
             foreach (var obj in tree.SelectedItems)
             {
-                if (obj is FileTreeItem fi)
+                if (obj is FileTreeItem fi && fi.IsSelectableInTree)
                     result.Add(fi);
             }
             if (result.Count > 0)
-                return result;
+                return result.Distinct().ToList();
         }
 
         // Fallback — walk view-model tree for IsSelected == true
@@ -585,14 +585,14 @@ public partial class MainWindow
     {
         foreach (var item in items)
         {
-            if (item.IsSelected) result.Add(item);
+            if (item.IsSelected && item.IsSelectableInTree) result.Add(item);
             CollectSelectedInTree(item.Children, result);
         }
     }
 
     private static FileTreeItem? FindSelectedInTree(FileTreeItem item)
     {
-        if (item.IsSelected) return item;
+        if (item.IsSelected && item.IsSelectableInTree) return item;
         foreach (var child in item.Children)
         {
             var found = FindSelectedInTree(child);

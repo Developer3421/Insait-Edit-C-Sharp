@@ -213,6 +213,7 @@ public class FileTreeItem : INotifyPropertyChanged
                 OnPropertyChanged(nameof(NameColor));
                 OnPropertyChanged(nameof(FontWeight));
                 OnPropertyChanged(nameof(IsTextIcon));
+                OnPropertyChanged(nameof(IsSelectableInTree));
             }
         }
     }
@@ -270,6 +271,9 @@ public class FileTreeItem : INotifyPropertyChanged
             }
         }
     }
+
+    public bool IsSelectableInTree => _itemType is not FileTreeItemType.Solution
+        and not FileTreeItemType.Project;
 
     public bool HasDescription => !string.IsNullOrEmpty(Description);
 
