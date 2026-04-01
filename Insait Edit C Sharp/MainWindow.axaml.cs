@@ -52,6 +52,14 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        var fileTreeView = this.FindControl<TreeView>("FileTreeView");
+        if (fileTreeView != null)
+            fileTreeView.PointerPressed += FileTreeView_PointerPressed;
+
+        var fileTreeContextMenu = this.FindControl<ContextMenu>("FileTreeContextMenu");
+        if (fileTreeContextMenu != null)
+            fileTreeContextMenu.Closed += (_, _) => _contextMenuTargetItem = null;
+
         // Set up column constraints for splitters (JetBrains Rider style)
         SetupColumnConstraints();
 
@@ -3871,7 +3879,9 @@ ExecuteMenuAction(string action)
         var item = GetSelectedTreeItem();
         var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
         if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to build"; return; }
+        await SaveAllFilesAsync();
         _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
+        await _buildService.BuildAsync(projectPath);
     }
 
     private async void ContextMenu_RebuildProject_Click(object? sender, RoutedEventArgs e)
@@ -3879,7 +3889,10 @@ ExecuteMenuAction(string action)
         var item = GetSelectedTreeItem();
         var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
         if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to rebuild"; return; }
+        await SaveAllFilesAsync();
         _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
+        await _buildService.CleanAsync(projectPath);
+        await _buildService.BuildAsync(projectPath);
     }
 
     private async void ContextMenu_CleanProject_Click(object? sender, RoutedEventArgs e)
@@ -3888,6 +3901,7 @@ ExecuteMenuAction(string action)
         var projectPath = item?.ItemType == FileTreeItemType.Solution ? item.FullPath : FindProjectFile(item?.FullPath ?? "");
         if (string.IsNullOrEmpty(projectPath)) { _viewModel.StatusText = "No project to clean"; return; }
         _buildOutput.Clear(); UpdateBuildOutput(); SwitchToolWindowPanel("build");
+        await _buildService.CleanAsync(projectPath);
     }
 
     private void AnalyzeProject_Click(object? sender, RoutedEventArgs e) => _ = AnalyzeProjectAsync();

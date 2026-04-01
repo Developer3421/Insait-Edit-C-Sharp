@@ -572,12 +572,38 @@ public partial class MainWindow
                 if (obj is FileTreeItem fi && fi.IsSelectableInTree)
                     result.Add(fi);
             }
+
+            if (_contextMenuTargetItem != null)
+            {
+                if (IsSelectableTreeItem(_contextMenuTargetItem) && result.Any(item =>
+                        ReferenceEquals(item, _contextMenuTargetItem) ||
+                        PathsEqual(item.FullPath, _contextMenuTargetItem.FullPath)))
+                {
+                    return result.Distinct().ToList();
+                }
+
+                return new List<FileTreeItem> { _contextMenuTargetItem };
+            }
+
             if (result.Count > 0)
                 return result.Distinct().ToList();
         }
 
         // Fallback — walk view-model tree for IsSelected == true
         CollectSelectedInTree(_viewModel.FileTreeItems, result);
+
+        if (_contextMenuTargetItem != null)
+        {
+            if (IsSelectableTreeItem(_contextMenuTargetItem) && result.Any(item =>
+                    ReferenceEquals(item, _contextMenuTargetItem) ||
+                    PathsEqual(item.FullPath, _contextMenuTargetItem.FullPath)))
+            {
+                return result.Distinct().ToList();
+            }
+
+            return new List<FileTreeItem> { _contextMenuTargetItem };
+        }
+
         return result;
     }
 
