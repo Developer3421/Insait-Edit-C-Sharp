@@ -3679,6 +3679,23 @@ ExecuteMenuAction(string action)
             return;
         }
 
+        var workspaceHasVisibleFiles = !string.IsNullOrEmpty(workspaceRoot) &&
+                                       Directory.Exists(workspaceRoot) &&
+                                       HasVisibleWorkspaceFiles(workspaceRoot);
+        if (!workspaceDeleted && !string.IsNullOrEmpty(workspaceRoot) && Directory.Exists(workspaceRoot) && !workspaceHasVisibleFiles)
+        {
+            if (IsWorkspaceEffectivelyEmpty(workspaceRoot))
+            {
+                if (!preparedWorkspaceRootDeletion)
+                    await PrepareWorkspaceRootDeletionAsync(workspaceRoot);
+
+                await TryDeleteDirectoryWithRetriesAsync(workspaceRoot);
+            }
+
+            ClearWorkspaceState("Workspace is empty. Create a new project or solution.");
+            return;
+        }
+
         // Even if the workspace is not physically empty, check if only build artefacts
         // remain (bin/, obj/, .vs/, .git/, …). If so, delete everything and clear state.
         if (!workspaceDeleted && !string.IsNullOrEmpty(workspaceRoot) && Directory.Exists(workspaceRoot)

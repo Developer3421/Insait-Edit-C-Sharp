@@ -453,6 +453,10 @@ public partial class MainWindow
         new(StringComparer.OrdinalIgnoreCase)
         { "bin", "obj", ".vs", ".git", ".github", ".idea", ".vscode", "node_modules" };
 
+    private static readonly HashSet<string> _workspaceHiddenFileNames =
+        new(StringComparer.OrdinalIgnoreCase)
+        { ".gitignore", ".gitattributes", ".editorconfig" };
+
     private static bool HasUserFilesInDirectory(string directory)
     {
         try
@@ -470,6 +474,55 @@ public partial class MainWindow
             }
         }
         catch { /* ignore access / io errors during the check */ }
+
+        return false;
+    }
+
+    internal static bool HasVisibleWorkspaceFiles(string workspaceRoot)
+    {
+        if (!Directory.Exists(workspaceRoot)) return false;
+        return HasVisibleWorkspaceFilesRecursive(workspaceRoot);
+    }
+
+    private static bool HasVisibleWorkspaceFilesRecursive(string directory)
+    {
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(directory))
+            {
+                var fileName = Path.GetFileName(file);
+                if (string.IsNullOrWhiteSpace(fileName))
+                    continue;
+
+                if (fileName.StartsWith(".", StringComparison.Ordinal) ||
+                    _workspaceHiddenFileNames.Contains(fileName) ||
+                    fileName.EndsWith(".user", StringComparison.OrdinalIgnoreCase) ||
+                    fileName.EndsWith(".suo", StringComparison.OrdinalIgnoreCase) ||
+                    fileName.EndsWith(".DotSettings.user", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            foreach (var subDir in Directory.EnumerateDirectories(directory))
+            {
+                var dirName = Path.GetFileName(subDir);
+                if (string.IsNullOrWhiteSpace(dirName))
+                    continue;
+
+                if (dirName.StartsWith(".", StringComparison.Ordinal) || _buildArtifactDirNames.Contains(dirName))
+                    continue;
+
+                if (HasVisibleWorkspaceFilesRecursive(subDir))
+                    return true;
+            }
+        }
+        catch
+        {
+            // Ignore IO / access errors when evaluating visual emptiness.
+        }
 
         return false;
     }
