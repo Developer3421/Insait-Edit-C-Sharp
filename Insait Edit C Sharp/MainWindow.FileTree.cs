@@ -30,7 +30,6 @@ public partial class MainWindow
     private bool _dragStartedOnItem;   // true → normal TreeView click, no rubber-band
     private bool _isAdjustingFileTreeSelection;
     private FileTreeItem? _contextMenuTargetItem;
-    private PixelPoint _contextMenuAnchorScreenPoint;
     private ExplorerNodeMenuWindow? _activeNodeMenuWindow;
 
     private static bool IsSelectableTreeItem(FileTreeItem? item) => item?.IsSelectableInTree == true;
@@ -347,18 +346,26 @@ public partial class MainWindow
         if (!point.Properties.IsRightButtonPressed)
             return;
 
-        _contextMenuAnchorScreenPoint = this.PointToScreen(e.GetPosition(this));
 
         var item = GetTreeItemFromSource(e.Source);
         _contextMenuTargetItem = item;
 
-        if (item == null || !IsSelectableTreeItem(item) || sender is not TreeView tree)
+        // Solution / Project nodes are NOT in SelectedItems (IsSelectableInTree == false).
+        // Do NOT touch the current file/folder selection when clicking these nodes —
+        // each element type is handled independently.
+        if (item == null || !IsSelectableTreeItem(item))
             return;
 
+        if (sender is not TreeView tree)
+            return;
+
+        // If the right-clicked file/folder is already part of the current selection,
+        // keep the whole selection intact (enables multi-select context menu).
         var selectedItems = tree.SelectedItems?.OfType<FileTreeItem>().ToList() ?? new List<FileTreeItem>();
-        if (selectedItems.Any(selected => ReferenceEquals(selected, item) || PathsEqual(selected.FullPath, item.FullPath)))
+        if (selectedItems.Any(sel => ReferenceEquals(sel, item) || PathsEqual(sel.FullPath, item.FullPath)))
             return;
 
+        // Otherwise select only the right-clicked item.
         _isAdjustingFileTreeSelection = true;
         try
         {
@@ -390,115 +397,139 @@ public partial class MainWindow
 
     // ═══════════════════════════════════════════════════════════
     //  FileTreeContextMenu — Opening
+    //  All node types are now handled by ExplorerNodeMenuWindow.
+    //  The native ContextMenu is always cancelled.
     // ═══════════════════════════════════════════════════════════
     private void FileTreeContextMenu_Opening(object? sender, CancelEventArgs e)
     {
+        e.Cancel = true;
+
+        // _contextMenuTargetItem is set in FileTreeView_PointerPressed (right-click).
+        // Because we registered with handledEventsToo: true, it should always be set.
+        // As a fallback, read the TreeView's current selection.
+        var item        = _contextMenuTargetItem;
         var allSelected = GetSelectedTreeItems();
-        var count = allSelected.Count;
-        var item = allSelected.FirstOrDefault();
 
-        bool isMulti = count > 1;
+        // If the clicked node is not already in the selection, keep it as the anchor.
+        if (allSelected.Count == 0 && item != null)
+            allSelected = new List<FileTreeItem> { item };
 
-        if (!isMulti && item?.ItemType is FileTreeItemType.Solution or FileTreeItemType.Project)
-        {
-            e.Cancel = true;
-            ShowExplorerNodeMenuWindow(item);
-            return;
-        }
-
-        // ── Multi-selection info header ──────────────────────
-        var infoLabel = this.FindControl<MenuItem>("ContextMenuMultiInfo");
-        var infoSep = this.FindControl<Control>("ContextMenuMultiInfoSeparator");
-        var infoText = this.FindControl<TextBlock>("ContextMenuMultiInfoText");
-        if (infoLabel != null) infoLabel.IsVisible = isMulti;
-        if (infoSep != null) infoSep.IsVisible = isMulti;
-        if (infoText != null && isMulti)
-        {
-            var files = allSelected.Count(x => !x.IsDirectory);
-            var folders = allSelected.Count(x => x.IsDirectory);
-            var parts = new List<string>();
-            if (files > 0) parts.Add(files + " file" + (files > 1 ? "s" : ""));
-            if (folders > 0) parts.Add(folders + " folder" + (folders > 1 ? "s" : ""));
-            infoText.Text = count + " items selected — " + string.Join(", ", parts);
-        }
-
-        bool isSolution = item?.ItemType is FileTreeItemType.Solution or FileTreeItemType.SolutionFolder;
-        bool isProject = item?.ItemType is FileTreeItemType.Project;
-        bool isFolder = item?.IsDirectory == true && !isSolution && !isProject;
-        bool isFile = item != null && !item.IsDirectory;
-        bool hasProject = isSolution || isProject;
-
-        bool multiEditable = isMulti && allSelected.All(x =>
-            x.ItemType is not FileTreeItemType.Solution and
-                         not FileTreeItemType.SolutionFolder);
-
-        SetMenuItemVisible("ContextMenuRun", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuRunSeparator", isProject && !isMulti);
-
-        SetMenuItemVisible("ContextMenuNew", !isMulti && (isFile || isFolder || isProject));
-        SetMenuItemVisible("ContextMenuAdd", !isMulti && (hasProject || isSolution));
-        SetMenuItemVisible("ContextMenuAddSeparator", !isMulti && (hasProject || isSolution));
-
-        SetMenuItemVisible("ContextMenuBuild", hasProject && !isMulti);
-        SetMenuItemVisible("ContextMenuRebuild", hasProject && !isMulti);
-        SetMenuItemVisible("ContextMenuClean", hasProject && !isMulti);
-        SetMenuItemVisible("ContextMenuBuildSeparator", hasProject && !isMulti);
-
-        SetMenuItemVisible("ContextMenuNuGet", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuAddReference", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuNuGetSeparator", isProject && !isMulti);
-
-        SetMenuItemVisible("ContextMenuRemoveFromSolution", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuUnloadProject", isProject && !isMulti);
-        SetMenuItemVisible("ContextMenuRemoveSeparator", isProject && !isMulti);
-
-        bool canEdit = isFile || isFolder || isSolution || isProject || (isMulti && multiEditable);
-        SetMenuItemVisible("ContextMenuCut", canEdit);
-        SetMenuItemVisible("ContextMenuCopy", canEdit);
-        SetMenuItemVisible("ContextMenuPaste", !isMulti && (isFolder || isSolution || isProject));
-
-        SetMenuItemVisible("ContextMenuRename", !isMulti && (isFile || isFolder));
-
-        var deleteMenu = this.FindControl<MenuItem>("ContextMenuDelete");
-        if (deleteMenu != null)
-        {
-            deleteMenu.Header = isMulti ? "🗑️ Delete " + count + " Items..." : "🗑️ Safe Delete...";
-            deleteMenu.IsVisible = isFile || isFolder || isSolution || isProject || (isMulti && multiEditable);
-        }
-
-        SetMenuItemVisible("ContextMenuCopyPath", !isMulti && (isFile || isFolder));
-        SetMenuItemVisible("ContextMenuOpenExplorer", !isMulti && (isFile || isFolder));
-        SetMenuItemVisible("ContextMenuOpenTerminal", !isMulti && (isFile || isFolder));
-        SetMenuItemVisible("ContextMenuProperties", !isMulti && (isProject || isFile));
-        SetMenuItemVisible("ContextMenuGit", !isMulti && item != null);
+        ShowExplorerNodeMenuWindow(item, allSelected);
     }
 
-    private void ShowExplorerNodeMenuWindow(FileTreeItem item)
+    // ── Show the floating ExplorerNodeMenuWindow ──────────────────
+    //
+    //  Rules:
+    //  • Solution node  → always Solution page (ignores other selection)
+    //  • Project node   → always Project page  (ignores other selection)
+    //  • Files/Folders  → individual page when 1 item; MultiSelection when
+    //                     the user has Ctrl-selected ≥ 2 real files/folders
+    //  • Special nodes (DependenciesFolder, NuGetPackage, SolutionFolder)
+    //                   are excluded from multi-select counting.
+    //  • Window is centred on screen (CenterScreen in AXAML).
+    // ──────────────────────────────────────────────────────────────
+    private void ShowExplorerNodeMenuWindow(FileTreeItem? item, IReadOnlyList<FileTreeItem>? allSelected = null)
     {
-        _contextMenuTargetItem = item;
+        if (item == null && (allSelected == null || allSelected.Count == 0))
+            return;
 
         _activeNodeMenuWindow?.Close();
 
-        var isSolution = item.ItemType == FileTreeItemType.Solution;
-        var window = new ExplorerNodeMenuWindow(
-            isSolution ? "🏠" : "📦",
-            isSolution ? $"Solution · {item.Name}" : $"Project · {item.Name}",
-            BuildExplorerNodeMenuActions(item));
+        // ── Solution: own page, always ────────────────────────────
+        if (item?.ItemType == FileTreeItemType.Solution)
+        {
+            _contextMenuTargetItem = item;
+            ShowWindow("🏠", $"Solution · {item.Name}",
+                ExplorerNodeMenuPageType.Solution,
+                BuildExplorerNodeMenuActions(item), item.FullPath, item);
+            return;
+        }
+
+        // ── Project: own page, always ─────────────────────────────
+        if (item?.ItemType == FileTreeItemType.Project)
+        {
+            _contextMenuTargetItem = item;
+            ShowWindow("📦", $"Project · {item.Name}",
+                ExplorerNodeMenuPageType.Project,
+                BuildExplorerNodeMenuActions(item), item.FullPath, item);
+            return;
+        }
+
+        // ── Files / Folders ───────────────────────────────────────
+        // Filter out solution/project/special nodes — only count real
+        // files and regular directories for multi-select purposes.
+        static bool IsRealFileOrFolder(FileTreeItem x) =>
+            x.ItemType is not FileTreeItemType.Solution
+                       and not FileTreeItemType.SolutionFolder
+                       and not FileTreeItemType.Project
+                       and not FileTreeItemType.DependenciesFolder
+                       and not FileTreeItemType.NuGetPackage;
+
+        var fileItems = (allSelected ?? new List<FileTreeItem>())
+            .Where(IsRealFileOrFolder)
+            .ToList();
+
+        // Make sure the right-clicked item itself is in the list
+        if (item != null && IsRealFileOrFolder(item) && !fileItems.Contains(item))
+            fileItems.Insert(0, item);
+
+        if (fileItems.Count == 0)
+            return;
+
+        _contextMenuTargetItem = fileItems[0];
+
+        // Multi-selection only when the user explicitly selected ≥2 items
+        if (fileItems.Count > 1)
+        {
+            var files   = fileItems.Count(x => !x.IsDirectory);
+            var folders = fileItems.Count(x =>  x.IsDirectory);
+            var parts   = new List<string>();
+            if (files   > 0) parts.Add(files   + " file"   + (files   > 1 ? "s" : ""));
+            if (folders > 0) parts.Add(folders + " folder" + (folders > 1 ? "s" : ""));
+            var summary = parts.Count > 0 ? " (" + string.Join(", ", parts) + ")" : string.Empty;
+            ShowWindow("📋", $"{fileItems.Count} Items Selected{summary}",
+                ExplorerNodeMenuPageType.MultiSelection,
+                BuildMultiSelectionMenuActions(fileItems), null, fileItems[0]);
+            return;
+        }
+
+        // Single file / folder
+        var target = fileItems[0];
+        if (target.IsDirectory)
+            ShowWindow("📁", $"Folder · {target.Name}", ExplorerNodeMenuPageType.Folder,
+                BuildExplorerNodeMenuActions(target), target.FullPath, target);
+        else
+            ShowWindow("📄", $"File · {target.Name}", ExplorerNodeMenuPageType.File,
+                BuildExplorerNodeMenuActions(target), target.FullPath, target);
+    }
+
+    // ── Helper: create, register and display the window ──────────
+    private void ShowWindow(
+        string titleIcon, string title,
+        ExplorerNodeMenuPageType pageType,
+        IReadOnlyList<ExplorerNodeMenuAction> actions,
+        string? itemPath,
+        FileTreeItem? ownerItem)
+    {
+        var window = new ExplorerNodeMenuWindow(titleIcon, title, pageType, actions, itemPath);
 
         window.Closed += (_, _) =>
         {
             if (ReferenceEquals(_activeNodeMenuWindow, window))
                 _activeNodeMenuWindow = null;
-
-            if (ReferenceEquals(_contextMenuTargetItem, item))
+            if (ownerItem != null && ReferenceEquals(_contextMenuTargetItem, ownerItem))
                 _contextMenuTargetItem = null;
+            Activate();  // restore focus to main window
         };
 
         _activeNodeMenuWindow = window;
-        window.Position = new PixelPoint(_contextMenuAnchorScreenPoint.X + 8, _contextMenuAnchorScreenPoint.Y + 8);
-        window.Show(this);
+        window.Show();   // show without owner to avoid blocking appearance
     }
 
+    // ── Build actions: Solution page ─────────────────────────────
+    // ── Build actions: Project page ──────────────────────────────
+    // ── Build actions: File page ─────────────────────────────────
+    // ── Build actions: Folder page ───────────────────────────────
     private IReadOnlyList<ExplorerNodeMenuAction> BuildExplorerNodeMenuActions(FileTreeItem item)
     {
         Task Invoke(Action action)
@@ -516,58 +547,136 @@ public partial class MainWindow
 
         var actions = new List<ExplorerNodeMenuAction>();
 
+        // ════════════════════════════════════
+        //  PAGE: Solution
+        // ════════════════════════════════════
         if (item.ItemType == FileTreeItemType.Solution)
         {
-            actions.Add(new ExplorerNodeMenuAction("Open", "📄 Open Solution File", "Open the .sln / .slnx file in the editor", () => Invoke(() => OpenFileInEditor(item.FullPath))));
-            actions.Add(new ExplorerNodeMenuAction("Add", "📦 Add New Project...", "Create a project inside the current solution", () => Invoke(() => AddNewProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add", "📦 Add Existing Project...", "Attach an existing project to the solution", () => Invoke(() => ContextMenu_AddExistingProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add", "📄 Add New Item...", "Create a new file in the solution folder", () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add", "📄 Add Existing Item...", "Copy an existing file into the solution folder", () => Invoke(() => ContextMenu_AddExistingItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Build", "🔨 Build Solution", "Build the selected solution", () => InvokeAsync(() => { ContextMenu_BuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Build", "🔄 Rebuild Solution", "Clean and build the solution again", () => InvokeAsync(() => { ContextMenu_RebuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Build", "🧹 Clean Solution", "Remove build artifacts for the solution", () => InvokeAsync(() => { ContextMenu_CleanProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Edit", "✂️ Cut", "Copy selected solution path for move operation", () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit", "📋 Copy", "Copy selected solution path", () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit", "📄 Paste", "Paste into the solution folder", () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "📝 Git Commit...", "Open the Git window", () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "📜 Git History", "Show history in the Git window", () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "↩️ Git Revert...", "Open revert options in the Git window", () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Solution", "🔄 Reload from Disk", "Refresh the explorer tree", () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Solution", "⚙️ Properties", "Open solution properties", () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Solution", "🗑️ Safe Delete...", "Delete the solution/workspace", () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+            actions.Add(new ExplorerNodeMenuAction("Open",           "📄 Open Solution File",      "Open the .sln / .slnx file in the editor",          () => Invoke(() => OpenFileInEditor(item.FullPath))));
+            actions.Add(new ExplorerNodeMenuAction("Add",            "📦 Add New Project...",       "Create a project inside the current solution",       () => Invoke(() => AddNewProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",            "📦 Add Existing Project...",  "Attach an existing project to the solution",         () => Invoke(() => ContextMenu_AddExistingProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",            "📄 Add New Item...",          "Create a new file in the solution folder",           () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",            "📄 Add Existing Item...",     "Copy an existing file into the solution folder",     () => Invoke(() => ContextMenu_AddExistingItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Build",          "🔨 Build Solution",           "Build the entire solution",                         () => InvokeAsync(() => { ContextMenu_BuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Build",          "🔄 Rebuild Solution",         "Clean and rebuild the solution",                    () => InvokeAsync(() => { ContextMenu_RebuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Build",          "🧹 Clean Solution",           "Remove all build artefacts",                        () => InvokeAsync(() => { ContextMenu_CleanProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           "✂️ Cut",                      "Cut the solution path",                             () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           "📋 Copy",                     "Copy the solution path",                            () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           "📄 Paste",                    "Paste into the solution folder",                    () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", "📝 Git Commit...",            "Open the Git window",                               () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", "📜 Git History",              "Show commit history in the Git window",             () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", "↩️ Git Revert...",            "Open revert options in the Git window",             () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Solution",       "🔄 Reload from Disk",         "Refresh the explorer tree",                         () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Solution",       "⚙️ Properties",               "Open solution properties",                          () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Solution",       "🗑️ Safe Delete...",           "Delete the solution / workspace",                   () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
             return actions;
         }
 
-        actions.Add(new ExplorerNodeMenuAction("Run", "▶ Run Project", "Run the selected project", () => Invoke(() => ContextMenu_RunProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create", "📄 New Class...", null, () => Invoke(() => ContextMenu_NewClass_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create", "📄 New Interface...", null, () => Invoke(() => ContextMenu_NewInterface_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create", "📄 New Record...", null, () => Invoke(() => ContextMenu_NewRecord_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create", "📄 New Enum...", null, () => Invoke(() => ContextMenu_NewEnum_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create", "🪟 New Avalonia Window...", null, () => Invoke(() => ContextMenu_NewAvaloniaWindow_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create", "🎛️ New Avalonia UserControl...", null, () => Invoke(() => ContextMenu_NewAvaloniaUserControl_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create", "📄 New File...", null, () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create", "📁 New Directory", null, () => Invoke(() => AddNewFolder_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Add", "📦 Add New Project...", null, () => Invoke(() => AddNewProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Add", "📦 Add Existing Project...", null, () => Invoke(() => ContextMenu_AddExistingProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Add", "📄 Add New Item...", null, () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Add", "📄 Add Existing Item...", null, () => Invoke(() => ContextMenu_AddExistingItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Build", "🔨 Build Project", null, () => InvokeAsync(() => { ContextMenu_BuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-        actions.Add(new ExplorerNodeMenuAction("Build", "🔄 Rebuild Project", null, () => InvokeAsync(() => { ContextMenu_RebuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-        actions.Add(new ExplorerNodeMenuAction("Build", "🧹 Clean Project", null, () => InvokeAsync(() => { ContextMenu_CleanProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-        actions.Add(new ExplorerNodeMenuAction("Dependencies", "📦 Manage NuGet Packages...", null, () => Invoke(() => ContextMenu_ManageNuGet_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Dependencies", "🔗 Add Reference...", null, () => Invoke(() => ContextMenu_AddReference_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Edit", "✂️ Cut", null, () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Edit", "📋 Copy", null, () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Edit", "📄 Paste", null, () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Source Control", "📝 Git Commit...", null, () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Source Control", "📜 Git History", null, () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Source Control", "↩️ Git Revert...", null, () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Project", "🗑️ Remove from Solution", null, () => Invoke(() => ContextMenu_RemoveFromSolution_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Project", "⬇️ Unload Project", null, () => Invoke(() => ContextMenu_UnloadProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Project", "🔄 Reload from Disk", null, () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Project", "⚙️ Properties", null, () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Project", "🗑️ Safe Delete...", null, () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+        // ════════════════════════════════════
+        //  PAGE: Project
+        // ════════════════════════════════════
+        if (item.ItemType == FileTreeItemType.Project)
+        {
+            actions.Add(new ExplorerNodeMenuAction("Run",          "▶ Run Project",                "Run the selected project",                          () => Invoke(() => ContextMenu_RunProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Class...",              null,                                                () => Invoke(() => ContextMenu_NewClass_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Interface...",          null,                                                () => Invoke(() => ContextMenu_NewInterface_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Record...",             null,                                                () => Invoke(() => ContextMenu_NewRecord_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Enum...",               null,                                                () => Invoke(() => ContextMenu_NewEnum_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       "🪟 New Avalonia Window...",    null,                                                () => Invoke(() => ContextMenu_NewAvaloniaWindow_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       "🎛️ New Avalonia UserControl...", null,                                             () => Invoke(() => ContextMenu_NewAvaloniaUserControl_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New File...",               null,                                                () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       "📁 New Directory",             null,                                                () => Invoke(() => AddNewFolder_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",          "📦 Add New Project...",        null,                                                () => Invoke(() => AddNewProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",          "📦 Add Existing Project...",   null,                                                () => Invoke(() => ContextMenu_AddExistingProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",          "📄 Add New Item...",           null,                                                () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",          "📄 Add Existing Item...",      null,                                                () => Invoke(() => ContextMenu_AddExistingItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Build",        "🔨 Build Project",             null,                                                () => InvokeAsync(() => { ContextMenu_BuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Build",        "🔄 Rebuild Project",           null,                                                () => InvokeAsync(() => { ContextMenu_RebuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Build",        "🧹 Clean Project",             null,                                                () => InvokeAsync(() => { ContextMenu_CleanProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Dependencies",  "📦 Manage NuGet Packages...", null,                                                () => Invoke(() => ContextMenu_ManageNuGet_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Dependencies",  "🔗 Add Reference...",         null,                                                () => Invoke(() => ContextMenu_AddReference_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",         "✂️ Cut",                       null,                                                () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",         "📋 Copy",                      null,                                                () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",         "📄 Paste",                     null,                                                () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control","📝 Git Commit...",            null,                                                () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control","📜 Git History",              null,                                                () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control","↩️ Git Revert...",            null,                                                () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      "🗑️ Remove from Solution",     null,                                                () => Invoke(() => ContextMenu_RemoveFromSolution_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      "⬇️ Unload Project",            null,                                                () => Invoke(() => ContextMenu_UnloadProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      "🔄 Reload from Disk",          null,                                                () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      "⚙️ Properties",               null,                                                () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      "🗑️ Safe Delete...",            null,                                                () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+            return actions;
+        }
 
+        // ════════════════════════════════════
+        //  PAGE: File
+        // ════════════════════════════════════
+        if (!item.IsDirectory)
+        {
+            actions.Add(new ExplorerNodeMenuAction("Open",           "📄 Open in Editor",           "Open this file in the code editor",                 () => Invoke(() => OpenFileInEditor(item.FullPath))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           "✂️ Cut",                      null,                                                () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           "📋 Copy",                     null,                                                () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           "✏️ Rename",                   null,                                                () => Invoke(() => RenameItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           "🗑️ Safe Delete...",           "Delete this file safely",                           () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       "📂 Open in Explorer",         null,                                                () => Invoke(() => OpenInExplorer_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       "💻 Open in Terminal",         null,                                                () => Invoke(() => OpenInTerminal_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       "📋 Copy Absolute Path",       null,                                                () => Invoke(() => CopyPath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       "📋 Copy Relative Path",       null,                                                () => Invoke(() => ContextMenu_CopyRelativePath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       "📋 Copy File Name",           null,                                                () => Invoke(() => ContextMenu_CopyFileName_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", "📝 Git Commit...",            null,                                                () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", "📜 Git History",              null,                                                () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", "↩️ Git Revert...",            null,                                                () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("File",           "🔄 Reload from Disk",         null,                                                () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("File",           "⚙️ Properties",               null,                                                () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            return actions;
+        }
+
+        // ════════════════════════════════════
+        //  PAGE: Folder
+        // ════════════════════════════════════
+        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Class...",              null,                                                () => Invoke(() => ContextMenu_NewClass_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Interface...",          null,                                                () => Invoke(() => ContextMenu_NewInterface_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Record...",             null,                                                () => Invoke(() => ContextMenu_NewRecord_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Enum...",               null,                                                () => Invoke(() => ContextMenu_NewEnum_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       "🪟 New Avalonia Window...",    null,                                                () => Invoke(() => ContextMenu_NewAvaloniaWindow_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       "🎛️ New Avalonia UserControl...", null,                                             () => Invoke(() => ContextMenu_NewAvaloniaUserControl_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New File...",               null,                                                () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       "📁 New Sub-Directory",         null,                                                () => Invoke(() => AddNewFolder_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         "✂️ Cut",                       null,                                                () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         "📋 Copy",                      null,                                                () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         "📄 Paste",                     null,                                                () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         "✏️ Rename",                    null,                                                () => Invoke(() => RenameItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         "🗑️ Safe Delete...",            "Delete this folder safely",                         () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+        actions.Add(new ExplorerNodeMenuAction("Navigate",     "📂 Open in Explorer",          null,                                                () => Invoke(() => OpenInExplorer_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Navigate",     "💻 Open in Terminal",          null,                                                () => Invoke(() => OpenInTerminal_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Navigate",     "📋 Copy Absolute Path",        null,                                                () => Invoke(() => CopyPath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Navigate",     "📋 Copy Relative Path",        null,                                                () => Invoke(() => ContextMenu_CopyRelativePath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Source Control","📝 Git Commit...",            null,                                                () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Source Control","📜 Git History",              null,                                                () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Source Control","↩️ Git Revert...",            null,                                                () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Folder",       "🔄 Reload from Disk",          null,                                                () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        return actions;
+    }
+
+    // ── Build actions: MultiSelection page ───────────────────────
+    private IReadOnlyList<ExplorerNodeMenuAction> BuildMultiSelectionMenuActions(IReadOnlyList<FileTreeItem> items)
+    {
+        _contextMenuTargetItem = items.FirstOrDefault();
+
+        Task Invoke(Action action)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        var count = items.Count;
+        var actions = new List<ExplorerNodeMenuAction>
+        {
+            new("Edit", "✂️ Cut",                      $"Cut {count} selected items",             () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))),
+            new("Edit", "📋 Copy",                     $"Copy paths of {count} selected items",   () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))),
+            new("Edit", $"🗑️ Delete {count} Items...", "Delete all selected items",               () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true)
+        };
         return actions;
     }
 

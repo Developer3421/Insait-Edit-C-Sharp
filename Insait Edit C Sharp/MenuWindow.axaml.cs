@@ -26,6 +26,9 @@ public partial class MenuWindow : Window
         InitializeComponent();
         _mainWindow = mainWindow;
 
+        // Restore focus to main window when this window closes
+        this.Closed += (_, _) => _mainWindow.Activate();
+
         InitializeCategories();
         ShowCategory("File");
     }
@@ -358,7 +361,7 @@ public partial class MenuWindow : Window
             FontSize = 12,
             FontWeight = FontWeight.SemiBold,
             Foreground = new SolidColorBrush(Color.Parse("#FFFAB387")),
-            Margin = new Thickness(0, 8, 0, 4)
+            Margin = new Thickness(0, panel.Children.Count == 0 ? 2 : 6, 0, 2)
         });
     }
 
@@ -368,7 +371,7 @@ public partial class MenuWindow : Window
         {
             Height = 1,
             Background = new SolidColorBrush(Color.Parse("#FF3D3D4D")),
-            Margin = new Thickness(0, 8, 0, 8)
+            Margin = new Thickness(0, 5, 0, 5)
         });
     }
 

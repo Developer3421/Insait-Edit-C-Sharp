@@ -2,11 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.Controls.ExplorerNodeMenuWindow"
         Title="Node Menu"
-        WindowStartupLocation="Manual"
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="Height"
         SystemDecorations="None"
-        Width="360"
-        MinWidth="320"
-        MaxWidth="420"
+        Width="262"
+        MinWidth="220"
+        MaxWidth="310"
         CanResize="False"
         ShowInTaskbar="False"
         Topmost="True"
@@ -14,88 +15,80 @@
         Background="Transparent">
 
     <Window.Styles>
-        <Style Selector="Button.action-btn">
+        <!-- Compact flat menu item -->
+        <Style Selector="Button.menu-item">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#FFF0E8F4"/>
-            <Setter Property="BorderBrush" Value="#FF3E3050"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,0,8,0"/>
+            <Setter Property="Height" Value="27"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="Margin" Value="4,1,4,0"/>
+            <Setter Property="CornerRadius" Value="4"/>
         </Style>
-        <Style Selector="Button.action-btn:pointerover">
-            <Setter Property="Background" Value="#162A2230"/>
-            <Setter Property="BorderBrush" Value="#FFFFC09F"/>
+        <Style Selector="Button.menu-item:pointerover">
+            <Setter Property="Background" Value="#20FFFFFF"/>
         </Style>
-        <Style Selector="Button.action-btn.destructive">
-            <Setter Property="BorderBrush" Value="#885F2A3A"/>
+        <Style Selector="Button.menu-item:pressed">
+            <Setter Property="Background" Value="#35FFC09F"/>
+        </Style>
+        <Style Selector="Button.menu-item.destructive">
             <Setter Property="Foreground" Value="#FFF7C6D0"/>
         </Style>
-        <Style Selector="Button.action-btn.destructive:pointerover">
-            <Setter Property="Background" Value="#20A8324A"/>
-            <Setter Property="BorderBrush" Value="#FFF38BA8"/>
+        <Style Selector="Button.menu-item.destructive:pointerover">
+            <Setter Property="Background" Value="#22F38BA8"/>
         </Style>
-        <Style Selector="TextBlock.section-label">
-            <Setter Property="Foreground" Value="#FFDCC4FF"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,8,0,8"/>
-        </Style>
-        <Style Selector="TextBlock.action-title">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#FFF0E8F4"/>
-        </Style>
-        <Style Selector="TextBlock.action-subtitle">
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Foreground" Value="#FF9E90B0"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="Margin" Value="0,3,0,0"/>
+        <Style Selector="TextBlock.item-text">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
         </Style>
     </Window.Styles>
 
-    <Border Background="#FF1F1A24"
-            BorderBrush="#FF7C3AED"
+    <Border Background="#FF1E1A28"
+            BorderBrush="#FF4A3870"
             BorderThickness="1"
-            CornerRadius="10"
+            CornerRadius="8"
             ClipToBounds="True">
         <Border.Effect>
-            <DropShadowEffect Color="#CC3E1060" BlurRadius="24" OffsetX="0" OffsetY="8" Opacity="0.8"/>
+            <DropShadowEffect Color="#CC000000" BlurRadius="16" OffsetX="0" OffsetY="4" Opacity="0.65"/>
         </Border.Effect>
 
-        <Grid RowDefinitions="Auto,*,Auto">
-            <Border Grid.Row="0" Background="#18DCC4FF" Padding="14,8" CornerRadius="10,10,0,0">
-                <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock x:Name="TitleIcon" Text="📁" FontSize="14"
-                                   FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TitleText" Text="Node Menu"
-                                   FontSize="13" FontWeight="SemiBold"
-                                   Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <Button Grid.Column="1" x:Name="CloseTitleBtn"
-                            Content="✕" Width="28" Height="28"
-                            Background="Transparent" Foreground="#FF9E90B0"
-                            BorderThickness="0" FontSize="13" Cursor="Hand"
+        <Grid RowDefinitions="Auto,Auto">
+            <!-- Header (compact) -->
+            <Border Grid.Row="0" Padding="10,6,6,6"
+                    Background="#10FFFFFF" CornerRadius="8,8,0,0"
+                    BorderBrush="#20FFFFFF" BorderThickness="0,0,0,1"
+                    Name="TitleBar" PointerPressed="TitleBar_PointerPressed">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <TextBlock x:Name="TitleIcon" Text="📁" FontSize="13"
+                               FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TitleText" Grid.Column="1" Text="Node Menu"
+                               FontSize="11" FontWeight="SemiBold"
+                               Foreground="#FFF0E8F4" Margin="7,0,0,0"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    <Button Grid.Column="2" x:Name="CloseTitleBtn"
+                            Background="Transparent" BorderThickness="0"
+                            Width="24" Height="24" Padding="0" Cursor="Hand"
                             HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"/>
+                            VerticalContentAlignment="Center">
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png"
+                               Width="16" Height="16"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
                 </Grid>
             </Border>
 
+            <!-- Actions (compact flat list) -->
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
-                          MaxHeight="520">
-                <StackPanel x:Name="ActionHost" Margin="16,12,16,10"/>
+                          MaxHeight="420">
+                <StackPanel x:Name="ActionHost" Margin="0,3,0,5"/>
             </ScrollViewer>
-
-            <Border Grid.Row="2" Padding="16,8" Background="#10DCC4FF" CornerRadius="0,0,10,10">
-                <TextBlock Text="Click an action or press Esc to close"
-                           FontSize="11"
-                           Foreground="#FF9E90B0"/>
-            </Border>
         </Grid>
     </Border>
 </Window>

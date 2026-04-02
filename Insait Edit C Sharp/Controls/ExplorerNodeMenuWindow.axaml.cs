@@ -5,8 +5,23 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 
 namespace Insait_Edit_C_Sharp.Controls;
+
+/// <summary>
+/// Represents which kind of explorer node the menu is shown for.
+/// Each value corresponds to a separate visual "page" inside the window.
+/// </summary>
+public enum ExplorerNodeMenuPageType
+{
+	Solution,
+	Project,
+	File,
+	Folder,
+	MultiSelection
+}
 
 public sealed class ExplorerNodeMenuAction
 {
@@ -30,7 +45,39 @@ public partial class ExplorerNodeMenuWindow : Window
 {
 	private readonly IReadOnlyList<ExplorerNodeMenuAction> _actions;
 
-	public ExplorerNodeMenuWindow(string titleIcon, string title, IEnumerable<ExplorerNodeMenuAction> actions)
+	// ── Section accent colours ───────────────────────────────────
+	private static readonly Dictionary<string, string> _sectionColors =
+		new(StringComparer.OrdinalIgnoreCase)
+		{
+			{ "Open",           "#89B4FA" },  // blue
+			{ "Add",            "#FFC09F" },  // orange
+			{ "Create",         "#FFC09F" },  // orange
+			{ "Build",          "#A6E3A1" },  // green
+			{ "Run",            "#A6E3A1" },  // green
+			{ "Edit",           "#F9E2AF" },  // yellow
+			{ "Navigate",       "#74C7EC" },  // cyan
+			{ "Source Control", "#DCC4FF" },  // purple
+			{ "Dependencies",   "#CBA6F7" },  // light purple
+			{ "Solution",       "#9E90B0" },  // muted
+			{ "Project",        "#9E90B0" },  // muted
+			{ "File",           "#9E90B0" },  // muted
+			{ "Folder",         "#9E90B0" },  // muted
+			{ "Start",          "#FFC09F" },  // orange
+			{ "Recent",         "#89B4FA" },  // blue
+		};
+
+	private static string GetSectionColor(string section) =>
+		_sectionColors.TryGetValue(section, out var c) ? c : "#9E90B0";
+
+	/// <summary>
+	/// Creates the context-menu window for a specific explorer node page type.
+	/// </summary>
+	public ExplorerNodeMenuWindow(
+		string titleIcon,
+		string title,
+		ExplorerNodeMenuPageType pageType,
+		IEnumerable<ExplorerNodeMenuAction> actions,
+		string? itemPath = null)
 	{
 		InitializeComponent();
 
@@ -52,56 +99,63 @@ public partial class ExplorerNodeMenuWindow : Window
 	private void BuildActionButtons()
 	{
 		var host = this.FindControl<StackPanel>("ActionHost");
-		if (host == null)
-			return;
+		if (host == null) return;
 
 		host.Children.Clear();
 
-		foreach (var group in _actions.GroupBy(action => action.Section))
+		var groups = _actions.GroupBy(a => a.Section).ToList();
+		bool isFirst = true;
+
+		foreach (var group in groups)
 		{
+			// Separator (thin line) before every section except the first
+			if (!isFirst)
+			{
+				host.Children.Add(new Border
+				{
+					Height = 1,
+					Margin = new Avalonia.Thickness(8, 3, 8, 3),
+					Background = new SolidColorBrush(Color.Parse("#25FFFFFF"))
+				});
+			}
+			isFirst = false;
+
+			// Coloured section label
+			var sectionColor = GetSectionColor(group.Key);
 			host.Children.Add(new TextBlock
 			{
-				Text = group.Key,
-				Classes = { "section-label" }
+				Text = group.Key.ToUpperInvariant(),
+				FontSize = 9,
+				FontWeight = FontWeight.SemiBold,
+				Foreground = new SolidColorBrush(Color.Parse(sectionColor)),
+				Margin = new Avalonia.Thickness(12, 4, 8, 2),
+				LetterSpacing = 0.5
 			});
 
 			foreach (var action in group)
 			{
-				var button = new Button
+				var btn = new Button { Tag = action };
+				btn.Classes.Add("menu-item");
+				if (action.IsDestructive) btn.Classes.Add("destructive");
+
+				var txt = new TextBlock
 				{
-					Classes = { "action-btn" },
-					Tag = action,
-					Content = BuildButtonContent(action)
+					Text = action.Title,
+					FontSize = 12,
+					VerticalAlignment = VerticalAlignment.Center,
+					FontFamily = new FontFamily("Segoe UI Emoji, Segoe UI, Arial"),
+					TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis
 				};
 
-				if (action.IsDestructive)
-					button.Classes.Add("destructive");
+				// Show subtitle (if any) as a tooltip on the button
+				if (!string.IsNullOrWhiteSpace(action.Subtitle))
+					ToolTip.SetTip(btn, action.Subtitle);
 
-				button.Click += OnActionClicked;
-				host.Children.Add(button);
+				btn.Content = txt;
+				btn.Click += OnActionClicked;
+				host.Children.Add(btn);
 			}
 		}
-	}
-
-	private static Control BuildButtonContent(ExplorerNodeMenuAction action)
-	{
-		var stack = new StackPanel { Spacing = 0 };
-		stack.Children.Add(new TextBlock
-		{
-			Text = action.Title,
-			Classes = { "action-title" }
-		});
-
-		if (!string.IsNullOrWhiteSpace(action.Subtitle))
-		{
-			stack.Children.Add(new TextBlock
-			{
-				Text = action.Subtitle,
-				Classes = { "action-subtitle" }
-			});
-		}
-
-		return stack;
 	}
 
 	private async void OnActionClicked(object? sender, RoutedEventArgs e)
@@ -120,6 +174,12 @@ public partial class ExplorerNodeMenuWindow : Window
 	}
 
 	private void OnCloseClicked(object? sender, RoutedEventArgs e) => Close();
+
+	private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
+	{
+		if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+			BeginMoveDrag(e);
+	}
 
 	private void OnWindowKeyDown(object? sender, KeyEventArgs e)
 	{

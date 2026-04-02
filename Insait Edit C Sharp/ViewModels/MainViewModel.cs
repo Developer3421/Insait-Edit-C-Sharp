@@ -177,16 +177,16 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             StatusText = "Loading...";
         });
 
-        // Check if there's a solution file in the folder
-        var solutionFile = await Task.Run(() => FindSolutionFileInDirectory(folderPath));
+        // Check if there are solution files in the folder
+        var solutionFiles = await Task.Run(() => FindAllSolutionFilesInDirectory(folderPath));
 
-        System.Diagnostics.Debug.WriteLine($"LoadProjectFolderAsync: folderPath={folderPath}, solutionFile={solutionFile ?? "null"}");
+        System.Diagnostics.Debug.WriteLine($"LoadProjectFolderAsync: folderPath={folderPath}, solutionFiles={solutionFiles.Count}");
 
-        if (!string.IsNullOrEmpty(solutionFile))
+        if (solutionFiles.Count > 0)
         {
-            System.Diagnostics.Debug.WriteLine($"LoadProjectFolderAsync: Loading as solution");
-            // Load as solution with projects (Rider-style)
-            await LoadSolutionStructureAsync(folderPath, solutionFile);
+            System.Diagnostics.Debug.WriteLine($"LoadProjectFolderAsync: Loading {solutionFiles.Count} solution(s)");
+            foreach (var slnFile in solutionFiles)
+                await LoadSolutionStructureAsync(folderPath, slnFile);
         }
         else
         {
@@ -213,47 +213,31 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Find solution file in directory
+    /// Find ALL solution files (.slnx first, then .sln) in a directory.
+    /// Returns them ordered: .slnx files first, then .sln files, each group alphabetically.
     /// </summary>
-    private string? FindSolutionFileInDirectory(string directory)
+    private List<string> FindAllSolutionFilesInDirectory(string directory)
     {
+        var result = new List<string>();
         try
         {
-            System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Searching in '{directory}'");
-            System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Directory.Exists = {Directory.Exists(directory)}");
+            var slnxFiles = Directory.EnumerateFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly)
+                .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            result.AddRange(slnxFiles);
 
-            // List all files first for debugging
-            try
-            {
-                var allFiles = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly);
-                System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: All files: {string.Join(", ", allFiles.Select(f => Path.GetFileName(f)))}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Error listing all files: {ex.Message}");
-            }
-
-            // First look for .slnx files (new format) - use enumeration for better performance
-            foreach (var file in Directory.EnumerateFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly))
-            {
-                System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Found .slnx file: {file}");
-                return file;
-            }
-
-            // Then look for .sln files (legacy format)
-            foreach (var file in Directory.EnumerateFiles(directory, "*.sln", SearchOption.TopDirectoryOnly))
-            {
-                System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Found .sln file: {file}");
-                return file;
-            }
+            var slnFiles = Directory.EnumerateFiles(directory, "*.sln", SearchOption.TopDirectoryOnly)
+                .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            result.AddRange(slnFiles);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: Error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"FindAllSolutionFilesInDirectory: Error: {ex.Message}");
         }
-        System.Diagnostics.Debug.WriteLine($"FindSolutionFileInDirectory: No solution file found, returning null");
-        return null;
+        return result;
     }
+
 
     /// <summary>
     /// Find project file in directory

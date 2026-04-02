@@ -54,11 +54,24 @@ public partial class MainWindow : Window
 
         var fileTreeView = this.FindControl<TreeView>("FileTreeView");
         if (fileTreeView != null)
-            fileTreeView.PointerPressed += FileTreeView_PointerPressed;
+        {
+            // Use handledEventsToo: true so right-clicks on Solution/Project nodes
+            // (which may be consumed by the TreeViewItem) still reach our handler.
+            fileTreeView.AddHandler(
+                InputElement.PointerPressedEvent,
+                (EventHandler<PointerPressedEventArgs>)FileTreeView_PointerPressed,
+                Avalonia.Interactivity.RoutingStrategies.Bubble,
+                handledEventsToo: true);
+        }
 
         var fileTreeContextMenu = this.FindControl<ContextMenu>("FileTreeContextMenu");
         if (fileTreeContextMenu != null)
             fileTreeContextMenu.Closed += (_, _) => _contextMenuTargetItem = null;
+
+        // Right-click on the welcome screen shows a quick-action context menu
+        var welcomeScreen = this.FindControl<Border>("WelcomeScreenPanel");
+        if (welcomeScreen != null)
+            welcomeScreen.PointerPressed += WelcomeScreen_PointerPressed;
 
         // Set up column constraints for splitters (JetBrains Rider style)
         SetupColumnConstraints();
@@ -1222,6 +1235,32 @@ public partial class MainWindow : Window
             await LoadProjectAsync(result);
     }
 
+    /// <summary>
+    /// Right-click on the welcome page shows a compact quick-action context menu.
+    /// </summary>
+    private void WelcomeScreen_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed) return;
+        e.Handled = true;
+
+        var actions = new List<ExplorerNodeMenuAction>
+        {
+            new("Start", "➕ New Project...",      "Create a new C# project",           () => { WelcomeNewProject_Click(this, new RoutedEventArgs()); return Task.CompletedTask; }),
+            new("Start", "📂 Open Project...",     "Open a project or solution file",   () => { WelcomeOpen_Click(this, new RoutedEventArgs()); return Task.CompletedTask; }),
+            new("Start", "🔀 Clone Repository...", "Clone a Git repository",            () => { WelcomeClone_Click(this, new RoutedEventArgs()); return Task.CompletedTask; }),
+            new("Recent","🕐 Recent Projects...",  "Browse recently opened projects",   () => { RecentProjects_Click(this, new RoutedEventArgs()); return Task.CompletedTask; }),
+        };
+
+        _activeNodeMenuWindow?.Close();
+        var window = new ExplorerNodeMenuWindow(
+            "🏠", "Quick Actions",
+            ExplorerNodeMenuPageType.MultiSelection,
+            actions, null);
+        window.Closed += (_, _) => { if (ReferenceEquals(_activeNodeMenuWindow, window)) _activeNodeMenuWindow = null; Activate(); };
+        _activeNodeMenuWindow = window;
+        window.Show();
+    }
+
     // ─────────────────────────────────────────────────────────
     //  Recent Projects button (title bar)
     // ─────────────────────────────────────────────────────────
@@ -1487,7 +1526,7 @@ public partial class MainWindow : Window
     private void MainMenu_Click(object? sender, RoutedEventArgs e)
     {
         var menuWindow = new MenuWindow(this);
-        menuWindow.ShowDialog(this);
+        menuWindow.Show(this);
     }
 
     /// <summary>

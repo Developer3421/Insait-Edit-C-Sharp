@@ -14,12 +14,29 @@
         Background="#FF1F1A24">
 
     <Window.Styles>
+        <!-- Window Control Buttons (matches MainWindow style) -->
+        <Style Selector="Button.window-control">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.window-control:pointerover">
+            <Setter Property="Background" Value="#20FFDAB0"/>
+        </Style>
+        <Style Selector="Button.window-control.close:pointerover">
+            <Setter Property="Background" Value="#20FFDAB0"/>
+        </Style>
+
         <!-- Menu Category Button -->
         <Style Selector="Button.menu-category">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#FFF0E8F4"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Padding" Value="16,10"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -35,7 +52,7 @@
         <Style Selector="Button.menu-item">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Padding" Value="8,5"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -66,9 +83,8 @@
                     </StackPanel>
                     
                     <!-- Close Button -->
-                    <Button Grid.Column="1" Name="CloseButton" Click="CloseButton_Click"
-                            Background="Transparent" BorderThickness="0"
-                            Width="36" Height="36" Padding="0" Cursor="Hand">
+                    <Button Grid.Column="1" Name="CloseButton" Classes="window-control close"
+                            Click="CloseButton_Click" Padding="0">
                         <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26"
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
@@ -80,14 +96,14 @@
                 <!-- Left Sidebar - Categories -->
                 <Border Grid.Column="0" Background="#FF2A2230" BorderBrush="#FF3E3050" BorderThickness="0,0,1,0">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Name="CategoriesPanel" Margin="0,8,0,8">
+                        <StackPanel Name="CategoriesPanel" Margin="0,4,0,4">
                             <!-- Categories will be added programmatically -->
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
                 
                 <!-- Right Content Area -->
-                <Border Grid.Column="1" Padding="16">
+                <Border Grid.Column="1" Padding="10,4,10,6">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Name="ContentPanel" Spacing="4">
                             <!-- Content will be added programmatically -->
