@@ -886,6 +886,8 @@ public partial class MainWindow : Window
         SetButtonTooltip("MsixManagerButton", L("Tooltip.MsixManager"));
         SetButtonTooltip("UndoButton", L("Tooltip.Undo"));
         SetButtonTooltip("RedoButton", L("Tooltip.Redo"));
+        SetButtonText("RecentProjectsButton", "🕐", L("ExplorerNodeMenu.Section.Recent"));
+        SetButtonTooltip("RecentProjectsButton", L("RecentProjects"));
         SetButtonTooltip("NewWindowButton", L("Tooltip.NewWindow"));
         SetButtonTooltip("RestartButton", L("Tooltip.Restart"));
         SetButtonTooltip("UserAgreementButton", L("Tooltip.UserAgreement"));
@@ -1093,17 +1095,20 @@ public partial class MainWindow : Window
         // "No editor content" = either no tab open OR the Start/Welcome tab is active
         bool noEditorContent  = _viewModel.ActiveTab == null || isWelcomeTabActive;
         bool treeEmpty        = hasProject && IsFileTreeEffectivelyEmpty();
+        bool showWelcomeScreen = noEditorContent && (!hasProject || isWelcomeTabActive);
+        bool showEmptyProjectScreen = noEditorContent && hasProject && !isWelcomeTabActive;
 
-        // Welcome screen: no editor content AND no project loaded
+        // Welcome screen: no editor content without a workspace, or the Start tab is active.
+        // This keeps the startup experience generic for multi-project solutions.
         if (welcomePanel != null)
-            welcomePanel.IsVisible = noEditorContent && !hasProject;
+            welcomePanel.IsVisible = showWelcomeScreen;
 
-        // Empty project / start page (editor area): no editor content AND a project IS loaded
+        // Empty project screen: only for a loaded workspace when the Start tab is NOT active.
         if (emptyPanel != null)
         {
-            emptyPanel.IsVisible = noEditorContent && hasProject;
+            emptyPanel.IsVisible = showEmptyProjectScreen;
 
-            if (noEditorContent && hasProject)
+            if (showEmptyProjectScreen)
             {
                 var pathText = this.FindControl<TextBlock>("EmptyProjectPath");
                 if (pathText != null)
@@ -1114,9 +1119,9 @@ public partial class MainWindow : Window
                 var titleText = this.FindControl<TextBlock>("EmptyProjectTitle");
                 var subtitleText = this.FindControl<TextBlock>("EmptyProjectSubtitle");
 
-                if (isWelcomeTabActive && projectHasFiles)
+                if (projectHasFiles)
                 {
-                    // Start tab opened while project has files — show a friendlier heading
+                    // No active file, but a non-empty workspace is already loaded.
                     var projectName = System.IO.Path.GetFileName(
                         (_projectPath ?? _viewModel.CurrentProjectPath ?? "").TrimEnd('\\', '/'));
                     if (titleText != null)
@@ -3474,7 +3479,11 @@ ExecuteMenuAction(string action)
         if (!TryGetWritableTargetDirectory(out var targetDir))
             return;
 
-        var folderName = await ShowInputDialogAsync("New Folder", "Enter folder name:", "NewFolder");
+        var folderName = await ShowInputDialogAsync(
+            LocalizationService.Get("InputDialog.Title.NewFolder"),
+            LocalizationService.Get("InputDialog.Prompt.NewFolder"),
+            "NewFolder",
+            "📁");
         if (!string.IsNullOrEmpty(folderName))
         {
             try
@@ -3516,7 +3525,11 @@ ExecuteMenuAction(string action)
         var selectedItem = GetSelectedTreeItem();
         if (selectedItem == null) return;
 
-        var newName = await ShowInputDialogAsync("Rename", "Enter new name:", selectedItem.Name);
+        var newName = await ShowInputDialogAsync(
+            LocalizationService.Get("InputDialog.Title.Rename"),
+            LocalizationService.Get("InputDialog.Prompt.Rename"),
+            selectedItem.Name,
+            "✏️");
         if (!string.IsNullOrEmpty(newName) && newName != selectedItem.Name)
         {
             try
@@ -3592,21 +3605,22 @@ ExecuteMenuAction(string action)
         if (selectedItems.Count == 1)
         {
             var single = selectedItems[0];
-            confirmMsg = "Are you sure you want to delete '" + single.Name + "'?" +
-                         (single.IsDirectory ? "\n\nThis will delete all contents." : "");
+            confirmMsg = string.Format(LocalizationService.Get("Dialog.Delete.Single"), single.Name) +
+                         (single.IsDirectory ? "\n\n" + LocalizationService.Get("Dialog.Delete.SingleDirectoryWarning") : "");
         }
         else
         {
             var dirCount = selectedItems.Count(x => x.IsDirectory);
             var fileCount = selectedItems.Count(x => !x.IsDirectory);
-            var parts = new List<string>();
-            if (fileCount > 0) parts.Add(fileCount + " file" + (fileCount > 1 ? "s" : ""));
-            if (dirCount > 0) parts.Add(dirCount + " folder" + (dirCount > 1 ? "s" : ""));
-            confirmMsg = "Are you sure you want to delete " + selectedItems.Count + " items (" + string.Join(", ", parts) + ")?";
-            if (dirCount > 0) confirmMsg += "\n\nAll folder contents will be deleted.";
+            var summary = BuildLocalizedSelectionSummary(fileCount, dirCount).Trim();
+            if (summary.StartsWith("("))
+                summary = summary[1..^1];
+
+            confirmMsg = string.Format(LocalizationService.Get("Dialog.Delete.Multiple"), selectedItems.Count, summary);
+            if (dirCount > 0) confirmMsg += "\n\n" + LocalizationService.Get("Dialog.Delete.MultipleDirectoryWarning");
         }
 
-        var confirmDelete = await ShowConfirmDialogAsync("Confirm Delete", confirmMsg);
+        var confirmDelete = await ShowConfirmDialogAsync(LocalizationService.Get("Dialog.ConfirmDelete.Title"), confirmMsg);
         if (!confirmDelete) return;
 
         var preparedWorkspaceRootDeletion = false;
@@ -3824,7 +3838,27 @@ ExecuteMenuAction(string action)
         if (!TryGetWritableTargetDirectory(out var targetDir))
             return;
 
-        var typeName = await ShowInputDialogAsync($"New {type}", $"Enter {type} name:", $"New{char.ToUpper(type[0])}{type[1..]}");
+        var dialogTitleKey = type.ToLowerInvariant() switch
+        {
+            "class" => "InputDialog.Title.NewClass",
+            "interface" => "InputDialog.Title.NewInterface",
+            "record" => "InputDialog.Title.NewRecord",
+            "enum" => "InputDialog.Title.NewEnum",
+            _ => "InputDialog.Title.NewClass"
+        };
+        var dialogPromptKey = type.ToLowerInvariant() switch
+        {
+            "class" => "InputDialog.Prompt.NewClass",
+            "interface" => "InputDialog.Prompt.NewInterface",
+            "record" => "InputDialog.Prompt.NewRecord",
+            "enum" => "InputDialog.Prompt.NewEnum",
+            _ => "InputDialog.Prompt.NewClass"
+        };
+        var typeName = await ShowInputDialogAsync(
+            LocalizationService.Get(dialogTitleKey),
+            LocalizationService.Get(dialogPromptKey),
+            $"New{char.ToUpper(type[0])}{type[1..]}",
+            "📄");
         if (string.IsNullOrEmpty(typeName)) return;
         var ns = DetermineNamespace(targetDir);
         var template = type.ToLower() switch
@@ -3844,7 +3878,23 @@ ExecuteMenuAction(string action)
         if (!TryGetWritableTargetDirectory(out var targetDir))
             return;
 
-        var typeName = await ShowInputDialogAsync($"New Avalonia {type}", $"Enter {type} name:", $"My{char.ToUpper(type[0])}{type[1..]}");
+        var dialogTitleKey = type.ToLowerInvariant() switch
+        {
+            "window" => "InputDialog.Title.NewAvaloniaWindow",
+            "usercontrol" => "InputDialog.Title.NewAvaloniaUserControl",
+            _ => "InputDialog.Title.NewAvaloniaWindow"
+        };
+        var dialogPromptKey = type.ToLowerInvariant() switch
+        {
+            "window" => "InputDialog.Prompt.NewAvaloniaWindow",
+            "usercontrol" => "InputDialog.Prompt.NewAvaloniaUserControl",
+            _ => "InputDialog.Prompt.NewAvaloniaWindow"
+        };
+        var typeName = await ShowInputDialogAsync(
+            LocalizationService.Get(dialogTitleKey),
+            LocalizationService.Get(dialogPromptKey),
+            $"My{char.ToUpper(type[0])}{type[1..]}",
+            type.Equals("window", StringComparison.OrdinalIgnoreCase) ? "🪟" : "🎛️");
         if (string.IsNullOrEmpty(typeName)) return;
         var ns = DetermineNamespace(targetDir);
         var baseType = type.ToLower() == "window" ? "Window" : "UserControl";

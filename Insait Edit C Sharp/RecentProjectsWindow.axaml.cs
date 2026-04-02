@@ -20,6 +20,8 @@ public partial class RecentProjectsWindow : Window
     private ObservableCollection<RecentProjectItem> _allProjects;
     private ObservableCollection<RecentProjectItem> _filtered;
 
+    private static string L(string key) => LocalizationService.Get(key);
+
     /// <summary>
     /// Set to the path chosen by the user, or null if cancelled / window closed.
     /// </summary>
@@ -33,7 +35,24 @@ public partial class RecentProjectsWindow : Window
         _allProjects = new ObservableCollection<RecentProjectItem>();
         _filtered   = new ObservableCollection<RecentProjectItem>();
 
+        ApplyLocalization();
+        LocalizationService.LanguageChanged += OnLanguageChanged;
+        Closed += OnWindowClosed;
+
         LoadProjects();
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e) => ApplyLocalization();
+
+    private void OnWindowClosed(object? sender, EventArgs e)
+    {
+        LocalizationService.LanguageChanged -= OnLanguageChanged;
+    }
+
+    private void ApplyLocalization()
+    {
+        Title = L("RecentProjects");
+        UpdateCountLabel();
     }
 
     // ── Data ────────────────────────────────────────────────────────────────
@@ -84,7 +103,9 @@ public partial class RecentProjectsWindow : Window
     {
         var label = this.FindControl<TextBlock>("CountLabel");
         if (label == null) return;
-        label.Text = _filtered.Count > 0 ? $"{_filtered.Count} project(s)" : string.Empty;
+        label.Text = _filtered.Count > 0
+            ? string.Format(L("RecentProjectsWindow.Count"), _filtered.Count)
+            : string.Empty;
     }
 
     // ── Title Bar ───────────────────────────────────────────────────────────
@@ -144,13 +165,13 @@ public partial class RecentProjectsWindow : Window
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Open Project or Solution",
+            Title = L("RecentProjectsWindow.OpenPickerTitle"),
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("C# Solution") { Patterns = new[] { "*.sln", "*.slnx" } },
-                new FilePickerFileType("C# Project")  { Patterns = new[] { "*.csproj" } },
-                new FilePickerFileType("All Files")    { Patterns = new[] { "*.*" } }
+                new FilePickerFileType(L("RecentProjectsWindow.FileType.Solution")) { Patterns = new[] { "*.sln", "*.slnx" } },
+                new FilePickerFileType(L("RecentProjectsWindow.FileType.Project"))  { Patterns = new[] { "*.csproj" } },
+                new FilePickerFileType(L("RecentProjectsWindow.FileType.All"))      { Patterns = new[] { "*.*" } }
             }
         });
 

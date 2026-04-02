@@ -146,6 +146,22 @@
                                 <TextBlock Name="DeviceCodeHintText" Text="A browser window should have opened. If not, go to github.com/login/device"
                                            FontSize="10" Foreground="{StaticResource AccountTextMutedBrush}"
                                            TextWrapping="Wrap" TextAlignment="Center"/>
+                                <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="10,8">
+                                    <TextBlock Name="DeviceUrlText" Text="https://github.com/login/device"
+                                               FontSize="11" TextWrapping="Wrap"
+                                               Foreground="#FFA6E3A1" TextAlignment="Center"/>
+                                </Border>
+                                <TextBlock Name="DeviceFlowStatusText" Text="Waiting for confirmation in browser..."
+                                           FontSize="11" Foreground="{StaticResource AccountTextMutedBrush}"
+                                           TextWrapping="Wrap" TextAlignment="Center"/>
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6" Margin="0,4,0,0">
+                                    <Button Grid.Column="0" Name="OpenDeviceBrowserButton" Classes="account-primary" Content="Open GitHub"
+                                            Click="OpenDeviceBrowser_Click" HorizontalAlignment="Stretch"/>
+                                    <Button Grid.Column="1" Name="CopyDeviceCodeButton" Classes="account-secondary" Content="Copy Code"
+                                            Click="CopyDeviceCode_Click" HorizontalAlignment="Stretch"/>
+                                    <Button Grid.Column="2" Name="CopyDeviceLinkButton" Classes="account-secondary" Content="Copy Link"
+                                            Click="CopyDeviceLink_Click" HorizontalAlignment="Stretch"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
                     </StackPanel>

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -12,27 +14,22 @@ using Octokit;
 namespace Insait_Edit_C_Sharp.Services;
 
 /// <summary>
-/// Service for GitHub OAuth authentication and API access using Octokit
-/// Uses OAuth Web Flow with local HTTP callback server
+/// Service for GitHub OAuth authentication and API access using Octokit.
+/// Uses GitHub OAuth Device Flow, so no GitHub CLI or local callback server is required.
 /// </summary>
 public class GitHubOAuthService
 {
-    // GitHub OAuth App credentials
-    // Register your app at: https://github.com/settings/applications/new
-    // Set callback URL to: http://localhost:8891/callback
-    private const string ClientId = "Ov23liUYOYBvLHi79cSa"; // Replace with your OAuth App Client ID
-    private const string ClientSecret = ""; // Leave empty for public clients
-    private const string AppName = "InsaitEditor";
-    private const string RedirectUri = "http://localhost:8891/callback";
-    private const int CallbackPort = 8891;
+    // GitHub OAuth App settings.
+    // For this public desktop client only Client ID is required for Device Flow.
+    private const string ClientId = "Ov23li5blYJZ2z5pqfvT";
+    private const string AppProductName = "InsaitEditIDECSharp";
+    private const string DefaultScope = "repo read:user user read:org";
     
     private readonly GitHubClient _client;
     private readonly HttpClient _httpClient;
     private string? _accessToken;
-    private readonly string _tokenFilePath;
     private CancellationTokenSource? _loginCts;
-    private HttpListener? _httpListener;
-    
+    private DeviceCodeInfo? _currentDeviceCode;
     public event EventHandler<GitHubAccountInfo?>? AccountChanged;
     public event EventHandler<string>? ErrorOccurred;
     public event EventHandler<DeviceCodeInfo>? DeviceCodeReady;
@@ -41,18 +38,15 @@ public class GitHubOAuthService
     private GitHubAccountInfo? _currentAccount;
     
     public GitHubAccountInfo? CurrentAccount => _currentAccount;
+    public DeviceCodeInfo? CurrentDeviceCode => _currentDeviceCode;
     public bool IsAuthenticated => !string.IsNullOrEmpty(_accessToken);
 
     public GitHubOAuthService()
     {
-        _client = new GitHubClient(new ProductHeaderValue(AppName));
+        _client = new GitHubClient(new Octokit.ProductHeaderValue(AppProductName));
         _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-        
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var appFolder = Path.Combine(appDataPath, "InsaitEditor");
-        Directory.CreateDirectory(appFolder);
-        _tokenFilePath = Path.Combine(appFolder, "github_token.dat");
+        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(AppProductName, "1.0"));
         
         LoadSavedToken();
     }
@@ -61,10 +55,10 @@ public class GitHubOAuthService
     {
         try
         {
-            if (File.Exists(_tokenFilePath))
+            var savedToken = GitHubTokenDbService.LoadAccessToken();
+            if (!string.IsNullOrWhiteSpace(savedToken))
             {
-                var encryptedToken = File.ReadAllText(_tokenFilePath);
-                _accessToken = Encoding.UTF8.GetString(Convert.FromBase64String(encryptedToken));
+                _accessToken = savedToken;
                 _client.Credentials = new Credentials(_accessToken);
             }
         }
@@ -75,8 +69,7 @@ public class GitHubOAuthService
     {
         try
         {
-            var encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(token));
-            File.WriteAllText(_tokenFilePath, encoded);
+            GitHubTokenDbService.SaveAccessToken(token);
         }
         catch { }
     }
@@ -85,47 +78,63 @@ public class GitHubOAuthService
     {
         try
         {
-            if (File.Exists(_tokenFilePath))
-                File.Delete(_tokenFilePath);
+            GitHubTokenDbService.ClearAccessToken();
         }
         catch { }
     }
     
     /// <summary>
-    /// Start OAuth login - opens browser and waits for callback
+    /// Starts GitHub OAuth Device Flow: shows a user code, opens the browser,
+    /// then polls GitHub until authorization is completed.
     /// </summary>
     public async Task<bool> LoginWithDeviceFlowAsync()
     {
         _loginCts?.Cancel();
-        _loginCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        _loginCts = new CancellationTokenSource();
+        _currentDeviceCode = null;
         
         try
         {
-            LoginStatusChanged?.Invoke(this, "Starting authentication...");
-            
-            var state = Guid.NewGuid().ToString("N");
-            
-            // Start local HTTP server and wait for callback
-            var code = await StartCallbackServerAndWaitForCodeAsync(state, _loginCts.Token);
-            
-            if (string.IsNullOrEmpty(code))
+            LoginStatusChanged?.Invoke(this, "Requesting GitHub device code...");
+
+            var deviceCode = await RequestDeviceCodeAsync(_loginCts.Token);
+            if (deviceCode == null)
             {
-                LoginStatusChanged?.Invoke(this, "Authorization cancelled or failed");
                 return false;
             }
-            
-            LoginStatusChanged?.Invoke(this, "Exchanging code for token...");
-            var accessToken = await ExchangeCodeForTokenAsync(code);
+
+            _loginCts.CancelAfter(TimeSpan.FromSeconds(Math.Max(deviceCode.ExpiresIn, 60) + 15));
+
+            var verificationUrl = !string.IsNullOrWhiteSpace(deviceCode.VerificationUriComplete)
+                ? deviceCode.VerificationUriComplete
+                : deviceCode.VerificationUri;
+
+            if (!string.IsNullOrWhiteSpace(verificationUrl))
+            {
+                deviceCode.BrowserOpenSucceeded = TryOpenBrowser(verificationUrl);
+                if (!deviceCode.BrowserOpenSucceeded)
+                {
+                    LoginStatusChanged?.Invoke(this,
+                        $"Browser did not open automatically. Open {deviceCode.VerificationUri} and enter code {deviceCode.UserCode}.");
+                }
+            }
+
+            _currentDeviceCode = deviceCode;
+            DeviceCodeReady?.Invoke(this, deviceCode);
+
+            if (deviceCode.BrowserOpenSucceeded)
+                LoginStatusChanged?.Invoke(this, "Confirm sign-in in your browser for Insait Edit IDE C#...");
+            var accessToken = await PollForDeviceFlowAccessTokenAsync(deviceCode, _loginCts.Token);
             
             if (string.IsNullOrEmpty(accessToken))
             {
-                LoginStatusChanged?.Invoke(this, "Failed to get access token");
                 return false;
             }
             
             _accessToken = accessToken;
             _client.Credentials = new Credentials(accessToken);
             SaveToken(accessToken);
+            _currentDeviceCode = null;
             
             LoginStatusChanged?.Invoke(this, "Loading account info...");
             await RefreshAccountInfoAsync();
@@ -135,247 +144,214 @@ public class GitHubOAuthService
         }
         catch (OperationCanceledException)
         {
+            _currentDeviceCode = null;
             LoginStatusChanged?.Invoke(this, "Login cancelled or timed out");
             return false;
         }
         catch (Exception ex)
         {
+            _currentDeviceCode = null;
             ErrorOccurred?.Invoke(this, $"Login failed: {ex.Message}");
             return false;
         }
-        finally
-        {
-            StopCallbackServer();
-        }
     }
-    
-    private async Task<string?> StartCallbackServerAndWaitForCodeAsync(string expectedState, CancellationToken cancellationToken)
+
+    private async Task<DeviceCodeInfo?> RequestDeviceCodeAsync(CancellationToken cancellationToken)
     {
         try
         {
-            _httpListener = new HttpListener();
-            _httpListener.Prefixes.Add($"http://localhost:{CallbackPort}/");
-            _httpListener.Start();
-            
-            var authUrl = $"https://github.com/login/oauth/authorize?" +
-                          $"client_id={ClientId}" +
-                          $"&redirect_uri={Uri.EscapeDataString(RedirectUri)}" +
-                          $"&scope=repo%20user%20read:org" +
-                          $"&state={expectedState}";
-            
-            OpenBrowser(authUrl);
-            LoginStatusChanged?.Invoke(this, "Waiting for authorization in browser...");
-            
-            var contextTask = _httpListener.GetContextAsync();
-            var completedTask = await Task.WhenAny(
-                contextTask,
-                Task.Delay(Timeout.Infinite, cancellationToken)
-            );
-            
-            if (completedTask != contextTask)
-                return null;
-            
-            var context = await contextTask;
-            var request = context.Request;
-            var response = context.Response;
-            
-            var query = request.Url?.Query ?? "";
-            var queryParams = System.Web.HttpUtility.ParseQueryString(query);
-            var code = queryParams["code"];
-            var state = queryParams["state"];
-            var error = queryParams["error"];
-            
-            string responseHtml;
-            if (!string.IsNullOrEmpty(error))
+            using var request = new HttpRequestMessage(HttpMethod.Post, "https://github.com/login/device/code")
             {
-                responseHtml = GetErrorHtml(error);
-                SendResponse(response, responseHtml);
-                ErrorOccurred?.Invoke(this, $"Authorization error: {error}");
-                return null;
-            }
-            
-            if (state != expectedState)
-            {
-                responseHtml = GetErrorHtml("Invalid state - possible CSRF attack");
-                SendResponse(response, responseHtml);
-                return null;
-            }
-            
-            if (string.IsNullOrEmpty(code))
-            {
-                responseHtml = GetErrorHtml("No authorization code received");
-                SendResponse(response, responseHtml);
-                return null;
-            }
-            
-            responseHtml = GetSuccessHtml();
-            SendResponse(response, responseHtml);
-            
-            return code;
-        }
-        catch (HttpListenerException ex) when (ex.ErrorCode == 995)
-        {
-            return null;
-        }
-        catch (Exception ex)
-        {
-            ErrorOccurred?.Invoke(this, $"Callback server error: {ex.Message}");
-            return null;
-        }
-    }
-    
-    private void StopCallbackServer()
-    {
-        try
-        {
-            _httpListener?.Stop();
-            _httpListener?.Close();
-            _httpListener = null;
-        }
-        catch { }
-    }
-    
-    private void SendResponse(HttpListenerResponse response, string html)
-    {
-        try
-        {
-            var buffer = Encoding.UTF8.GetBytes(html);
-            response.ContentLength64 = buffer.Length;
-            response.ContentType = "text/html; charset=utf-8";
-            response.OutputStream.Write(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
-        }
-        catch { }
-    }
-    
-    private string GetSuccessHtml()
-    {
-        return @"<!DOCTYPE html>
-<html>
-<head>
-    <title>Authorization Successful</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-               background: #1e1f22; color: #bcbec4; display: flex; 
-               justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { text-align: center; padding: 40px; }
-        .icon { font-size: 64px; margin-bottom: 20px; }
-        h1 { color: #6aab73; margin-bottom: 10px; }
-        p { color: #6f737a; }
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='icon'>✅</div>
-        <h1>Authorization Successful!</h1>
-        <p>You can close this window and return to Insait Editor.</p>
-    </div>
-</body>
-</html>";
-    }
-    
-    private string GetErrorHtml(string error)
-    {
-        return @"<!DOCTYPE html>
-<html>
-<head>
-    <title>Authorization Failed</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-               background: #1e1f22; color: #bcbec4; display: flex; 
-               justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { text-align: center; padding: 40px; }
-        .icon { font-size: 64px; margin-bottom: 20px; }
-        h1 { color: #ef5350; margin-bottom: 10px; }
-        p { color: #6f737a; }
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='icon'>❌</div>
-        <h1>Authorization Failed</h1>
-        <p>" + System.Web.HttpUtility.HtmlEncode(error) + @"</p>
-        <p>Please close this window and try again.</p>
-    </div>
-</body>
-</html>";
-    }
-    
-    private async Task<string?> ExchangeCodeForTokenAsync(string code)
-    {
-        try
-        {
-            var tokenRequest = new Dictionary<string, string>
-            {
-                ["client_id"] = ClientId,
-                ["code"] = code,
-                ["redirect_uri"] = RedirectUri
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["client_id"] = ClientId,
+                    ["scope"] = DefaultScope
+                })
             };
-            
-            if (!string.IsNullOrEmpty(ClientSecret))
-                tokenRequest["client_secret"] = ClientSecret;
-            
-            var content = new FormUrlEncodedContent(tokenRequest);
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://github.com/login/oauth/access_token")
-            {
-                Content = content
-            };
-            request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            
-            var response = await _httpClient.SendAsync(request);
-            var responseBody = await response.Content.ReadAsStringAsync();
-            
+
+            var response = await _httpClient.SendAsync(request, cancellationToken);
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+
             if (!response.IsSuccessStatusCode)
             {
-                ErrorOccurred?.Invoke(this, $"Token exchange failed: {responseBody}");
+                ErrorOccurred?.Invoke(this, $"Failed to request device code: {responseBody}");
                 return null;
             }
-            
-            var json = JsonDocument.Parse(responseBody);
+
+            using var json = JsonDocument.Parse(responseBody);
             var root = json.RootElement;
-            
-            if (root.TryGetProperty("error", out var errorProp))
+
+            if (!root.TryGetProperty("device_code", out var deviceCodeProp) ||
+                !root.TryGetProperty("user_code", out var userCodeProp) ||
+                !root.TryGetProperty("verification_uri", out var verificationUriProp))
             {
-                var error = errorProp.GetString();
-                var description = root.TryGetProperty("error_description", out var descProp) 
-                    ? descProp.GetString() : "";
-                ErrorOccurred?.Invoke(this, $"Token error: {error} - {description}");
+                ErrorOccurred?.Invoke(this, "GitHub did not return a complete device code response.");
                 return null;
             }
-            
-            if (root.TryGetProperty("access_token", out var tokenProp))
-                return tokenProp.GetString();
-            
-            return null;
+
+            return new DeviceCodeInfo
+            {
+                DeviceCode = deviceCodeProp.GetString() ?? string.Empty,
+                UserCode = userCodeProp.GetString() ?? string.Empty,
+                VerificationUri = verificationUriProp.GetString() ?? "https://github.com/login/device",
+                VerificationUriComplete = root.TryGetProperty("verification_uri_complete", out var completeUriProp)
+                    ? completeUriProp.GetString() ?? string.Empty
+                    : string.Empty,
+                ExpiresIn = root.TryGetProperty("expires_in", out var expiresInProp) ? expiresInProp.GetInt32() : 900,
+                Interval = root.TryGetProperty("interval", out var intervalProp) ? intervalProp.GetInt32() : 5
+            };
         }
         catch (Exception ex)
         {
-            ErrorOccurred?.Invoke(this, $"Failed to exchange code: {ex.Message}");
+            ErrorOccurred?.Invoke(this, $"Failed to start device flow: {ex.Message}");
             return null;
         }
+    }
+
+    private async Task<string?> PollForDeviceFlowAccessTokenAsync(DeviceCodeInfo deviceCode, CancellationToken cancellationToken)
+    {
+        var expiresAt = DateTime.UtcNow.AddSeconds(Math.Max(deviceCode.ExpiresIn, 60));
+        var intervalSeconds = Math.Max(deviceCode.Interval, 5);
+
+        while (DateTime.UtcNow < expiresAt)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Delay(TimeSpan.FromSeconds(intervalSeconds), cancellationToken);
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, "https://github.com/login/oauth/access_token")
+                {
+                    Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                        ["client_id"] = ClientId,
+                        ["device_code"] = deviceCode.DeviceCode,
+                        ["grant_type"] = "urn:ietf:params:oauth:grant-type:device_code"
+                    })
+                };
+
+                var response = await _httpClient.SendAsync(request, cancellationToken);
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    ErrorOccurred?.Invoke(this, $"Token polling failed: {responseBody}");
+                    return null;
+                }
+
+                using var json = JsonDocument.Parse(responseBody);
+                var root = json.RootElement;
+
+                if (root.TryGetProperty("access_token", out var tokenProp))
+                    return tokenProp.GetString();
+
+                if (!root.TryGetProperty("error", out var errorProp))
+                    continue;
+
+                var error = errorProp.GetString() ?? string.Empty;
+                switch (error)
+                {
+                    case "authorization_pending":
+                        LoginStatusChanged?.Invoke(this, $"Waiting for GitHub confirmation… Use code {deviceCode.UserCode}.");
+                        continue;
+                    case "slow_down":
+                        intervalSeconds += 5;
+                        LoginStatusChanged?.Invoke(this, "GitHub asked to slow down polling. Waiting a bit longer...");
+                        continue;
+                    case "access_denied":
+                        LoginStatusChanged?.Invoke(this, "GitHub authorization was denied.");
+                        return null;
+                    case "expired_token":
+                        LoginStatusChanged?.Invoke(this, "GitHub device code expired. Please try again.");
+                        return null;
+                    default:
+                        var description = root.TryGetProperty("error_description", out var descriptionProp)
+                            ? descriptionProp.GetString()
+                            : null;
+                        ErrorOccurred?.Invoke(this, string.IsNullOrWhiteSpace(description)
+                            ? $"GitHub authorization error: {error}"
+                            : $"GitHub authorization error: {error} - {description}");
+                        return null;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ErrorOccurred?.Invoke(this, $"Failed while waiting for GitHub authorization: {ex.Message}");
+                return null;
+            }
+        }
+
+        LoginStatusChanged?.Invoke(this, "GitHub device code expired. Please try again.");
+        return null;
     }
     
     public void CancelLogin()
     {
         _loginCts?.Cancel();
-        StopCallbackServer();
+        _currentDeviceCode = null;
     }
-    
-    private void OpenBrowser(string url)
+
+    public bool TryOpenBrowser(string url)
     {
+        if (string.IsNullOrWhiteSpace(url))
+            return false;
+
         try
         {
-            var psi = new System.Diagnostics.ProcessStartInfo
+            var psi = new ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
             };
-            System.Diagnostics.Process.Start(psi);
+            if (Process.Start(psi) != null)
+                return true;
+        }
+        catch (Exception ex)
+        {
+            if (ex is not Win32Exception)
+                ErrorOccurred?.Invoke(this, $"Failed to open browser directly: {ex.Message}");
+        }
+
+        try
+        {
+            var explorerStart = new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"\"{url}\"",
+                UseShellExecute = true
+            };
+            if (Process.Start(explorerStart) != null)
+                return true;
+        }
+        catch (Exception ex)
+        {
+            if (ex is not Win32Exception)
+                ErrorOccurred?.Invoke(this, $"Failed to open browser via Explorer: {ex.Message}");
+        }
+
+        try
+        {
+            var cmdStart = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c start \"\" \"{url}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            if (Process.Start(cmdStart) != null)
+                return true;
         }
         catch (Exception ex)
         {
             ErrorOccurred?.Invoke(this, $"Failed to open browser: {ex.Message}");
         }
+
+        ErrorOccurred?.Invoke(this, $"Failed to open browser automatically. Open this URL manually: {url}");
+        return false;
     }
     
     public async Task<bool> IsLoggedInAsync()
@@ -392,6 +368,7 @@ public class GitHubOAuthService
         {
             _accessToken = null;
             _client.Credentials = Credentials.Anonymous;
+            ClearSavedToken();
             return false;
         }
     }
@@ -528,6 +505,7 @@ public class GitHubOAuthService
                     Owner = repo.Owner?.Login ?? "",
                     Description = repo.Description ?? "",
                     Url = repo.HtmlUrl ?? "",
+                    CloneUrl = repo.CloneUrl ?? NormalizeGitHubRepositoryUrl(repo.HtmlUrl ?? ""),
                     Language = repo.Language ?? "",
                     IsPrivate = repo.Private,
                     IsFork = repo.Fork,
@@ -551,25 +529,24 @@ public class GitHubOAuthService
     {
         try
         {
-            var args = targetPath != null 
-                ? $"clone {repoUrl} \"{targetPath}\"" 
-                : $"clone {repoUrl}";
-            
-            var startInfo = new System.Diagnostics.ProcessStartInfo
+            var cleanUrl = NormalizeGitHubRepositoryUrl(repoUrl);
+            var authenticatedUrl = GetAuthenticatedGitUrl(cleanUrl) ?? cleanUrl;
+            var args = targetPath != null
+                ? $"clone \"{authenticatedUrl}\" \"{targetPath}\""
+                : $"clone \"{authenticatedUrl}\"";
+
+            var success = await RunGitProcessAsync(args);
+            if (!success)
+                return false;
+
+            if (!string.IsNullOrWhiteSpace(targetPath) &&
+                !string.Equals(cleanUrl, authenticatedUrl, StringComparison.Ordinal) &&
+                Directory.Exists(targetPath))
             {
-                FileName = "git",
-                Arguments = args,
-                UseShellExecute = true
-            };
-            
-            var process = System.Diagnostics.Process.Start(startInfo);
-            if (process != null)
-            {
-                await process.WaitForExitAsync();
-                return process.ExitCode == 0;
+                await RunGitProcessAsync($"remote set-url origin \"{cleanUrl}\"", targetPath);
             }
-            
-            return false;
+
+            return true;
         }
         catch (Exception ex)
         {
@@ -599,8 +576,8 @@ public class GitHubOAuthService
     {
         try
         {
-            var url = "https://github.com/settings/tokens/new?description=InsaitEditor&scopes=repo,user,read:org";
-            var startInfo = new System.Diagnostics.ProcessStartInfo
+            var url = "https://github.com/settings/tokens/new?description=Insait%20Edit%20IDE%20C%23&scopes=repo,user,read:org";
+            var startInfo = new ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
@@ -612,6 +589,129 @@ public class GitHubOAuthService
             ErrorOccurred?.Invoke(this, $"Failed to open browser: {ex.Message}");
         }
     }
+
+    public async Task<GitHubRepository?> CreateRepositoryAsync(string name, string? description, bool isPrivate)
+    {
+        if (!await IsLoggedInAsync())
+        {
+            ErrorOccurred?.Invoke(this, "You must sign in to GitHub before creating a repository.");
+            return null;
+        }
+
+        try
+        {
+            var repository = await _client.Repository.Create(new NewRepository(name)
+            {
+                Description = description ?? string.Empty,
+                Private = isPrivate,
+                AutoInit = false
+            });
+
+            return new GitHubRepository
+            {
+                Name = repository.Name ?? string.Empty,
+                Owner = repository.Owner?.Login ?? string.Empty,
+                Description = repository.Description ?? string.Empty,
+                Url = repository.HtmlUrl ?? string.Empty,
+                CloneUrl = repository.CloneUrl ?? NormalizeGitHubRepositoryUrl(repository.HtmlUrl ?? string.Empty),
+                Language = repository.Language ?? string.Empty,
+                IsPrivate = repository.Private,
+                IsFork = repository.Fork,
+                Stars = repository.StargazersCount,
+                Forks = repository.ForksCount,
+                UpdatedAt = repository.UpdatedAt.LocalDateTime
+            };
+        }
+        catch (Exception ex)
+        {
+            ErrorOccurred?.Invoke(this, $"Failed to create repository: {ex.Message}");
+            return null;
+        }
+    }
+
+    public string NormalizeGitHubRepositoryUrl(string repositoryUrl)
+    {
+        if (string.IsNullOrWhiteSpace(repositoryUrl))
+            return repositoryUrl;
+
+        var trimmed = repositoryUrl.Trim();
+
+        if (trimmed.StartsWith("git@github.com:", StringComparison.OrdinalIgnoreCase))
+        {
+            var path = trimmed["git@github.com:".Length..].Trim();
+            if (!path.EndsWith(".git", StringComparison.OrdinalIgnoreCase))
+                path += ".git";
+            return $"https://github.com/{path}";
+        }
+
+        if (Uri.TryCreate(trimmed, UriKind.Absolute, out var uri) &&
+            uri.Host.Contains("github.com", StringComparison.OrdinalIgnoreCase))
+        {
+            var path = uri.AbsolutePath.Trim('/');
+            if (!path.EndsWith(".git", StringComparison.OrdinalIgnoreCase))
+                path += ".git";
+            return $"https://github.com/{path}";
+        }
+
+        if (!trimmed.Contains("://", StringComparison.Ordinal))
+        {
+            var pathOnly = trimmed.Trim('/');
+            if (pathOnly.Split('/', StringSplitOptions.RemoveEmptyEntries).Length == 2)
+                return $"https://github.com/{pathOnly}.git";
+        }
+
+        return trimmed;
+    }
+
+    public string GetAuthenticatedGitUrl(string repositoryUrl)
+    {
+        var cleanUrl = NormalizeGitHubRepositoryUrl(repositoryUrl);
+        if (string.IsNullOrWhiteSpace(cleanUrl) || string.IsNullOrWhiteSpace(_accessToken))
+            return cleanUrl;
+
+        if (!Uri.TryCreate(cleanUrl, UriKind.Absolute, out var uri) ||
+            !uri.Host.Contains("github.com", StringComparison.OrdinalIgnoreCase))
+        {
+            return cleanUrl;
+        }
+
+        var path = uri.AbsolutePath.TrimStart('/');
+        return $"https://x-access-token:{Uri.EscapeDataString(_accessToken)}@github.com/{path}";
+    }
+
+    private async Task<bool> RunGitProcessAsync(string arguments, string? workingDirectory = null)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = arguments,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8
+        };
+
+        if (!string.IsNullOrWhiteSpace(workingDirectory))
+            startInfo.WorkingDirectory = workingDirectory;
+
+        using var process = Process.Start(startInfo);
+        if (process == null)
+            return false;
+
+        var stdout = await process.StandardOutput.ReadToEndAsync();
+        var stderr = await process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+
+        if (!string.IsNullOrWhiteSpace(stderr) && process.ExitCode != 0)
+            ErrorOccurred?.Invoke(this, stderr.Trim());
+
+        if (!string.IsNullOrWhiteSpace(stdout) && process.ExitCode != 0)
+            ErrorOccurred?.Invoke(this, stdout.Trim());
+
+        return process.ExitCode == 0;
+    }
 }
 
 /// <summary>
@@ -621,8 +721,10 @@ public class DeviceCodeInfo
 {
     public string UserCode { get; set; } = "";
     public string VerificationUri { get; set; } = "";
+    public string VerificationUriComplete { get; set; } = "";
     public string DeviceCode { get; set; } = "";
     public int ExpiresIn { get; set; }
     public int Interval { get; set; }
+    public bool BrowserOpenSucceeded { get; set; }
 }
 

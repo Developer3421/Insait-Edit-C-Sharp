@@ -15,12 +15,11 @@ namespace Insait_Edit_C_Sharp.Controls;
 
 public partial class AccountPanelControl : UserControl
 {
-    private readonly GitHubAccountService _accountService;
     private readonly GitHubOAuthService _oauthService;
+    private DeviceCodeInfo? _pendingDeviceCode;
     private List<GitHubRepository> _allRepositories = new();
     private List<GitHubRepository> _filteredRepositories = new();
     private int _loadedRepoCount = 30;
-    private bool _useOAuthService = false;
     
     /// <summary>
     /// Event raised when a repository is selected for cloning
@@ -40,12 +39,8 @@ public partial class AccountPanelControl : UserControl
     public AccountPanelControl()
     {
         InitializeComponent();
-        _accountService = new GitHubAccountService();
         _oauthService = new GitHubOAuthService();
-        
-        _accountService.AccountChanged += OnAccountChanged;
-        _accountService.ErrorOccurred += OnErrorOccurred;
-        
+
         _oauthService.AccountChanged += OnAccountChanged;
         _oauthService.ErrorOccurred += OnErrorOccurred;
         _oauthService.LoginStatusChanged += OnLoginStatusChanged;
@@ -77,6 +72,9 @@ public partial class AccountPanelControl : UserControl
         SetContent("GetTokenBtn",       L("Account.GetToken"));
         SetContent("ShowTokenButton",   L("Account.UseToken"));
         SetContent("LoadMoreButton",    L("Account.LoadMore"));
+        SetContent("OpenDeviceBrowserButton", "Open GitHub");
+        SetContent("CopyDeviceCodeButton", "Copy Code");
+        SetContent("CopyDeviceLinkButton", "Copy Link");
 
         SetTooltip("RefreshButton",      L("Account.Refresh"));
         SetTooltip("ViewOnGitHubButton", L("Account.ViewOnGitHub"));
@@ -118,9 +116,14 @@ public partial class AccountPanelControl : UserControl
         Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
             var loadingText = this.FindControl<TextBlock>("LoadingText");
+            var deviceStatus = this.FindControl<TextBlock>("DeviceFlowStatusText");
             if (loadingText != null)
             {
                 loadingText.Text = status;
+            }
+            if (deviceStatus != null)
+            {
+                deviceStatus.Text = status;
             }
             StatusChanged?.Invoke(this, status);
         });
@@ -130,19 +133,39 @@ public partial class AccountPanelControl : UserControl
     {
         Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
+            _pendingDeviceCode = deviceCode;
+
             // Show the device code to user
             var codeText = this.FindControl<TextBlock>("DeviceCodeText");
+            var urlText = this.FindControl<TextBlock>("DeviceUrlText");
+            var statusText = this.FindControl<TextBlock>("DeviceFlowStatusText");
             var codePanel = this.FindControl<StackPanel>("DeviceCodePanel");
             
             if (codeText != null)
             {
                 codeText.Text = deviceCode.UserCode;
             }
+
+            if (urlText != null)
+            {
+                urlText.Text = !string.IsNullOrWhiteSpace(deviceCode.VerificationUriComplete)
+                    ? deviceCode.VerificationUriComplete
+                    : deviceCode.VerificationUri;
+            }
+
+            if (statusText != null)
+            {
+                statusText.Text = deviceCode.BrowserOpenSucceeded
+                    ? "Browser opened. Complete sign-in on GitHub and return here."
+                    : "Browser did not open automatically. Open the link manually and enter the code.";
+            }
             
             if (codePanel != null)
             {
                 codePanel.IsVisible = true;
             }
+
+            HideLoading();
             
             StatusChanged?.Invoke(this, $"Enter code {deviceCode.UserCode} on GitHub");
         });
@@ -157,29 +180,13 @@ public partial class AccountPanelControl : UserControl
         
         try
         {
-            // First try OAuth service (saved token)
             var oauthLoggedIn = await _oauthService.IsLoggedInAsync();
             if (oauthLoggedIn)
             {
-                _useOAuthService = true;
                 await RefreshAccountDataAsync();
                 return;
             }
-            
-            // Try GitHub CLI as fallback
-            ShowLoading("Checking GitHub CLI...");
-            var isInstalled = await _accountService.IsGitHubCliInstalledAsync();
-            if (isInstalled)
-            {
-                var isLoggedIn = await _accountService.IsLoggedInAsync();
-                if (isLoggedIn)
-                {
-                    _useOAuthService = false;
-                    await RefreshAccountDataAsync();
-                    return;
-                }
-            }
-            
+
             // Not logged in - show login panel
             ShowNotLoggedIn();
             StatusChanged?.Invoke(this, "Not logged in. Sign in with GitHub or use a Personal Access Token.");
@@ -201,38 +208,18 @@ public partial class AccountPanelControl : UserControl
         
         try
         {
-            GitHubAccountInfo? accountInfo;
-            
-            if (_useOAuthService)
+            var accountInfo = await _oauthService.GetAccountInfoAsync();
+            if (accountInfo == null || !accountInfo.IsLoggedIn)
             {
-                accountInfo = await _oauthService.GetAccountInfoAsync();
-                if (accountInfo == null || !accountInfo.IsLoggedIn)
-                {
-                    ShowNotLoggedIn();
-                    return;
-                }
-                
-                UpdateAccountUI(accountInfo);
-                
-                ShowLoading("Loading repositories...");
-                _allRepositories = await _oauthService.GetRepositoriesAsync(_loadedRepoCount);
+                ShowNotLoggedIn();
+                return;
             }
-            else
-            {
-                // Use CLI service
-                accountInfo = await _accountService.GetAccountInfoAsync();
-                if (accountInfo == null || !accountInfo.IsLoggedIn)
-                {
-                    ShowNotLoggedIn();
-                    return;
-                }
-                
-                UpdateAccountUI(accountInfo);
-                
-                ShowLoading("Loading repositories...");
-                _allRepositories = await _accountService.GetRepositoriesAsync(_loadedRepoCount);
-            }
-            
+
+            UpdateAccountUI(accountInfo);
+
+            ShowLoading("Loading repositories...");
+            _allRepositories = await _oauthService.GetRepositoriesAsync(_loadedRepoCount);
+
             _filteredRepositories = new List<GitHubRepository>(_allRepositories);
             UpdateRepositoriesUI();
             
@@ -385,7 +372,7 @@ public partial class AccountPanelControl : UserControl
                     var success = await _oauthService.LoginWithTokenAsync(token);
                     if (success)
                     {
-                        _useOAuthService = true;
+                        _pendingDeviceCode = null;
                         await RefreshAccountDataAsync();
                         StatusChanged?.Invoke(this, "Successfully signed in to GitHub");
                         
@@ -422,8 +409,7 @@ public partial class AccountPanelControl : UserControl
                 var success = await _oauthService.LoginWithDeviceFlowAsync();
                 if (success)
                 {
-                    _useOAuthService = true;
-                    
+                    _pendingDeviceCode = null;
                     // Hide device code panel if shown
                     var codePanel = this.FindControl<StackPanel>("DeviceCodePanel");
                     if (codePanel != null) codePanel.IsVisible = false;
@@ -443,10 +429,6 @@ public partial class AccountPanelControl : UserControl
             finally
             {
                 HideLoading();
-                
-                // Hide device code panel
-                var codePanel = this.FindControl<StackPanel>("DeviceCodePanel");
-                if (codePanel != null) codePanel.IsVisible = false;
             }
         }
     }
@@ -457,19 +439,9 @@ public partial class AccountPanelControl : UserControl
         
         try
         {
-            bool success;
-            if (_useOAuthService)
-            {
-                success = await _oauthService.LogoutAsync();
-            }
-            else
-            {
-                success = await _accountService.LogoutAsync();
-            }
-            
+            var success = await _oauthService.LogoutAsync();
             if (success)
             {
-                _useOAuthService = false;
                 ShowNotLoggedIn();
                 StatusChanged?.Invoke(this, "Signed out from GitHub");
             }
@@ -515,6 +487,54 @@ public partial class AccountPanelControl : UserControl
         catch (Exception ex)
         {
             StatusChanged?.Invoke(this, $"Failed to open browser: {ex.Message}");
+        }
+    }
+
+    private void OpenDeviceBrowser_Click(object? sender, RoutedEventArgs e)
+    {
+        var url = !string.IsNullOrWhiteSpace(_pendingDeviceCode?.VerificationUriComplete)
+            ? _pendingDeviceCode!.VerificationUriComplete
+            : _pendingDeviceCode?.VerificationUri;
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            StatusChanged?.Invoke(this, "GitHub device flow URL is not available yet.");
+            return;
+        }
+
+        if (_oauthService.TryOpenBrowser(url))
+            StatusChanged?.Invoke(this, "GitHub sign-in page opened in browser.");
+        else
+            StatusChanged?.Invoke(this, $"Open this URL manually: {url}");
+    }
+
+    private async void CopyDeviceCode_Click(object? sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_pendingDeviceCode?.UserCode))
+            return;
+
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard != null)
+        {
+            await clipboard.SetTextAsync(_pendingDeviceCode.UserCode);
+            StatusChanged?.Invoke(this, $"Copied code: {_pendingDeviceCode.UserCode}");
+        }
+    }
+
+    private async void CopyDeviceLink_Click(object? sender, RoutedEventArgs e)
+    {
+        var url = !string.IsNullOrWhiteSpace(_pendingDeviceCode?.VerificationUriComplete)
+            ? _pendingDeviceCode!.VerificationUriComplete
+            : _pendingDeviceCode?.VerificationUri;
+
+        if (string.IsNullOrWhiteSpace(url))
+            return;
+
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard != null)
+        {
+            await clipboard.SetTextAsync(url);
+            StatusChanged?.Invoke(this, "GitHub device flow link copied.");
         }
     }
     
@@ -617,14 +637,7 @@ public partial class AccountPanelControl : UserControl
         
         try
         {
-            if (_useOAuthService)
-            {
-                _allRepositories = await _oauthService.GetRepositoriesAsync(_loadedRepoCount);
-            }
-            else
-            {
-                _allRepositories = await _accountService.GetRepositoriesAsync(_loadedRepoCount);
-            }
+            _allRepositories = await _oauthService.GetRepositoriesAsync(_loadedRepoCount);
             
             // Reapply filter
             var searchBox = this.FindControl<TextBox>("RepoSearchBox");

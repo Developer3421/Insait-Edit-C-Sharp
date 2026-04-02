@@ -874,12 +874,8 @@ public partial class MainWindow
     // ═══════════════════════════════════════════════════════════
     //  Dialog helpers
     // ═══════════════════════════════════════════════════════════
-    private async Task<string?> ShowInputDialogAsync(string title, string prompt, string defaultValue = "")
+    private async Task<string?> ShowInputDialogAsync(string title, string prompt, string defaultValue = "", string icon = "✏️")
     {
-        var icon = title.Contains("Rename") ? "✏️"
-                 : title.Contains("Folder") ? "📁"
-                 : title.StartsWith("New ") ? "📄"
-                 : "✏️";
         var dialog = new InputDialog(title, prompt, defaultValue, icon);
         await dialog.ShowDialog(this);
         return dialog.Result;
@@ -901,8 +897,8 @@ public partial class MainWindow
         var grid = new Grid { RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(20) };
         var msg = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
         var btns = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right, Spacing = 8 };
-        var yes = new Button { Content = "Yes", Width = 80 };
-        var no = new Button { Content = "No", Width = 80 };
+        var yes = new Button { Content = LocalizationService.Get("Common.Yes"), Width = 80 };
+        var no = new Button { Content = LocalizationService.Get("Common.No"), Width = 80 };
         yes.Click += (_, _) => { result = true; dialog.Close(); };
         no.Click += (_, _) => { result = false; dialog.Close(); };
         btns.Children.Add(yes); btns.Children.Add(no);

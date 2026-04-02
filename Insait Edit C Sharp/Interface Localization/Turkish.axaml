@@ -110,6 +110,86 @@
     <x:String x:Key="Context.GitRevert">↩️ Geri Al...</x:String>
     <x:String x:Key="Context.ReloadFromDisk">🔄 Diskten Yeniden Yükle</x:String>
     <x:String x:Key="Context.Properties">⚙️ Özellikler</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Solution">Çözüm · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Project">Proje · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.File">Dosya · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Folder">Klasör · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.MultiSelection">{0} öğe seçildi{1}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Open">Aç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Add">Ekle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Create">Oluştur</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Build">Derle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Run">Çalıştır</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Edit">Düzenle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Navigate">Gezin</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.SourceControl">Kaynak Denetimi</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Dependencies">Bağımlılıklar</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Solution">Çözüm</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Project">Proje</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.File">Dosya</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Folder">Klasör</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Start">Başlangıç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Recent">Son Kullanılanlar</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.File.One">{0} dosya</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.File.Many">{0} dosya</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.Folder.One">{0} klasör</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.Folder.Many">{0} klasör</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.OpenSolutionFile">📄 Çözüm Dosyasını Aç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.BuildSolution">🔨 Çözümü Derle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.RebuildSolution">🔄 Çözümü Yeniden Derle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.CleanSolution">🧹 Çözümü Temizle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.RunProject">▶ Projeyi Çalıştır</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.OpenInEditor">📄 Düzenleyicide Aç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewFile">📄 Yeni Dosya...</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewDirectory">📁 Yeni Klasör</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewSubDirectory">📁 Yeni Alt Klasör</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.DeleteSelectedItems">🗑️ {0} Öğeyi Sil...</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenSolutionFile">.sln / .slnx dosyasını düzenleyicide aç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddNewProject">Geçerli çözüm içinde bir proje oluştur</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddExistingProject">Mevcut bir projeyi çözüme ekle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddNewItem">Çözüm klasöründe yeni bir dosya oluştur</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddExistingItem">Mevcut bir dosyayı çözüm klasörüne kopyala</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.BuildSolution">Tüm çözümü derle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.RebuildSolution">Çözümü temizle ve yeniden derle</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CleanSolution">Tüm derleme çıktılarını kaldır</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CutSolutionPath">Çözüm yolunu kes</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CopySolutionPath">Çözüm yolunu kopyala</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.PasteIntoSolutionFolder">Çözüm klasörüne yapıştır</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenGitWindow">Git penceresini aç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.ShowGitHistory">Git penceresinde commit geçmişini göster</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenGitRevert">Git penceresinde geri alma seçeneklerini aç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.ReloadFromDisk">Gezgin ağacını yenile</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenSolutionProperties">Çözüm özelliklerini aç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteSolutionWorkspace">Çözümü / çalışma alanını sil</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.RunProject">Seçili projeyi çalıştır</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenInEditor">Bu dosyayı kod düzenleyicide aç</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteFileSafely">Bu dosyayı güvenle sil</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteFolderSafely">Bu klasörü güvenle sil</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CutSelectedItems">Seçili {0} öğeyi kes</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CopySelectedItems">Seçili {0} öğenin yollarını kopyala</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteSelectedItems">Seçili {0} öğenin tümünü sil</x:String>
+    <x:String x:Key="InputDialog.WindowTitle">Girdi</x:String>
+    <x:String x:Key="InputDialog.Title.NewFolder">Yeni Klasör</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewFolder">Klasör adını girin:</x:String>
+    <x:String x:Key="InputDialog.Title.Rename">Yeniden Adlandır</x:String>
+    <x:String x:Key="InputDialog.Prompt.Rename">Yeni adı girin:</x:String>
+    <x:String x:Key="InputDialog.Title.NewClass">Yeni Sınıf</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewClass">Sınıf adını girin:</x:String>
+    <x:String x:Key="InputDialog.Title.NewInterface">Yeni Arayüz</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewInterface">Arayüz adını girin:</x:String>
+    <x:String x:Key="InputDialog.Title.NewRecord">Yeni Record</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewRecord">Record adını girin:</x:String>
+    <x:String x:Key="InputDialog.Title.NewEnum">Yeni Enum</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewEnum">Enum adını girin:</x:String>
+    <x:String x:Key="InputDialog.Title.NewAvaloniaWindow">Yeni Avalonia Penceresi</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewAvaloniaWindow">Pencere adını girin:</x:String>
+    <x:String x:Key="InputDialog.Title.NewAvaloniaUserControl">Yeni Avalonia UserControl</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewAvaloniaUserControl">User control adını girin:</x:String>
+    <x:String x:Key="Dialog.ConfirmDelete.Title">Silmeyi Onayla</x:String>
+    <x:String x:Key="Dialog.Delete.Single">'{0}' öğesini silmek istediğinizden emin misiniz?</x:String>
+    <x:String x:Key="Dialog.Delete.SingleDirectoryWarning">Tüm içerik de silinecektir.</x:String>
+    <x:String x:Key="Dialog.Delete.Multiple">{0} öğeyi silmek istediğinizden emin misiniz ({1})?</x:String>
+    <x:String x:Key="Dialog.Delete.MultipleDirectoryWarning">Tüm klasör içerikleri silinecektir.</x:String>
     <x:String x:Key="AI.Ready">🚀 Copilot CLI Hazır!</x:String>
     <x:String x:Key="AI.ManageFiles">Proje dosyalarınızı komutlarla yönetin:</x:String>
     <x:String x:Key="AI.GitHubCommands">GitHub CLI Komutları:</x:String>
@@ -316,6 +396,15 @@
     <x:String x:Key="Welcome.SearchRecent">🔍  Son projelerde ara...</x:String>
     <x:String x:Key="Welcome.ClearAll">Tümünü Temizle</x:String>
     <x:String x:Key="Welcome.RecentProjects">Son Projeler</x:String>
+    <x:String x:Key="RecentProjectsWindow.Count">{0} proje</x:String>
+    <x:String x:Key="RecentProjectsWindow.RemoveTooltip">Listeden kaldır</x:String>
+    <x:String x:Key="RecentProjectsWindow.EmptyTitle">Son projeler yok</x:String>
+    <x:String x:Key="RecentProjectsWindow.EmptySubtitle">Burada görmek için bir proje açın veya oluşturun</x:String>
+    <x:String x:Key="RecentProjectsWindow.OpenProject">Proje Aç…</x:String>
+    <x:String x:Key="RecentProjectsWindow.OpenPickerTitle">Proje veya Çözüm Aç</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.Solution">C# Çözümü</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.Project">C# Projesi</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.All">Tüm Dosyalar</x:String>
 
     <!-- ── WelcomeScreen (IDE başlangıç ekranı) ─────────────────── -->
     <x:String x:Key="WelcomeScreen.Subtitle">C# IDE · Insait Code Engine ile desteklenmektedir</x:String>
@@ -587,9 +676,9 @@
     <x:String x:Key="Git.CreateRepoDialogTitle">GitHub Deposu Oluştur</x:String>
     <x:String x:Key="Git.CreateRepoDialogHeader">🐙 GitHub Deposu Oluştur</x:String>
     <x:String x:Key="Git.GhCliNotFound">⚠ GitHub CLI ('gh') bulunamadı. https://cli.github.com adresinden yükleyin</x:String>
-    <x:String x:Key="Git.NotLoggedIn">⚠ GitHub'a giriş yapılmamış. Şunu çalıştırın: gh auth login</x:String>
+    <x:String x:Key="Git.NotLoggedIn">⚠ GitHub'da oturum açılmadı. Yerleşik GitHub oturum açma akışını kullanın.</x:String>
     <x:String x:Key="Git.LoginWithGitHub">GitHub ile giriş yap</x:String>
-    <x:String x:Key="Git.GitHubLoginOpened">GitHub girişi tarayıcıda açıldı</x:String>
+    <x:String x:Key="Git.GitHubLoginOpened">GitHub kimlik doğrulaması başarıyla tamamlandı</x:String>
     <x:String x:Key="Git.LoggedInAs">@{0} olarak giriş yapıldı</x:String>
     <x:String x:Key="Git.RepositoryName">Depo adı:</x:String>
     <x:String x:Key="Git.DescriptionOptional">Açıklama (isteğe bağlı):</x:String>
@@ -640,6 +729,50 @@
     <x:String x:Key="PreviewError.Copy">Kopyala</x:String>
 
     <!-- UserAgreementWindow -->
+    <x:String x:Key="UserAgreement.Text"><![CDATA[INSAIT EDIT — SON KULLANICI LİSANS SÖZLEŞMESİ (EULA)
+════════════════════════════════════════════════════════════
+
+Son güncelleme: Mart 2026
+
+Lütfen Insait Edit'i ("Yazılım") kullanmadan önce bu Son Kullanıcı Lisans Sözleşmesi'ni ("Sözleşme") dikkatlice okuyun. Yazılımı yükleyerek veya kullanarak aşağıdaki şartlara bağlı olmayı kabul etmiş olursunuz.
+
+1. LİSANS VERİLMESİ
+───────────────────
+Bu Sözleşme'nin şartlarına tabi olarak, yalnızca kişisel veya kurum içi iş geliştirme amaçlarınız için, size ait olan ya da kontrolünüz altındaki cihazlara Yazılımı kurmanız ve kullanmanız için sınırlı, münhasır olmayan ve devredilemez bir lisans verilmektedir.
+
+2. KISITLAMALAR
+───────────────
+Şunları yapamazsınız:
+  • Yürürlükteki kanunların açıkça izin verdiği durumlar dışında Yazılım üzerinde tersine mühendislik yapmak, derlemekten geri çevirmek veya parçalara ayırmak.
+  • Yazılımı yazılı izin olmadan satmak, kiralamak, leasing yoluyla vermek, alt lisanslamak veya yeniden dağıtmak.
+  • Yazılım üzerindeki mülkiyet bildirimlerini veya etiketleri kaldırmak ya da değiştirmek.
+
+3. FİKRÎ MÜLKİYET
+─────────────────
+Yazılımla ilgili tüm haklar, mülkiyet hakları ve fikrî mülkiyet hakları Insait Edit yazarlarına aittir. Yazılım, telif hakkı yasaları ve uluslararası anlaşma hükümleriyle korunmaktadır.
+
+4. ÜÇÜNCÜ TARAF BİLEŞENLERİ
+────────────────────────────
+Yazılım, kendi lisanslarına tabi olan açık kaynak bileşenleri içerebilir (örneğin MIT Lisansı altındaki AvaloniaUI). Bu bileşenler, ilgili lisanslarının şartları uyarınca sunulur.
+
+5. GARANTİ REDDİ
+────────────────
+YAZILIM, TİCARİ ELVERİŞLİLİK, BELİRLİ BİR AMACA UYGUNLUK VE HAK İHLALİ OLMAMASI DAHİL ANCAK BUNLARLA SINIRLI OLMAMAK ÜZERE, AÇIK YA DA ZIMNİ HİÇBİR GARANTİ VERİLMEKSİZİN "OLDUĞU GİBİ" SUNULMAKTADIR.
+
+6. SORUMLULUĞUN SINIRLANDIRILMASI
+──────────────────────────────────
+HİÇBİR DURUMDA YAZARLAR, BU SÖZLEŞMEDEN VEYA YAZILIMIN KULLANIMINDAN KAYNAKLANAN YA DA BUNLARLA İLİŞKİLİ HERHANGİ BİR DOLAYLI, ARIZİ, ÖZEL VEYA SONUÇ OLARAK ORTAYA ÇIKAN ZARARDAN, BU TÜR ZARARLARIN OLASILIĞI KONUSUNDA UYARILMIŞ OLSALAR BİLE, SORUMLU OLMAZLAR.
+
+7. FESİH
+─────────
+Bu lisans, feshedilene kadar yürürlüktedir. Bu Sözleşme'nin herhangi bir şartına uymamanız hâlinde otomatik olarak sona erer. Fesih sonrasında elinizde bulunan Yazılımın tüm kopyalarını imha etmeniz gerekir.
+
+8. UYGULANACAK HUKUK
+────────────────────
+Bu Sözleşme, kanunlar ihtilafı hükümleri dikkate alınmaksızın yürürlükteki hukuka göre düzenlenir ve yorumlanır.
+
+════════════════════════════════════════════════════════════
+Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="UserAgreement.Footer">Insait Edit'i kullanarak bu koşulları kabul etmiş olursunuz.</x:String>
     <x:String x:Key="UserAgreement.Close">Kapat</x:String>
     <x:String x:Key="UserAgreement.Accept">Kabul Et</x:String>
@@ -1060,6 +1193,8 @@
     <!-- Common -->
     <x:String x:Key="Common.OK">Tamam</x:String>
     <x:String x:Key="Common.Cancel">İptal</x:String>
+    <x:String x:Key="Common.Yes">Evet</x:String>
+    <x:String x:Key="Common.No">Hayır</x:String>
     <x:String x:Key="Common.Apply">Uygula</x:String>
     <x:String x:Key="Common.Close">Kapat</x:String>
     <x:String x:Key="Common.Browse">Göz At...</x:String>

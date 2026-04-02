@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp.Controls;
 
@@ -8,7 +9,17 @@ public partial class InputDialog : Window
 {
     public string? Result { get; private set; }
 
-    public InputDialog() { InitializeComponent(); }
+    public InputDialog()
+    {
+        InitializeComponent();
+        Title = LocalizationService.Get("InputDialog.WindowTitle");
+
+        if (this.FindControl<Button>("OkBtn") is { } okBtn)
+            okBtn.Content = LocalizationService.Get("Common.OK");
+
+        if (this.FindControl<Button>("CancelBtn") is { } cancelBtn)
+            cancelBtn.Content = LocalizationService.Get("Common.Cancel");
+    }
 
     /// <summary>Creates a styled input dialog.</summary>
     /// <param name="title">Window header text</param>
@@ -17,6 +28,7 @@ public partial class InputDialog : Window
     /// <param name="icon">Emoji icon shown in title bar</param>
     public InputDialog(string title, string prompt, string defaultValue = "", string icon = "✏️") : this()
     {
+        Title = title;
         if (this.FindControl<TextBlock>("TitleText") is { } tb) tb.Text = title;
         if (this.FindControl<TextBlock>("TitleIcon") is { } ti) ti.Text = icon;
         if (this.FindControl<TextBlock>("PromptText") is { } pb) pb.Text = prompt;

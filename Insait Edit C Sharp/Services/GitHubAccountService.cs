@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Insait_Edit_C_Sharp.Controls;
 
@@ -14,6 +12,8 @@ namespace Insait_Edit_C_Sharp.Services;
 /// </summary>
 public class GitHubAccountService
 {
+    private readonly GitHubOAuthService _oauthService = new();
+
     /// <summary>
     /// Event raised when account status changes
     /// </summary>
@@ -24,43 +24,40 @@ public class GitHubAccountService
     /// </summary>
     public event EventHandler<string>? ErrorOccurred;
 
+    public event EventHandler<DeviceCodeInfo>? DeviceCodeReady;
+    public event EventHandler<string>? LoginStatusChanged;
+
     private GitHubAccountInfo? _currentAccount;
     
     /// <summary>
     /// Current logged in account info
     /// </summary>
     public GitHubAccountInfo? CurrentAccount => _currentAccount;
+
+    public GitHubAccountService()
+    {
+        _oauthService.AccountChanged += (_, account) =>
+        {
+            _currentAccount = account;
+            AccountChanged?.Invoke(this, account);
+        };
+
+        _oauthService.ErrorOccurred += (_, error) => ErrorOccurred?.Invoke(this, error);
+        _oauthService.DeviceCodeReady += (_, deviceCode) => DeviceCodeReady?.Invoke(this, deviceCode);
+        _oauthService.LoginStatusChanged += (_, status) => LoginStatusChanged?.Invoke(this, status);
+    }
     
     /// <summary>
-    /// Check if GitHub CLI is installed
+    /// Legacy compatibility method. Authentication no longer depends on GitHub CLI.
     /// </summary>
-    public async Task<bool> IsGitHubCliInstalledAsync()
-    {
-        try
-        {
-            var result = await RunGhCommandAsync("--version");
-            return result.Success;
-        }
-        catch
-        {
-            return false;
-        }
-    }
+    public Task<bool> IsGitHubCliInstalledAsync() => Task.FromResult(true);
     
     /// <summary>
     /// Check if user is logged in to GitHub
     /// </summary>
     public async Task<bool> IsLoggedInAsync()
     {
-        try
-        {
-            var result = await RunGhCommandAsync("auth status");
-            return result.Success;
-        }
-        catch
-        {
-            return false;
-        }
+        return await _oauthService.IsLoggedInAsync();
     }
     
     /// <summary>
@@ -68,34 +65,12 @@ public class GitHubAccountService
     /// </summary>
     public async Task<bool> LoginAsync()
     {
-        try
-        {
-            // This will open browser for authentication
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = SettingsPanelControl.ResolveGhExe(),
-                Arguments = "auth login --web",
-                UseShellExecute = true
-            };
-            
-            var process = Process.Start(startInfo);
-            if (process != null)
-            {
-                await process.WaitForExitAsync();
-                
-                // Refresh account info after login
-                await RefreshAccountInfoAsync();
-                
-                return process.ExitCode == 0;
-            }
-            
-            return false;
-        }
-        catch (Exception ex)
-        {
-            ErrorOccurred?.Invoke(this, $"Login failed: {ex.Message}");
-            return false;
-        }
+        return await _oauthService.LoginWithDeviceFlowAsync();
+    }
+
+    public void CancelLogin()
+    {
+        _oauthService.CancelLogin();
     }
     
     /// <summary>
@@ -103,21 +78,13 @@ public class GitHubAccountService
     /// </summary>
     public async Task<bool> LogoutAsync()
     {
-        try
+        var success = await _oauthService.LogoutAsync();
+        if (success)
         {
-            var result = await RunGhCommandAsync("auth logout --hostname github.com");
-            if (result.Success)
-            {
-                _currentAccount = null;
-                AccountChanged?.Invoke(this, null);
-            }
-            return result.Success;
+            _currentAccount = null;
+            AccountChanged?.Invoke(this, null);
         }
-        catch (Exception ex)
-        {
-            ErrorOccurred?.Invoke(this, $"Logout failed: {ex.Message}");
-            return false;
-        }
+        return success;
     }
     
     /// <summary>
@@ -125,43 +92,9 @@ public class GitHubAccountService
     /// </summary>
     public async Task<GitHubAccountInfo?> GetAccountInfoAsync()
     {
-        try
-        {
-            // Get user info
-            var userResult = await RunGhCommandAsync("api user");
-            if (!userResult.Success)
-            {
-                return null;
-            }
-            
-            var userJson = JsonDocument.Parse(userResult.Output);
-            var root = userJson.RootElement;
-            
-            var accountInfo = new GitHubAccountInfo
-            {
-                Username = root.TryGetProperty("login", out var login) ? login.GetString() ?? "" : "",
-                Name = root.TryGetProperty("name", out var name) ? name.GetString() ?? "" : "",
-                Email = root.TryGetProperty("email", out var email) ? email.GetString() ?? "" : "",
-                AvatarUrl = root.TryGetProperty("avatar_url", out var avatar) ? avatar.GetString() ?? "" : "",
-                Bio = root.TryGetProperty("bio", out var bio) ? bio.GetString() ?? "" : "",
-                Company = root.TryGetProperty("company", out var company) ? company.GetString() ?? "" : "",
-                Location = root.TryGetProperty("location", out var location) ? location.GetString() ?? "" : "",
-                PublicRepos = root.TryGetProperty("public_repos", out var repos) ? repos.GetInt32() : 0,
-                Followers = root.TryGetProperty("followers", out var followers) ? followers.GetInt32() : 0,
-                Following = root.TryGetProperty("following", out var following) ? following.GetInt32() : 0,
-                IsLoggedIn = true
-            };
-            
-            _currentAccount = accountInfo;
-            AccountChanged?.Invoke(this, accountInfo);
-            
-            return accountInfo;
-        }
-        catch (Exception ex)
-        {
-            ErrorOccurred?.Invoke(this, $"Failed to get account info: {ex.Message}");
-            return null;
-        }
+        var accountInfo = await _oauthService.GetAccountInfoAsync();
+        _currentAccount = accountInfo;
+        return accountInfo;
     }
     
     /// <summary>
@@ -169,7 +102,7 @@ public class GitHubAccountService
     /// </summary>
     public async Task RefreshAccountInfoAsync()
     {
-        await GetAccountInfoAsync();
+        await _oauthService.RefreshAccountInfoAsync();
     }
     
     /// <summary>
@@ -177,55 +110,7 @@ public class GitHubAccountService
     /// </summary>
     public async Task<CopilotUsageInfo?> GetCopilotUsageAsync()
     {
-        try
-        {
-            // Check Copilot extension status
-            var extensionResult = await RunGhCommandAsync("extension list");
-            var hasCopilotExtension = extensionResult.Success && 
-                extensionResult.Output.Contains("copilot", StringComparison.OrdinalIgnoreCase);
-            
-            // Try to get Copilot status
-            var copilotResult = await RunGhCommandAsync("copilot --version");
-            var hasCopilot = copilotResult.Success;
-            
-            // Get rate limit info as proxy for API usage
-            var rateLimitResult = await RunGhCommandAsync("api rate_limit");
-            
-            var usageInfo = new CopilotUsageInfo
-            {
-                IsAvailable = hasCopilot || hasCopilotExtension,
-                HasExtension = hasCopilotExtension,
-                Status = hasCopilot ? "Active" : (hasCopilotExtension ? "Extension installed" : "Not configured")
-            };
-            
-            if (rateLimitResult.Success)
-            {
-                try
-                {
-                    var rateJson = JsonDocument.Parse(rateLimitResult.Output);
-                    var resources = rateJson.RootElement.GetProperty("resources");
-                    var core = resources.GetProperty("core");
-                    
-                    usageInfo.ApiLimit = core.GetProperty("limit").GetInt32();
-                    usageInfo.ApiRemaining = core.GetProperty("remaining").GetInt32();
-                    usageInfo.ApiUsed = usageInfo.ApiLimit - usageInfo.ApiRemaining;
-                    usageInfo.UsagePercentage = usageInfo.ApiLimit > 0 
-                        ? (double)usageInfo.ApiUsed / usageInfo.ApiLimit * 100 
-                        : 0;
-                    
-                    var resetTimestamp = core.GetProperty("reset").GetInt64();
-                    usageInfo.ResetTime = DateTimeOffset.FromUnixTimeSeconds(resetTimestamp).LocalDateTime;
-                }
-                catch { }
-            }
-            
-            return usageInfo;
-        }
-        catch (Exception ex)
-        {
-            ErrorOccurred?.Invoke(this, $"Failed to get Copilot usage: {ex.Message}");
-            return null;
-        }
+        return await _oauthService.GetCopilotUsageAsync();
     }
     
     /// <summary>
@@ -233,62 +118,7 @@ public class GitHubAccountService
     /// </summary>
     public async Task<List<GitHubRepository>> GetRepositoriesAsync(int limit = 30)
     {
-        var repositories = new List<GitHubRepository>();
-        
-        try
-        {
-            var result = await RunGhCommandAsync($"repo list --limit {limit} --json name,owner,description,url,isPrivate,isFork,stargazerCount,forkCount,primaryLanguage,updatedAt");
-            
-            if (!result.Success)
-            {
-                return repositories;
-            }
-            
-            var reposJson = JsonDocument.Parse(result.Output);
-            
-            foreach (var repo in reposJson.RootElement.EnumerateArray())
-            {
-                var repository = new GitHubRepository
-                {
-                    Name = repo.TryGetProperty("name", out var name) ? name.GetString() ?? "" : "",
-                    Description = repo.TryGetProperty("description", out var desc) ? desc.GetString() ?? "" : "",
-                    Url = repo.TryGetProperty("url", out var url) ? url.GetString() ?? "" : "",
-                    IsPrivate = repo.TryGetProperty("isPrivate", out var priv) && priv.GetBoolean(),
-                    IsFork = repo.TryGetProperty("isFork", out var fork) && fork.GetBoolean(),
-                    Stars = repo.TryGetProperty("stargazerCount", out var stars) ? stars.GetInt32() : 0,
-                    Forks = repo.TryGetProperty("forkCount", out var forks) ? forks.GetInt32() : 0
-                };
-                
-                if (repo.TryGetProperty("owner", out var owner) && 
-                    owner.TryGetProperty("login", out var ownerLogin))
-                {
-                    repository.Owner = ownerLogin.GetString() ?? "";
-                }
-                
-                if (repo.TryGetProperty("primaryLanguage", out var lang) && 
-                    lang.ValueKind != JsonValueKind.Null &&
-                    lang.TryGetProperty("name", out var langName))
-                {
-                    repository.Language = langName.GetString() ?? "";
-                }
-                
-                if (repo.TryGetProperty("updatedAt", out var updated))
-                {
-                    if (DateTime.TryParse(updated.GetString(), out var updatedDate))
-                    {
-                        repository.UpdatedAt = updatedDate;
-                    }
-                }
-                
-                repositories.Add(repository);
-            }
-        }
-        catch (Exception ex)
-        {
-            ErrorOccurred?.Invoke(this, $"Failed to get repositories: {ex.Message}");
-        }
-        
-        return repositories;
+        return await _oauthService.GetRepositoriesAsync(limit);
     }
     
     /// <summary>
@@ -296,22 +126,7 @@ public class GitHubAccountService
     /// </summary>
     public async Task<bool> CloneRepositoryAsync(string repoUrl, string? targetPath = null)
     {
-        try
-        {
-            var args = $"repo clone {repoUrl}";
-            if (!string.IsNullOrEmpty(targetPath))
-            {
-                args += $" \"{targetPath}\"";
-            }
-            
-            var result = await RunGhCommandAsync(args);
-            return result.Success;
-        }
-        catch (Exception ex)
-        {
-            ErrorOccurred?.Invoke(this, $"Clone failed: {ex.Message}");
-            return false;
-        }
+        return await _oauthService.CloneRepositoryAsync(repoUrl, targetPath);
     }
     
     /// <summary>
@@ -321,12 +136,47 @@ public class GitHubAccountService
     {
         try
         {
-            await RunGhCommandAsync($"repo view {repoFullName} --web");
+            var url = repoFullName.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                      repoFullName.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                ? repoFullName
+                : $"https://github.com/{repoFullName.Trim('/')}";
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            };
+            Process.Start(startInfo);
         }
         catch (Exception ex)
         {
             ErrorOccurred?.Invoke(this, $"Failed to open repository: {ex.Message}");
         }
+    }
+
+    public async Task<GitHubRepository?> CreateRepositoryAsync(string name, string description, bool isPrivate)
+    {
+        return await _oauthService.CreateRepositoryAsync(name, description, isPrivate);
+    }
+
+    public string NormalizeGitHubRepositoryUrl(string repositoryUrl)
+    {
+        return _oauthService.NormalizeGitHubRepositoryUrl(repositoryUrl);
+    }
+
+    public string? GetAuthenticatedGitUrl(string repositoryUrl)
+    {
+        return _oauthService.GetAuthenticatedGitUrl(repositoryUrl);
+    }
+
+    public DeviceCodeInfo? GetCurrentDeviceCode()
+    {
+        return _oauthService.CurrentDeviceCode;
+    }
+
+    public bool TryOpenBrowser(string url)
+    {
+        return _oauthService.TryOpenBrowser(url);
     }
     
     /// <summary>
@@ -473,6 +323,7 @@ public class GitHubRepository
     public string Owner { get; set; } = "";
     public string Description { get; set; } = "";
     public string Url { get; set; } = "";
+    public string CloneUrl { get; set; } = "";
     public string Language { get; set; } = "";
     public bool IsPrivate { get; set; }
     public bool IsFork { get; set; }

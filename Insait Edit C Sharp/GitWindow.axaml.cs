@@ -58,6 +58,7 @@ public partial class GitWindow : Window
     {
         InitializeComponent();
         ApplyLocalization();
+        _ghService.ErrorOccurred += (_, message) => AppendConsole(message);
         LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
     }
 
@@ -619,9 +620,7 @@ public partial class GitWindow : Window
 
     private async void CreateRepo_Click(object? sender, RoutedEventArgs e)
     {
-        // Check gh CLI is available via GitHubAccountService
-        bool cliOk = await _ghService.IsGitHubCliInstalledAsync();
-        bool loggedIn = cliOk && await _ghService.IsLoggedInAsync();
+        bool loggedIn = await _ghService.IsLoggedInAsync();
 
         // Build dialog
         var dialog = new Window
@@ -643,22 +642,6 @@ public partial class GitWindow : Window
             Foreground = new SolidColorBrush(Color.Parse("#FFFFC09F"))
         });
 
-        if (!cliOk)
-        {
-            sp.Children.Add(new TextBlock
-            {
-                Text = L("Git.GhCliNotFound"),
-                FontSize = 12, TextWrapping = TextWrapping.Wrap,
-                Foreground = new SolidColorBrush(Color.Parse("#FFF38BA8"))
-            });
-            var closeBtn = new Button { Content = LocalizationService.Get("Common.Close"), Width = 80 };
-            closeBtn.Click += (_, _) => dialog.Close();
-            sp.Children.Add(closeBtn);
-            dialog.Content = sp;
-            await dialog.ShowDialog(this);
-            return;
-        }
-
         if (!loggedIn)
         {
             sp.Children.Add(new TextBlock
@@ -671,8 +654,10 @@ public partial class GitWindow : Window
             loginBtn.Click += async (_, _) =>
             {
                 dialog.Close();
-                await _ghService.LoginAsync();
-                AppendConsole(L("Git.GitHubLoginOpened"));
+                var success = await ShowGitHubLoginDialogAsync();
+                AppendConsole(success
+                    ? L("Git.GitHubLoginOpened")
+                    : L("Git.NotLoggedIn"));
             };
             sp.Children.Add(loginBtn);
             dialog.Content = sp;
@@ -754,48 +739,304 @@ public partial class GitWindow : Window
         await dialog.ShowDialog(this);
     }
 
+    private async Task<bool> ShowGitHubLoginDialogAsync()
+    {
+        DeviceCodeInfo? currentDeviceCode = _ghService.GetCurrentDeviceCode();
+
+        var dialog = new Window
+        {
+            Title = L("Git.LoginWithGitHub"),
+            Width = 520,
+            Height = 320,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            SystemDecorations = SystemDecorations.BorderOnly,
+            CanResize = false,
+            Background = new SolidColorBrush(Color.Parse("#FF2A2230"))
+        };
+
+        var root = new StackPanel { Margin = new Thickness(20), Spacing = 10 };
+        var header = new TextBlock
+        {
+            Text = L("Git.LoginWithGitHub"),
+            FontSize = 15,
+            FontWeight = FontWeight.SemiBold,
+            Foreground = new SolidColorBrush(Color.Parse("#FFFFC09F"))
+        };
+        var statusText = new TextBlock
+        {
+            Text = "Requesting GitHub device code...",
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = new SolidColorBrush(Color.Parse("#FFF0E8F4"))
+        };
+
+        var codePanel = new StackPanel { Spacing = 8, IsVisible = false };
+        var codeText = new TextBlock
+        {
+            Text = "---- ----",
+            FontSize = 24,
+            FontWeight = FontWeight.Bold,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Foreground = new SolidColorBrush(Color.Parse("#FFFFC09F"))
+        };
+        var linkText = new TextBlock
+        {
+            Text = "https://github.com/login/device",
+            TextWrapping = TextWrapping.Wrap,
+            TextAlignment = TextAlignment.Center,
+            Foreground = new SolidColorBrush(Color.Parse("#FFA6E3A1"))
+        };
+
+        var openBtn = MakeBtn("Open GitHub", "#FFFFC09F", "#FF1F1A24");
+        var copyCodeBtn = MakeBtn("Copy code", "#FF3E3050", "#FFF0E8F4");
+        var copyLinkBtn = MakeBtn("Copy link", "#FF3E3050", "#FFF0E8F4");
+        var cancelBtn = MakeBtn(LocalizationService.Get("Common.Cancel"), "#FF3E3050", "#FFF0E8F4");
+
+        var actionRow = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8
+        };
+
+        actionRow.Children.Add(openBtn);
+        actionRow.Children.Add(copyCodeBtn);
+        actionRow.Children.Add(copyLinkBtn);
+        actionRow.Children.Add(cancelBtn);
+
+        codePanel.Children.Add(new TextBlock
+        {
+            Text = "If the browser did not open, open the link below and enter the code:",
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = new SolidColorBrush(Color.Parse("#FF9E90B0"))
+        });
+        codePanel.Children.Add(codeText);
+        codePanel.Children.Add(linkText);
+        codePanel.Children.Add(actionRow);
+
+        root.Children.Add(header);
+        root.Children.Add(statusText);
+        root.Children.Add(codePanel);
+        dialog.Content = root;
+
+        void ApplyDeviceCode(DeviceCodeInfo deviceCode)
+        {
+            currentDeviceCode = deviceCode;
+            codePanel.IsVisible = true;
+            codeText.Text = deviceCode.UserCode;
+            linkText.Text = !string.IsNullOrWhiteSpace(deviceCode.VerificationUriComplete)
+                ? deviceCode.VerificationUriComplete
+                : deviceCode.VerificationUri;
+            statusText.Text = deviceCode.BrowserOpenSucceeded
+                ? "Browser opened. Complete sign-in on GitHub."
+                : "Browser did not open automatically. Open the link manually and enter the code.";
+        }
+
+        void OnDeviceCodeReady(object? _, DeviceCodeInfo deviceCode)
+            => Avalonia.Threading.Dispatcher.UIThread.Post(() => ApplyDeviceCode(deviceCode));
+
+        void OnLoginStatusChanged(object? _, string status)
+            => Avalonia.Threading.Dispatcher.UIThread.Post(() => statusText.Text = status);
+
+        _ghService.DeviceCodeReady += OnDeviceCodeReady;
+        _ghService.LoginStatusChanged += OnLoginStatusChanged;
+
+        if (currentDeviceCode != null)
+            ApplyDeviceCode(currentDeviceCode);
+
+        openBtn.Click += (_, _) =>
+        {
+            var url = !string.IsNullOrWhiteSpace(currentDeviceCode?.VerificationUriComplete)
+                ? currentDeviceCode.VerificationUriComplete
+                : currentDeviceCode?.VerificationUri;
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                statusText.Text = "GitHub login link is not available yet.";
+                return;
+            }
+
+            statusText.Text = _ghService.TryOpenBrowser(url)
+                ? "GitHub sign-in page opened in browser."
+                : $"Open this URL manually: {url}";
+        };
+
+        copyCodeBtn.Click += async (_, _) =>
+        {
+            if (string.IsNullOrWhiteSpace(currentDeviceCode?.UserCode))
+                return;
+
+            var clip = TopLevel.GetTopLevel(dialog)?.Clipboard;
+            if (clip != null)
+            {
+                await clip.SetTextAsync(currentDeviceCode.UserCode);
+                statusText.Text = $"Copied code: {currentDeviceCode.UserCode}";
+            }
+        };
+
+        copyLinkBtn.Click += async (_, _) =>
+        {
+            var url = !string.IsNullOrWhiteSpace(currentDeviceCode?.VerificationUriComplete)
+                ? currentDeviceCode.VerificationUriComplete
+                : currentDeviceCode?.VerificationUri;
+
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            var clip = TopLevel.GetTopLevel(dialog)?.Clipboard;
+            if (clip != null)
+            {
+                await clip.SetTextAsync(url);
+                statusText.Text = "GitHub sign-in link copied.";
+            }
+        };
+
+        cancelBtn.Click += (_, _) =>
+        {
+            _ghService.CancelLogin();
+            dialog.Close(false);
+        };
+
+        var loginTask = _ghService.LoginAsync();
+        _ = loginTask.ContinueWith(t =>
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (dialog.IsVisible)
+                    dialog.Close(t.Status == TaskStatus.RanToCompletion && t.Result);
+            });
+        });
+
+        bool success;
+        try
+        {
+            var dialogResult = await dialog.ShowDialog<bool?>(this);
+            success = dialogResult == true && await loginTask;
+        }
+        finally
+        {
+            _ghService.DeviceCodeReady -= OnDeviceCodeReady;
+            _ghService.LoginStatusChanged -= OnLoginStatusChanged;
+        }
+
+        return success;
+    }
+
     private async Task CreateGitHubRepoAsync(string name, string desc, bool isPrivate)
     {
         ShowLoading(L("Git.CreatingRepository"));
         SwitchRightTab("console");
 
-        var vis     = isPrivate ? "--private" : "--public";
-        var descArg = string.IsNullOrWhiteSpace(desc) ? "" : $"--description \"{desc}\"";
-        var cmd     = $"repo create \"{name}\" {vis} {descArg} --source . --remote origin --push";
-        AppendConsole($"gh {cmd}");
+        string? remoteUrlToRestore = null;
+        bool shouldRestoreOrigin = false;
 
-        // GitHubAccountService verified the login; now run gh CLI directly
-        bool ok = await RunGhCommandAsync(cmd);
-
-        HideLoading();
-        AppendConsole(ok
-            ? FormatLocalized("Git.CreateRepoSuccess", name)
-            : L("Git.CreateRepoFailed"));
-        await RefreshAsync();
-    }
-
-    private async Task<bool> RunGhCommandAsync(string args)
-    {
         try
         {
-            var psi = new System.Diagnostics.ProcessStartInfo
+            AppendConsole($"GitHub API: create repository \"{name}\"");
+
+            var repo = await _ghService.CreateRepositoryAsync(name, desc, isPrivate);
+            if (repo == null)
             {
-                FileName = SettingsPanelControl.ResolveGhExe(), Arguments = args,
-                UseShellExecute = false,
-                RedirectStandardOutput = true, RedirectStandardError = true,
-                CreateNoWindow = true,
-                WorkingDirectory = _currentRepoRoot ?? _solutionPath ?? Environment.CurrentDirectory
-            };
-            using var p = System.Diagnostics.Process.Start(psi);
-            if (p == null) return false;
-            var stdout = await p.StandardOutput.ReadToEndAsync();
-            var stderr = await p.StandardError.ReadToEndAsync();
-            await p.WaitForExitAsync();
-            if (!string.IsNullOrWhiteSpace(stdout)) AppendConsole(stdout.Trim());
-            if (!string.IsNullOrWhiteSpace(stderr)) AppendConsole(stderr.Trim());
-            return p.ExitCode == 0;
+                AppendConsole(L("Git.CreateRepoFailed"));
+                return;
+            }
+
+            var cleanRemoteUrl = !string.IsNullOrWhiteSpace(repo.CloneUrl)
+                ? repo.CloneUrl
+                : _ghService.NormalizeGitHubRepositoryUrl(repo.Url);
+            var origin = (await _git.GetRemotesAsync())
+                .FirstOrDefault(r => string.Equals(r.Name, "origin", StringComparison.OrdinalIgnoreCase));
+
+            if (origin != null && !AreSameGitHubRemote(origin.Url, cleanRemoteUrl))
+            {
+                AppendConsole($"GitHub repository created: {repo.FullName}");
+                AppendConsole("Remote 'origin' already exists and points to another URL. Repository was created on GitHub, but origin was not changed automatically.");
+                return;
+            }
+
+            var tempRemoteUrl = _ghService.GetAuthenticatedGitUrl(cleanRemoteUrl) ?? cleanRemoteUrl;
+            var originalOriginUrl = origin?.Url;
+
+            if (origin == null)
+            {
+                AppendConsole($"git remote add origin \"{cleanRemoteUrl}\"");
+                var addRemoteResult = await _git.AddRemoteAsync("origin", tempRemoteUrl);
+                if (!addRemoteResult.Success)
+                {
+                    AppendConsole(addRemoteResult.Error);
+                    AppendConsole(L("Git.CreateRepoFailed"));
+                    return;
+                }
+
+                remoteUrlToRestore = cleanRemoteUrl;
+                shouldRestoreOrigin = !string.Equals(tempRemoteUrl, cleanRemoteUrl, StringComparison.Ordinal);
+            }
+            else if (!string.Equals(origin.Url, tempRemoteUrl, StringComparison.Ordinal))
+            {
+                AppendConsole("git remote set-url origin [secure GitHub URL]");
+                var setRemoteOk = await _git.RunGitCommandInternalAsync($"remote set-url origin \"{tempRemoteUrl}\"");
+                if (!setRemoteOk)
+                {
+                    AppendConsole(L("Git.CreateRepoFailed"));
+                    return;
+                }
+
+                remoteUrlToRestore = originalOriginUrl;
+                shouldRestoreOrigin = !string.IsNullOrWhiteSpace(remoteUrlToRestore) &&
+                                      !string.Equals(tempRemoteUrl, remoteUrlToRestore, StringComparison.Ordinal);
+            }
+
+            var branch = await _git.GetCurrentBranchAsync();
+            var branchToPush = string.IsNullOrWhiteSpace(branch) ? "HEAD" : branch;
+            AppendConsole($"git push -u origin {branchToPush}");
+            var pushOk = await _git.RunGitCommandInternalAsync($"push -u origin {branchToPush}");
+
+            AppendConsole(pushOk
+                ? FormatLocalized("Git.CreateRepoSuccess", name)
+                : L("Git.CreateRepoFailed"));
         }
-        catch (Exception ex) { AppendConsole(FormatLocalized("Git.GhError", ex.Message)); return false; }
+        catch (Exception ex)
+        {
+            AppendConsole(FormatLocalized("Git.GhError", ex.Message));
+        }
+        finally
+        {
+            if (shouldRestoreOrigin && !string.IsNullOrWhiteSpace(remoteUrlToRestore))
+                await _git.RunGitCommandInternalAsync($"remote set-url origin \"{remoteUrlToRestore}\"");
+
+            HideLoading();
+            await RefreshAsync();
+        }
+    }
+
+    private static bool AreSameGitHubRemote(string left, string right)
+    {
+        static string Normalize(string value)
+        {
+            var normalized = value.Trim();
+
+            if (normalized.StartsWith("git@github.com:", StringComparison.OrdinalIgnoreCase))
+                normalized = $"https://github.com/{normalized["git@github.com:".Length..]}";
+
+            if (Uri.TryCreate(normalized, UriKind.Absolute, out var uri))
+            {
+                normalized = $"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}";
+            }
+
+            normalized = normalized.Replace("http://", "https://", StringComparison.OrdinalIgnoreCase);
+
+            var githubMarker = "github.com/";
+            var markerIndex = normalized.IndexOf(githubMarker, StringComparison.OrdinalIgnoreCase);
+            if (markerIndex >= 0)
+                normalized = normalized[(markerIndex + githubMarker.Length)..];
+
+            normalized = normalized.TrimEnd('/');
+            if (normalized.EndsWith(".git", StringComparison.OrdinalIgnoreCase))
+                normalized = normalized[..^4];
+
+            return normalized.ToLowerInvariant();
+        }
+
+        return Normalize(left) == Normalize(right);
     }
 
     private static Button MakeBtn(string content, string bg, string fg)

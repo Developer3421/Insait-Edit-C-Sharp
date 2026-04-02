@@ -9,7 +9,7 @@ namespace Insait_Edit_C_Sharp;
 /// <summary>Window displaying the Insait Edit User Agreement / EULA.</summary>
 public partial class UserAgreementWindow : Window
 {
-    private const string EulaText = """
+    private const string DefaultEulaText = """
         INSAIT EDIT — END USER LICENSE AGREEMENT (EULA)
         ════════════════════════════════════════════════
 
@@ -86,23 +86,29 @@ public partial class UserAgreementWindow : Window
 
     private void ApplyLocalization()
     {
-        var L = (Func<string, string>)LocalizationService.Get;
+        var localize = (Func<string, string>)LocalizationService.Get;
 
         var title = this.FindControl<TextBlock>("TitleText");
-        if (title != null) title.Text = L("Tooltip.UserAgreement");
-        Title = L("Tooltip.UserAgreement");
+        if (title != null) title.Text = localize("Tooltip.UserAgreement");
+        Title = localize("Tooltip.UserAgreement");
 
         var footer = this.FindControl<TextBlock>("FooterText");
-        if (footer != null) footer.Text = L("UserAgreement.Footer");
+        if (footer != null) footer.Text = localize("UserAgreement.Footer");
 
         var closeText = this.FindControl<TextBlock>("CloseBtnText");
-        if (closeText != null) closeText.Text = L("UserAgreement.Close");
+        if (closeText != null) closeText.Text = localize("UserAgreement.Close");
 
         var acceptText = this.FindControl<TextBlock>("AcceptBtnText");
-        if (acceptText != null) acceptText.Text = L("UserAgreement.Accept");
+        if (acceptText != null) acceptText.Text = localize("UserAgreement.Accept");
 
         var agreementBlock = this.FindControl<SelectableTextBlock>("AgreementText");
-        if (agreementBlock != null) agreementBlock.Text = EulaText;
+        if (agreementBlock != null)
+        {
+            var agreementText = localize("UserAgreement.Text");
+            agreementBlock.Text = agreementText == "UserAgreement.Text"
+                ? DefaultEulaText
+                : agreementText;
+        }
     }
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)

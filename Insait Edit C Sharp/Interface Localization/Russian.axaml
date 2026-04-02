@@ -111,6 +111,86 @@
     <x:String x:Key="Context.GitRevert">↩️ Откатить...</x:String>
     <x:String x:Key="Context.ReloadFromDisk">🔄 Перезагрузить с диска</x:String>
     <x:String x:Key="Context.Properties">⚙️ Свойства</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Solution">Решение · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Project">Проект · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.File">Файл · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Folder">Папка · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.MultiSelection">Выбрано {0} элементов{1}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Open">Открыть</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Add">Добавить</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Create">Создать</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Build">Сборка</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Run">Запуск</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Edit">Правка</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Navigate">Навигация</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.SourceControl">Контроль версий</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Dependencies">Зависимости</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Solution">Решение</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Project">Проект</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.File">Файл</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Folder">Папка</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Start">Старт</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Recent">Недавние</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.File.One">{0} файл</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.File.Many">{0} файлов</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.Folder.One">{0} папка</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.Folder.Many">{0} папок</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.OpenSolutionFile">📄 Открыть файл решения</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.BuildSolution">🔨 Собрать решение</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.RebuildSolution">🔄 Пересобрать решение</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.CleanSolution">🧹 Очистить решение</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.RunProject">▶ Запустить проект</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.OpenInEditor">📄 Открыть в редакторе</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewFile">📄 Новый файл...</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewDirectory">📁 Новая папка</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewSubDirectory">📁 Новая подпапка</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.DeleteSelectedItems">🗑️ Удалить {0} элементов...</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenSolutionFile">Открыть файл .sln / .slnx в редакторе</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddNewProject">Создать проект внутри текущего решения</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddExistingProject">Подключить существующий проект к решению</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddNewItem">Создать новый файл в папке решения</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddExistingItem">Скопировать существующий файл в папку решения</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.BuildSolution">Собрать всё решение</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.RebuildSolution">Очистить и пересобрать решение</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CleanSolution">Удалить все артефакты сборки</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CutSolutionPath">Вырезать путь к решению</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CopySolutionPath">Скопировать путь к решению</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.PasteIntoSolutionFolder">Вставить в папку решения</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenGitWindow">Открыть окно Git</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.ShowGitHistory">Показать историю коммитов в окне Git</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenGitRevert">Открыть параметры отката в окне Git</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.ReloadFromDisk">Обновить дерево проводника</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenSolutionProperties">Открыть свойства решения</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteSolutionWorkspace">Удалить решение / рабочую область</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.RunProject">Запустить выбранный проект</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenInEditor">Открыть этот файл в редакторе кода</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteFileSafely">Безопасно удалить этот файл</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteFolderSafely">Безопасно удалить эту папку</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CutSelectedItems">Вырезать {0} выбранных элементов</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CopySelectedItems">Скопировать пути {0} выбранных элементов</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteSelectedItems">Удалить все {0} выбранных элементов</x:String>
+    <x:String x:Key="InputDialog.WindowTitle">Ввод</x:String>
+    <x:String x:Key="InputDialog.Title.NewFolder">Новая папка</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewFolder">Введите имя папки:</x:String>
+    <x:String x:Key="InputDialog.Title.Rename">Переименовать</x:String>
+    <x:String x:Key="InputDialog.Prompt.Rename">Введите новое имя:</x:String>
+    <x:String x:Key="InputDialog.Title.NewClass">Новый класс</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewClass">Введите имя класса:</x:String>
+    <x:String x:Key="InputDialog.Title.NewInterface">Новый интерфейс</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewInterface">Введите имя интерфейса:</x:String>
+    <x:String x:Key="InputDialog.Title.NewRecord">Новый record</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewRecord">Введите имя record:</x:String>
+    <x:String x:Key="InputDialog.Title.NewEnum">Новый enum</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewEnum">Введите имя enum:</x:String>
+    <x:String x:Key="InputDialog.Title.NewAvaloniaWindow">Новое окно Avalonia</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewAvaloniaWindow">Введите имя окна:</x:String>
+    <x:String x:Key="InputDialog.Title.NewAvaloniaUserControl">Новый Avalonia UserControl</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewAvaloniaUserControl">Введите имя user control:</x:String>
+    <x:String x:Key="Dialog.ConfirmDelete.Title">Подтвердите удаление</x:String>
+    <x:String x:Key="Dialog.Delete.Single">Вы уверены, что хотите удалить '{0}'?</x:String>
+    <x:String x:Key="Dialog.Delete.SingleDirectoryWarning">Всё содержимое также будет удалено.</x:String>
+    <x:String x:Key="Dialog.Delete.Multiple">Вы уверены, что хотите удалить {0} элементов ({1})?</x:String>
+    <x:String x:Key="Dialog.Delete.MultipleDirectoryWarning">Всё содержимое папок также будет удалено.</x:String>
     <x:String x:Key="AI.Ready">🚀 Copilot CLI готов!</x:String>
     <x:String x:Key="AI.ManageFiles">Управляйте файлами проекта с помощью команд:</x:String>
     <x:String x:Key="AI.GitHubCommands">Команды GitHub CLI:</x:String>
@@ -319,6 +399,15 @@
     <x:String x:Key="Welcome.RecentProjects">Последние проекты</x:String>
     <!-- Added aliases / keys required by XAML usages -->
     <x:String x:Key="RecentProjects">Последние проекты</x:String>
+    <x:String x:Key="RecentProjectsWindow.Count">{0} проектов</x:String>
+    <x:String x:Key="RecentProjectsWindow.RemoveTooltip">Удалить из списка</x:String>
+    <x:String x:Key="RecentProjectsWindow.EmptyTitle">Нет недавних проектов</x:String>
+    <x:String x:Key="RecentProjectsWindow.EmptySubtitle">Откройте или создайте проект, чтобы увидеть его здесь</x:String>
+    <x:String x:Key="RecentProjectsWindow.OpenProject">Открыть проект…</x:String>
+    <x:String x:Key="RecentProjectsWindow.OpenPickerTitle">Открыть проект или решение</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.Solution">Решение C#</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.Project">Проект C#</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.All">Все файлы</x:String>
     <x:String x:Key="DefaultTitle">Быстрое исправление</x:String>
 
     <!-- ── WelcomeScreen (стартовый экран в IDE) ────────────────── -->
@@ -591,9 +680,9 @@
     <x:String x:Key="Git.CreateRepoDialogTitle">Создать GitHub-репозиторий</x:String>
     <x:String x:Key="Git.CreateRepoDialogHeader">🐙 Создать GitHub-репозиторий</x:String>
     <x:String x:Key="Git.GhCliNotFound">⚠ GitHub CLI ('gh') не найден. Установите с https://cli.github.com</x:String>
-    <x:String x:Key="Git.NotLoggedIn">⚠ Вы не вошли в GitHub. Выполните: gh auth login</x:String>
+    <x:String x:Key="Git.NotLoggedIn">⚠ Вы не вошли в GitHub. Авторизуйтесь через встроенный вход GitHub.</x:String>
     <x:String x:Key="Git.LoginWithGitHub">Войти через GitHub</x:String>
-    <x:String x:Key="Git.GitHubLoginOpened">Вход GitHub открыт в браузере</x:String>
+    <x:String x:Key="Git.GitHubLoginOpened">Авторизация GitHub успешно завершена</x:String>
     <x:String x:Key="Git.LoggedInAs">Выполнен вход как @{0}</x:String>
     <x:String x:Key="Git.RepositoryName">Имя репозитория:</x:String>
     <x:String x:Key="Git.DescriptionOptional">Описание (необязательно):</x:String>
@@ -644,6 +733,50 @@
     <x:String x:Key="PreviewError.Copy">Копировать</x:String>
 
     <!-- UserAgreementWindow -->
+    <x:String x:Key="UserAgreement.Text"><![CDATA[INSAIT EDIT — ЛИЦЕНЗИОННОЕ СОГЛАШЕНИЕ С КОНЕЧНЫМ ПОЛЬЗОВАТЕЛЕМ (EULA)
+══════════════════════════════════════════════════════════════════════
+
+Последнее обновление: март 2026
+
+Пожалуйста, внимательно прочитайте это Лицензионное соглашение с конечным пользователем ("Соглашение") перед использованием Insait Edit ("Программное обеспечение"). Устанавливая или используя Программное обеспечение, вы соглашаетесь соблюдать приведённые ниже условия.
+
+1. ПРЕДОСТАВЛЕНИЕ ЛИЦЕНЗИИ
+───────────────────────────
+При соблюдении условий настоящего Соглашения вам предоставляется ограниченная, неисключительная и непередаваемая лицензия на установку и использование Программного обеспечения на устройствах, которые принадлежат вам или находятся под вашим контролем, исключительно для личных или внутренних бизнес-целей разработки.
+
+2. ОГРАНИЧЕНИЯ
+───────────────
+Вы не вправе:
+  • Выполнять обратную разработку, декомпиляцию или дизассемблирование Программного обеспечения, за исключением случаев, прямо разрешённых применимым законодательством.
+  • Продавать, сдавать в аренду, передавать по сублицензии или распространять Программное обеспечение без письменного разрешения.
+  • Удалять или изменять любые уведомления о правах собственности или обозначения на Программном обеспечении.
+
+3. ИНТЕЛЛЕКТУАЛЬНАЯ СОБСТВЕННОСТЬ
+─────────────────────────────────
+Все права собственности, имущественные права и права интеллектуальной собственности на Программное обеспечение сохраняются за авторами Insait Edit. Программное обеспечение защищено законами об авторском праве и положениями международных договоров.
+
+4. СТОРОННИЕ КОМПОНЕНТЫ
+────────────────────────
+Программное обеспечение может включать компоненты с открытым исходным кодом, регулируемые собственными лицензиями (например, AvaloniaUI по лицензии MIT). Такие компоненты предоставляются в соответствии с условиями их соответствующих лицензий.
+
+5. ОТКАЗ ОТ ГАРАНТИЙ
+─────────────────────
+ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ПРЕДОСТАВЛЯЕТСЯ «КАК ЕСТЬ» БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ, ЯВНЫХ ИЛИ ПОДРАЗУМЕВАЕМЫХ, ВКЛЮЧАЯ, ПОМИМО ПРОЧЕГО, ГАРАНТИИ ТОВАРНОЙ ПРИГОДНОСТИ, ПРИГОДНОСТИ ДЛЯ ОПРЕДЕЛЁННОЙ ЦЕЛИ И НЕНАРУШЕНИЯ ПРАВ.
+
+6. ОГРАНИЧЕНИЕ ОТВЕТСТВЕННОСТИ
+───────────────────────────────
+НИ ПРИ КАКИХ ОБСТОЯТЕЛЬСТВАХ АВТОРЫ НЕ НЕСУТ ОТВЕТСТВЕННОСТИ ЗА ЛЮБЫЕ КОСВЕННЫЕ, СЛУЧАЙНЫЕ, СПЕЦИАЛЬНЫЕ ИЛИ ПОСЛЕДУЮЩИЕ УБЫТКИ, ВОЗНИКАЮЩИЕ ИЗ НАСТОЯЩЕГО СОГЛАШЕНИЯ ИЛИ ИСПОЛЬЗОВАНИЯ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ ИЛИ СВЯЗАННЫЕ С НИМИ, ДАЖЕ ЕСЛИ ОНИ БЫЛИ ПРЕДУПРЕЖДЕНЫ О ВОЗМОЖНОСТИ ТАКИХ УБЫТКОВ.
+
+7. ПРЕКРАЩЕНИЕ ДЕЙСТВИЯ
+────────────────────────
+Настоящая лицензия действует до момента прекращения. Она прекращается автоматически, если вы нарушаете любое условие настоящего Соглашения. После прекращения вы обязаны уничтожить все копии Программного обеспечения, находящиеся у вас во владении.
+
+8. ПРИМЕНИМОЕ ПРАВО
+────────────────────
+Настоящее Соглашение регулируется и толкуется в соответствии с применимым законодательством без учёта его коллизионных норм.
+
+══════════════════════════════════════════════════════════════════════
+Спасибо за использование Insait Edit!]]></x:String>
     <x:String x:Key="UserAgreement.Footer">Используя Insait Edit, вы принимаете эти условия.</x:String>
     <x:String x:Key="UserAgreement.Close">Закрыть</x:String>
     <x:String x:Key="UserAgreement.Accept">Принять</x:String>
@@ -1064,6 +1197,8 @@
     <!-- Common -->
     <x:String x:Key="Common.OK">OK</x:String>
     <x:String x:Key="Common.Cancel">Отмена</x:String>
+    <x:String x:Key="Common.Yes">Да</x:String>
+    <x:String x:Key="Common.No">Нет</x:String>
     <x:String x:Key="Common.Apply">Применить</x:String>
     <x:String x:Key="Common.Close">Закрыть</x:String>
     <x:String x:Key="Common.Browse">Обзор...</x:String>

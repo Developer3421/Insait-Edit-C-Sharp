@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp.Controls;
 
@@ -69,6 +70,27 @@ public partial class ExplorerNodeMenuWindow : Window
 	private static string GetSectionColor(string section) =>
 		_sectionColors.TryGetValue(section, out var c) ? c : "#9E90B0";
 
+	private static string GetSectionLabel(string section) =>
+		section switch
+		{
+			"Open" => LocalizationService.Get("ExplorerNodeMenu.Section.Open"),
+			"Add" => LocalizationService.Get("ExplorerNodeMenu.Section.Add"),
+			"Create" => LocalizationService.Get("ExplorerNodeMenu.Section.Create"),
+			"Build" => LocalizationService.Get("ExplorerNodeMenu.Section.Build"),
+			"Run" => LocalizationService.Get("ExplorerNodeMenu.Section.Run"),
+			"Edit" => LocalizationService.Get("ExplorerNodeMenu.Section.Edit"),
+			"Navigate" => LocalizationService.Get("ExplorerNodeMenu.Section.Navigate"),
+			"Source Control" => LocalizationService.Get("ExplorerNodeMenu.Section.SourceControl"),
+			"Dependencies" => LocalizationService.Get("ExplorerNodeMenu.Section.Dependencies"),
+			"Solution" => LocalizationService.Get("ExplorerNodeMenu.Section.Solution"),
+			"Project" => LocalizationService.Get("ExplorerNodeMenu.Section.Project"),
+			"File" => LocalizationService.Get("ExplorerNodeMenu.Section.File"),
+			"Folder" => LocalizationService.Get("ExplorerNodeMenu.Section.Folder"),
+			"Start" => LocalizationService.Get("ExplorerNodeMenu.Section.Start"),
+			"Recent" => LocalizationService.Get("ExplorerNodeMenu.Section.Recent"),
+			_ => section
+		};
+
 	/// <summary>
 	/// Creates the context-menu window for a specific explorer node page type.
 	/// </summary>
@@ -124,7 +146,7 @@ public partial class ExplorerNodeMenuWindow : Window
 			var sectionColor = GetSectionColor(group.Key);
 			host.Children.Add(new TextBlock
 			{
-				Text = group.Key.ToUpperInvariant(),
+				Text = GetSectionLabel(group.Key),
 				FontSize = 9,
 				FontWeight = FontWeight.SemiBold,
 				Foreground = new SolidColorBrush(Color.Parse(sectionColor)),

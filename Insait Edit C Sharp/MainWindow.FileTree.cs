@@ -14,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.VisualTree;
 using Insait_Edit_C_Sharp.Models;
 using Insait_Edit_C_Sharp.Controls;
+using Insait_Edit_C_Sharp.Services;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -67,6 +68,27 @@ public partial class MainWindow
             if (!tree.SelectedItems.Contains(item))
                 tree.SelectedItems.Add(item);
         }
+    }
+
+    private static string L(string key) => LocalizationService.Get(key);
+
+    private static string LF(string key, params object[] args) => string.Format(L(key), args);
+
+    private static string FormatLocalizedCount(int count, string singularKey, string pluralKey)
+    {
+        var format = count == 1 ? L(singularKey) : L(pluralKey);
+        return string.Format(format, count);
+    }
+
+    private static string BuildLocalizedSelectionSummary(int files, int folders)
+    {
+        var parts = new List<string>();
+        if (files > 0)
+            parts.Add(FormatLocalizedCount(files, "ExplorerNodeMenu.Count.File.One", "ExplorerNodeMenu.Count.File.Many"));
+        if (folders > 0)
+            parts.Add(FormatLocalizedCount(folders, "ExplorerNodeMenu.Count.Folder.One", "ExplorerNodeMenu.Count.Folder.Many"));
+
+        return parts.Count > 0 ? " (" + string.Join(", ", parts) + ")" : string.Empty;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -293,6 +315,7 @@ public partial class MainWindow
             }
         }
 
+
         // Зняти позначку з попередньо вибраних елементів
         foreach (var removed in e.RemovedItems)
         {
@@ -439,7 +462,7 @@ public partial class MainWindow
         if (item?.ItemType == FileTreeItemType.Solution)
         {
             _contextMenuTargetItem = item;
-            ShowWindow("🏠", $"Solution · {item.Name}",
+            ShowWindow("🏠", LF("ExplorerNodeMenu.PageTitle.Solution", item.Name),
                 ExplorerNodeMenuPageType.Solution,
                 BuildExplorerNodeMenuActions(item), item.FullPath, item);
             return;
@@ -449,7 +472,7 @@ public partial class MainWindow
         if (item?.ItemType == FileTreeItemType.Project)
         {
             _contextMenuTargetItem = item;
-            ShowWindow("📦", $"Project · {item.Name}",
+            ShowWindow("📦", LF("ExplorerNodeMenu.PageTitle.Project", item.Name),
                 ExplorerNodeMenuPageType.Project,
                 BuildExplorerNodeMenuActions(item), item.FullPath, item);
             return;
@@ -483,11 +506,8 @@ public partial class MainWindow
         {
             var files   = fileItems.Count(x => !x.IsDirectory);
             var folders = fileItems.Count(x =>  x.IsDirectory);
-            var parts   = new List<string>();
-            if (files   > 0) parts.Add(files   + " file"   + (files   > 1 ? "s" : ""));
-            if (folders > 0) parts.Add(folders + " folder" + (folders > 1 ? "s" : ""));
-            var summary = parts.Count > 0 ? " (" + string.Join(", ", parts) + ")" : string.Empty;
-            ShowWindow("📋", $"{fileItems.Count} Items Selected{summary}",
+            var summary = BuildLocalizedSelectionSummary(files, folders);
+            ShowWindow("📋", LF("ExplorerNodeMenu.PageTitle.MultiSelection", fileItems.Count, summary),
                 ExplorerNodeMenuPageType.MultiSelection,
                 BuildMultiSelectionMenuActions(fileItems), null, fileItems[0]);
             return;
@@ -496,10 +516,10 @@ public partial class MainWindow
         // Single file / folder
         var target = fileItems[0];
         if (target.IsDirectory)
-            ShowWindow("📁", $"Folder · {target.Name}", ExplorerNodeMenuPageType.Folder,
+            ShowWindow("📁", LF("ExplorerNodeMenu.PageTitle.Folder", target.Name), ExplorerNodeMenuPageType.Folder,
                 BuildExplorerNodeMenuActions(target), target.FullPath, target);
         else
-            ShowWindow("📄", $"File · {target.Name}", ExplorerNodeMenuPageType.File,
+            ShowWindow("📄", LF("ExplorerNodeMenu.PageTitle.File", target.Name), ExplorerNodeMenuPageType.File,
                 BuildExplorerNodeMenuActions(target), target.FullPath, target);
     }
 
@@ -552,23 +572,23 @@ public partial class MainWindow
         // ════════════════════════════════════
         if (item.ItemType == FileTreeItemType.Solution)
         {
-            actions.Add(new ExplorerNodeMenuAction("Open",           "📄 Open Solution File",      "Open the .sln / .slnx file in the editor",          () => Invoke(() => OpenFileInEditor(item.FullPath))));
-            actions.Add(new ExplorerNodeMenuAction("Add",            "📦 Add New Project...",       "Create a project inside the current solution",       () => Invoke(() => AddNewProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add",            "📦 Add Existing Project...",  "Attach an existing project to the solution",         () => Invoke(() => ContextMenu_AddExistingProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add",            "📄 Add New Item...",          "Create a new file in the solution folder",           () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add",            "📄 Add Existing Item...",     "Copy an existing file into the solution folder",     () => Invoke(() => ContextMenu_AddExistingItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Build",          "🔨 Build Solution",           "Build the entire solution",                         () => InvokeAsync(() => { ContextMenu_BuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Build",          "🔄 Rebuild Solution",         "Clean and rebuild the solution",                    () => InvokeAsync(() => { ContextMenu_RebuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Build",          "🧹 Clean Solution",           "Remove all build artefacts",                        () => InvokeAsync(() => { ContextMenu_CleanProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Edit",           "✂️ Cut",                      "Cut the solution path",                             () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",           "📋 Copy",                     "Copy the solution path",                            () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",           "📄 Paste",                    "Paste into the solution folder",                    () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "📝 Git Commit...",            "Open the Git window",                               () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "📜 Git History",              "Show commit history in the Git window",             () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "↩️ Git Revert...",            "Open revert options in the Git window",             () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Solution",       "🔄 Reload from Disk",         "Refresh the explorer tree",                         () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Solution",       "⚙️ Properties",               "Open solution properties",                          () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Solution",       "🗑️ Safe Delete...",           "Delete the solution / workspace",                   () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+            actions.Add(new ExplorerNodeMenuAction("Open",           L("ExplorerNodeMenu.Action.OpenSolutionFile"),  L("ExplorerNodeMenu.Subtitle.OpenSolutionFile"),      () => Invoke(() => OpenFileInEditor(item.FullPath))));
+            actions.Add(new ExplorerNodeMenuAction("Add",            L("Context.AddNewProject"),                     L("ExplorerNodeMenu.Subtitle.AddNewProject"),        () => Invoke(() => AddNewProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",            L("Context.AddExistingProject"),                L("ExplorerNodeMenu.Subtitle.AddExistingProject"),   () => Invoke(() => ContextMenu_AddExistingProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",            L("Context.AddNewItem"),                        L("ExplorerNodeMenu.Subtitle.AddNewItem"),           () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",            L("Context.AddExistingItem"),                   L("ExplorerNodeMenu.Subtitle.AddExistingItem"),      () => Invoke(() => ContextMenu_AddExistingItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Build",          L("ExplorerNodeMenu.Action.BuildSolution"),     L("ExplorerNodeMenu.Subtitle.BuildSolution"),        () => InvokeAsync(() => { ContextMenu_BuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Build",          L("ExplorerNodeMenu.Action.RebuildSolution"),   L("ExplorerNodeMenu.Subtitle.RebuildSolution"),      () => InvokeAsync(() => { ContextMenu_RebuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Build",          L("ExplorerNodeMenu.Action.CleanSolution"),     L("ExplorerNodeMenu.Subtitle.CleanSolution"),        () => InvokeAsync(() => { ContextMenu_CleanProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           L("Context.Cut"),                               L("ExplorerNodeMenu.Subtitle.CutSolutionPath"),      () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           L("Context.Copy"),                              L("ExplorerNodeMenu.Subtitle.CopySolutionPath"),     () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           L("Context.Paste"),                             L("ExplorerNodeMenu.Subtitle.PasteIntoSolutionFolder"), () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", L("Context.GitCommit"),                         L("ExplorerNodeMenu.Subtitle.OpenGitWindow"),        () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", L("Context.GitHistory"),                        L("ExplorerNodeMenu.Subtitle.ShowGitHistory"),       () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", L("Context.GitRevert"),                         L("ExplorerNodeMenu.Subtitle.OpenGitRevert"),        () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Solution",       L("Context.ReloadFromDisk"),                    L("ExplorerNodeMenu.Subtitle.ReloadFromDisk"),       () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Solution",       L("Context.Properties"),                        L("ExplorerNodeMenu.Subtitle.OpenSolutionProperties"), () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Solution",       L("Context.Delete"),                            L("ExplorerNodeMenu.Subtitle.DeleteSolutionWorkspace"), () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
             return actions;
         }
 
@@ -577,35 +597,35 @@ public partial class MainWindow
         // ════════════════════════════════════
         if (item.ItemType == FileTreeItemType.Project)
         {
-            actions.Add(new ExplorerNodeMenuAction("Run",          "▶ Run Project",                "Run the selected project",                          () => Invoke(() => ContextMenu_RunProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Class...",              null,                                                () => Invoke(() => ContextMenu_NewClass_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Interface...",          null,                                                () => Invoke(() => ContextMenu_NewInterface_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Record...",             null,                                                () => Invoke(() => ContextMenu_NewRecord_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Enum...",               null,                                                () => Invoke(() => ContextMenu_NewEnum_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Create",       "🪟 New Avalonia Window...",    null,                                                () => Invoke(() => ContextMenu_NewAvaloniaWindow_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Create",       "🎛️ New Avalonia UserControl...", null,                                             () => Invoke(() => ContextMenu_NewAvaloniaUserControl_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New File...",               null,                                                () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Create",       "📁 New Directory",             null,                                                () => Invoke(() => AddNewFolder_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add",          "📦 Add New Project...",        null,                                                () => Invoke(() => AddNewProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add",          "📦 Add Existing Project...",   null,                                                () => Invoke(() => ContextMenu_AddExistingProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add",          "📄 Add New Item...",           null,                                                () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Add",          "📄 Add Existing Item...",      null,                                                () => Invoke(() => ContextMenu_AddExistingItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Build",        "🔨 Build Project",             null,                                                () => InvokeAsync(() => { ContextMenu_BuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Build",        "🔄 Rebuild Project",           null,                                                () => InvokeAsync(() => { ContextMenu_RebuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Build",        "🧹 Clean Project",             null,                                                () => InvokeAsync(() => { ContextMenu_CleanProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
-            actions.Add(new ExplorerNodeMenuAction("Dependencies",  "📦 Manage NuGet Packages...", null,                                                () => Invoke(() => ContextMenu_ManageNuGet_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Dependencies",  "🔗 Add Reference...",         null,                                                () => Invoke(() => ContextMenu_AddReference_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",         "✂️ Cut",                       null,                                                () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",         "📋 Copy",                      null,                                                () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",         "📄 Paste",                     null,                                                () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control","📝 Git Commit...",            null,                                                () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control","📜 Git History",              null,                                                () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control","↩️ Git Revert...",            null,                                                () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Project",      "🗑️ Remove from Solution",     null,                                                () => Invoke(() => ContextMenu_RemoveFromSolution_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Project",      "⬇️ Unload Project",            null,                                                () => Invoke(() => ContextMenu_UnloadProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Project",      "🔄 Reload from Disk",          null,                                                () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Project",      "⚙️ Properties",               null,                                                () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Project",      "🗑️ Safe Delete...",            null,                                                () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+            actions.Add(new ExplorerNodeMenuAction("Run",          L("ExplorerNodeMenu.Action.RunProject"),          L("ExplorerNodeMenu.Subtitle.RunProject"),            () => Invoke(() => ContextMenu_RunProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewClass"),                            null,                                                  () => Invoke(() => ContextMenu_NewClass_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewInterface"),                        null,                                                  () => Invoke(() => ContextMenu_NewInterface_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewRecord"),                           null,                                                  () => Invoke(() => ContextMenu_NewRecord_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewEnum"),                             null,                                                  () => Invoke(() => ContextMenu_NewEnum_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewAvaloniaWindow"),                   null,                                                  () => Invoke(() => ContextMenu_NewAvaloniaWindow_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewAvaloniaControl"),                  null,                                                  () => Invoke(() => ContextMenu_NewAvaloniaUserControl_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       L("ExplorerNodeMenu.Action.NewFile"),             null,                                                  () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Create",       L("ExplorerNodeMenu.Action.NewDirectory"),        null,                                                  () => Invoke(() => AddNewFolder_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",          L("Context.AddNewProject"),                       null,                                                  () => Invoke(() => AddNewProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",          L("Context.AddExistingProject"),                  null,                                                  () => Invoke(() => ContextMenu_AddExistingProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",          L("Context.AddNewItem"),                          null,                                                  () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Add",          L("Context.AddExistingItem"),                     null,                                                  () => Invoke(() => ContextMenu_AddExistingItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Build",        L("Context.Build"),                               null,                                                  () => InvokeAsync(() => { ContextMenu_BuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Build",        L("Context.Rebuild"),                             null,                                                  () => InvokeAsync(() => { ContextMenu_RebuildProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Build",        L("Context.Clean"),                               null,                                                  () => InvokeAsync(() => { ContextMenu_CleanProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()); return Task.CompletedTask; })));
+            actions.Add(new ExplorerNodeMenuAction("Dependencies",  L("Context.ManageNuGet"),                         null,                                                  () => Invoke(() => ContextMenu_ManageNuGet_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Dependencies",  L("Context.AddReference"),                        null,                                                  () => Invoke(() => ContextMenu_AddReference_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",         L("Context.Cut"),                                 null,                                                  () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",         L("Context.Copy"),                                null,                                                  () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",         L("Context.Paste"),                               null,                                                  () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control",L("Context.GitCommit"),                           null,                                                  () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control",L("Context.GitHistory"),                          null,                                                  () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control",L("Context.GitRevert"),                           null,                                                  () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      L("Context.RemoveFromSolution"),                  null,                                                  () => Invoke(() => ContextMenu_RemoveFromSolution_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      L("Context.UnloadProject"),                       null,                                                  () => Invoke(() => ContextMenu_UnloadProject_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      L("Context.ReloadFromDisk"),                      null,                                                  () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      L("Context.Properties"),                          null,                                                  () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Project",      L("Context.Delete"),                              null,                                                  () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
             return actions;
         }
 
@@ -614,48 +634,48 @@ public partial class MainWindow
         // ════════════════════════════════════
         if (!item.IsDirectory)
         {
-            actions.Add(new ExplorerNodeMenuAction("Open",           "📄 Open in Editor",           "Open this file in the code editor",                 () => Invoke(() => OpenFileInEditor(item.FullPath))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",           "✂️ Cut",                      null,                                                () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",           "📋 Copy",                     null,                                                () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",           "✏️ Rename",                   null,                                                () => Invoke(() => RenameItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Edit",           "🗑️ Safe Delete...",           "Delete this file safely",                           () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
-            actions.Add(new ExplorerNodeMenuAction("Navigate",       "📂 Open in Explorer",         null,                                                () => Invoke(() => OpenInExplorer_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Navigate",       "💻 Open in Terminal",         null,                                                () => Invoke(() => OpenInTerminal_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Navigate",       "📋 Copy Absolute Path",       null,                                                () => Invoke(() => CopyPath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Navigate",       "📋 Copy Relative Path",       null,                                                () => Invoke(() => ContextMenu_CopyRelativePath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Navigate",       "📋 Copy File Name",           null,                                                () => Invoke(() => ContextMenu_CopyFileName_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "📝 Git Commit...",            null,                                                () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "📜 Git History",              null,                                                () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("Source Control", "↩️ Git Revert...",            null,                                                () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("File",           "🔄 Reload from Disk",         null,                                                () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-            actions.Add(new ExplorerNodeMenuAction("File",           "⚙️ Properties",               null,                                                () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Open",           L("ExplorerNodeMenu.Action.OpenInEditor"),      L("ExplorerNodeMenu.Subtitle.OpenInEditor"),         () => Invoke(() => OpenFileInEditor(item.FullPath))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           L("Context.Cut"),                               null,                                                  () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           L("Context.Copy"),                              null,                                                  () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           L("Context.Rename"),                            null,                                                  () => Invoke(() => RenameItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Edit",           L("Context.Delete"),                            L("ExplorerNodeMenu.Subtitle.DeleteFileSafely"),      () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       L("Context.OpenExplorer"),                      null,                                                  () => Invoke(() => OpenInExplorer_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       L("Context.OpenTerminal"),                      null,                                                  () => Invoke(() => OpenInTerminal_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       L("Context.AbsolutePath"),                      null,                                                  () => Invoke(() => CopyPath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       L("Context.RelativePath"),                      null,                                                  () => Invoke(() => ContextMenu_CopyRelativePath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Navigate",       L("Context.FileName"),                          null,                                                  () => Invoke(() => ContextMenu_CopyFileName_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", L("Context.GitCommit"),                         null,                                                  () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", L("Context.GitHistory"),                        null,                                                  () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("Source Control", L("Context.GitRevert"),                         null,                                                  () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("File",           L("Context.ReloadFromDisk"),                    null,                                                  () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+            actions.Add(new ExplorerNodeMenuAction("File",           L("Context.Properties"),                        null,                                                  () => Invoke(() => ContextMenu_Properties_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
             return actions;
         }
 
         // ════════════════════════════════════
         //  PAGE: Folder
         // ════════════════════════════════════
-        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Class...",              null,                                                () => Invoke(() => ContextMenu_NewClass_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Interface...",          null,                                                () => Invoke(() => ContextMenu_NewInterface_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Record...",             null,                                                () => Invoke(() => ContextMenu_NewRecord_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New Enum...",               null,                                                () => Invoke(() => ContextMenu_NewEnum_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create",       "🪟 New Avalonia Window...",    null,                                                () => Invoke(() => ContextMenu_NewAvaloniaWindow_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create",       "🎛️ New Avalonia UserControl...", null,                                             () => Invoke(() => ContextMenu_NewAvaloniaUserControl_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create",       "📄 New File...",               null,                                                () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Create",       "📁 New Sub-Directory",         null,                                                () => Invoke(() => AddNewFolder_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Edit",         "✂️ Cut",                       null,                                                () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Edit",         "📋 Copy",                      null,                                                () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Edit",         "📄 Paste",                     null,                                                () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Edit",         "✏️ Rename",                    null,                                                () => Invoke(() => RenameItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Edit",         "🗑️ Safe Delete...",            "Delete this folder safely",                         () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
-        actions.Add(new ExplorerNodeMenuAction("Navigate",     "📂 Open in Explorer",          null,                                                () => Invoke(() => OpenInExplorer_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Navigate",     "💻 Open in Terminal",          null,                                                () => Invoke(() => OpenInTerminal_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Navigate",     "📋 Copy Absolute Path",        null,                                                () => Invoke(() => CopyPath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Navigate",     "📋 Copy Relative Path",        null,                                                () => Invoke(() => ContextMenu_CopyRelativePath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Source Control","📝 Git Commit...",            null,                                                () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Source Control","📜 Git History",              null,                                                () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Source Control","↩️ Git Revert...",            null,                                                () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
-        actions.Add(new ExplorerNodeMenuAction("Folder",       "🔄 Reload from Disk",          null,                                                () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewClass"),                            null,                                                  () => Invoke(() => ContextMenu_NewClass_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewInterface"),                        null,                                                  () => Invoke(() => ContextMenu_NewInterface_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewRecord"),                           null,                                                  () => Invoke(() => ContextMenu_NewRecord_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewEnum"),                             null,                                                  () => Invoke(() => ContextMenu_NewEnum_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewAvaloniaWindow"),                   null,                                                  () => Invoke(() => ContextMenu_NewAvaloniaWindow_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       L("Context.NewAvaloniaControl"),                  null,                                                  () => Invoke(() => ContextMenu_NewAvaloniaUserControl_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       L("ExplorerNodeMenu.Action.NewFile"),             null,                                                  () => Invoke(() => AddNewItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Create",       L("ExplorerNodeMenu.Action.NewSubDirectory"),     null,                                                  () => Invoke(() => AddNewFolder_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         L("Context.Cut"),                                 null,                                                  () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         L("Context.Copy"),                                null,                                                  () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         L("Context.Paste"),                               null,                                                  () => Invoke(() => ContextMenu_Paste_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         L("Context.Rename"),                              null,                                                  () => Invoke(() => RenameItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Edit",         L("Context.Delete"),                              L("ExplorerNodeMenu.Subtitle.DeleteFolderSafely"),    () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true));
+        actions.Add(new ExplorerNodeMenuAction("Navigate",     L("Context.OpenExplorer"),                        null,                                                  () => Invoke(() => OpenInExplorer_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Navigate",     L("Context.OpenTerminal"),                        null,                                                  () => Invoke(() => OpenInTerminal_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Navigate",     L("Context.AbsolutePath"),                        null,                                                  () => Invoke(() => CopyPath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Navigate",     L("Context.RelativePath"),                        null,                                                  () => Invoke(() => ContextMenu_CopyRelativePath_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Source Control",L("Context.GitCommit"),                           null,                                                  () => Invoke(() => ContextMenu_GitCommit_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Source Control",L("Context.GitHistory"),                          null,                                                  () => Invoke(() => ContextMenu_GitHistory_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Source Control",L("Context.GitRevert"),                           null,                                                  () => Invoke(() => ContextMenu_GitRevert_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
+        actions.Add(new ExplorerNodeMenuAction("Folder",       L("Context.ReloadFromDisk"),                      null,                                                  () => Invoke(() => RefreshTree_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))));
         return actions;
     }
 
@@ -673,9 +693,9 @@ public partial class MainWindow
         var count = items.Count;
         var actions = new List<ExplorerNodeMenuAction>
         {
-            new("Edit", "✂️ Cut",                      $"Cut {count} selected items",             () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))),
-            new("Edit", "📋 Copy",                     $"Copy paths of {count} selected items",   () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))),
-            new("Edit", $"🗑️ Delete {count} Items...", "Delete all selected items",               () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true)
+            new("Edit", L("Context.Cut"), LF("ExplorerNodeMenu.Subtitle.CutSelectedItems", count), () => Invoke(() => ContextMenu_Cut_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))),
+            new("Edit", L("Context.Copy"), LF("ExplorerNodeMenu.Subtitle.CopySelectedItems", count), () => Invoke(() => ContextMenu_Copy_Click(this, new Avalonia.Interactivity.RoutedEventArgs()))),
+            new("Edit", LF("ExplorerNodeMenu.Action.DeleteSelectedItems", count), LF("ExplorerNodeMenu.Subtitle.DeleteSelectedItems", count), () => Invoke(() => DeleteItem_Click(this, new Avalonia.Interactivity.RoutedEventArgs())), isDestructive: true)
         };
         return actions;
     }

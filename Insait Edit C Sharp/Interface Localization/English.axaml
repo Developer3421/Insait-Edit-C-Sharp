@@ -111,6 +111,86 @@
     <x:String x:Key="Context.GitRevert">↩️ Revert...</x:String>
     <x:String x:Key="Context.ReloadFromDisk">🔄 Reload from Disk</x:String>
     <x:String x:Key="Context.Properties">⚙️ Properties</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Solution">Solution · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Project">Project · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.File">File · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Folder">Folder · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.MultiSelection">{0} Items Selected{1}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Open">Open</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Add">Add</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Create">Create</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Build">Build</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Run">Run</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Edit">Edit</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Navigate">Navigate</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.SourceControl">Source Control</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Dependencies">Dependencies</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Solution">Solution</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Project">Project</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.File">File</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Folder">Folder</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Start">Start</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Recent">Recent</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.File.One">{0} file</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.File.Many">{0} files</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.Folder.One">{0} folder</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.Folder.Many">{0} folders</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.OpenSolutionFile">📄 Open Solution File</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.BuildSolution">🔨 Build Solution</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.RebuildSolution">🔄 Rebuild Solution</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.CleanSolution">🧹 Clean Solution</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.RunProject">▶ Run Project</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.OpenInEditor">📄 Open in Editor</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewFile">📄 New File...</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewDirectory">📁 New Directory</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewSubDirectory">📁 New Sub-Directory</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.DeleteSelectedItems">🗑️ Delete {0} Items...</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenSolutionFile">Open the .sln / .slnx file in the editor</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddNewProject">Create a project inside the current solution</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddExistingProject">Attach an existing project to the solution</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddNewItem">Create a new file in the solution folder</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddExistingItem">Copy an existing file into the solution folder</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.BuildSolution">Build the entire solution</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.RebuildSolution">Clean and rebuild the solution</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CleanSolution">Remove all build artefacts</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CutSolutionPath">Cut the solution path</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CopySolutionPath">Copy the solution path</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.PasteIntoSolutionFolder">Paste into the solution folder</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenGitWindow">Open the Git window</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.ShowGitHistory">Show commit history in the Git window</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenGitRevert">Open revert options in the Git window</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.ReloadFromDisk">Refresh the explorer tree</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenSolutionProperties">Open solution properties</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteSolutionWorkspace">Delete the solution / workspace</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.RunProject">Run the selected project</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenInEditor">Open this file in the code editor</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteFileSafely">Delete this file safely</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteFolderSafely">Delete this folder safely</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CutSelectedItems">Cut {0} selected items</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CopySelectedItems">Copy paths of {0} selected items</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteSelectedItems">Delete all {0} selected items</x:String>
+    <x:String x:Key="InputDialog.WindowTitle">Input</x:String>
+    <x:String x:Key="InputDialog.Title.NewFolder">New Folder</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewFolder">Enter folder name:</x:String>
+    <x:String x:Key="InputDialog.Title.Rename">Rename</x:String>
+    <x:String x:Key="InputDialog.Prompt.Rename">Enter new name:</x:String>
+    <x:String x:Key="InputDialog.Title.NewClass">New Class</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewClass">Enter class name:</x:String>
+    <x:String x:Key="InputDialog.Title.NewInterface">New Interface</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewInterface">Enter interface name:</x:String>
+    <x:String x:Key="InputDialog.Title.NewRecord">New Record</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewRecord">Enter record name:</x:String>
+    <x:String x:Key="InputDialog.Title.NewEnum">New Enum</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewEnum">Enter enum name:</x:String>
+    <x:String x:Key="InputDialog.Title.NewAvaloniaWindow">New Avalonia Window</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewAvaloniaWindow">Enter window name:</x:String>
+    <x:String x:Key="InputDialog.Title.NewAvaloniaUserControl">New Avalonia UserControl</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewAvaloniaUserControl">Enter user control name:</x:String>
+    <x:String x:Key="Dialog.ConfirmDelete.Title">Confirm Delete</x:String>
+    <x:String x:Key="Dialog.Delete.Single">Are you sure you want to delete '{0}'?</x:String>
+    <x:String x:Key="Dialog.Delete.SingleDirectoryWarning">This will delete all contents.</x:String>
+    <x:String x:Key="Dialog.Delete.Multiple">Are you sure you want to delete {0} items ({1})?</x:String>
+    <x:String x:Key="Dialog.Delete.MultipleDirectoryWarning">All folder contents will be deleted.</x:String>
     <x:String x:Key="AI.Ready">🚀 Copilot CLI Ready!</x:String>
     <x:String x:Key="AI.ManageFiles">Manage your project files with commands:</x:String>
     <x:String x:Key="AI.GitHubCommands">GitHub CLI Commands:</x:String>
@@ -319,6 +399,15 @@
     <x:String x:Key="Welcome.RecentProjects">Recent Projects</x:String>
     <!-- Added aliases / keys required by XAML usages -->
     <x:String x:Key="RecentProjects">Recent Projects</x:String>
+    <x:String x:Key="RecentProjectsWindow.Count">{0} projects</x:String>
+    <x:String x:Key="RecentProjectsWindow.RemoveTooltip">Remove from list</x:String>
+    <x:String x:Key="RecentProjectsWindow.EmptyTitle">No recent projects</x:String>
+    <x:String x:Key="RecentProjectsWindow.EmptySubtitle">Open or create a project to see it here</x:String>
+    <x:String x:Key="RecentProjectsWindow.OpenProject">Open Project…</x:String>
+    <x:String x:Key="RecentProjectsWindow.OpenPickerTitle">Open Project or Solution</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.Solution">C# Solution</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.Project">C# Project</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.All">All Files</x:String>
     <x:String x:Key="DefaultTitle">Quick Fix</x:String>
 
     <!-- ── WelcomeScreen (in-IDE start screen) ──────────────────── -->
@@ -591,9 +680,9 @@
     <x:String x:Key="Git.CreateRepoDialogTitle">Create GitHub Repository</x:String>
     <x:String x:Key="Git.CreateRepoDialogHeader">🐙 Create GitHub Repository</x:String>
     <x:String x:Key="Git.GhCliNotFound">⚠ GitHub CLI ('gh') not found. Install from https://cli.github.com</x:String>
-    <x:String x:Key="Git.NotLoggedIn">⚠ Not logged in to GitHub. Run: gh auth login</x:String>
+    <x:String x:Key="Git.NotLoggedIn">⚠ Not signed in to GitHub. Use the built-in GitHub sign-in flow.</x:String>
     <x:String x:Key="Git.LoginWithGitHub">Login with GitHub</x:String>
-    <x:String x:Key="Git.GitHubLoginOpened">GitHub login opened in browser</x:String>
+    <x:String x:Key="Git.GitHubLoginOpened">GitHub authentication completed successfully</x:String>
     <x:String x:Key="Git.LoggedInAs">Logged in as @{0}</x:String>
     <x:String x:Key="Git.RepositoryName">Repository name:</x:String>
     <x:String x:Key="Git.DescriptionOptional">Description (optional):</x:String>
@@ -644,6 +733,50 @@
     <x:String x:Key="PreviewError.Copy">Copy</x:String>
 
     <!-- ── UserAgreementWindow ──────────────────────────────────── -->
+    <x:String x:Key="UserAgreement.Text"><![CDATA[INSAIT EDIT — END USER LICENSE AGREEMENT (EULA)
+════════════════════════════════════════════════
+
+Last updated: March 2026
+
+Please read this End User License Agreement ("Agreement") carefully before using Insait Edit ("the Software"). By installing or using the Software you agree to be bound by the terms below.
+
+1. LICENSE GRANT
+─────────────────
+Subject to the terms of this Agreement, you are granted a limited, non-exclusive, non-transferable license to install and use the Software on devices you own or control, solely for your personal or internal business development purposes.
+
+2. RESTRICTIONS
+─────────────────
+You may not:
+  • Reverse-engineer, decompile, or disassemble the Software except to the extent permitted by applicable law.
+  • Sell, rent, lease, sublicense, or redistribute the Software without written permission.
+  • Remove or alter any proprietary notices or labels on the Software.
+
+3. INTELLECTUAL PROPERTY
+─────────────────────────
+All title, ownership rights, and intellectual property rights in and to the Software remain with the Insait Edit authors. The Software is protected by copyright laws and international treaty provisions.
+
+4. THIRD-PARTY COMPONENTS
+──────────────────────────
+The Software may include open-source components governed by their own licenses (for example, AvaloniaUI under the MIT License). Those components are provided under the terms of their respective licenses.
+
+5. DISCLAIMER OF WARRANTIES
+────────────────────────────
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+6. LIMITATION OF LIABILITY
+───────────────────────────
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF OR RELATING TO THIS AGREEMENT OR THE USE OF THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+7. TERMINATION
+────────────────
+This license is effective until terminated. It will terminate automatically if you fail to comply with any term of this Agreement. Upon termination you must destroy all copies of the Software in your possession.
+
+8. GOVERNING LAW
+─────────────────
+This Agreement shall be governed by and construed in accordance with applicable law, without regard to its conflict-of-law provisions.
+
+════════════════════════════════════════════════
+Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="UserAgreement.Footer">By using Insait Edit you agree to these terms.</x:String>
     <x:String x:Key="UserAgreement.Close">Close</x:String>
     <x:String x:Key="UserAgreement.Accept">Accept</x:String>
@@ -1064,6 +1197,8 @@
     <!-- ── Common ────────────────────────────────────────────────── -->
     <x:String x:Key="Common.OK">OK</x:String>
     <x:String x:Key="Common.Cancel">Cancel</x:String>
+    <x:String x:Key="Common.Yes">Yes</x:String>
+    <x:String x:Key="Common.No">No</x:String>
     <x:String x:Key="Common.Apply">Apply</x:String>
     <x:String x:Key="Common.Close">Close</x:String>
     <x:String x:Key="Common.Browse">Browse...</x:String>

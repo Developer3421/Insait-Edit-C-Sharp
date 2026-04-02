@@ -111,6 +111,86 @@
     <x:String x:Key="Context.GitRevert">↩️ Відкотити...</x:String>
     <x:String x:Key="Context.ReloadFromDisk">🔄 Перезавантажити з диска</x:String>
     <x:String x:Key="Context.Properties">⚙️ Властивості</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Solution">Рішення · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Project">Проєкт · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.File">Файл · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.Folder">Тека · {0}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.PageTitle.MultiSelection">Вибрано {0} елементів{1}</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Open">Відкрити</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Add">Додати</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Create">Створити</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Build">Збірка</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Run">Запуск</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Edit">Редагування</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Navigate">Навігація</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.SourceControl">Контроль версій</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Dependencies">Залежності</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Solution">Рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Project">Проєкт</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.File">Файл</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Folder">Тека</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Start">Старт</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Section.Recent">Нещодавні</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.File.One">{0} файл</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.File.Many">{0} файлів</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.Folder.One">{0} тека</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Count.Folder.Many">{0} тек</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.OpenSolutionFile">📄 Відкрити файл рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.BuildSolution">🔨 Зібрати рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.RebuildSolution">🔄 Перезібрати рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.CleanSolution">🧹 Очистити рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.RunProject">▶ Запустити проєкт</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.OpenInEditor">📄 Відкрити в редакторі</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewFile">📄 Новий файл...</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewDirectory">📁 Нова тека</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.NewSubDirectory">📁 Нова підтека</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Action.DeleteSelectedItems">🗑️ Видалити {0} елементів...</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenSolutionFile">Відкрити файл .sln / .slnx у редакторі</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddNewProject">Створити проєкт у поточному рішенні</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddExistingProject">Приєднати наявний проєкт до рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddNewItem">Створити новий файл у теці рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.AddExistingItem">Скопіювати наявний файл у теку рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.BuildSolution">Зібрати все рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.RebuildSolution">Очистити та заново зібрати рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CleanSolution">Видалити всі артефакти збірки</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CutSolutionPath">Вирізати шлях до рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CopySolutionPath">Скопіювати шлях до рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.PasteIntoSolutionFolder">Вставити в теку рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenGitWindow">Відкрити вікно Git</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.ShowGitHistory">Показати історію комітів у вікні Git</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenGitRevert">Відкрити параметри відкату у вікні Git</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.ReloadFromDisk">Оновити дерево провідника</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenSolutionProperties">Відкрити властивості рішення</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteSolutionWorkspace">Видалити рішення / робочу область</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.RunProject">Запустити вибраний проєкт</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.OpenInEditor">Відкрити цей файл у редакторі коду</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteFileSafely">Безпечно видалити цей файл</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteFolderSafely">Безпечно видалити цю теку</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CutSelectedItems">Вирізати {0} вибраних елементів</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.CopySelectedItems">Скопіювати шляхи {0} вибраних елементів</x:String>
+    <x:String x:Key="ExplorerNodeMenu.Subtitle.DeleteSelectedItems">Видалити всі {0} вибраних елементів</x:String>
+    <x:String x:Key="InputDialog.WindowTitle">Ввід</x:String>
+    <x:String x:Key="InputDialog.Title.NewFolder">Нова тека</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewFolder">Введіть назву теки:</x:String>
+    <x:String x:Key="InputDialog.Title.Rename">Перейменувати</x:String>
+    <x:String x:Key="InputDialog.Prompt.Rename">Введіть нову назву:</x:String>
+    <x:String x:Key="InputDialog.Title.NewClass">Новий клас</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewClass">Введіть назву класу:</x:String>
+    <x:String x:Key="InputDialog.Title.NewInterface">Новий інтерфейс</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewInterface">Введіть назву інтерфейсу:</x:String>
+    <x:String x:Key="InputDialog.Title.NewRecord">Новий record</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewRecord">Введіть назву record:</x:String>
+    <x:String x:Key="InputDialog.Title.NewEnum">Новий enum</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewEnum">Введіть назву enum:</x:String>
+    <x:String x:Key="InputDialog.Title.NewAvaloniaWindow">Нове вікно Avalonia</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewAvaloniaWindow">Введіть назву вікна:</x:String>
+    <x:String x:Key="InputDialog.Title.NewAvaloniaUserControl">Новий Avalonia UserControl</x:String>
+    <x:String x:Key="InputDialog.Prompt.NewAvaloniaUserControl">Введіть назву user control:</x:String>
+    <x:String x:Key="Dialog.ConfirmDelete.Title">Підтвердьте видалення</x:String>
+    <x:String x:Key="Dialog.Delete.Single">Ви впевнені, що хочете видалити '{0}'?</x:String>
+    <x:String x:Key="Dialog.Delete.SingleDirectoryWarning">Увесь вміст також буде видалено.</x:String>
+    <x:String x:Key="Dialog.Delete.Multiple">Ви впевнені, що хочете видалити {0} елементів ({1})?</x:String>
+    <x:String x:Key="Dialog.Delete.MultipleDirectoryWarning">Увесь вміст тек також буде видалено.</x:String>
     <x:String x:Key="AI.Ready">🚀 Copilot CLI готовий!</x:String>
     <x:String x:Key="AI.ManageFiles">Керуйте файлами проєкту командами:</x:String>
     <x:String x:Key="AI.GitHubCommands">Команди GitHub CLI:</x:String>
@@ -319,6 +399,15 @@
     <x:String x:Key="Welcome.RecentProjects">Останні проєкти</x:String>
     <!-- Added aliases / keys required by XAML usages -->
     <x:String x:Key="RecentProjects">Останні проєкти</x:String>
+    <x:String x:Key="RecentProjectsWindow.Count">{0} проєктів</x:String>
+    <x:String x:Key="RecentProjectsWindow.RemoveTooltip">Прибрати зі списку</x:String>
+    <x:String x:Key="RecentProjectsWindow.EmptyTitle">Немає останніх проєктів</x:String>
+    <x:String x:Key="RecentProjectsWindow.EmptySubtitle">Відкрийте або створіть проєкт, щоб побачити його тут</x:String>
+    <x:String x:Key="RecentProjectsWindow.OpenProject">Відкрити проєкт…</x:String>
+    <x:String x:Key="RecentProjectsWindow.OpenPickerTitle">Відкрити проєкт або рішення</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.Solution">C# рішення</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.Project">C# проєкт</x:String>
+    <x:String x:Key="RecentProjectsWindow.FileType.All">Усі файли</x:String>
     <x:String x:Key="DefaultTitle">Швидке виправлення</x:String>
 
     <!-- ── WelcomeScreen (стартовий екран в IDE) ────────────────── -->
@@ -591,9 +680,9 @@
     <x:String x:Key="Git.CreateRepoDialogTitle">Створити GitHub-репозиторій</x:String>
     <x:String x:Key="Git.CreateRepoDialogHeader">🐙 Створити GitHub-репозиторій</x:String>
     <x:String x:Key="Git.GhCliNotFound">⚠ GitHub CLI ('gh') не знайдено. Встановіть з https://cli.github.com</x:String>
-    <x:String x:Key="Git.NotLoggedIn">⚠ Ви не ввійшли в GitHub. Виконайте: gh auth login</x:String>
+    <x:String x:Key="Git.NotLoggedIn">⚠ Ви не ввійшли в GitHub. Авторизуйтеся через вбудований вхід GitHub.</x:String>
     <x:String x:Key="Git.LoginWithGitHub">Увійти через GitHub</x:String>
-    <x:String x:Key="Git.GitHubLoginOpened">Вхід GitHub відкрито в браузері</x:String>
+    <x:String x:Key="Git.GitHubLoginOpened">Авторизацію GitHub успішно завершено</x:String>
     <x:String x:Key="Git.LoggedInAs">Увійшли як @{0}</x:String>
     <x:String x:Key="Git.RepositoryName">Назва репозиторію:</x:String>
     <x:String x:Key="Git.DescriptionOptional">Опис (необов'язково):</x:String>
@@ -644,6 +733,50 @@
     <x:String x:Key="PreviewError.Copy">Копіювати</x:String>
 
     <!-- ── UserAgreementWindow ──────────────────────────────────── -->
+    <x:String x:Key="UserAgreement.Text"><![CDATA[INSAIT EDIT — ЛІЦЕНЗІЙНА УГОДА З КІНЦЕВИМ КОРИСТУВАЧЕМ (EULA)
+════════════════════════════════════════════════════════════════════
+
+Останнє оновлення: березень 2026
+
+Будь ласка, уважно прочитайте цю Ліцензійну угоду з кінцевим користувачем ("Угода") перед використанням Insait Edit ("Програмне забезпечення"). Встановлюючи або використовуючи Програмне забезпечення, ви погоджуєтеся дотримуватися наведених нижче умов.
+
+1. НАДАННЯ ЛІЦЕНЗІЇ
+────────────────────
+За умови дотримання цієї Угоди вам надається обмежена, невиключна та непередавана ліцензія на встановлення і використання Програмного забезпечення на пристроях, які належать вам або перебувають під вашим контролем, виключно для особистих або внутрішніх бізнес-цілей розробки.
+
+2. ОБМЕЖЕННЯ
+─────────────
+Вам забороняється:
+  • Виконувати зворотне проєктування, декомпіляцію або дизасемблювання Програмного забезпечення, окрім випадків, прямо дозволених чинним законодавством.
+  • Продавати, здавати в оренду, передавати в субліцензію або розповсюджувати Програмне забезпечення без письмового дозволу.
+  • Видаляти або змінювати будь-які повідомлення про права власності чи позначення на Програмному забезпеченні.
+
+3. ІНТЕЛЕКТУАЛЬНА ВЛАСНІСТЬ
+────────────────────────────
+Усі права власності, майнові права та права інтелектуальної власності на Програмне забезпечення залишаються за авторами Insait Edit. Програмне забезпечення захищається законами про авторське право та положеннями міжнародних договорів.
+
+4. СТОРОННІ КОМПОНЕНТИ
+───────────────────────
+Програмне забезпечення може містити компоненти з відкритим вихідним кодом, що регулюються власними ліцензіями (наприклад, AvaloniaUI за ліцензією MIT). Такі компоненти надаються відповідно до умов їхніх ліцензій.
+
+5. ВІДМОВА ВІД ГАРАНТІЙ
+────────────────────────
+ПРОГРАМНЕ ЗАБЕЗПЕЧЕННЯ НАДАЄТЬСЯ «ЯК Є» БЕЗ БУДЬ-ЯКИХ ГАРАНТІЙ, ЯВНИХ АБО НЕЯВНИХ, ВКЛЮЧНО, АЛЕ НЕ ОБМЕЖУЮЧИСЬ, ГАРАНТІЯМИ КОМЕРЦІЙНОЇ ПРИДАТНОСТІ, ПРИДАТНОСТІ ДЛЯ ПЕВНОЇ МЕТИ ТА НЕПОРУШЕННЯ ПРАВ.
+
+6. ОБМЕЖЕННЯ ВІДПОВІДАЛЬНОСТІ
+──────────────────────────────
+ЗА ЖОДНИХ ОБСТАВИН АВТОРИ НЕ НЕСУТЬ ВІДПОВІДАЛЬНОСТІ ЗА БУДЬ-ЯКІ НЕПРЯМІ, ВИПАДКОВІ, СПЕЦІАЛЬНІ ЧИ ПОБІЧНІ ЗБИТКИ, ЩО ВИНИКАЮТЬ ІЗ ЦІЄЇ УГОДИ АБО ВИКОРИСТАННЯ ПРОГРАМНОГО ЗАБЕЗПЕЧЕННЯ, НАВІТЬ ЯКЩО ВОНИ БУЛИ ПОПЕРЕДЖЕНІ ПРО МОЖЛИВІСТЬ ТАКИХ ЗБИТКІВ.
+
+7. ПРИПИНЕННЯ ДІЇ
+──────────────────
+Ця ліцензія діє до моменту припинення. Вона припиняється автоматично, якщо ви порушите будь-яку умову цієї Угоди. Після припинення дії ви повинні знищити всі копії Програмного забезпечення, що є у вашому володінні.
+
+8. ЗАСТОСОВНЕ ПРАВО
+────────────────────
+Ця Угода регулюється та тлумачиться відповідно до чинного законодавства без урахування його колізійних норм.
+
+════════════════════════════════════════════════════════════════════
+Дякуємо за використання Insait Edit!]]></x:String>
     <x:String x:Key="UserAgreement.Footer">Використовуючи Insait Edit, ви погоджуєтесь з цими умовами.</x:String>
     <x:String x:Key="UserAgreement.Close">Закрити</x:String>
     <x:String x:Key="UserAgreement.Accept">Прийняти</x:String>
@@ -1064,6 +1197,8 @@
     <!-- ── Common ────────────────────────────────────────────────── -->
     <x:String x:Key="Common.OK">OK</x:String>
     <x:String x:Key="Common.Cancel">Скасувати</x:String>
+    <x:String x:Key="Common.Yes">Так</x:String>
+    <x:String x:Key="Common.No">Ні</x:String>
     <x:String x:Key="Common.Apply">Застосувати</x:String>
     <x:String x:Key="Common.Close">Закрити</x:String>
     <x:String x:Key="Common.Browse">Огляд...</x:String>
