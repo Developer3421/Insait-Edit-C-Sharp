@@ -530,15 +530,17 @@ public partial class GitPanelControl : UserControl
 
         ShowLoading("Initializing repository...");
         AppendToConsole($"git init {_repositoryPath}");
-        
-        var result = await _gitService.InitAsync(_repositoryPath);
+
+        var gitSetupService = new ProjectCreationGitService(_gitService);
+        var result = await gitSetupService.EnsureRepositoryWithInitialCommitAsync(_repositoryPath);
         
         HideLoading();
         
         if (result.Success)
         {
-            StatusChanged?.Invoke(this, "Git repository initialized");
+            StatusChanged?.Invoke(this, "Git repository initialized with initial commit");
             AppendToConsole("Repository initialized successfully");
+            AppendToConsole("Initial commit created");
             await RefreshAsync();
         }
         else

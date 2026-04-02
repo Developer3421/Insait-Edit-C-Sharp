@@ -484,6 +484,7 @@
     <x:String x:Key="AddProject.Solution">Çözüm:</x:String>
     <x:String x:Key="AddProject.Template">Proje şablonu</x:String>
     <x:String x:Key="AddProject.ProjectName">Proje adı</x:String>
+    <x:String x:Key="AddProject.CreateGitRepo">Git deposu oluştur</x:String>
     <x:String x:Key="AddProject.CreatedAt">Proje şurada oluşturulacak:</x:String>
     <x:String x:Key="AddProject.Cancel">İptal</x:String>
     <x:String x:Key="AddProject.Add">Proje Ekle</x:String>

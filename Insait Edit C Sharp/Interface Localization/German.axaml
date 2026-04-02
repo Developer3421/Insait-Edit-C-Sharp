@@ -488,6 +488,7 @@
     <x:String x:Key="AddProject.Solution">Projektmappe:</x:String>
     <x:String x:Key="AddProject.Template">Projektvorlage</x:String>
     <x:String x:Key="AddProject.ProjectName">Projektname</x:String>
+    <x:String x:Key="AddProject.CreateGitRepo">Git-Repository erstellen</x:String>
     <x:String x:Key="AddProject.CreatedAt">Projekt wird erstellt unter:</x:String>
     <x:String x:Key="AddProject.Cancel">Abbrechen</x:String>
     <x:String x:Key="AddProject.Add">Projekt hinzufügen</x:String>

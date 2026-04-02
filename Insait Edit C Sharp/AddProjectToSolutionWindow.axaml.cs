@@ -45,6 +45,8 @@ public partial class AddProjectToSolutionWindow : Window
         if (tplLabel != null) tplLabel.Text = L("AddProject.Template");
         var projLabel = this.FindControl<TextBlock>("ProjectNameLabel");
         if (projLabel != null) projLabel.Text = L("AddProject.ProjectName");
+        var gitRepo = this.FindControl<TextBlock>("CreateGitRepoText");
+        if (gitRepo != null) gitRepo.Text = L("AddProject.CreateGitRepo");
         var createdAt = this.FindControl<TextBlock>("CreatedAtLabel");
         if (createdAt != null) createdAt.Text = L("AddProject.CreatedAt");
         var cancelBtn = this.FindControl<Button>("CancelButton");
@@ -114,6 +116,7 @@ public partial class AddProjectToSolutionWindow : Window
     {
         var projectNameBox = this.FindControl<TextBox>("ProjectNameBox");
         var previewText = this.FindControl<TextBlock>("ProjectPathPreview");
+        var createGitRepo = this.FindControl<CheckBox>("CreateGitRepo");
         if (projectNameBox == null) return;
 
         var projectName = projectNameBox.Text?.Trim() ?? "NewProject";
@@ -149,12 +152,32 @@ public partial class AddProjectToSolutionWindow : Window
 
                 if (added)
                 {
+                    if (createGitRepo?.IsChecked == true)
+                    {
+                        var gitSetupService = new ProjectCreationGitService();
+                        var gitSetupResult = await gitSetupService.EnsureRepositoryWithInitialCommitAsync(projectDir);
+                        if (!gitSetupResult.Success)
+                        {
+                            Debug.WriteLine($"Git setup failed for '{projectDir}': {gitSetupResult.Error}");
+                        }
+                    }
+
                     CreatedProjectPath = projectPath;
                     Close(CreatedProjectPath);
                 }
                 else
                 {
                     Debug.WriteLine("Failed to add project to solution");
+                    if (createGitRepo?.IsChecked == true)
+                    {
+                        var gitSetupService = new ProjectCreationGitService();
+                        var gitSetupResult = await gitSetupService.EnsureRepositoryWithInitialCommitAsync(projectDir);
+                        if (!gitSetupResult.Success)
+                        {
+                            Debug.WriteLine($"Git setup failed for '{projectDir}': {gitSetupResult.Error}");
+                        }
+                    }
+
                     // Still return the project path since project was created
                     CreatedProjectPath = projectPath;
                     Close(CreatedProjectPath);

@@ -488,6 +488,7 @@
     <x:String x:Key="AddProject.Solution">Решение:</x:String>
     <x:String x:Key="AddProject.Template">Шаблон проекта</x:String>
     <x:String x:Key="AddProject.ProjectName">Имя проекта</x:String>
+    <x:String x:Key="AddProject.CreateGitRepo">Создать Git-репозиторий</x:String>
     <x:String x:Key="AddProject.CreatedAt">Проект будет создан по адресу:</x:String>
     <x:String x:Key="AddProject.Cancel">Отмена</x:String>
     <x:String x:Key="AddProject.Add">Добавить проект</x:String>

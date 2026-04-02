@@ -488,6 +488,7 @@
     <x:String x:Key="AddProject.Solution">Solution:</x:String>
     <x:String x:Key="AddProject.Template">Project template</x:String>
     <x:String x:Key="AddProject.ProjectName">Project name</x:String>
+    <x:String x:Key="AddProject.CreateGitRepo">Create Git repository</x:String>
     <x:String x:Key="AddProject.CreatedAt">Project will be created at:</x:String>
     <x:String x:Key="AddProject.Cancel">Cancel</x:String>
     <x:String x:Key="AddProject.Add">Add Project</x:String>

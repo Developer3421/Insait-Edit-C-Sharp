@@ -250,6 +250,11 @@
                         <TextBlock Name="ProjectNameLabel" Text="Project name" FontSize="13" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBox Name="ProjectNameBox" Text="NewProject" TextChanged="ProjectName_Changed"/>
+
+                        <CheckBox Name="CreateGitRepo" IsChecked="True">
+                            <TextBlock Name="CreateGitRepoText" Text="Create Git repository"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                        </CheckBox>
                     </StackPanel>
 
                     <!-- Preview -->

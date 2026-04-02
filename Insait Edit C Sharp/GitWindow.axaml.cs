@@ -1002,13 +1002,15 @@ public partial class GitWindow : Window
         if (string.IsNullOrEmpty(_solutionPath)) return;
         ShowLoading(L("Git.Initializing"));
         AppendConsole($"git init \"{_solutionPath}\"");
-        var r = await _git.InitAsync(_solutionPath);
+        var gitSetupService = new ProjectCreationGitService(_git);
+        var r = await gitSetupService.EnsureRepositoryWithInitialCommitAsync(_solutionPath);
         HideLoading();
         if (r.Success)
         {
-            _currentRepoRoot = _solutionPath;
-            _git.RepositoryPath = _solutionPath;
+            _currentRepoRoot = await _git.FindRepositoryRootAsync(_solutionPath) ?? Path.GetFullPath(_solutionPath);
+            _git.RepositoryPath = _currentRepoRoot;
             AppendConsole(L("Git.RepositoryInitialized"));
+            AppendConsole("Initial commit created.");
         }
         else AppendConsole(FormatLocalized("Git.InitError", r.Error));
         await RefreshAsync();

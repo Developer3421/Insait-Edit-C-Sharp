@@ -2747,11 +2747,12 @@ ExecuteMenuAction(string action)
     {
         _viewModel.StatusText = "Ініціалізація Git репозиторію...";
 
-        var result = await RunGitCommandAsync("init", path);
+        var gitSetupService = new ProjectCreationGitService();
+        var result = await gitSetupService.EnsureRepositoryWithInitialCommitAsync(path);
 
-        if (result.ExitCode == 0)
+        if (result.Success)
         {
-            _viewModel.StatusText = "✅ Git репозиторій успішно ініціалізовано!";
+            _viewModel.StatusText = "✅ Git репозиторій ініціалізовано, стартовий коміт створено!";
             UpdateGitStatusIndicator(GitRepoStatus.Healthy);
 
             // Оновлюємо Git вікно якщо воно відкрите
@@ -2762,7 +2763,7 @@ ExecuteMenuAction(string action)
         }
         else
         {
-            _viewModel.StatusText = $"❌ Помилка ініціалізації: {result.Error}";
+            _viewModel.StatusText = $"❌ Помилка ініціалізації Git: {result.Error}";
         }
     }
 
