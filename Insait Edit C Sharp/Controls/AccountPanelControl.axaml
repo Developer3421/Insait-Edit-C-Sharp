@@ -7,22 +7,24 @@
              x:Class="Insait_Edit_C_Sharp.Controls.AccountPanelControl">
     
     <UserControl.Resources>
-        <!-- Colors - Fluent Orange-Purple Theme -->
-        <SolidColorBrush x:Key="AccountBgBrush" Color="#FF2A2230"/>
-        <SolidColorBrush x:Key="AccountSurfaceBrush" Color="#FF1F1A24"/>
-        <SolidColorBrush x:Key="AccountBorderBrush" Color="#FF3E3050"/>
-        <SolidColorBrush x:Key="AccountTextBrush" Color="#FFF0E8F4"/>
-        <SolidColorBrush x:Key="AccountTextMutedBrush" Color="#FF9E90B0"/>
-        <SolidColorBrush x:Key="AccountAccentBrush" Color="#FF9B7DCF"/>
-        <SolidColorBrush x:Key="AccountYellowBrush" Color="#FFBB9A6F"/>
-        <SolidColorBrush x:Key="AccountHoverBrush" Color="#FF3E3050"/>
+        <!-- Colors - Explorer orange style -->
+        <SolidColorBrush x:Key="AccountBgBrush" Color="#FF1A0F08"/>
+        <SolidColorBrush x:Key="AccountSurfaceBrush" Color="#FF231508"/>
+        <SolidColorBrush x:Key="AccountBorderBrush" Color="#FF7A3810"/>
+        <SolidColorBrush x:Key="AccountTextBrush" Color="#FFF5EBDD"/>
+        <SolidColorBrush x:Key="AccountTextMutedBrush" Color="#FFB89B82"/>
+        <SolidColorBrush x:Key="AccountAccentBrush" Color="#FFFFC09F"/>
+        <SolidColorBrush x:Key="AccountAccentHoverBrush" Color="#FFFFD4B8"/>
+        <SolidColorBrush x:Key="AccountAccentPressedBrush" Color="#FFE09070"/>
+        <SolidColorBrush x:Key="AccountYellowBrush" Color="#FFFFB36B"/>
+        <SolidColorBrush x:Key="AccountHoverBrush" Color="#4038180A"/>
     </UserControl.Resources>
     
     <UserControl.Styles>
         <!-- Primary Button Style -->
         <Style Selector="Button.account-primary">
             <Setter Property="Background" Value="{StaticResource AccountAccentBrush}"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="CornerRadius" Value="6"/>
@@ -31,10 +33,10 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.account-primary:pointerover">
-            <Setter Property="Background" Value="#FFB09AE0"/>
+            <Setter Property="Background" Value="{StaticResource AccountAccentHoverBrush}"/>
         </Style>
         <Style Selector="Button.account-primary:pressed">
-            <Setter Property="Background" Value="#FF8060C0"/>
+            <Setter Property="Background" Value="{StaticResource AccountAccentPressedBrush}"/>
         </Style>
         
         <!-- Secondary Button Style -->
@@ -49,6 +51,7 @@
         </Style>
         <Style Selector="Button.account-secondary:pointerover">
             <Setter Property="Background" Value="{StaticResource AccountHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccountAccentBrush}"/>
         </Style>
         
         <!-- Repository Item Style -->
@@ -101,7 +104,7 @@
     <Grid RowDefinitions="Auto,*" Background="{StaticResource AccountSurfaceBrush}">
         
         <!-- Header -->
-        <Border Grid.Row="0" Padding="12,10" Background="#12DCC4FF" BorderBrush="{StaticResource AccountBorderBrush}" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Padding="12,10" Background="#20000000" BorderBrush="{StaticResource AccountBorderBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Name="HeaderTitleText" Text="ACCOUNT" FontSize="11" FontWeight="SemiBold"
                            Foreground="{StaticResource AccountTextMutedBrush}" VerticalAlignment="Center"
@@ -118,7 +121,7 @@
                 
                 <!-- Not Logged In View -->
                 <StackPanel Name="NotLoggedInPanel" Margin="16" Spacing="16" IsVisible="True">
-                    <Border Background="#20548AF7" CornerRadius="8" Padding="16">
+                    <Border Background="#20FFC09F" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12">
                             <TextBlock Text="🔗" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
                             <TextBlock Name="SignInTitleText" Text="Sign in with GitHub" FontSize="16" FontWeight="SemiBold"
@@ -134,7 +137,7 @@
                     
                     <!-- Device Code Panel (shown during OAuth flow) -->
                     <StackPanel Name="DeviceCodePanel" Spacing="8" IsVisible="False">
-                        <Border Background="#30BB9A6F" CornerRadius="8" Padding="12">
+                        <Border Background="#24FFB36B" CornerRadius="8" Padding="12">
                             <StackPanel Spacing="8">
                                 <TextBlock Name="DeviceCodeInstrText" Text="Enter this code on GitHub:" FontSize="12" 
                                            Foreground="{StaticResource AccountTextBrush}" TextAlignment="Center"/>
@@ -149,7 +152,7 @@
                                 <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="10,8">
                                     <TextBlock Name="DeviceUrlText" Text="https://github.com/login/device"
                                                FontSize="11" TextWrapping="Wrap"
-                                               Foreground="#FFA6E3A1" TextAlignment="Center"/>
+                                               Foreground="{StaticResource AccountAccentBrush}" TextAlignment="Center"/>
                                 </Border>
                                 <TextBlock Name="DeviceFlowStatusText" Text="Waiting for confirmation in browser..."
                                            FontSize="11" Foreground="{StaticResource AccountTextMutedBrush}"
@@ -198,7 +201,7 @@
                 <StackPanel Name="LoggedInPanel" Margin="12" Spacing="0" IsVisible="False">
                     
                     <!-- User Profile Card -->
-                    <Border Background="#309B7DCF" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                    <Border Background="#24FFC09F" CornerRadius="8" Padding="12" Margin="0,0,0,12">
                         <Grid ColumnDefinitions="48,*">
                             <!-- Avatar -->
                             <Border Width="48" Height="48" CornerRadius="24" ClipToBounds="True"
@@ -280,34 +283,35 @@
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <TextBlock Text="📁" FontSize="12" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                                             <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
-                                                       Foreground="#FFBCBEC4" VerticalAlignment="Center"/>
-                                            <Border Background="#30DCC4FF" CornerRadius="4" Padding="4,1" 
+                                                       Foreground="{StaticResource AccountTextBrush}" VerticalAlignment="Center"/>
+                                            <Border Background="#22FFC09F" CornerRadius="4" Padding="4,1" 
                                                     IsVisible="{Binding IsPrivate}" VerticalAlignment="Center">
-                                                <TextBlock Text="Private" FontSize="9" Foreground="#FF6F737A"/>
+                                                <TextBlock Text="Private" FontSize="9" Foreground="#FFF5EBDD"/>
                                             </Border>
                                         </StackPanel>
                                         
                                         <!-- Language Badge -->
-                                        <Border Grid.Column="1" Background="#309B7DCF" CornerRadius="4" Padding="6,2"
+                                        <Border Grid.Column="1" Background="{StaticResource AccountAccentBrush}" BorderBrush="#FFF5EBDD" BorderThickness="1"
+                                                CornerRadius="4" Padding="6,2"
                                                 IsVisible="{Binding Language, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                            <TextBlock Text="{Binding Language}" FontSize="10" Foreground="#FF548AF7"/>
+                                            <TextBlock Text="{Binding Language}" FontSize="10" FontWeight="SemiBold" Foreground="#FF1A0F08"/>
                                         </Border>
                                         
                                         <!-- Description -->
-                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" 
-                                                   FontSize="11" Foreground="#FF6F737A" TextTrimming="CharacterEllipsis"
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Description}" 
+                                                   FontSize="11" Foreground="{StaticResource AccountTextMutedBrush}" TextTrimming="CharacterEllipsis"
                                                    Margin="18,4,0,0" MaxLines="2"/>
                                         
                                         <!-- Stats -->
-                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" 
+                                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" 
                                                     Spacing="12" Margin="18,6,0,0">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
                                                 <TextBlock Text="⭐" FontSize="10" FontFamily="Segoe UI Emoji"/>
-                                                <TextBlock Text="{Binding Stars}" FontSize="10" Foreground="#FF6F737A"/>
+                                                <TextBlock Text="{Binding Stars}" FontSize="10" Foreground="{StaticResource AccountTextMutedBrush}"/>
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" Spacing="4">
                                                 <TextBlock Text="🍴" FontSize="10" FontFamily="Segoe UI Emoji"/>
-                                                <TextBlock Text="{Binding Forks}" FontSize="10" Foreground="#FF6F737A"/>
+                                                <TextBlock Text="{Binding Forks}" FontSize="10" Foreground="{StaticResource AccountTextMutedBrush}"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </Grid>
@@ -332,7 +336,7 @@
                 </StackPanel>
                 
                 <!-- Loading Overlay -->
-                <Border Name="LoadingOverlay" Background="#CC1E1F22" IsVisible="False" ZIndex="100">
+                <Border Name="LoadingOverlay" Background="#CC1A0F08" IsVisible="False" ZIndex="100">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
                         <TextBlock Text="⏳" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
                         <TextBlock Name="LoadingText" Text="Loading..." FontSize="14"

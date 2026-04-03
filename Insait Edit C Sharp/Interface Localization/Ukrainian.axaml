@@ -650,6 +650,7 @@
     <x:String x:Key="Git.RevertOptionDescription">↩ Відкотити — застосовує обернену версію цього коміту як новий коміт (безпечно, історія зберігається).</x:String>
     <x:String x:Key="Git.ResetRootButton">⚠ Скинути до початкового стану (hard reset)</x:String>
     <x:String x:Key="Git.ResetButton">⚠ Скинути ДО цього коміту (hard reset — новіші коміти буде втрачено)</x:String>
+    <x:String x:Key="Git.ResetToCommitButton">Скинути проєкт до цього коміту</x:String>
     <x:String x:Key="Git.ResetRootDescription">Скидання — повністю відновлює стан проєкту на момент початкового коміту. Усі наступні коміти та локальні зміни буде втрачено.</x:String>
     <x:String x:Key="Git.ResetDescription">Скидання — повертає HEAD (і гілку) до цього коміту. Усі новіші коміти та локальні зміни БУДУТЬ ВТРАЧЕНІ безповоротно.</x:String>
     <x:String x:Key="Git.Reverting">Відкочування…</x:String>
@@ -1165,6 +1166,10 @@
     <x:String x:Key="NuGet.Project.Label">Проєкт:</x:String>
     <x:String x:Key="NuGet.Tooltip.Refresh">Оновити</x:String>
     <x:String x:Key="NuGet.ByAuthor">від {0}</x:String>
+    <x:String x:Key="NuGet.PackageNamePlaceholder">Назва пакета</x:String>
+    <x:String x:Key="NuGet.ByAuthorPlaceholder">від автора</x:String>
+    <x:String x:Key="NuGet.NotAvailable">Н/Д</x:String>
+    <x:String x:Key="NuGet.AbsoluteDateFormat">dd.MM.yyyy</x:String>
     <x:String x:Key="NuGet.InstalledVersion">Встановлено: v{0}</x:String>
     <x:String x:Key="NuGet.InstalledCount">{0} пакет(ів) встановлено</x:String>
     <x:String x:Key="NuGet.UpdatesAvailable">{0} оновлень доступно</x:String>

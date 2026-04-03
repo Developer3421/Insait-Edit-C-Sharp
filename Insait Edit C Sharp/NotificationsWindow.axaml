@@ -1,0 +1,124 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.NotificationsWindow"
+        x:CompileBindings="False"
+        Title="Notifications"
+        Width="760"
+        Height="520"
+        MinWidth="520"
+        MinHeight="320"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Background="#FF1F1A24">
+
+    <Window.Styles>
+        <Style Selector="Button.toolbar-btn">
+            <Setter Property="Background" Value="#FF3E3050"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.toolbar-btn:pointerover">
+            <Setter Property="Background" Value="#FF4A3D58"/>
+        </Style>
+        <Style Selector="Button.accent-btn">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.accent-btn:pointerover">
+            <Setter Property="Background" Value="#FFFFD4B8"/>
+        </Style>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="#10FFFFFF"/>
+        </Style>
+    </Window.Styles>
+
+    <Border CornerRadius="10" Background="#FF1F1A24"
+            BorderBrush="#FF3E3050" BorderThickness="1.5"
+            ClipToBounds="True">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
+            <Border Name="TitleBar" Grid.Row="0" Background="#FF2A2230" Height="38" CornerRadius="10,10,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="14,0">
+                        <TextBlock Text="🔔" FontSize="15" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                        <TextBlock Text="Notification Center" FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Name="CloseButton" Grid.Column="1"
+                            Content="✕" FontSize="13"
+                            Width="36" Height="38"
+                            Background="Transparent" Foreground="#FF9E90B0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand" BorderThickness="0"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="#FF241E2C" BorderBrush="#FF3E3050" BorderThickness="0,0,0,1" Padding="14,10">
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                    <Button Name="MarkAllReadButton" Classes="toolbar-btn" Content="Mark all as read"/>
+                    <Button Name="ClearAllButton" Grid.Column="1" Classes="toolbar-btn" Content="Clear all" Margin="8,0,0,0"/>
+                    <TextBlock Name="SummaryText" Grid.Column="3" Text="0 notifications"
+                               VerticalAlignment="Center" Foreground="#FF9E90B0" FontSize="11"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2">
+                <ListBox Name="NotificationsList" Margin="12"
+                         ItemsSource="{Binding Notifications}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#FF241E2C" BorderBrush="#FF3E3050" BorderThickness="1"
+                                    CornerRadius="8" Margin="0,0,0,8" Padding="12,10">
+                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                                    <StackPanel Grid.RowSpan="2" Grid.Column="0" Orientation="Horizontal" Margin="0,0,10,0" Spacing="6">
+                                        <TextBlock Text="{Binding SeverityIcon}" FontSize="16" FontFamily="Segoe UI Emoji" VerticalAlignment="Top"/>
+                                        <Ellipse Width="8" Height="8" Fill="#FFFFC09F" Margin="0,4,0,0"
+                                                 IsVisible="{Binding IsUnread}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4"/>
+                                        <TextBlock Text="{Binding Message}" FontSize="12" Foreground="#FFD0C8E0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" HorizontalAlignment="Right" Spacing="3">
+                                        <TextBlock Text="{Binding Source}" FontSize="10" Foreground="#FFFFC09F" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding TimestampText}" FontSize="10" Foreground="#FF9E90B0" HorizontalAlignment="Right"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <TextBlock Name="EmptyStateText"
+                           Text="There are no notifications yet. Build and MSIX events will appear here."
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="#FF9E90B0" FontStyle="Italic" FontSize="13"
+                           IsVisible="False" TextWrapping="Wrap" TextAlignment="Center"
+                           Margin="40"/>
+            </Grid>
+
+            <Border Grid.Row="3" Background="#FF2A2230" Padding="14,10" CornerRadius="0,0,10,10">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button Name="CloseWindowButton" Classes="accent-btn" Content="Close"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+

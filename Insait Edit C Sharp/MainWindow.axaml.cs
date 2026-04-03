@@ -105,6 +105,9 @@ public partial class MainWindow : Window
         // Initialize Build Service events
         InitializeBuildService();
 
+        // Initialize notification center / bell button state
+        InitializeNotificationCenter();
+
 
         // Initialize Code Analysis Service events
         InitializeCodeAnalysisService();
@@ -378,6 +381,10 @@ public partial class MainWindow : Window
             FilePath = string.Empty,
             Content = string.Empty,
             Language = "csharp",
+            EncodingKind = "utf8",
+            LineEnding = Environment.NewLine,
+            UsesTabs = false,
+            IndentSize = 4,
             IsDirty = false
         };
 
@@ -390,6 +397,7 @@ public partial class MainWindow : Window
         }
 
         _viewModel.StatusText = "New file created";
+        UpdateEditorStatusBar();
     }
 
     private async Task CloseCurrentTabAsync()
@@ -424,6 +432,7 @@ public partial class MainWindow : Window
             {
                 _insaitEditor.SetContent("", "plaintext");
             }
+            UpdateEditorStatusBar();
             UpdateWelcomeScreenVisibility();
         }
     }
@@ -726,10 +735,11 @@ public partial class MainWindow : Window
         try
         {
             if (_insaitEditor != null) tab.Content = await _insaitEditor.GetContentAsync();
-            await File.WriteAllTextAsync(tab.FilePath, tab.Content);
+            await SaveTabToDiskAsync(tab);
             tab.IsDirty = false;
             _insaitEditor?.MarkAsSaved();
             _viewModel.StatusText = $"Auto-saved: {tab.FileName}";
+            UpdateEditorStatusBar();
         }
         catch (Exception ex)
         {
@@ -746,7 +756,13 @@ public partial class MainWindow : Window
     private void OnCursorPositionChanged(object? sender, CursorPositionChangedEventArgs e)
     {
         _viewModel.StatusText = $"Ln {e.Line}, Col {e.Column}";
+        if (_viewModel.ActiveTab != null)
+        {
+            _viewModel.ActiveTab.CursorLine = e.Line;
+            _viewModel.ActiveTab.CursorColumn = e.Column;
+        }
         UpdateCursorPositionDisplay(e.Line, e.Column);
+        UpdateEditorStatusBar();
     }
 
     private void LoadProject(string projectPath)
@@ -1817,6 +1833,9 @@ ExecuteMenuAction(string action)
     }
 
     private void RefreshFileTree()
+        => _ = RefreshFileTreeAsync();
+
+    private async Task RefreshFileTreeAsync()
     {
         if (!_isFileTreeServiceActive)
             return;
@@ -1834,12 +1853,11 @@ ExecuteMenuAction(string action)
             // Use the ViewModel's RefreshFileTree method which preserves expanded state
             if (!string.IsNullOrEmpty(_viewModel.CurrentProjectPath))
             {
-                _viewModel.RefreshFileTree();
+                await _viewModel.RefreshFileTreeAsync();
             }
             else
             {
-                // First time loading, use LoadProjectFolderAsync (fire and forget)
-                _ = _viewModel.LoadProjectFolderAsync(_projectPath);
+                await _viewModel.LoadProjectFolderAsync(_projectPath);
             }
         }
 
@@ -1855,11 +1873,28 @@ ExecuteMenuAction(string action)
     private void ReloadOpenTabsFromDisk()
     {
         bool activeTabReloaded = false;
+        bool activeTabClosed = false;
+        var closedTabs = new List<string>();
 
-        foreach (var tab in _viewModel.Tabs)
+        foreach (var tab in _viewModel.Tabs.ToList())
         {
-            if (string.IsNullOrEmpty(tab.FilePath) || !File.Exists(tab.FilePath))
+            if (string.IsNullOrEmpty(tab.FilePath))
                 continue;
+
+            if (!File.Exists(tab.FilePath))
+            {
+                if (tab.IsDirty)
+                    continue;
+
+                var wasActive = tab == _viewModel.ActiveTab;
+                closedTabs.Add(tab.FileName);
+                _viewModel.CloseTab(tab);
+
+                if (wasActive)
+                    activeTabClosed = true;
+
+                continue;
+            }
 
             // Skip dirty tabs — the user has unsaved changes we must not overwrite
             if (tab.IsDirty)
@@ -1867,7 +1902,13 @@ ExecuteMenuAction(string action)
 
             try
             {
-                var newContent = File.ReadAllText(tab.FilePath);
+                var fileData = ReadFileWithMetadata(tab.FilePath);
+                var newContent = fileData.Content;
+
+                tab.EncodingKind = fileData.EncodingKind;
+                tab.LineEnding = fileData.LineEnding;
+                tab.UsesTabs = fileData.UsesTabs;
+                tab.IndentSize = fileData.IndentSize;
 
                 // Only update if content actually changed (avoid unnecessary editor flicker)
                 if (tab.Content == newContent)
@@ -1885,11 +1926,30 @@ ExecuteMenuAction(string action)
             }
         }
 
+        if (closedTabs.Count > 0)
+        {
+            _viewModel.StatusText = closedTabs.Count == 1
+                ? $"Closed removed file tab: {closedTabs[0]}"
+                : $"Closed {closedTabs.Count} tabs for files removed by Git";
+        }
+
+        if (_insaitEditor != null && activeTabClosed)
+        {
+            if (_viewModel.ActiveTab != null)
+                ShowTabInEditor(_viewModel.ActiveTab);
+            else
+                _insaitEditor.SetContent("", "plaintext");
+
+            UpdateEditorStatusBar();
+            UpdateWelcomeScreenVisibility();
+        }
+
         // Push the reloaded content into the editor if the active tab was updated
         if (activeTabReloaded && _viewModel.ActiveTab != null && _insaitEditor != null)
         {
             _insaitEditor.SetContent(_viewModel.ActiveTab.Content, _viewModel.ActiveTab.Language);
             _viewModel.StatusText = $"Reloaded from disk: {_viewModel.ActiveTab.FileName}";
+            UpdateEditorStatusBar();
         }
     }
 
@@ -2211,6 +2271,7 @@ ExecuteMenuAction(string action)
         {
             _gitWindow = new GitWindow();
             _gitWindow.FileOpenRequested += (_, filePath) => OpenFileInEditor(filePath);
+            _gitWindow.WorkspaceRefreshRequested += GitWindow_WorkspaceRefreshRequested;
             await _gitWindow.InitializeAsync(_projectPath, allProjects);
             _gitWindow.Show();
         }
@@ -2219,6 +2280,11 @@ ExecuteMenuAction(string action)
             _gitWindow.Activate();
             await _gitWindow.RefreshAsync();
         }
+    }
+
+    private void GitWindow_WorkspaceRefreshRequested(object? sender, EventArgs e)
+    {
+        _ = RefreshFileTreeAsync();
     }
 
     private List<string> CollectAllProjectPaths()

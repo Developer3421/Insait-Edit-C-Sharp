@@ -6,21 +6,23 @@
              x:Class="Insait_Edit_C_Sharp.Controls.NuGetPanelControl">
     
     <UserControl.Resources>
-        <!-- Colors - Fluent Orange-Purple Theme -->
-        <SolidColorBrush x:Key="NuGetBgBrush" Color="#FF2A2230"/>
-        <SolidColorBrush x:Key="NuGetSurfaceBrush" Color="#FF1F1A24"/>
-        <SolidColorBrush x:Key="NuGetBorderBrush" Color="#FF3E3050"/>
-        <SolidColorBrush x:Key="NuGetTextBrush" Color="#FFF0E8F4"/>
-        <SolidColorBrush x:Key="NuGetTextMutedBrush" Color="#FF9E90B0"/>
-        <SolidColorBrush x:Key="NuGetAccentBrush" Color="#FF9B7DCF"/>
-        <SolidColorBrush x:Key="NuGetGreenBrush" Color="#FF6AAB73"/>
+        <!-- Colors - Explorer orange style -->
+        <SolidColorBrush x:Key="NuGetBgBrush" Color="#FF1A0F08"/>
+        <SolidColorBrush x:Key="NuGetSurfaceBrush" Color="#FF231508"/>
+        <SolidColorBrush x:Key="NuGetBorderBrush" Color="#FF7A3810"/>
+        <SolidColorBrush x:Key="NuGetTextBrush" Color="#FFF5EBDD"/>
+        <SolidColorBrush x:Key="NuGetTextMutedBrush" Color="#FFB89B82"/>
+        <SolidColorBrush x:Key="NuGetAccentBrush" Color="#FFFFC09F"/>
+        <SolidColorBrush x:Key="NuGetAccentHoverBrush" Color="#FFFFD4B8"/>
+        <SolidColorBrush x:Key="NuGetAccentPressedBrush" Color="#FFE09070"/>
+        <SolidColorBrush x:Key="NuGetGreenBrush" Color="#FFFFA95C"/>
         <SolidColorBrush x:Key="NuGetRedBrush" Color="#FFEF5350"/>
-        <SolidColorBrush x:Key="NuGetYellowBrush" Color="#FFBB9A6F"/>
-        <SolidColorBrush x:Key="NuGetPurpleBrush" Color="#FF9B7DCF"/>
-        <SolidColorBrush x:Key="NuGetHoverBrush" Color="#FF3E3050"/>
-        <SolidColorBrush x:Key="NuGetSelectedBrush" Color="#FF352840"/>
-        <SolidColorBrush x:Key="NuGetOrangeBrush" Color="#FFFFC09F"/>
-        <SolidColorBrush x:Key="NuGetBlueBrush" Color="#FF548AF7"/>
+        <SolidColorBrush x:Key="NuGetYellowBrush" Color="#FFFFB36B"/>
+        <SolidColorBrush x:Key="NuGetPurpleBrush" Color="#FFFFA95C"/>
+        <SolidColorBrush x:Key="NuGetHoverBrush" Color="#4038180A"/>
+        <SolidColorBrush x:Key="NuGetSelectedBrush" Color="#FF3A2210"/>
+        <SolidColorBrush x:Key="NuGetOrangeBrush" Color="#FFFFB36B"/>
+        <SolidColorBrush x:Key="NuGetBlueBrush" Color="#FFFF8C42"/>
         
         <!-- Emoji font family for consistent cross-platform rendering -->
         <FontFamily x:Key="EmojiFont">Segoe UI Emoji, Noto Color Emoji, Apple Color Emoji, Segoe UI Symbol</FontFamily>
@@ -49,7 +51,7 @@
         <!-- Primary Button Style -->
         <Style Selector="Button.nuget-primary">
             <Setter Property="Background" Value="{StaticResource NuGetAccentBrush}"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="CornerRadius" Value="4"/>
@@ -57,10 +59,10 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
         <Style Selector="Button.nuget-primary:pointerover">
-            <Setter Property="Background" Value="#FFB09AE0"/>
+            <Setter Property="Background" Value="{StaticResource NuGetAccentHoverBrush}"/>
         </Style>
         <Style Selector="Button.nuget-primary:pressed">
-            <Setter Property="Background" Value="#FF8060C0"/>
+            <Setter Property="Background" Value="{StaticResource NuGetAccentPressedBrush}"/>
         </Style>
         
         <!-- Danger Button Style -->
@@ -89,12 +91,13 @@
         </Style>
         <Style Selector="Button.nuget-secondary:pointerover">
             <Setter Property="Background" Value="{StaticResource NuGetHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource NuGetAccentBrush}"/>
         </Style>
         
         <!-- Update Button Style -->
         <Style Selector="Button.nuget-update">
             <Setter Property="Background" Value="{StaticResource NuGetGreenBrush}"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="10,5"/>
             <Setter Property="CornerRadius" Value="4"/>
@@ -102,7 +105,7 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
         <Style Selector="Button.nuget-update:pointerover">
-            <Setter Property="Background" Value="#FF7BC485"/>
+            <Setter Property="Background" Value="{StaticResource NuGetAccentBrush}"/>
         </Style>
         
         <!-- Package Item Style -->
@@ -159,13 +162,13 @@
     <Grid RowDefinitions="Auto,Auto,*" Background="{StaticResource NuGetSurfaceBrush}">
         
         <!-- Header -->
-        <Border Grid.Row="0" Padding="12,10" Background="#12CBA6F7" BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Padding="12,10" Background="#20000000" BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Name="HeaderTitleText" Text="NUGET PACKAGES" FontSize="11" FontWeight="SemiBold" 
+                <TextBlock Name="HeaderTitleText" Text="{DynamicResource NuGet.Title}" FontSize="11" FontWeight="SemiBold" 
                            Foreground="{StaticResource NuGetTextMutedBrush}" VerticalAlignment="Center"
                            LetterSpacing="1"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                    <Button Classes="icon-btn" ToolTip.Tip="Refresh" Name="RefreshButton" Click="RefreshButton_Click">
+                    <Button Classes="icon-btn" ToolTip.Tip="{DynamicResource NuGet.Tooltip.Refresh}" Name="RefreshButton" Click="RefreshButton_Click">
                         <TextBlock Text="🔄" FontSize="14" Classes="emoji"/>
                     </Button>
                 </StackPanel>
@@ -178,19 +181,19 @@
                 <Button Classes="nuget-tab active" Name="BrowseTab" Click="BrowseTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="🔍" FontSize="12" Classes="emoji"/>
-                        <TextBlock Text="Browse"/>
+                        <TextBlock Name="BrowseTabText" Text="{DynamicResource NuGet.Browse}"/>
                     </StackPanel>
                 </Button>
                 <Button Classes="nuget-tab" Name="InstalledTab" Click="InstalledTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="📦" FontSize="12" Classes="emoji"/>
-                        <TextBlock Text="Installed"/>
+                        <TextBlock Name="InstalledTabText" Text="{DynamicResource NuGet.Installed}"/>
                     </StackPanel>
                 </Button>
                 <Button Classes="nuget-tab" Name="UpdatesTab" Click="UpdatesTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="⬆️" FontSize="12" Classes="emoji"/>
-                        <TextBlock Text="Updates" Name="UpdatesTabText"/>
+                        <TextBlock Text="{DynamicResource NuGet.Updates}" Name="UpdatesTabText"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -201,9 +204,9 @@
             <!-- Browse Panel -->
             <Grid Name="BrowsePanel" RowDefinitions="Auto,*" IsVisible="True">
                 <!-- Search Box -->
-                <Border Grid.Row="0" Margin="8,8,8,4" Padding="0" Background="#12CBA6F7" CornerRadius="6">
+                <Border Grid.Row="0" Margin="8,8,8,4" Padding="0" Background="#14FFC09F" CornerRadius="6">
                     <Grid ColumnDefinitions="*,Auto">
-                        <TextBox Name="SearchBox" Watermark="Search NuGet packages..." 
+                        <TextBox Name="SearchBox" Watermark="{DynamicResource NuGet.SearchPlaceholder}" 
                                  BorderThickness="1"
                                  BorderBrush="{StaticResource NuGetBorderBrush}"
                                  CornerRadius="6" Padding="10,8"
@@ -218,7 +221,7 @@
                 <ScrollViewer Grid.Row="1" Margin="4,0">
                     <StackPanel Name="SearchResultsPanel" Margin="4">
                         <!-- Placeholder -->
-                        <TextBlock Text="Search for NuGet packages above" FontSize="12" 
+                        <TextBlock Text="{DynamicResource NuGet.SearchAbove}" FontSize="12" 
                                    Foreground="{StaticResource NuGetTextMutedBrush}" 
                                    FontStyle="Italic" Margin="8,16"
                                    Name="SearchPlaceholder"/>
@@ -229,10 +232,10 @@
             <!-- Installed Panel -->
             <Grid Name="InstalledPanel" RowDefinitions="Auto,*" IsVisible="False">
                 <!-- Project Info -->
-                <Border Grid.Row="0" Margin="8" Padding="10" Background="#12CBA6F7" CornerRadius="6">
+                <Border Grid.Row="0" Margin="8" Padding="10" Background="#14FFC09F" CornerRadius="6">
                     <StackPanel>
-                        <TextBlock Text="Project:" FontSize="11" Foreground="{StaticResource NuGetTextMutedBrush}"/>
-                        <TextBlock Name="ProjectNameText" Text="No project loaded" FontSize="12" 
+                        <TextBlock Name="ProjectLabelText" Text="{DynamicResource NuGet.Project.Label}" FontSize="11" Foreground="{StaticResource NuGetTextMutedBrush}"/>
+                        <TextBlock Name="ProjectNameText" Text="{DynamicResource NuGet.NoProject}" FontSize="12" 
                                    Foreground="{StaticResource NuGetTextBrush}" 
                                    TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
                     </StackPanel>
@@ -241,7 +244,7 @@
                 <!-- Installed Packages List -->
                 <ScrollViewer Grid.Row="1" Margin="4,0">
                     <StackPanel Name="InstalledPackagesPanel" Margin="4">
-                        <TextBlock Text="No packages installed" FontSize="12" 
+                        <TextBlock Text="{DynamicResource NuGet.NoPackages}" FontSize="12" 
                                    Foreground="{StaticResource NuGetTextMutedBrush}" 
                                    FontStyle="Italic" Margin="8,16"
                                    Name="InstalledPlaceholder"/>
@@ -252,13 +255,13 @@
             <!-- Updates Panel -->
             <Grid Name="UpdatesPanel" RowDefinitions="Auto,*" IsVisible="False">
                 <!-- Updates Header -->
-                <Border Grid.Row="0" Margin="8" Padding="10" Background="#12CBA6F7" CornerRadius="6">
+                <Border Grid.Row="0" Margin="8" Padding="10" Background="#14FFC09F" CornerRadius="6">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel>
-                            <TextBlock Name="UpdatesCountText" Text="0 updates available" FontSize="12" 
+                            <TextBlock Name="UpdatesCountText" Text="" FontSize="12" 
                                        Foreground="{StaticResource NuGetTextBrush}"/>
                         </StackPanel>
-                        <Button Grid.Column="1" Classes="nuget-update" Content="Update All" 
+                        <Button Grid.Column="1" Classes="nuget-update" Content="{DynamicResource NuGet.UpdateAll}" 
                                 Name="UpdateAllButton" Click="UpdateAllButton_Click"
                                 IsVisible="False"/>
                     </Grid>
@@ -267,7 +270,7 @@
                 <!-- Updates List -->
                 <ScrollViewer Grid.Row="1" Margin="4,0">
                     <StackPanel Name="UpdatesPackagesPanel" Margin="4">
-                        <TextBlock Text="All packages are up to date" FontSize="12" 
+                        <TextBlock Text="{DynamicResource NuGet.AllUpToDate}" FontSize="12" 
                                    Foreground="{StaticResource NuGetTextMutedBrush}" 
                                    FontStyle="Italic" Margin="8,16"
                                    Name="UpdatesPlaceholder"/>
@@ -276,11 +279,11 @@
             </Grid>
             
             <!-- Loading Overlay -->
-            <Border Name="LoadingOverlay" IsVisible="False" Background="#80000000" 
+            <Border Name="LoadingOverlay" IsVisible="False" Background="#AA1A0F08" 
                     CornerRadius="0" ZIndex="100">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
                     <ProgressBar IsIndeterminate="True" Width="120"/>
-                    <TextBlock Name="LoadingText" Text="Loading..." FontSize="12" 
+                    <TextBlock Name="LoadingText" Text="{DynamicResource NuGet.Loading}" FontSize="12" 
                                Foreground="{StaticResource NuGetTextBrush}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -290,16 +293,16 @@
                     BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,1,0,0" ZIndex="50">
                 <Grid RowDefinitions="Auto,*,Auto">
                     <!-- Details Header -->
-                    <Border Grid.Row="0" Padding="12,10" Background="#12CBA6F7">
+                    <Border Grid.Row="0" Padding="12,10" Background="#14FFC09F">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <Button Grid.Column="0" Classes="icon-btn" Click="CloseDetailsButton_Click" Margin="0,0,8,0">
                                 <TextBlock Text="←" FontSize="16" Foreground="{StaticResource NuGetTextBrush}"/>
                             </Button>
-                            <TextBlock Grid.Column="1" Text="Package Details" FontSize="12" FontWeight="SemiBold" 
+                            <TextBlock Grid.Column="1" Text="{DynamicResource NuGet.PackageDetails}" FontSize="12" FontWeight="SemiBold" 
                                        Foreground="{StaticResource NuGetTextBrush}" VerticalAlignment="Center"
                                        Name="PackageDetailsHeaderText"/>
                             <Button Grid.Column="2" Classes="icon-btn" Name="NuGetOrgLinkButton" Click="NuGetOrgLink_Click" 
-                                    ToolTip.Tip="View on nuget.org">
+                                    ToolTip.Tip="{DynamicResource NuGet.ViewOnNuGetOrg}">
                                 <TextBlock Text="🌐" FontSize="14" FontFamily="{StaticResource EmojiFont}"/>
                             </Button>
                         </Grid>
@@ -310,7 +313,7 @@
                         <StackPanel Spacing="14">
                             <!-- Package Icon and Name -->
                             <Grid ColumnDefinitions="48,*">
-                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="8" Background="#12CBA6F7" ClipToBounds="True">
+                                <Border Grid.Column="0" Width="48" Height="48" CornerRadius="8" Background="#14FFC09F" ClipToBounds="True">
                                     <Panel>
                                         <TextBlock Text="📦" FontSize="22" FontFamily="{StaticResource EmojiFont}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -320,15 +323,15 @@
                                 </Border>
                                 <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Name="DetailTitleText" Text="Package Name" FontSize="16" FontWeight="SemiBold" 
+                                        <TextBlock Name="DetailTitleText" Text="{DynamicResource NuGet.PackageNamePlaceholder}" FontSize="16" FontWeight="SemiBold" 
                                                    Foreground="{StaticResource NuGetTextBrush}"/>
-                                        <Border Name="DetailVerifiedBadge" Background="#309B7DCF" CornerRadius="4" 
+                                        <Border Name="DetailVerifiedBadge" Background="#30FFC09F" CornerRadius="4" 
                                                 Padding="6,2" VerticalAlignment="Center" IsVisible="False">
-                                            <TextBlock Text="✓ Verified" FontSize="9" Foreground="{StaticResource NuGetAccentBrush}"
+                                            <TextBlock Text="{DynamicResource NuGet.Verified}" FontSize="9" Foreground="{StaticResource NuGetAccentBrush}"
                                                        Name="VerifiedBadgeText"/>
                                         </Border>
                                     </StackPanel>
-                                    <TextBlock Name="DetailAuthorText" Text="by Author" FontSize="11" 
+                                    <TextBlock Name="DetailAuthorText" Text="{DynamicResource NuGet.ByAuthorPlaceholder}" FontSize="11" 
                                                Foreground="{StaticResource NuGetTextMutedBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Grid>
@@ -336,7 +339,7 @@
                             <!-- Version Selector -->
                             <Border Background="{StaticResource NuGetBgBrush}" CornerRadius="6" Padding="10,8">
                                 <StackPanel Spacing="4">
-                                    <TextBlock Text="VERSION" FontSize="10" FontWeight="SemiBold" 
+                                    <TextBlock Text="{DynamicResource NuGet.Version}" FontSize="10" FontWeight="SemiBold" 
                                                Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                                Name="VersionLabelText"/>
                                     <ComboBox Name="VersionComboBox" MinWidth="150" 
@@ -349,7 +352,7 @@
                             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto">
                                 <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource NuGetBgBrush}" CornerRadius="6" Padding="10,8" Margin="0,0,3,0">
                                     <StackPanel>
-                                        <TextBlock Text="DOWNLOADS" FontSize="9" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource NuGet.Downloads}" FontSize="9" FontWeight="SemiBold"
                                                    Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                                    Name="DownloadsLabelText"/>
                                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
@@ -361,7 +364,7 @@
                                 </Border>
                                 <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource NuGetBgBrush}" CornerRadius="6" Padding="10,8" Margin="3,0,0,0">
                                     <StackPanel>
-                                        <TextBlock Text="PUBLISHED" FontSize="9" FontWeight="SemiBold"
+                                        <TextBlock Text="{DynamicResource NuGet.Published}" FontSize="9" FontWeight="SemiBold"
                                                    Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                                    Name="PublishedLabelText"/>
                                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
@@ -375,17 +378,17 @@
                             
                             <!-- Description -->
                             <StackPanel Spacing="4">
-                                <TextBlock Text="DESCRIPTION" FontSize="10" FontWeight="SemiBold" 
+                                <TextBlock Text="{DynamicResource NuGet.Description}" FontSize="10" FontWeight="SemiBold" 
                                            Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                            Name="DescriptionLabelText"/>
-                                <TextBlock Name="DetailDescriptionText" Text="No description available" 
+                                <TextBlock Name="DetailDescriptionText" Text="{DynamicResource NuGet.NoDescription}" 
                                            FontSize="12" Foreground="{StaticResource NuGetTextBrush}"
                                            TextWrapping="Wrap" LineHeight="20"/>
                             </StackPanel>
                             
                             <!-- Dependencies -->
                             <StackPanel Spacing="4" Name="DependenciesPanel" IsVisible="False">
-                                <TextBlock Text="DEPENDENCIES" FontSize="10" FontWeight="SemiBold" 
+                                <TextBlock Text="{DynamicResource NuGet.Dependencies}" FontSize="10" FontWeight="SemiBold" 
                                            Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                            Name="DependenciesLabelText"/>
                                 <StackPanel Name="DependenciesListPanel" Spacing="2"/>
@@ -393,7 +396,7 @@
                             
                             <!-- Tags -->
                             <StackPanel Spacing="4" Name="TagsPanel">
-                                <TextBlock Text="TAGS" FontSize="10" FontWeight="SemiBold" 
+                                <TextBlock Text="{DynamicResource NuGet.Tags}" FontSize="10" FontWeight="SemiBold" 
                                            Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                            Name="TagsLabelText"/>
                                 <WrapPanel Name="TagsWrapPanel" Orientation="Horizontal"/>
@@ -401,14 +404,14 @@
                             
                             <!-- Links -->
                             <StackPanel Spacing="6">
-                                <TextBlock Text="LINKS" FontSize="10" FontWeight="SemiBold" 
+                                <TextBlock Text="{DynamicResource NuGet.Links}" FontSize="10" FontWeight="SemiBold" 
                                            Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                            Name="LinksLabelText"/>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Button Classes="nuget-secondary" Name="ProjectLinkButton" Click="ProjectLinkButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <TextBlock Text="🔗" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
-                                            <TextBlock Text="Project" Name="ProjectLinkText"/>
+                                            <TextBlock Text="{DynamicResource NuGet.ProjectLink}" Name="ProjectLinkText"/>
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
@@ -417,7 +420,7 @@
                     </ScrollViewer>
                     
                     <!-- Install/Uninstall Button -->
-                    <Border Grid.Row="2" Padding="12" Background="#10000000" BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,1,0,0">
+                    <Border Grid.Row="2" Padding="12" Background="#18000000" BorderBrush="{StaticResource NuGetBorderBrush}" BorderThickness="0,1,0,0">
                         <Grid ColumnDefinitions="*,Auto,Auto">
                             <TextBlock Name="DetailInstalledVersionText" FontSize="11" VerticalAlignment="Center"
                                        Foreground="{StaticResource NuGetTextMutedBrush}" IsVisible="False"/>
@@ -425,13 +428,13 @@
                                     Margin="0,0,8,0" IsVisible="False">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="🗑️" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
-                                    <TextBlock Text="Uninstall" Name="UninstallButtonText"/>
+                                    <TextBlock Text="{DynamicResource NuGet.Uninstall}" Name="UninstallButtonText"/>
                                 </StackPanel>
                             </Button>
                             <Button Grid.Column="2" Classes="nuget-primary" Name="InstallButton" Click="InstallButton_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="📦" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
-                                    <TextBlock Text="Install" Name="InstallButtonText"/>
+                                    <TextBlock Text="{DynamicResource NuGet.Install}" Name="InstallButtonText"/>
                                 </StackPanel>
                             </Button>
                         </Grid>

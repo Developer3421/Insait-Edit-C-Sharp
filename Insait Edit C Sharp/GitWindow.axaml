@@ -10,8 +10,7 @@
         SystemDecorations="None"
         Width="1100" Height="720"
         MinWidth="820" MinHeight="500"
-        CanResize="True"
-        FontFamily="Segoe UI, Arial, Tahoma">
+        CanResize="True">
 
     <!-- ══ SAME PALETTE AS MAINWINDOW ══════════════════════════ -->
     <Window.Resources>
@@ -161,12 +160,16 @@
         <Style Selector="TextBox">
             <Setter Property="Foreground"               Value="{StaticResource TextBrush}"/>
             <Setter Property="CaretBrush"               Value="{StaticResource TextBrush}"/>
-            <Setter Property="SelectionBrush"           Value="{StaticResource OrangeBrush}"/>
+            <Setter Property="SelectionBrush"           Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
             <Setter Property="Background"               Value="{StaticResource SurfBrush}"/>
+            <Setter Property="BorderBrush"              Value="{StaticResource BorderBrush}"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="{StaticResource SurfBrush}"/>
+        </Style>
+        <Style Selector="TextBox:pointerover">
+            <Setter Property="BorderBrush" Value="#FF5A496F"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
@@ -522,6 +525,10 @@
                             <TextBox Name="LogFilterBox" Watermark="{DynamicResource Git.FilterCommits}"
                                      Width="180" Height="24"
                                      Background="#FF252030"
+                                     Foreground="{StaticResource TextBrush}"
+                                     CaretBrush="{StaticResource TextBrush}"
+                                     SelectionBrush="#60FFC09F"
+                                     SelectionForegroundBrush="#FF1F1A24"
                                      BorderBrush="{StaticResource BorderBrush}"
                                      FontSize="11" CornerRadius="4" Padding="6,2"
                                      TextChanged="LogFilter_TextChanged"/>
@@ -679,6 +686,17 @@
                                                        Foreground="{StaticResource MutedBrush}"/>
                                             <TextBlock Name="CommitDetailDate" Text="" FontSize="11"
                                                        Foreground="{StaticResource MutedBrush}"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
+                                            <Button Classes="sec" FontSize="11" Padding="10,5"
+                                                    Content="{DynamicResource Git.MenuCheckoutRevision}"
+                                                    Click="CtxCheckoutRevision_Click"/>
+                                            <Button Classes="primary" FontSize="11" Padding="10,5"
+                                                    Content="{DynamicResource Git.ResetToCommitButton}"
+                                                    Click="CtxRevertCommit_Click"/>
+                                            <Button Classes="sec" FontSize="11" Padding="10,5"
+                                                    Content="{DynamicResource Git.MenuCopyHash}"
+                                                    Click="CtxCopyHash_Click"/>
                                         </StackPanel>
                                     </StackPanel>
                                     <TextBlock Name="CommitDetailPlaceholder"

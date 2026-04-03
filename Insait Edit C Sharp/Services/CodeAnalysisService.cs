@@ -85,58 +85,7 @@ public class CodeAnalysisService
     /// </summary>
     private List<MetadataReference> GetDefaultReferences()
     {
-        var references = new List<MetadataReference>();
-
-        try
-        {
-            // Get the runtime directory
-            var runtimeDir = Path.GetDirectoryName(typeof(object).Assembly.Location);
-            if (runtimeDir != null)
-            {
-                var coreAssemblies = new[]
-                {
-                    "System.Runtime.dll",
-                    "System.Console.dll",
-                    "System.Collections.dll",
-                    "System.Linq.dll",
-                    "System.Threading.Tasks.dll",
-                    "System.IO.dll",
-                    "System.Text.RegularExpressions.dll",
-                    "netstandard.dll",
-                    "System.Private.CoreLib.dll"
-                };
-
-                foreach (var assembly in coreAssemblies)
-                {
-                    var path = Path.Combine(runtimeDir, assembly);
-                    if (File.Exists(path))
-                    {
-                        try
-                        {
-                            references.Add(MetadataReference.CreateFromFile(path));
-                        }
-                        catch { }
-                    }
-                }
-            }
-
-            // Add mscorlib or System.Runtime
-            var mscorlibPath = typeof(object).Assembly.Location;
-            if (File.Exists(mscorlibPath))
-            {
-                try
-                {
-                    references.Add(MetadataReference.CreateFromFile(mscorlibPath));
-                }
-                catch { }
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error loading default references: {ex.Message}");
-        }
-
-        return references;
+        return RoslynCompletionEngine.CollectPublicDefaultReferences();
     }
     
     /// <summary>
@@ -254,144 +203,28 @@ public class CodeAnalysisService
 
         try
         {
-            // Find all C# files
-            string[] csFiles;
-            
-            if (File.Exists(projectPath))
-            {
-                var ext = Path.GetExtension(projectPath).ToLowerInvariant();
-                if (ext is ".sln" or ".slnx" or ".csproj" or ".fsproj" or ".vbproj" or ".nfproj")
-                {
-                    // Solution or project file — resolve to directory and search for .cs files
-                    var dir = Path.GetDirectoryName(projectPath);
-                    if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
-                        return allDiagnostics;
-                    
-                    csFiles = Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories)
-                        .Where(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) &&
-                                   !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar) &&
-                                   !f.Contains(Path.DirectorySeparatorChar + ".vs" + Path.DirectorySeparatorChar))
-                        .ToArray();
-                }
-                else if (ext == ".cs")
-                {
-                    // Single .cs file
-                    csFiles = new[] { projectPath };
-                }
-                else
-                {
-                    // Not a supported file type for analysis
-                    return allDiagnostics;
-                }
-            }
-            else if (Directory.Exists(projectPath))
-            {
-                // Directory - find all .cs files, excluding bin, obj, and other generated folders
-                csFiles = Directory.GetFiles(projectPath, "*.cs", SearchOption.AllDirectories)
-                    .Where(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) &&
-                               !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar) &&
-                               !f.Contains(Path.DirectorySeparatorChar + ".vs" + Path.DirectorySeparatorChar))
-                    .ToArray();
-            }
-            else
-            {
+            var targets = ResolveAnalysisTargets(projectPath);
+            if (targets.Count == 0)
                 return allDiagnostics;
-            }
 
-            var totalFiles = csFiles.Length;
-            var processedFiles = 0;
-
-            // Parse all files into syntax trees
-            var syntaxTrees = new List<SyntaxTree>();
-            var filePathMap = new Dictionary<SyntaxTree, string>();
-
-            OnProgress($"Parsing {totalFiles} C# files...", 0, totalFiles);
-
-            foreach (var file in csFiles)
+            var targetIndex = 0;
+            foreach (var target in targets)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                targetIndex++;
 
-                try
+                OnProgress($"Analysing {Path.GetFileName(target)}...", targetIndex - 1, targets.Count);
+
+                if (string.Equals(Path.GetExtension(target), ".cs", StringComparison.OrdinalIgnoreCase))
                 {
-                    var content = await File.ReadAllTextAsync(file, cancellationToken);
-                    var syntaxTree = CSharpSyntaxTree.ParseText(
-                        content,
-                        path: file,
-                        cancellationToken: cancellationToken);
-                    
-                    syntaxTrees.Add(syntaxTree);
-                    filePathMap[syntaxTree] = file;
-                }
-                catch (Exception ex)
-                {
-                    allDiagnostics.Add(new DiagnosticItem
-                    {
-                        Severity = AppDiagnosticSeverity.Error,
-                        Message = $"Failed to parse file: {ex.Message}",
-                        FilePath = file,
-                        FileName = Path.GetFileName(file),
-                        Line = 1,
-                        Column = 1,
-                        Code = "PARSE_ERROR"
-                    });
+                    allDiagnostics.AddRange(await AnalyzeFileAsync(target));
+                    continue;
                 }
 
-                processedFiles++;
-                OnProgress($"Parsing: {Path.GetFileName(file)}", processedFiles, totalFiles);
+                allDiagnostics.AddRange(await AnalyzeProjectTargetAsync(target, cancellationToken));
             }
 
-            if (syntaxTrees.Count == 0)
-            {
-                return allDiagnostics;
-            }
-
-            OnProgress("Running code analysis...", totalFiles, totalFiles);
-
-            // Get project-specific references (NuGet packages + bin/ folder)
-            var (projectReferences, hasNuGetRefs) = GetProjectReferences(projectPath);
-            var allReferences = _defaultReferences.Concat(projectReferences).ToList();
-
-            // Create compilation with all syntax trees
-            var compilation = CSharpCompilation.Create(
-                "ProjectAnalysis",
-                syntaxTrees,
-                allReferences,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                    .WithNullableContextOptions(NullableContextOptions.Enable));
-
-            // Get all diagnostics
-            var diagnostics = compilation.GetDiagnostics(cancellationToken);
-
-            foreach (var diagnostic in diagnostics)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                // Skip hidden diagnostics
-                if (diagnostic.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden)
-                    continue;
-                
-                // Skip suppressed diagnostics (context-aware based on NuGet refs)
-                if (ShouldSuppressDiagnostic(diagnostic, hasNuGetRefs))
-                    continue;
-
-                var location = diagnostic.Location;
-                var filePath = location.SourceTree != null && filePathMap.TryGetValue(location.SourceTree, out var path)
-                    ? path
-                    : location.SourceTree?.FilePath ?? "Unknown";
-
-                var lineSpan = location.GetLineSpan();
-
-                allDiagnostics.Add(new DiagnosticItem
-                {
-                    Severity = ConvertSeverity(diagnostic.Severity),
-                    Message = diagnostic.GetMessage(),
-                    FilePath = filePath,
-                    FileName = Path.GetFileName(filePath),
-                    Line = lineSpan.StartLinePosition.Line + 1,
-                    Column = lineSpan.StartLinePosition.Character + 1,
-                    Code = diagnostic.Id
-                });
-            }
+            OnProgress("Code analysis complete", targets.Count, targets.Count);
 
             // Sort by severity (errors first), then by file, then by line
             allDiagnostics = allDiagnostics
@@ -419,6 +252,142 @@ public class CodeAnalysisService
         }
 
         return allDiagnostics;
+    }
+
+    private List<string> ResolveAnalysisTargets(string projectPath)
+    {
+        var targets = new List<string>();
+
+        if (File.Exists(projectPath))
+        {
+            var ext = Path.GetExtension(projectPath).ToLowerInvariant();
+            switch (ext)
+            {
+                case ".cs":
+                    targets.Add(projectPath);
+                    break;
+                case ".csproj":
+                    targets.Add(projectPath);
+                    break;
+                case ".sln":
+                case ".slnx":
+                    targets.AddRange(NuGetReferenceResolver.FindProjectFiles(Path.GetDirectoryName(projectPath)));
+                    break;
+            }
+        }
+        else if (Directory.Exists(projectPath))
+        {
+            targets.AddRange(NuGetReferenceResolver.FindProjectFiles(projectPath));
+            if (targets.Count == 0)
+                targets.Add(projectPath);
+        }
+
+        return targets.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    private async Task<List<DiagnosticItem>> AnalyzeProjectTargetAsync(string targetPath, CancellationToken cancellationToken)
+    {
+        var diagnostics = new List<DiagnosticItem>();
+
+        var projectDir = NuGetReferenceResolver.ResolveProjectDirectory(targetPath);
+        if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
+            return diagnostics;
+
+        string[] csFiles;
+        try
+        {
+            csFiles = Directory.GetFiles(projectDir, "*.cs", SearchOption.AllDirectories)
+                .Where(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) &&
+                            !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar) &&
+                            !f.Contains(Path.DirectorySeparatorChar + ".vs" + Path.DirectorySeparatorChar))
+                .ToArray();
+        }
+        catch (Exception ex)
+        {
+            diagnostics.Add(new DiagnosticItem
+            {
+                Severity = AppDiagnosticSeverity.Error,
+                Message = $"Failed to enumerate project files: {ex.Message}",
+                FilePath = targetPath,
+                FileName = Path.GetFileName(targetPath),
+                Line = 1,
+                Column = 1,
+                Code = "ANALYSIS_ERROR"
+            });
+            return diagnostics;
+        }
+
+        var syntaxTrees = new List<SyntaxTree>();
+        var filePathMap = new Dictionary<SyntaxTree, string>();
+
+        foreach (var file in csFiles)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                var content = await File.ReadAllTextAsync(file, cancellationToken);
+                var syntaxTree = CSharpSyntaxTree.ParseText(content, path: file, cancellationToken: cancellationToken);
+                syntaxTrees.Add(syntaxTree);
+                filePathMap[syntaxTree] = file;
+            }
+            catch (Exception ex)
+            {
+                diagnostics.Add(new DiagnosticItem
+                {
+                    Severity = AppDiagnosticSeverity.Error,
+                    Message = $"Failed to parse file: {ex.Message}",
+                    FilePath = file,
+                    FileName = Path.GetFileName(file),
+                    Line = 1,
+                    Column = 1,
+                    Code = "PARSE_ERROR"
+                });
+            }
+        }
+
+        if (syntaxTrees.Count == 0)
+            return diagnostics;
+
+        var (projectReferences, hasNuGetRefs) = GetProjectReferences(targetPath);
+        var allReferences = _defaultReferences.Concat(projectReferences).ToList();
+
+        var compilation = CSharpCompilation.Create(
+            Path.GetFileNameWithoutExtension(targetPath),
+            syntaxTrees,
+            allReferences,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithNullableContextOptions(NullableContextOptions.Enable));
+
+        foreach (var diagnostic in compilation.GetDiagnostics(cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (diagnostic.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden)
+                continue;
+
+            if (ShouldSuppressDiagnostic(diagnostic, hasNuGetRefs))
+                continue;
+
+            var location = diagnostic.Location;
+            var filePath = location.SourceTree != null && filePathMap.TryGetValue(location.SourceTree, out var path)
+                ? path
+                : location.SourceTree?.FilePath ?? targetPath;
+
+            var lineSpan = location.GetLineSpan();
+            diagnostics.Add(new DiagnosticItem
+            {
+                Severity = ConvertSeverity(diagnostic.Severity),
+                Message = diagnostic.GetMessage(),
+                FilePath = filePath,
+                FileName = Path.GetFileName(filePath),
+                Line = lineSpan.StartLinePosition.Line + 1,
+                Column = lineSpan.StartLinePosition.Character + 1,
+                Code = diagnostic.Id
+            });
+        }
+
+        return diagnostics;
     }
 
     /// <summary>

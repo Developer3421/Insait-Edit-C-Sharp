@@ -58,7 +58,6 @@ public partial class MenuWindow : Window
             ("👁️", "View", LocalizationService.Get("Menu.View")),
             ("🔨", "Build", LocalizationService.Get("Menu.Build")),
             ("🔧", "Tools", LocalizationService.Get("Menu.Tools")),
-            ("❓", "Help", LocalizationService.Get("Menu.Help")),
             ("🌐", "Language", LocalizationService.Get("Lang.Language")),
         };
 
@@ -138,9 +137,6 @@ public partial class MenuWindow : Window
                 break;
             case "Tools":
                 CreateToolsContent(contentPanel);
-                break;
-            case "Help":
-                CreateHelpContent(contentPanel);
                 break;
             case "Language":
                 CreateLanguageContent(contentPanel);
@@ -266,31 +262,12 @@ public partial class MenuWindow : Window
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.SettingsHeader"));
         AddMenuItem(panel, LocalizationService.Get("Menu.Settings"), "Ctrl+,", () => _mainWindow.ExecuteMenuAction("OpenSettings"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.Theme"), "", () => _mainWindow.ExecuteMenuAction("OpenTheme"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.KeyboardShortcuts"), "Ctrl+K Ctrl+S", () => _mainWindow.ExecuteMenuAction("OpenKeyboardShortcuts"));
 
         AddSeparator(panel);
         AddHeader(panel, LocalizationService.Get("Menu.NuGetHeader"));
         AddMenuItem(panel, LocalizationService.Get("Menu.ManageNuGet"), "Ctrl+Shift+N", () => _mainWindow.ExecuteMenuAction("ManageNuGetPackages"));
     }
 
-    private void CreateHelpContent(StackPanel panel)
-    {
-        AddHeader(panel, LocalizationService.Get("Menu.HelpHeader"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.Documentation"), "F1", () => _mainWindow.ExecuteMenuAction("OpenDocumentation"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.GettingStarted"), "", () => _mainWindow.ExecuteMenuAction("GettingStarted"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.KeyboardShortcutsHelp"), "", () => _mainWindow.ExecuteMenuAction("ShowKeyboardShortcuts"));
-
-        AddSeparator(panel);
-        AddHeader(panel, LocalizationService.Get("Menu.Feedback"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.ReportIssue"), "", () => _mainWindow.ExecuteMenuAction("ReportIssue"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.FeatureRequest"), "", () => _mainWindow.ExecuteMenuAction("FeatureRequest"));
-
-        AddSeparator(panel);
-        AddHeader(panel, LocalizationService.Get("Menu.About"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.AboutInsait"), "", () => _mainWindow.ExecuteMenuAction("ShowAbout"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.CheckUpdates"), "", () => _mainWindow.ExecuteMenuAction("CheckForUpdates"));
-    }
 
     private void CreateLanguageContent(StackPanel panel)
     {

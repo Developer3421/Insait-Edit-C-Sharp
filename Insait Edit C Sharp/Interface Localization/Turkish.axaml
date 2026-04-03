@@ -646,6 +646,7 @@
     <x:String x:Key="Git.RevertOptionDescription">↩ Geri al — bu commit'in tersini yeni bir commit olarak uygular (güvenli, geçmiş korunur).</x:String>
     <x:String x:Key="Git.ResetRootButton">⚠ Başlangıç durumuna sıfırla (hard reset)</x:String>
     <x:String x:Key="Git.ResetButton">⚠ BU commit'e sıfırla (hard reset — daha yeni commit'ler kaybolur)</x:String>
+    <x:String x:Key="Git.ResetToCommitButton">Projeyi bu commit'e sıfırla</x:String>
     <x:String x:Key="Git.ResetRootDescription">Sıfırlama — projeyi ilk commit durumuna tam olarak geri getirir. Sonraki tüm commit'ler ve yerel değişiklikler kaybolur.</x:String>
     <x:String x:Key="Git.ResetDescription">Sıfırlama — HEAD'i (ve dalı) bu commit'e geri taşır. Daha yeni tüm commit'ler ve yerel değişiklikler KALICI OLARAK KAYBOLUR.</x:String>
     <x:String x:Key="Git.Reverting">Geri alınıyor…</x:String>
@@ -1161,6 +1162,10 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="NuGet.Project.Label">Proje:</x:String>
     <x:String x:Key="NuGet.Tooltip.Refresh">Yenile</x:String>
     <x:String x:Key="NuGet.ByAuthor">{0} tarafından</x:String>
+    <x:String x:Key="NuGet.PackageNamePlaceholder">Paket Adı</x:String>
+    <x:String x:Key="NuGet.ByAuthorPlaceholder">yazar tarafından</x:String>
+    <x:String x:Key="NuGet.NotAvailable">Yok</x:String>
+    <x:String x:Key="NuGet.AbsoluteDateFormat">dd.MM.yyyy</x:String>
     <x:String x:Key="NuGet.InstalledVersion">Yüklü: v{0}</x:String>
     <x:String x:Key="NuGet.InstalledCount">{0} paket yüklü</x:String>
     <x:String x:Key="NuGet.UpdatesAvailable">{0} güncelleme mevcut</x:String>

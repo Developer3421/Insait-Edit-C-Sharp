@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -71,14 +72,21 @@ public partial class NuGetPanelControl : UserControl
         var searchPlaceholder = this.FindControl<TextBlock>("SearchPlaceholder");
         if (searchPlaceholder != null) searchPlaceholder.Text = L("NuGet.SearchAbove");
         var projectName = this.FindControl<TextBlock>("ProjectNameText");
-        if (projectName != null && projectName.Text == "No project loaded") projectName.Text = L("NuGet.NoProject");
-        var browseTab = this.FindControl<Button>("BrowseTabBtn");
-        if (browseTab != null) browseTab.Content = L("NuGet.Browse");
-        var installedTab = this.FindControl<Button>("InstalledTabBtn");
-        if (installedTab != null) installedTab.Content = L("NuGet.Installed");
-        var updatesTab = this.FindControl<Button>("UpdatesTabBtn");
-        if (updatesTab != null) updatesTab.Content = L("NuGet.Updates");
-        var updateAllBtn = this.FindControl<Button>("UpdateAllBtn");
+        if (projectName != null && string.IsNullOrEmpty(_projectPath)) projectName.Text = L("NuGet.NoProject");
+        var projectLabel = this.FindControl<TextBlock>("ProjectLabelText");
+        if (projectLabel != null) projectLabel.Text = L("NuGet.Project.Label");
+        var browseTabText = this.FindControl<TextBlock>("BrowseTabText");
+        if (browseTabText != null) browseTabText.Text = L("NuGet.Browse");
+        var installedTabText = this.FindControl<TextBlock>("InstalledTabText");
+        if (installedTabText != null) installedTabText.Text = L("NuGet.Installed");
+        var updatesTabText = this.FindControl<TextBlock>("UpdatesTabText");
+        if (updatesTabText != null)
+        {
+            updatesTabText.Text = _updatablePackages.Count > 0
+                ? string.Format(L("NuGet.UpdatesTabBadge"), _updatablePackages.Count)
+                : L("NuGet.Updates");
+        }
+        var updateAllBtn = this.FindControl<Button>("UpdateAllButton");
         if (updateAllBtn != null) updateAllBtn.Content = L("NuGet.UpdateAll");
         // Update tooltip strings for icon buttons
         var refreshBtn = this.FindControl<Button>("RefreshButton");
@@ -111,18 +119,30 @@ public partial class NuGetPanelControl : UserControl
         if (projectLinkText != null) projectLinkText.Text = L("NuGet.ProjectLink");
         var verifiedBadgeText = this.FindControl<TextBlock>("VerifiedBadgeText");
         if (verifiedBadgeText != null) verifiedBadgeText.Text = L("NuGet.Verified");
+        var detailTitleText = this.FindControl<TextBlock>("DetailTitleText");
+        if (detailTitleText != null && _selectedPackage == null) detailTitleText.Text = L("NuGet.PackageNamePlaceholder");
+        var detailAuthorText = this.FindControl<TextBlock>("DetailAuthorText");
+        if (detailAuthorText != null && _selectedPackage == null) detailAuthorText.Text = L("NuGet.ByAuthorPlaceholder");
+        var detailDescriptionText = this.FindControl<TextBlock>("DetailDescriptionText");
+        if (detailDescriptionText != null && _selectedPackage == null) detailDescriptionText.Text = L("NuGet.NoDescription");
         var uninstallBtnText = this.FindControl<TextBlock>("UninstallButtonText");
         if (uninstallBtnText != null) uninstallBtnText.Text = L("NuGet.Uninstall");
+        var installBtnText = this.FindControl<TextBlock>("InstallButtonText");
+        if (installBtnText != null && _selectedPackage == null) installBtnText.Text = L("NuGet.Install");
+        var loadingText = this.FindControl<TextBlock>("LoadingText");
+        if (loadingText != null) loadingText.Text = L("NuGet.Loading");
+        var updatesCountText = this.FindControl<TextBlock>("UpdatesCountText");
+        if (updatesCountText != null) updatesCountText.Text = string.Format(L("NuGet.UpdatesAvailable"), _updatablePackages.Count);
     }
 
     private void InitializeBrushes()
     {
-        _textBrush = new SolidColorBrush(Color.Parse("#FFF0E8F4"));
-        _textMutedBrush = new SolidColorBrush(Color.Parse("#FF9E90B0"));
-        _accentBrush = new SolidColorBrush(Color.Parse("#FF9B7DCF"));
-        _orangeBrush = new SolidColorBrush(Color.Parse("#FFBB9A6F"));
-        _greenBrush = new SolidColorBrush(Color.Parse("#FF6AAB73"));
-        _blueBrush = new SolidColorBrush(Color.Parse("#FF548AF7"));
+        _textBrush = new SolidColorBrush(Color.Parse("#FFF5EBDD"));
+        _textMutedBrush = new SolidColorBrush(Color.Parse("#FFB89B82"));
+        _accentBrush = new SolidColorBrush(Color.Parse("#FFFFC09F"));
+        _orangeBrush = new SolidColorBrush(Color.Parse("#FFFFA95C"));
+        _greenBrush = new SolidColorBrush(Color.Parse("#FFFFB36B"));
+        _blueBrush = new SolidColorBrush(Color.Parse("#FFFF8C42"));
     }
 
     /// <summary>
@@ -299,7 +319,7 @@ public partial class NuGetPanelControl : UserControl
             Width = 32,
             Height = 32,
             CornerRadius = new CornerRadius(6),
-            Background = new SolidColorBrush(Color.Parse("#12CBA6F7")),
+            Background = new SolidColorBrush(Color.Parse("#14FFC09F")),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
             Margin = new Thickness(0, 2, 0, 0),
             ClipToBounds = true
@@ -347,7 +367,7 @@ public partial class NuGetPanelControl : UserControl
         {
             titleRow.Children.Add(new Border
             {
-                Background = new SolidColorBrush(Color.Parse("#309B7DCF")),
+                Background = new SolidColorBrush(Color.Parse("#30FFC09F")),
                 CornerRadius = new CornerRadius(3),
                 Padding = new Thickness(4, 1),
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
@@ -390,7 +410,9 @@ public partial class NuGetPanelControl : UserControl
         var statsRow = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 12, Margin = new Thickness(0, 4, 0, 0) };
         statsRow.Children.Add(new TextBlock
         {
-            Text = package.TotalDownloads > 0 ? $"📥 {package.FormattedDownloads}" : "📥 N/A",
+            Text = package.TotalDownloads > 0
+                ? $"📥 {package.FormattedDownloads}"
+                : $"📥 {LocalizationService.Get("NuGet.NotAvailable")}",
             FontSize = 10,
             FontFamily = EmojiFont,
             Foreground = _textMutedBrush
@@ -524,7 +546,7 @@ public partial class NuGetPanelControl : UserControl
             Width = 32,
             Height = 32,
             CornerRadius = new CornerRadius(6),
-            Background = new SolidColorBrush(Color.Parse("#12CBA6F7")),
+            Background = new SolidColorBrush(Color.Parse("#14FFC09F")),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
             Margin = new Thickness(0, 2, 0, 0),
             ClipToBounds = true
@@ -836,14 +858,14 @@ public partial class NuGetPanelControl : UserControl
         // Downloads: show formatted number or "N/A" when unavailable
         if (downloadsText != null)
         {
-            downloadsText.Text = package.TotalDownloads > 0 ? package.FormattedDownloads : "N/A";
+            downloadsText.Text = package.TotalDownloads > 0 ? package.FormattedDownloads : LocalizationService.Get("NuGet.NotAvailable");
         }
 
         // Format published date properly
         if (publishedText != null)
         {
             publishedText.Text = package.Published != DateTime.MinValue
-                ? package.Published.ToString("MMM dd, yyyy")
+                ? package.Published.ToString(LocalizationService.Get("NuGet.AbsoluteDateFormat"), CultureInfo.CurrentUICulture)
                 : "—";
         }
 
@@ -927,7 +949,7 @@ public partial class NuGetPanelControl : UserControl
         {
             var tagBorder = new Border
             {
-                Background = new SolidColorBrush(Color.Parse("#209B7DCF")),
+                Background = new SolidColorBrush(Color.Parse("#20FFC09F")),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(8, 3),
                 Margin = new Thickness(0, 0, 4, 4)

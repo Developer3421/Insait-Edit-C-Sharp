@@ -6,14 +6,16 @@
              x:Class="Insait_Edit_C_Sharp.Controls.SettingsPanelControl">
     
     <UserControl.Resources>
-        <SolidColorBrush x:Key="SettingsBgBrush" Color="#FF2A2230"/>
-        <SolidColorBrush x:Key="SettingsSurfaceBrush" Color="#FF1F1A24"/>
-        <SolidColorBrush x:Key="SettingsBorderBrush" Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="SettingsBgBrush" Color="#FF1A0F08"/>
+        <SolidColorBrush x:Key="SettingsSurfaceBrush" Color="#FF231508"/>
+        <SolidColorBrush x:Key="SettingsBorderBrush" Color="#FF7A3810"/>
         <SolidColorBrush x:Key="SettingsTextBrush" Color="#FFF0E8F4"/>
-        <SolidColorBrush x:Key="SettingsTextMutedBrush" Color="#FF9E90B0"/>
-        <SolidColorBrush x:Key="SettingsAccentBrush" Color="#FF9B7DCF"/>
-        <SolidColorBrush x:Key="SettingsYellowBrush" Color="#FFBB9A6F"/>
-        <SolidColorBrush x:Key="SettingsHoverBrush" Color="#FF3E3050"/>
+        <SolidColorBrush x:Key="SettingsTextMutedBrush" Color="#FFB89B82"/>
+        <SolidColorBrush x:Key="SettingsAccentBrush" Color="#FFFFC09F"/>
+        <SolidColorBrush x:Key="SettingsAccentHoverBrush" Color="#FFFFD4B8"/>
+        <SolidColorBrush x:Key="SettingsAccentPressedBrush" Color="#FFE09070"/>
+        <SolidColorBrush x:Key="SettingsYellowBrush" Color="#FFFFA95C"/>
+        <SolidColorBrush x:Key="SettingsHoverBrush" Color="#4038180A"/>
         <SolidColorBrush x:Key="SettingsSuccessBrush" Color="#FF50C878"/>
         <SolidColorBrush x:Key="SettingsErrorBrush" Color="#FFF38BA8"/>
     </UserControl.Resources>
@@ -22,7 +24,7 @@
         <!-- Primary Button -->
         <Style Selector="Button.settings-primary">
             <Setter Property="Background" Value="{StaticResource SettingsAccentBrush}"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="CornerRadius" Value="6"/>
@@ -31,10 +33,10 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.settings-primary:pointerover">
-            <Setter Property="Background" Value="#FFB09AE0"/>
+            <Setter Property="Background" Value="{StaticResource SettingsAccentHoverBrush}"/>
         </Style>
         <Style Selector="Button.settings-primary:pressed">
-            <Setter Property="Background" Value="#FF8060C0"/>
+            <Setter Property="Background" Value="{StaticResource SettingsAccentPressedBrush}"/>
         </Style>
         
         <!-- Secondary Button -->
@@ -49,11 +51,12 @@
         </Style>
         <Style Selector="Button.settings-secondary:pointerover">
             <Setter Property="Background" Value="{StaticResource SettingsHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SettingsAccentBrush}"/>
         </Style>
         
         <!-- Browse Button -->
         <Style Selector="Button.settings-browse">
-            <Setter Property="Background" Value="{StaticResource SettingsBorderBrush}"/>
+            <Setter Property="Background" Value="#FF4A2410"/>
             <Setter Property="Foreground" Value="{StaticResource SettingsTextBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="10,6"/>
@@ -77,6 +80,10 @@
         <Style Selector="Button.icon-btn:pointerover">
             <Setter Property="Background" Value="{StaticResource SettingsHoverBrush}"/>
         </Style>
+
+        <Style Selector="TextBlock.settings-emoji">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>
+        </Style>
         
         <!-- TextBox -->
         <Style Selector="TextBox">
@@ -98,7 +105,7 @@
     <Grid RowDefinitions="Auto,*" Background="{StaticResource SettingsSurfaceBrush}">
         
         <!-- Header -->
-        <Border Grid.Row="0" Padding="12,10" Background="#12DCC4FF" 
+        <Border Grid.Row="0" Padding="12,10" Background="#20000000" 
                 BorderBrush="{StaticResource SettingsBorderBrush}" BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Name="HeaderTitleText" Text="{DynamicResource Settings.Header}" FontSize="11" FontWeight="SemiBold" 
@@ -106,7 +113,7 @@
                            LetterSpacing="1"/>
                 <Button Grid.Column="1" Classes="icon-btn" ToolTip.Tip="{DynamicResource Settings.ResetTooltip}" 
                         Name="ResetButton" Click="Reset_Click">
-                    <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    <TextBlock Text="🔄" FontSize="12" Classes="settings-emoji"/>
                 </Button>
             </Grid>
         </Border>
@@ -117,8 +124,7 @@
                 
                 <!-- .NET SDK Path -->
                 <TextBlock Text="{DynamicResource Settings.DotNetSdkTitle}" FontSize="13" FontWeight="SemiBold" 
-                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
-                           FontFamily="Segoe UI Emoji"/>
+                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"/>
                 <TextBlock Text="{DynamicResource Settings.DotNetSdkDesc}" FontSize="11" 
                            Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
@@ -129,7 +135,8 @@
                             Click="BrowseDotNetSdk_Click" ToolTip.Tip="Browse for .NET SDK folder"/>
                 </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-                    <TextBlock Name="DotNetSdkStatus" Text="" FontSize="10" 
+                    <TextBlock Name="DotNetSdkStatusIcon" Text="" FontSize="11" Classes="settings-emoji"/>
+                    <TextBlock Name="DotNetSdkStatusText" Text="" FontSize="10"
                                Foreground="{StaticResource SettingsTextMutedBrush}"/>
                 </StackPanel>
                 
@@ -137,8 +144,7 @@
                 
                 <!-- GitHub CLI Path -->
                 <TextBlock Text="{DynamicResource Settings.GitHubCliTitle}" FontSize="13" FontWeight="SemiBold" 
-                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
-                           FontFamily="Segoe UI Emoji"/>
+                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"/>
                 <TextBlock Text="{DynamicResource Settings.GitHubCliDesc}" 
                            FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
@@ -149,15 +155,15 @@
                             Click="BrowseGitHubCli_Click" ToolTip.Tip="Browse for gh.exe"/>
                 </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-                    <TextBlock Name="GitHubCliStatus" Text="" FontSize="10" 
+                    <TextBlock Name="GitHubCliStatusIcon" Text="" FontSize="11" Classes="settings-emoji"/>
+                    <TextBlock Name="GitHubCliStatusText" Text="" FontSize="10"
                                Foreground="{StaticResource SettingsTextMutedBrush}"/>
                 </StackPanel>
                 
                 <!-- Copilot CLI Path -->
                 <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
                 <TextBlock Text="{DynamicResource Settings.CopilotCliTitle}" FontSize="13" FontWeight="SemiBold" 
-                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
-                           FontFamily="Segoe UI Emoji"/>
+                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"/>
                 <TextBlock Text="{DynamicResource Settings.CopilotCliDesc}" 
                            FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
@@ -168,7 +174,8 @@
                             Click="BrowseCopilotCli_Click" ToolTip.Tip="Browse for copilot.exe"/>
                 </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-                    <TextBlock Name="CopilotCliStatus" Text="" FontSize="10" 
+                    <TextBlock Name="CopilotCliStatusIcon" Text="" FontSize="11" Classes="settings-emoji"/>
+                    <TextBlock Name="CopilotCliStatusText" Text="" FontSize="10"
                                Foreground="{StaticResource SettingsTextMutedBrush}"/>
                 </StackPanel>
                 
@@ -176,8 +183,7 @@
                 
                 <!-- SignTool Path -->
                 <TextBlock Text="{DynamicResource Settings.SignToolTitle}" FontSize="13" FontWeight="SemiBold" 
-                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
-                           FontFamily="Segoe UI Emoji"/>
+                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"/>
                 <TextBlock Text="{DynamicResource Settings.SignToolDesc}" 
                            FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
@@ -188,7 +194,8 @@
                             Click="BrowseSignTool_Click" ToolTip.Tip="Browse for signtool.exe"/>
                 </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-                    <TextBlock Name="SignToolStatus" Text="" FontSize="10" 
+                    <TextBlock Name="SignToolStatusIcon" Text="" FontSize="11" Classes="settings-emoji"/>
+                    <TextBlock Name="SignToolStatusText" Text="" FontSize="10"
                                Foreground="{StaticResource SettingsTextMutedBrush}"/>
                 </StackPanel>
                 
@@ -196,8 +203,7 @@
                 
                 <!-- MSBuild Path -->
                 <TextBlock Text="{DynamicResource Settings.MSBuildTitle}" FontSize="13" FontWeight="SemiBold" 
-                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"
-                           FontFamily="Segoe UI Emoji"/>
+                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"/>
                 <TextBlock Text="{DynamicResource Settings.MSBuildDesc}" 
                            FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
                            TextWrapping="Wrap"/>
@@ -208,7 +214,8 @@
                             Click="BrowseMSBuild_Click" ToolTip.Tip="Browse for MSBuild.exe"/>
                 </Grid>
                 <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-                    <TextBlock Name="MSBuildStatus" Text="" FontSize="10" 
+                    <TextBlock Name="MSBuildStatusIcon" Text="" FontSize="11" Classes="settings-emoji"/>
+                    <TextBlock Name="MSBuildStatusText" Text="" FontSize="10"
                                Foreground="{StaticResource SettingsTextMutedBrush}"/>
                 </StackPanel>
                 
@@ -225,9 +232,9 @@
                         Margin="0,0,0,8"/>
                 
                 <!-- Status Message -->
-                <Border Name="StatusBorder" Background="#20548AF7" CornerRadius="6" Padding="10,8" 
+                <Border Name="StatusBorder" Background="#20FFB36B" CornerRadius="6" Padding="10,8" 
                         IsVisible="False" Margin="0,4,0,0">
-                    <TextBlock Name="StatusMessageText" Text="" FontSize="12" 
+                    <TextBlock Name="StatusMessageText" Text="" FontSize="12" Classes="settings-emoji"
                                Foreground="{StaticResource SettingsTextBrush}" TextWrapping="Wrap"/>
                 </Border>
                 

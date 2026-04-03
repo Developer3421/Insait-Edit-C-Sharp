@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +30,10 @@ public sealed class QuickFixService : IDisposable
     private ProjectId?  _projectId;
     private DocumentId? _documentId;
     private string?     _trackedFilePath;
+    private string?     _projectDir;
+    private List<string>? _projectCsFiles;
+    private readonly NuGetReferenceResolver _nugetResolver = new();
+    private List<MetadataReference>? _nugetRefs;
 
     // Well-known namespace → NuGet package mappings (like Rider does)
     private static readonly Dictionary<string, string[]> NamespaceToNuGet = new(StringComparer.Ordinal)
@@ -72,6 +77,19 @@ public sealed class QuickFixService : IDisposable
         _host      = MefHostServices.Create(BuildMefAssemblies());
         _workspace = new AdhocWorkspace(_host);
         _defaultRefs = RoslynCompletionEngine.CollectPublicDefaultReferences();
+    }
+
+    public void SetProjectContext(string? projectDir)
+    {
+        if (string.Equals(_projectDir, projectDir, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _projectDir = projectDir;
+        _projectCsFiles = null;
+        _trackedFilePath = null;
+
+        _nugetResolver.InvalidateCache();
+        _nugetRefs = _nugetResolver.Resolve(projectDir);
     }
 
     /// <summary>
@@ -431,27 +449,86 @@ public sealed class QuickFixService : IDisposable
         var projectId  = ProjectId.CreateNewId();
         var documentId = DocumentId.CreateNewId(projectId);
 
+        var allRefs = new List<MetadataReference>(_defaultRefs);
+        if (_nugetRefs != null && _nugetRefs.Count > 0)
+        {
+            var existingPaths = new HashSet<string>(_defaultRefs.Select(r => r.Display ?? string.Empty), StringComparer.OrdinalIgnoreCase);
+            foreach (var nugetRef in _nugetRefs)
+            {
+                if (nugetRef.Display != null && existingPaths.Add(nugetRef.Display))
+                    allRefs.Add(nugetRef);
+            }
+        }
+
         var info = ProjectInfo.Create(
             projectId, VersionStamp.Create(),
             "LiveFix", "LiveFix", LanguageNames.CSharp,
             compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable),
             parseOptions: new CSharpParseOptions(LanguageVersion.Latest),
-            metadataReferences: _defaultRefs);
+            metadataReferences: allRefs);
 
         var sol = _workspace.CurrentSolution.AddProject(info);
         var docInfo = DocumentInfo.Create(
             documentId,
-            System.IO.Path.GetFileName(filePath),
+            filePath,
             loader: TextLoader.From(TextAndVersion.Create(SourceText.From(sourceCode), VersionStamp.Create())),
             filePath: filePath);
 
         sol = sol.AddDocument(docInfo);
+
+        var contextFiles = GetProjectCsFiles();
+        foreach (var csFile in contextFiles)
+        {
+            if (string.Equals(csFile, filePath, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            try
+            {
+                var auxDid = DocumentId.CreateNewId(projectId);
+                var auxText = File.ReadAllText(csFile);
+                sol = sol.AddDocument(DocumentInfo.Create(auxDid, csFile,
+                    loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
+                    filePath: csFile));
+            }
+            catch
+            {
+                // Skip unreadable context files.
+            }
+        }
+
         _workspace.TryApplyChanges(sol);
 
         _projectId       = projectId;
         _documentId      = documentId;
         _trackedFilePath = filePath;
+    }
+
+    private List<string> GetProjectCsFiles()
+    {
+        if (_projectCsFiles != null) return _projectCsFiles;
+
+        _projectCsFiles = new List<string>();
+        if (string.IsNullOrEmpty(_projectDir) || !Directory.Exists(_projectDir))
+            return _projectCsFiles;
+
+        try
+        {
+            foreach (var f in Directory.GetFiles(_projectDir, "*.cs", SearchOption.AllDirectories))
+            {
+                if (f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) ||
+                    f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
+                    continue;
+
+                _projectCsFiles.Add(f);
+            }
+        }
+        catch
+        {
+            // Ignore IO/access errors while enumerating project files.
+        }
+
+        return _projectCsFiles;
     }
 
     private static IEnumerable<Assembly> BuildMefAssemblies()

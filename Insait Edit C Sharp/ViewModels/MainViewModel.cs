@@ -1003,6 +1003,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             _refreshDebounceTimer.Elapsed += OnRefreshDebounceTimerElapsed;
 
             // Subscribe to events
+            _fileWatcher.Changed += OnFileSystemChanged;
             _fileWatcher.Created += OnFileSystemChanged;
             _fileWatcher.Deleted += OnFileSystemChanged;
             _fileWatcher.Renamed += OnFileSystemRenamed;

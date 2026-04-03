@@ -508,6 +508,46 @@ public sealed class RoslynCompletionEngine : IDisposable
     {
         var refs = new List<MetadataReference>();
 
+        if (TryAddReferencePackAssemblies(refs))
+            return refs;
+
+        AddRuntimeFallbackReferences(refs);
+
+        return refs;
+    }
+
+    private static bool TryAddReferencePackAssemblies(List<MetadataReference> refs)
+    {
+        var anyAdded = false;
+
+        foreach (var refDir in GetReferencePackDirectories())
+        {
+            if (!Directory.Exists(refDir))
+                continue;
+
+            try
+            {
+                foreach (var dll in Directory.GetFiles(refDir, "*.dll", SearchOption.TopDirectoryOnly))
+                {
+                    TryAdd(refs, dll);
+                    anyAdded = true;
+                }
+            }
+            catch
+            {
+                // Ignore broken targeting pack directories and continue with fallbacks.
+            }
+        }
+
+        var privateUriPath = GetSharedFrameworkAssemblyPath("System.Private.Uri.dll");
+        if (!string.IsNullOrEmpty(privateUriPath))
+            TryAdd(refs, privateUriPath);
+
+        return anyAdded;
+    }
+
+    private static void AddRuntimeFallbackReferences(List<MetadataReference> refs)
+    {
         // Runtime directory
         var runtimeDir = Path.GetDirectoryName(typeof(object).Assembly.Location) ?? "";
         var coreAssemblies = new[]
@@ -523,6 +563,7 @@ public sealed class RoslynCompletionEngine : IDisposable
             "System.IO.FileSystem.dll",
             "System.Text.RegularExpressions.dll",
             "System.Net.Http.dll",
+            "System.Private.Uri.dll",
             "netstandard.dll",
             "System.Private.CoreLib.dll",
             "System.ObjectModel.dll",
@@ -540,11 +581,98 @@ public sealed class RoslynCompletionEngine : IDisposable
                 TryAdd(refs, path);
         }
 
+        var sharedPrivateUri = GetSharedFrameworkAssemblyPath("System.Private.Uri.dll");
+        if (!string.IsNullOrEmpty(sharedPrivateUri))
+            TryAdd(refs, sharedPrivateUri);
+
         TryAdd(refs, typeof(object).Assembly.Location);
         TryAdd(refs, typeof(Enumerable).Assembly.Location);
         TryAdd(refs, typeof(System.Text.StringBuilder).Assembly.Location);
+    }
 
-        return refs;
+    private static IEnumerable<string> GetReferencePackDirectories()
+    {
+        var dotnetRoot = GetDotNetRoot();
+        if (string.IsNullOrWhiteSpace(dotnetRoot) || !Directory.Exists(dotnetRoot))
+            yield break;
+
+        foreach (var dir in GetLatestPackReferenceDirs(dotnetRoot, "Microsoft.NETCore.App.Ref", new[] { "net10.0", "net9.0", "net8.0", "net7.0", "net6.0" }))
+            yield return dir;
+
+        foreach (var dir in GetLatestPackReferenceDirs(dotnetRoot, "Microsoft.WindowsDesktop.App.Ref", new[] { "net10.0", "net9.0", "net8.0", "net7.0", "net6.0" }))
+            yield return dir;
+    }
+
+    private static IEnumerable<string> GetLatestPackReferenceDirs(string dotnetRoot, string packName, IReadOnlyList<string> tfms)
+    {
+        var packRoot = Path.Combine(dotnetRoot, "packs", packName);
+        if (!Directory.Exists(packRoot))
+            yield break;
+
+        IEnumerable<string> versionDirs;
+        try
+        {
+            versionDirs = Directory.GetDirectories(packRoot)
+                .OrderByDescending(Path.GetFileName, StringComparer.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            yield break;
+        }
+
+        foreach (var versionDir in versionDirs)
+        {
+            foreach (var tfm in tfms)
+            {
+                var refDir = Path.Combine(versionDir, "ref", tfm);
+                if (Directory.Exists(refDir))
+                {
+                    yield return refDir;
+                    yield break;
+                }
+            }
+        }
+    }
+
+    private static string? GetSharedFrameworkAssemblyPath(string assemblyName)
+    {
+        var dotnetRoot = GetDotNetRoot();
+        if (string.IsNullOrWhiteSpace(dotnetRoot) || !Directory.Exists(dotnetRoot))
+            return null;
+
+        var sharedRoot = Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App");
+        if (!Directory.Exists(sharedRoot))
+            return null;
+
+        try
+        {
+            foreach (var versionDir in Directory.GetDirectories(sharedRoot)
+                         .OrderByDescending(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
+            {
+                var candidate = Path.Combine(versionDir, assemblyName);
+                if (File.Exists(candidate))
+                    return candidate;
+            }
+        }
+        catch
+        {
+            // Ignore probe errors.
+        }
+
+        return null;
+    }
+
+    private static string? GetDotNetRoot()
+    {
+        var candidates = new[]
+        {
+            Environment.GetEnvironmentVariable("DOTNET_ROOT"),
+            Environment.GetEnvironmentVariable("DOTNET_ROOT(x86)"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+        };
+
+        return candidates.FirstOrDefault(path => !string.IsNullOrWhiteSpace(path) && Directory.Exists(path));
     }
 
     private static void TryAdd(List<MetadataReference> list, string path)

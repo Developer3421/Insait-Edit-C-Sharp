@@ -223,6 +223,7 @@ public partial class InsaitEditor : UserControl
         _surface.SetProjectContext(projectDir);
         _completionEngine.SetProjectContext(projectDir);
         _diagService.SetProjectContext(projectDir);
+        _quickFixService.SetProjectContext(projectDir);
     }
 
     public void ApplyExternalDiagnostics(IEnumerable<DiagnosticSpan> spans)
@@ -261,9 +262,7 @@ public partial class InsaitEditor : UserControl
     // ═══════════════════════════════════════════════════════════════════════
     private void ScheduleDiagnostics()
     {
-        if (!_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
-             _currentFilePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase) ||
-             _currentFilePath.EndsWith(".xaml.cs", StringComparison.OrdinalIgnoreCase))
+        if (!_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
             return;
         _diagService.ScheduleAnalysis(_currentFilePath, _surface.Text);
     }

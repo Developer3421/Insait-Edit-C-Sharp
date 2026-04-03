@@ -650,6 +650,7 @@
     <x:String x:Key="Git.RevertOptionDescription">↩ Откатить — применяет обратную версию этого коммита как новый коммит (безопасно, история сохраняется).</x:String>
     <x:String x:Key="Git.ResetRootButton">⚠ Сбросить к начальному состоянию (hard reset)</x:String>
     <x:String x:Key="Git.ResetButton">⚠ Сбросить ДО этого коммита (hard reset — новые коммиты будут потеряны)</x:String>
+    <x:String x:Key="Git.ResetToCommitButton">Сбросить проект к этому коммиту</x:String>
     <x:String x:Key="Git.ResetRootDescription">Сброс — полностью восстанавливает состояние проекта на момент начального коммита. Все последующие коммиты и локальные изменения будут потеряны.</x:String>
     <x:String x:Key="Git.ResetDescription">Сброс — возвращает HEAD (и ветку) к этому коммиту. Все более новые коммиты и локальные изменения БУДУТ ПОТЕРЯНЫ безвозвратно.</x:String>
     <x:String x:Key="Git.Reverting">Откат…</x:String>
@@ -1165,6 +1166,10 @@
     <x:String x:Key="NuGet.Project.Label">Проект:</x:String>
     <x:String x:Key="NuGet.Tooltip.Refresh">Обновить</x:String>
     <x:String x:Key="NuGet.ByAuthor">от {0}</x:String>
+    <x:String x:Key="NuGet.PackageNamePlaceholder">Название пакета</x:String>
+    <x:String x:Key="NuGet.ByAuthorPlaceholder">от автора</x:String>
+    <x:String x:Key="NuGet.NotAvailable">Н/Д</x:String>
+    <x:String x:Key="NuGet.AbsoluteDateFormat">dd.MM.yyyy</x:String>
     <x:String x:Key="NuGet.InstalledVersion">Установлен: v{0}</x:String>
     <x:String x:Key="NuGet.InstalledCount">{0} пакет(ов) установлено</x:String>
     <x:String x:Key="NuGet.UpdatesAvailable">{0} обновлений доступно</x:String>

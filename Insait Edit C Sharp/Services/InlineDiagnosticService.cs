@@ -101,8 +101,7 @@ public sealed class InlineDiagnosticService : IDisposable
 
     private async Task RunAnalysisAsync(string filePath, string sourceCode, CancellationToken ct)
     {
-        var isCsharp = filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) &&
-                       !filePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase);
+        var isCsharp = filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase);
 
         List<DiagnosticSpan> spans;
 
@@ -192,6 +191,7 @@ public sealed class InlineDiagnosticService : IDisposable
         _nugetResolver.InvalidateCache();
         _nugetRefs = _nugetResolver.Resolve(projectDir);
         _hasNuGetRefs = _nugetRefs.Count > 0;
+        _quickFixService.SetProjectContext(projectDir);
         
         System.Diagnostics.Debug.WriteLine(
             $"[InlineDiag] Project context: {projectDir}, NuGet refs: {_nugetRefs.Count}, fallback mode: {!_hasNuGetRefs}");

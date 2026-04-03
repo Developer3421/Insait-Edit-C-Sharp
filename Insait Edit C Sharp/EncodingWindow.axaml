@@ -1,0 +1,99 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.EncodingWindow"
+        Title="File Encoding"
+        Width="470"
+        Height="250"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="Transparent">
+
+    <Window.Styles>
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="ComboBoxItem">
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="Background" Value="#FF2A2230"/>
+        </Style>
+        <Style Selector="Button.ok-btn">
+            <Setter Property="Background" Value="#FFFFC09F"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.ok-btn:pointerover">
+            <Setter Property="Background" Value="#FFFFD4B8"/>
+        </Style>
+        <Style Selector="Button.cancel-btn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FF9E90B0"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.cancel-btn:pointerover">
+            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+        </Style>
+    </Window.Styles>
+
+    <Border Background="#FF1F1A24"
+            BorderBrush="#FF7C3AED"
+            BorderThickness="1"
+            CornerRadius="10"
+            ClipToBounds="True">
+        <Border.Effect>
+            <DropShadowEffect Color="#CC3E1060" BlurRadius="24" OffsetX="0" OffsetY="8" Opacity="0.8"/>
+        </Border.Effect>
+
+        <Grid RowDefinitions="Auto,*,Auto">
+            <Border Name="TitleBar" Grid.Row="0" Background="#18DCC4FF" Padding="14,8" CornerRadius="10,10,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🔤" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                        <TextBlock Text="Change File Encoding" FontSize="13" FontWeight="SemiBold" Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Name="CloseTitleBtn"
+                            Content="✕" Width="28" Height="28"
+                            Background="Transparent" Foreground="#FF9E90B0"
+                            BorderThickness="0" FontSize="13" Cursor="Hand"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="1" Margin="16,14,16,10" Spacing="10">
+                <TextBlock Name="FileNameText" Text="Current file" FontSize="12" Foreground="#FFFFC09F"/>
+                <TextBlock Text="Select the encoding that will be used when the file is saved." FontSize="12" Foreground="#FF9E90B0" TextWrapping="Wrap"/>
+                <ComboBox Name="EncodingComboBox"/>
+                <Border Background="#FF2A2230" BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                    <TextBlock Name="EncodingDescriptionText" Text="" FontSize="12" Foreground="#FFD0C8E0" TextWrapping="Wrap"/>
+                </Border>
+            </StackPanel>
+
+            <Border Grid.Row="2" Padding="16,8" Background="#10DCC4FF" CornerRadius="0,0,10,10">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                    <Button Name="CancelBtn" Classes="cancel-btn" Content="Cancel"/>
+                    <Button Name="ApplyBtn" Classes="ok-btn" Content="Apply"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+

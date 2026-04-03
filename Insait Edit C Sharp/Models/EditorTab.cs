@@ -23,6 +23,10 @@ public class EditorTab : INotifyPropertyChanged
     private int _errorCount;
     private int _warningCount;
     private bool _isWelcomeTab;
+    private string _encodingKind = "utf8";
+    private string _lineEnding = "\r\n";
+    private bool _usesTabs;
+    private int _indentSize = 4;
 
     public string Id 
     { 
@@ -70,6 +74,43 @@ public class EditorTab : INotifyPropertyChanged
     { 
         get => _isActive; 
         set => SetProperty(ref _isActive, value); 
+    }
+
+    /// <summary>
+    /// Save encoding identifier used when writing the file to disk.
+    /// Examples: utf8, utf8bom, utf16le, utf16be.
+    /// </summary>
+    public string EncodingKind
+    {
+        get => _encodingKind;
+        set => SetProperty(ref _encodingKind, value);
+    }
+
+    /// <summary>
+    /// Preferred line ending sequence for saving the file.
+    /// </summary>
+    public string LineEnding
+    {
+        get => _lineEnding;
+        set => SetProperty(ref _lineEnding, value);
+    }
+
+    /// <summary>
+    /// Whether indentation should primarily use tabs.
+    /// </summary>
+    public bool UsesTabs
+    {
+        get => _usesTabs;
+        set => SetProperty(ref _usesTabs, value);
+    }
+
+    /// <summary>
+    /// Preferred indentation width for spaces or tab stop size.
+    /// </summary>
+    public int IndentSize
+    {
+        get => _indentSize;
+        set => SetProperty(ref _indentSize, value < 1 ? 1 : value);
     }
     
     public int CursorLine 

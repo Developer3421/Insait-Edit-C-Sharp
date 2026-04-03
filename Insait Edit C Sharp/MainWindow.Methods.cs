@@ -5,6 +5,7 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Insait_Edit_C_Sharp.Models;
+using Insait_Edit_C_Sharp.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -112,30 +113,40 @@ public partial class MainWindow
         var existingTab = _viewModel.FindTabByPath(filePath);
         if (existingTab != null)
         {
+            try
+            {
+                var existingData = ReadFileWithMetadata(filePath);
+                existingTab.EncodingKind = existingData.EncodingKind;
+                existingTab.LineEnding = existingData.LineEnding;
+                existingTab.UsesTabs = existingData.UsesTabs;
+                existingTab.IndentSize = existingData.IndentSize;
+            }
+            catch
+            {
+                // Ignore metadata refresh failures and keep the tab open.
+            }
+
             _viewModel.ActiveTab = existingTab;
             ShowTabInEditor(existingTab);
             UpdateAxamlPreviewButton();
+            UpdateEditorStatusBar();
             return;
         }
 
         try
         {
-            string content;
-            // Use FileShare.ReadWrite so we don't crash if GitHub Copilot CLI
-            // or another external tool currently has the file open for writing.
+            (string Content, string EncodingKind, string LineEnding, bool UsesTabs, int IndentSize) fileData;
             try
             {
-                using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using var sr = new StreamReader(fs, System.Text.Encoding.UTF8,
-                    detectEncodingFromByteOrderMarks: true);
-                content = sr.ReadToEnd();
+                fileData = ReadFileWithMetadata(filePath);
             }
             catch (IOException)
             {
-                // Fallback: give the other process a moment then try again
                 System.Threading.Thread.Sleep(100);
-                content = File.ReadAllText(filePath);
+                fileData = ReadFileWithMetadata(filePath);
             }
+
+            var content = fileData.Content;
             var language = GetLanguageForFile(filePath);
 
             var tab = new EditorTab
@@ -144,6 +155,10 @@ public partial class MainWindow
                 FilePath = filePath,
                 Content = content,
                 Language = language,
+                EncodingKind = fileData.EncodingKind,
+                LineEnding = fileData.LineEnding,
+                UsesTabs = fileData.UsesTabs,
+                IndentSize = fileData.IndentSize,
                 IsDirty = false
             };
 
@@ -151,6 +166,7 @@ public partial class MainWindow
             _viewModel.ActiveTab = tab;
             ShowTabInEditor(tab);
             UpdateAxamlPreviewButton();
+            UpdateEditorStatusBar();
 
             _viewModel.StatusText = $"Opened: {Path.GetFileName(filePath)}";
         }
@@ -182,6 +198,7 @@ public partial class MainWindow
         if (tab.IsWelcomeTab)
         {
             UpdateTabButtonStyles();
+            UpdateEditorStatusBar();
             return;
         }
 
@@ -193,13 +210,14 @@ public partial class MainWindow
             editor.SetFilePath(tab.FilePath);
 
         // Set project context so all project .cs files are available for Roslyn
-        editor.SetProjectContext(_projectPath ?? _viewModel.CurrentProjectPath);
+        editor.SetProjectContext(GetRoslynProjectContextPath(tab.FilePath));
 
         // Push content with language hint
         editor.SetContent(tab.Content, tab.Language);
 
         // Update tab visual styles (active + error/warning indicators)
         UpdateTabButtonStyles();
+        UpdateEditorStatusBar();
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -278,6 +296,33 @@ public partial class MainWindow
         }
 
         return path;
+    }
+
+    private string? GetRoslynProjectContextPath(string? filePath)
+    {
+        if (!string.IsNullOrWhiteSpace(filePath) && File.Exists(filePath))
+        {
+            var dir = Path.GetDirectoryName(filePath);
+            while (!string.IsNullOrWhiteSpace(dir))
+            {
+                try
+                {
+                    var csproj = Directory.GetFiles(dir, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                    if (!string.IsNullOrEmpty(csproj))
+                        return Path.GetDirectoryName(csproj);
+                }
+                catch
+                {
+                    // Ignore directory probe errors and keep walking upward.
+                }
+
+                dir = Path.GetDirectoryName(dir);
+            }
+        }
+
+        var currentPath = GetCurrentProjectPath();
+        return NuGetReferenceResolver.ResolveProjectDirectory(currentPath)
+               ?? (File.Exists(currentPath) ? Path.GetDirectoryName(currentPath) : currentPath);
     }
 
     // ═══════════════════════════════════════════════════════════

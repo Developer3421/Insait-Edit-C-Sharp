@@ -43,6 +43,71 @@ public sealed class NuGetReferenceResolver
         return _cachedRefs;
     }
 
+    public static string? ResolveProjectDirectory(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+
+        if (File.Exists(path))
+        {
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            if (ext == ".csproj")
+                return Path.GetDirectoryName(path);
+
+            path = Path.GetDirectoryName(path);
+        }
+
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+            return null;
+
+        var csproj = FindCsproj(path);
+        return !string.IsNullOrEmpty(csproj)
+            ? Path.GetDirectoryName(csproj)
+            : path;
+    }
+
+    public static List<string> FindProjectFiles(string? path)
+    {
+        var projects = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(path))
+            return projects;
+
+        if (File.Exists(path))
+        {
+            if (string.Equals(Path.GetExtension(path), ".csproj", StringComparison.OrdinalIgnoreCase))
+                projects.Add(path);
+            else
+                projects.AddRange(FindProjectFiles(Path.GetDirectoryName(path)));
+            return projects.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        if (!Directory.Exists(path))
+            return projects;
+
+        try
+        {
+            projects.AddRange(Directory.GetFiles(path, "*.csproj", SearchOption.TopDirectoryOnly));
+
+            if (projects.Count == 0)
+            {
+                projects.AddRange(Directory.GetDirectories(path, "*", SearchOption.AllDirectories)
+                    .Where(d => !IsIgnoredDirectory(d))
+                    .SelectMany(d =>
+                    {
+                        try { return Directory.GetFiles(d, "*.csproj", SearchOption.TopDirectoryOnly); }
+                        catch { return Array.Empty<string>(); }
+                    }));
+            }
+        }
+        catch
+        {
+            // Ignore IO/access errors while probing project files.
+        }
+
+        return projects.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
     /// <summary>Invalidates the cache so the next Resolve() call re-scans.</summary>
     public void InvalidateCache()
     {
@@ -57,11 +122,14 @@ public sealed class NuGetReferenceResolver
         var refs = new List<MetadataReference>();
         var addedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        // Find .csproj in the directory
+        // Find the real .csproj and use its directory for assets/bin scanning.
         var csprojPath = FindCsproj(projectDir);
+        var effectiveProjectDir = !string.IsNullOrEmpty(csprojPath)
+            ? Path.GetDirectoryName(csprojPath) ?? projectDir
+            : projectDir;
 
         // Strategy 1: project.assets.json (best — full transitive closure)
-        var assetsRefs = ResolveFromAssetsJson(projectDir);
+        var assetsRefs = ResolveFromAssetsJson(effectiveProjectDir);
         foreach (var r in assetsRefs)
             if (addedPaths.Add(r.path))
                 refs.Add(r.reference);
@@ -84,7 +152,7 @@ public sealed class NuGetReferenceResolver
         }
 
         // Strategy 3: bin/ folder scan (picks up anything that was built)
-        var binRefs = ScanBinFolder(projectDir);
+        var binRefs = ScanBinFolder(effectiveProjectDir);
         foreach (var dll in binRefs)
         {
             if (addedPaths.Add(dll))
@@ -274,7 +342,7 @@ public sealed class NuGetReferenceResolver
             // Prefer net8.0 → net7.0 → net6.0 → netstandard2.1 → netstandard2.0
             var preferredTfms = new[]
             {
-                "net9.0", "net8.0", "net7.0", "net6.0",
+                "net10.0", "net9.0", "net8.0", "net7.0", "net6.0",
                 "netstandard2.1", "netstandard2.0",
                 "netcoreapp3.1", "netcoreapp3.0",
             };
@@ -317,7 +385,7 @@ public sealed class NuGetReferenceResolver
         {
             var preferredTfms = new[]
             {
-                "net9.0", "net8.0", "net7.0", "net6.0",
+                "net10.0", "net9.0", "net8.0", "net7.0", "net6.0",
                 "netstandard2.1", "netstandard2.0",
             };
 
@@ -402,10 +470,27 @@ public sealed class NuGetReferenceResolver
 
         try
         {
-            return Directory.GetFiles(projectDir, "*.csproj", SearchOption.TopDirectoryOnly)
+            var topLevel = Directory.GetFiles(projectDir, "*.csproj", SearchOption.TopDirectoryOnly)
                 .FirstOrDefault();
+            if (!string.IsNullOrEmpty(topLevel))
+                return topLevel;
+
+            return Directory.GetFiles(projectDir, "*.csproj", SearchOption.AllDirectories)
+                .FirstOrDefault(path => !IsIgnoredDirectory(Path.GetDirectoryName(path) ?? string.Empty));
         }
         catch { return null; }
+    }
+
+    private static bool IsIgnoredDirectory(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        var segments = path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        return segments.Any(segment =>
+            segment.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
+            segment.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
+            segment.Equals(".vs", StringComparison.OrdinalIgnoreCase));
     }
 
     private static void TryAdd(List<MetadataReference> list, string path)

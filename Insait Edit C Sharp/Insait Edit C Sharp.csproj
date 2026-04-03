@@ -104,6 +104,9 @@
       <Compile Update="MainWindow.Methods.cs">
         <DependentUpon>MenuWindow.axaml</DependentUpon>
       </Compile>
+      <Compile Update="Controls\ConfirmDialog.axaml.cs">
+        <DependentUpon>ConfirmDialog.axaml</DependentUpon>
+      </Compile>
       <Compile Update="PreviewErrorWindow.axaml.cs">
         <DependentUpon>PreviewErrorWindow.axaml</DependentUpon>
       </Compile>

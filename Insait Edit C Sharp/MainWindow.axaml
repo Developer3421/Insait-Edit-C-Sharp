@@ -57,8 +57,8 @@
         
         <!-- Sidebar Gradient -->
         <LinearGradientBrush x:Key="SidebarGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#FF241E2C" Offset="0"/>
-            <GradientStop Color="#FF1F1A24" Offset="1"/>
+            <GradientStop Color="#FFFF8830" Offset="0"/>
+            <GradientStop Color="#FFFF6A10" Offset="1"/>
         </LinearGradientBrush>
     </Window.Resources>
 
@@ -173,12 +173,12 @@
             <Setter Property="Margin" Value="0,2"/>
         </Style>
         <Style Selector="Button.sidebar-button:pointerover">
-            <Setter Property="Background" Value="#30FFFFFF"/>
+            <Setter Property="Background" Value="#30000000"/>
         </Style>
         <Style Selector="Button.sidebar-button.active">
-            <Setter Property="Background" Value="#30FFC09F"/>
-            <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
-            <Setter Property="BorderThickness" Value="0,0,2,0"/>
+            <Setter Property="Background" Value="#45000000"/>
+            <Setter Property="BorderBrush" Value="#FFFFFFFF"/>
+            <Setter Property="BorderThickness" Value="0,0,3,0"/>
         </Style>
 
         <!-- Panels -->
@@ -363,15 +363,15 @@
             <Setter Property="Foreground" Value="{StaticResource AppTextMutedBrush}"/>
             <Setter Property="Opacity" Value="1"/>
         </Style>
-        <!-- AI Chat Input: custom dark bg override -->
+        <!-- AI Chat Input: custom dark orange bg override -->
         <Style Selector="TextBox#AIChatInput /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF1A1628"/>
+            <Setter Property="Background" Value="#FF1A0A04"/>
         </Style>
         <Style Selector="TextBox#AIChatInput:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF1A1628"/>
+            <Setter Property="Background" Value="#FF1A0A04"/>
         </Style>
         <Style Selector="TextBox#AIChatInput:focus-within /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF1A1628"/>
+            <Setter Property="Background" Value="#FF1A0A04"/>
         </Style>
         <!-- SelectableTextBlock: visible selection in dark theme -->
         <Style Selector="SelectableTextBlock">
@@ -764,7 +764,7 @@
             </Border>
             
             <!-- Side Panel (Explorer, Search, Git, etc.) -->
-            <Border Grid.Column="1" Name="SidePanelBorder" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="0,0,1,0">
+            <Border Grid.Column="1" Name="SidePanelBorder" Background="#FF231508" BorderBrush="#FF7A3810" BorderThickness="0,0,1,0">
                 <Grid>
                     <!-- Explorer Panel (default) -->
                     <Grid RowDefinitions="Auto,Auto,Auto,*" Name="ExplorerPanel">
@@ -1920,7 +1920,7 @@
             </GridSplitter>
             
             <!-- Right Panel (AI Assistant / Properties) -->
-            <Border Grid.Column="5" Background="{StaticResource AppSurfaceBrush}" BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1,0,0,0"
+            <Border Grid.Column="5" Background="#FF231508" BorderBrush="#FF7A3810" BorderThickness="1,0,0,0"
                     Name="AIPanelBorder">
                 <Grid RowDefinitions="Auto,*,Auto">
                     <!-- Panel Header -->
@@ -1960,7 +1960,7 @@
                         <StackPanel Spacing="12" Name="AIChatMessages">
 
                             <!-- CLI Welcome -->
-                            <Border Name="CliWelcomeBanner" Background="#40FFC09F" CornerRadius="8" Padding="12" IsVisible="True">
+                            <Border Name="CliWelcomeBanner" Background="#40DCC4FF" CornerRadius="8" Padding="12" IsVisible="True">
                                 <StackPanel Spacing="8">
                                     <TextBlock Name="AiWelcomeTitle" Text="🚀 Copilot CLI Ready!" FontWeight="SemiBold" Foreground="#FFFFFF" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     <TextBlock Name="AiWelcomeManageFiles" Text="Manage your project files with commands:"
@@ -1972,13 +1972,13 @@
                                         <TextBlock Text="📝 template, touch, write" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     </StackPanel>
                                     <TextBlock Name="AiWelcomeGitHubCommands" Text="GitHub CLI Commands:"
-                                               Foreground="#89B4FA" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                                               Foreground="#FFFFC09F" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0"/>
                                     <StackPanel Spacing="4" Margin="8,4,0,0">
                                         <TextBlock Text="🐙 gh-status, gh-install" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                         <TextBlock Text="🔑 gh-auth login/logout" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     </StackPanel>
                                     <TextBlock Name="AiWelcomeTypeHelp" Text="Type 'help' for full command list"
-                                               Foreground="#89B4FA" FontSize="11" FontStyle="Italic" Margin="0,4,0,0"/>
+                                               Foreground="#FFFFC09F" FontSize="11" FontStyle="Italic" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
 
@@ -1990,12 +1990,12 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBox Grid.Column="0" Name="AIChatInput"
                                      Watermark="Enter command (create, ls, help...)"
-                                     Background="#FF1A1628"
-                                     BorderBrush="#FF3E3050"
+                                     Background="#FF1A0A04"
+                                     BorderBrush="#FF7A3810"
                                      BorderThickness="1"
                                      Foreground="{StaticResource AppTextBrush}"
                                      CaretBrush="{StaticResource AppTextBrush}"
-                                     SelectionBrush="{StaticResource AccentOrangeBrush}"
+                                     SelectionBrush="{StaticResource AccentPurpleBrush}"
                                      SelectionForegroundBrush="#FF1F1A24"
                                      CornerRadius="8"
                                      Padding="12,10"
@@ -2005,7 +2005,7 @@
                                      AcceptsReturn="False"
                                      KeyDown="AIChatInput_KeyDown"/>
                             <Button Grid.Column="1" Classes="icon-button" Margin="8,0,0,0"
-                                    Background="{StaticResource AccentOrangeBrush}"
+                                    Background="{StaticResource AccentPurpleBrush}"
                                     ToolTip.Tip="Send" Name="SendAIButton" Click="SendAI_Click">
                                 <TextBlock Text="➤" FontSize="16" Foreground="#FF1F1A24"/>
                             </Button>
@@ -2059,33 +2059,33 @@
                 <!-- Right: Editor info -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
                     <!-- Encoding -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Select Encoding">
-                        <TextBlock Text="UTF-8" FontSize="11" Foreground="#FF9E90B0"/>
+                    <Button Classes="status-bar-button" ToolTip.Tip="Select Encoding" Name="EncodingButton" Click="EncodingButton_Click">
+                        <TextBlock Text="UTF-8" FontSize="11" Foreground="#FF9E90B0" Name="EncodingText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Line Endings -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Select End of Line Sequence">
+                    <Button Classes="status-bar-button" ToolTip.Tip="Select End of Line Sequence" Name="LineEndingsButton" Click="LineEndingsButton_Click">
                         <TextBlock Text="CRLF" FontSize="11" Foreground="#FF9E90B0" Name="LineEndingsText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Language -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Select Language Mode">
+                    <Button Classes="status-bar-button" ToolTip.Tip="Select Language Mode" Name="LanguageModeButton" Click="LanguageModeButton_Click">
                         <TextBlock Text="C#" FontSize="11" Foreground="#FF9E90B0" Name="LanguageModeText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Cursor Position -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Go to Line">
+                    <Button Classes="status-bar-button" ToolTip.Tip="Go to Line" Name="CursorPositionButton" Click="CursorPositionButton_Click">
                         <TextBlock Text="Ln 1, Col 1" FontSize="11" Foreground="#FF9E90B0" Name="CursorPositionText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Spaces/Tabs -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Select Indentation">
-                        <TextBlock Text="Spaces: 4" FontSize="11" Foreground="#FF9E90B0"/>
+                    <Button Classes="status-bar-button" ToolTip.Tip="Select Indentation" Name="IndentationButton" Click="IndentationButton_Click">
+                        <TextBlock Text="Spaces: 4" FontSize="11" Foreground="#FF9E90B0" Name="IndentationText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
                     <!-- Notifications -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Notifications" Name="NotificationsButton">
-                        <TextBlock Text="🔔" FontSize="11" Foreground="#FF9E90B0" FontFamily="Segoe UI Emoji"/>
+                    <Button Classes="status-bar-button" ToolTip.Tip="Notifications" Name="NotificationsButton" Click="NotificationsButton_Click">
+                        <TextBlock Text="🔔" FontSize="11" Foreground="#FF9E90B0" FontFamily="Segoe UI Emoji" Name="NotificationsButtonText"/>
                     </Button>
                 </StackPanel>
             </Grid>

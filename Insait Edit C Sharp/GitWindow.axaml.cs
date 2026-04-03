@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Models;
 using Insait_Edit_C_Sharp.Services;
@@ -21,6 +22,7 @@ public partial class GitWindow : Window
     private readonly GitService _git = new();
     private readonly GitHubAccountService _ghService = new();
     private readonly StringBuilder _console = new();
+    private readonly DispatcherTimer _autoRefreshTimer = new() { Interval = TimeSpan.FromSeconds(2.5) };
 
     // ─── State ────────────────────────────────────────────────
     private string? _solutionPath;
@@ -32,9 +34,11 @@ public partial class GitWindow : Window
     private string _rightTab = "log";
     private bool _showAllBranches;
     private string _logFilter = "";
+    private bool _isRefreshing;
 
     // ─── Events ───────────────────────────────────────────────
     public event EventHandler<string>? FileOpenRequested;
+    public event EventHandler? WorkspaceRefreshRequested;
 
     // ─── File filter ──────────────────────────────────────────
     private static readonly HashSet<string> AllowedExt = new(StringComparer.OrdinalIgnoreCase)
@@ -60,6 +64,10 @@ public partial class GitWindow : Window
         ApplyLocalization();
         _ghService.ErrorOccurred += (_, message) => AppendConsole(message);
         LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
+        _autoRefreshTimer.Tick += AutoRefreshTimer_Tick;
+        Opened += (_, _) => _autoRefreshTimer.Start();
+        Closed += (_, _) => _autoRefreshTimer.Stop();
+        Activated += async (_, _) => await RefreshAsync(showLoadingOverlay: false);
     }
 
     private void ApplyLocalization()
@@ -141,13 +149,24 @@ public partial class GitWindow : Window
     //  Refresh
     // ═══════════════════════════════════════════════════════════
 
-    public async Task RefreshAsync()
+    public async Task RefreshAsync(bool showLoadingOverlay = true)
     {
+        if (_isRefreshing)
+            return;
+
         if (!_git.IsRepository) { ShowNoRepo(); return; }
 
-        ShowLoading(L("Git.Refreshing"));
+        _isRefreshing = true;
+        if (showLoadingOverlay)
+            ShowLoading(L("Git.Refreshing"));
+
         try
         {
+            var previouslySelectedPaths = _allFiles
+                .Where(f => f.IsSelected)
+                .Select(f => f.FilePath)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
             var status = await _git.GetStatusAsync();
 
             // Branch display
@@ -173,8 +192,9 @@ public partial class GitWindow : Window
             // Apply scope filter
             _allFiles = all.Values.Where(IsAllowedFile).ToList();
 
-            // Preserve existing selection
-            foreach (var f in _allFiles) f.IsSelected = true;
+            // Preserve existing selection when possible; default to selecting all on first load.
+            foreach (var f in _allFiles)
+                f.IsSelected = previouslySelectedPaths.Count == 0 || previouslySelectedPaths.Contains(f.FilePath);
 
             RefreshFileList();
 
@@ -187,7 +207,12 @@ public partial class GitWindow : Window
             UpdateCommitBtn();
         }
         catch (Exception ex) { AppendConsole(FormatLocalized("Git.Error", ex.Message)); }
-        finally { HideLoading(); }
+        finally
+        {
+            _isRefreshing = false;
+            if (showLoadingOverlay)
+                HideLoading();
+        }
     }
 
     private void RefreshFileList()
@@ -265,6 +290,7 @@ public partial class GitWindow : Window
         {
             AppendConsole($"git checkout -- \"{c.FilePath}\"");
             await _git.DiscardChangesAsync(c.FilePath);
+            NotifyWorkspaceRefreshRequested();
             await RefreshAsync();
         }
     }
@@ -297,6 +323,7 @@ public partial class GitWindow : Window
         if (GetCtxChange(sender) is { } c)
         {
             await _git.DiscardChangesAsync(c.FilePath);
+            NotifyWorkspaceRefreshRequested();
             await RefreshAsync();
         }
     }
@@ -410,11 +437,13 @@ public partial class GitWindow : Window
     // Commit context menu
     private async void CtxCheckoutRevision_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedCommit == null) return;
+        var commit = ResolveCommitContext(sender);
+        if (commit == null) return;
         ShowLoading(L("Git.CheckingOut"));
-        AppendConsole($"git checkout {_selectedCommit.Hash}");
-        await _git.CheckoutBranchAsync(_selectedCommit.Hash);
+        AppendConsole($"git checkout {commit.Hash}");
+        await _git.CheckoutBranchAsync(commit.Hash);
         HideLoading(); await RefreshAsync();
+        NotifyWorkspaceRefreshRequested();
     }
 
     private void CtxNewBranchFromHere_Click(object? sender, RoutedEventArgs e)
@@ -422,18 +451,21 @@ public partial class GitWindow : Window
 
     private async void CtxCherryPick_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedCommit == null) return;
+        var commit = ResolveCommitContext(sender);
+        if (commit == null) return;
         ShowLoading(L("Git.CherryPicking"));
-        AppendConsole($"git cherry-pick {_selectedCommit.Hash}");
-        await _git.RunGitCommandInternalAsync($"cherry-pick {_selectedCommit.Hash}");
+        AppendConsole($"git cherry-pick {commit.Hash}");
+        await _git.RunGitCommandInternalAsync($"cherry-pick {commit.Hash}");
         HideLoading(); await RefreshAsync();
+        NotifyWorkspaceRefreshRequested();
     }
 
     private async void CtxRevertCommit_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedCommit == null) return;
+        var commit = ResolveCommitContext(sender);
+        if (commit == null) return;
 
-        bool isRoot = await _git.IsRootCommitAsync(_selectedCommit.Hash);
+        bool isRoot = await _git.IsRootCommitAsync(commit.Hash);
 
         // ── Ask the user what they really want ────────────────────────────
         var dialog = new Window
@@ -450,7 +482,7 @@ public partial class GitWindow : Window
 
         sp.Children.Add(new TextBlock
         {
-            Text = FormatLocalized("Git.RevertResetCommit", _selectedCommit.ShortHash, _selectedCommit.Message),
+            Text = FormatLocalized("Git.RevertResetCommit", commit.ShortHash, commit.Message),
             FontSize = 12, FontWeight = FontWeight.SemiBold,
             Foreground = new SolidColorBrush(Color.Parse("#FFFFC09F")),
             TextWrapping = TextWrapping.Wrap
@@ -504,8 +536,8 @@ public partial class GitWindow : Window
         if (choice == "revert")
         {
             ShowLoading(L("Git.Reverting"));
-            AppendConsole($"git revert --no-edit {_selectedCommit.Hash}");
-            await _git.RunGitCommandInternalAsync($"revert --no-edit {_selectedCommit.Hash}");
+            AppendConsole($"git revert --no-edit {commit.Hash}");
+            await _git.RunGitCommandInternalAsync($"revert --no-edit {commit.Hash}");
             HideLoading();
         }
         else // reset
@@ -514,34 +546,38 @@ public partial class GitWindow : Window
             {
                 // Hard reset to root commit brings back the exact initial state
                 ShowLoading(L("Git.ResettingInitialCommit"));
-                AppendConsole($"git reset --hard {_selectedCommit.Hash}");
-                var r = await _git.ResetHardAsync(_selectedCommit.Hash);
+                AppendConsole($"git reset --hard {commit.Hash}");
+                AppendConsole("git clean -fd");
+                var r = await _git.ResetHardAsync(commit.Hash);
                 HideLoading();
                 AppendConsole(r.Success
-                    ? FormatLocalized("Git.ResetToInitialSuccess", _selectedCommit.ShortHash)
+                    ? FormatLocalized("Git.ResetToInitialSuccess", commit.ShortHash)
                     : FormatLocalized("Git.ResetFailed", r.Error));
             }
             else
             {
                 ShowLoading(L("Git.Resetting"));
-                AppendConsole($"git reset --hard {_selectedCommit.Hash}");
-                var r = await _git.ResetHardAsync(_selectedCommit.Hash);
+                AppendConsole($"git reset --hard {commit.Hash}");
+                AppendConsole("git clean -fd");
+                var r = await _git.ResetHardAsync(commit.Hash);
                 HideLoading();
                 AppendConsole(r.Success
-                    ? FormatLocalized("Git.ResetSuccess", _selectedCommit.ShortHash)
+                    ? FormatLocalized("Git.ResetSuccess", commit.ShortHash)
                     : FormatLocalized("Git.ResetFailed", r.Error));
             }
         }
 
+        NotifyWorkspaceRefreshRequested();
         await RefreshAsync();
     }
 
     private async void CtxCopyHash_Click(object? sender, RoutedEventArgs e)
     {
-        if (_selectedCommit == null) return;
+        var commit = ResolveCommitContext(sender);
+        if (commit == null) return;
         var clip = TopLevel.GetTopLevel(this)?.Clipboard;
-        if (clip != null) await clip.SetTextAsync(_selectedCommit.Hash);
-        AppendConsole(FormatLocalized("Git.Copied", _selectedCommit.Hash));
+        if (clip != null) await clip.SetTextAsync(commit.Hash);
+        AppendConsole(FormatLocalized("Git.Copied", commit.Hash));
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -559,6 +595,7 @@ public partial class GitWindow : Window
         var r = await _git.PullAsync();
         HideLoading();
         AppendConsole(r.Success ? L("Git.PullCompleted") : FormatLocalized("Git.PullError", r.Error));
+        NotifyWorkspaceRefreshRequested();
         await RefreshAsync();
     }
 
@@ -590,6 +627,7 @@ public partial class GitWindow : Window
         var r = await _git.StashAsync();
         HideLoading();
         AppendConsole(r.Success ? L("Git.StashCreated") : FormatLocalized("Git.StashError", r.Error));
+        NotifyWorkspaceRefreshRequested();
         await RefreshAsync();
     }
 
@@ -599,15 +637,19 @@ public partial class GitWindow : Window
         var r = await _git.StashPopAsync();
         HideLoading();
         AppendConsole(r.Success ? L("Git.StashPopped") : FormatLocalized("Git.PopError", r.Error));
+        NotifyWorkspaceRefreshRequested();
         await RefreshAsync();
     }
 
     private async void Rollback_Click(object? sender, RoutedEventArgs e)
     {
-        ShowLoading(L("Git.RollingBack")); AppendConsole("git checkout -- .");
+        ShowLoading(L("Git.RollingBack"));
+        AppendConsole("git reset --hard HEAD");
+        AppendConsole("git clean -fd");
         var r = await _git.DiscardAllChangesAsync();
         HideLoading();
         AppendConsole(r.Success ? L("Git.RollbackCompleted") : FormatLocalized("Git.Error", r.Error));
+        NotifyWorkspaceRefreshRequested();
         await RefreshAsync();
     }
 
@@ -1103,36 +1145,22 @@ public partial class GitWindow : Window
         var r = await _git.CheckoutBranchAsync(branch);
         HideLoading();
         AppendConsole(r.Success ? FormatLocalized("Git.SwitchedTo", branch) : FormatLocalized("Git.Error", r.Error));
+        NotifyWorkspaceRefreshRequested();
         await RefreshAsync();
     }
 
     private async Task CreateBranchDialogAsync()
     {
-        var dialog = new Window
-        {
-            Title = L("Git.NewBranch"), Width = 360, Height = 150,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.BorderOnly, CanResize = false,
-            Background = new SolidColorBrush(Color.Parse("#FF2A2230"))
-        };
-        var sp = new StackPanel { Margin = new Thickness(16), Spacing = 10 };
-        sp.Children.Add(new TextBlock { Text = L("Git.BranchName"), FontSize = 12,
-            Foreground = new SolidColorBrush(Color.Parse("#FFF0E8F4")) });
-        var box = new TextBox { FontSize = 12,
-            Background = new SolidColorBrush(Color.Parse("#FF1F1A24")),
-            Foreground = new SolidColorBrush(Color.Parse("#FFF0E8F4")),
-            BorderBrush = new SolidColorBrush(Color.Parse("#FF3E3050")),
-            CornerRadius = new CornerRadius(4), Padding = new Thickness(8, 6) };
-        var btns = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right, Spacing = 8 };
-        var ok  = MakeBtn(L("Git.Create"), "#FFFFC09F", "#FF1F1A24");
-        var can = MakeBtn(LocalizationService.Get("Common.Cancel"), "#FF3E3050", "#FFF0E8F4");
-        ok.Click  += async (_, _) => { dialog.Close(); await CreateBranchAsync(box.Text ?? ""); };
-        can.Click += (_, _) => dialog.Close();
-        btns.Children.Add(can); btns.Children.Add(ok);
-        sp.Children.Add(box); sp.Children.Add(btns);
-        dialog.Content = sp;
+        var dialog = new InputDialog(
+            L("Git.NewBranch"),
+            L("Git.BranchName"),
+            string.Empty,
+            "🌿");
+
         await dialog.ShowDialog(this);
+
+        if (!string.IsNullOrWhiteSpace(dialog.Result))
+            await CreateBranchAsync(dialog.Result);
     }
 
     private async Task CreateBranchAsync(string name)
@@ -1143,6 +1171,7 @@ public partial class GitWindow : Window
         var r = await _git.CreateBranchAsync(name, checkout: true);
         HideLoading();
         AppendConsole(r.Success ? FormatLocalized("Git.CreatedBranch", name) : FormatLocalized("Git.Error", r.Error));
+        NotifyWorkspaceRefreshRequested();
         await RefreshAsync();
     }
 
@@ -1348,6 +1377,26 @@ public partial class GitWindow : Window
     {
         var c = this.FindControl<Control>(name);
         if (c != null) c.IsVisible = visible;
+    }
+
+    private void NotifyWorkspaceRefreshRequested()
+        => WorkspaceRefreshRequested?.Invoke(this, EventArgs.Empty);
+
+    private async void AutoRefreshTimer_Tick(object? sender, EventArgs e)
+    {
+        if (!IsVisible || !IsActive)
+            return;
+
+        await RefreshAsync(showLoadingOverlay: false);
+    }
+
+    private GitCommit? ResolveCommitContext(object? sender)
+    {
+        var commit = (sender as MenuItem)?.DataContext as GitCommit ?? _selectedCommit;
+        if (commit != null)
+            _selectedCommit = commit;
+
+        return commit;
     }
 
     // ═══════════════════════════════════════════════════════════

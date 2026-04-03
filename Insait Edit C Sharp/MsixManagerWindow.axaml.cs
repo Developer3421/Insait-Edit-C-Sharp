@@ -283,7 +283,11 @@ public partial class MsixManagerWindow : Window
 
         // Service events
         _service.OutputReceived  += (_, e) => Dispatcher.UIThread.Post(() => AppendLog(e.Output));
-        _service.PackageStarted  += (_, _) => Dispatcher.UIThread.Post(() => SetBusy(true));
+        _service.PackageStarted  += (_, _) => Dispatcher.UIThread.Post(() =>
+        {
+            SetBusy(true);
+            NotificationService.Instance.AddInfo("MSIX packaging started", GetText("BuildIdentityNameBox") ?? "Package", "MSIX");
+        });
         _service.PackageCompleted += (_, e) =>
         {
             Dispatcher.UIThread.Post(() =>
@@ -295,6 +299,10 @@ public partial class MsixManagerWindow : Window
                     ? $"✅ Done: {filename}"
                     : $"❌ Failed: {e.Result.ErrorMessage}",
                     e.Result.Success);
+                if (e.Result.Success)
+                    NotificationService.Instance.AddSuccess("MSIX package ready", filename, "MSIX");
+                else
+                    NotificationService.Instance.AddError("MSIX packaging failed", e.Result.ErrorMessage ?? "See MSIX build log.", "MSIX");
                 ShowPage("output");
             });
         };
@@ -429,6 +437,11 @@ public partial class MsixManagerWindow : Window
         var opts = BuildOptions();
         if (opts == null) return;
 
+        NotificationService.Instance.AddInfo(
+            "MSIX build started",
+            IOPath.GetFileNameWithoutExtension(opts.ProjectPath),
+            "MSIX");
+
         // Determine publish dir
         var publishDir = opts.PublishOutputDir;
         if (string.IsNullOrWhiteSpace(publishDir))
@@ -458,6 +471,7 @@ public partial class MsixManagerWindow : Window
         if (progressWindow.PublishResult == null || !progressWindow.PublishResult.Success)
         {
             SetStatus("❌ Publish failed — MSIX build aborted.", false);
+            NotificationService.Instance.AddError("MSIX publish step failed", progressWindow.PublishResult?.ErrorMessage ?? "MSIX build aborted before packaging.", "MSIX");
             return;
         }
 
@@ -475,6 +489,7 @@ public partial class MsixManagerWindow : Window
             if (_buildSelectedCert == null)
             {
                 SetStatus("⚠ MSIX built but not signed — no certificate selected.", false);
+                NotificationService.Instance.AddWarning("MSIX built but not signed", "No certificate selected for post-build signing.", "MSIX");
                 return;
             }
 
@@ -490,6 +505,11 @@ public partial class MsixManagerWindow : Window
                 if (!signResult.Success)
                 {
                     SetStatus($"⚠ MSIX built but signing failed: {signResult.ErrorMessage}", false);
+                    NotificationService.Instance.AddError("MSIX signing failed", signResult.ErrorMessage ?? "Signing failed after package creation.", "MSIX");
+                }
+                else
+                {
+                    NotificationService.Instance.AddSuccess("MSIX signed", IOPath.GetFileName(msixPath), "MSIX");
                 }
             }
         }
@@ -970,6 +990,10 @@ public partial class MsixManagerWindow : Window
         SetBusy(false);
         SetStatus(result.Success ? $"✅ Signed: {IOPath.GetFileName(msixPath)}"
                                  : $"❌ {result.ErrorMessage}", result.Success);
+        if (result.Success)
+            NotificationService.Instance.AddSuccess("MSIX signed", IOPath.GetFileName(msixPath), "MSIX");
+        else
+            NotificationService.Instance.AddError("MSIX signing failed", result.ErrorMessage ?? "Could not sign the package.", "MSIX");
     }
 
     // ─────────────────────────────────────────────────────────────

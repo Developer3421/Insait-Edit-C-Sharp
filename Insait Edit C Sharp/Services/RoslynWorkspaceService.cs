@@ -248,42 +248,7 @@ public sealed class RoslynWorkspaceService : IDisposable
     // ── Default metadata references ────────────────────────────────────────
     public static List<MetadataReference> CollectDefaultReferences()
     {
-        var refs = new List<MetadataReference>();
-        var runtimeDir = Path.GetDirectoryName(typeof(object).Assembly.Location) ?? "";
-        var coreAssemblies = new[]
-        {
-            "System.Runtime.dll",
-            "System.Console.dll",
-            "System.Collections.dll",
-            "System.Linq.dll",
-            "System.Linq.Expressions.dll",
-            "System.Threading.dll",
-            "System.Threading.Tasks.dll",
-            "System.IO.dll",
-            "System.IO.FileSystem.dll",
-            "System.Text.RegularExpressions.dll",
-            "System.Net.Http.dll",
-            "netstandard.dll",
-            "System.Private.CoreLib.dll",
-            "System.ObjectModel.dll",
-            "System.ComponentModel.dll",
-            "System.Runtime.Extensions.dll",
-            "System.Runtime.InteropServices.dll",
-            "System.Memory.dll",
-            "Microsoft.CSharp.dll",
-        };
-
-        foreach (var name in coreAssemblies)
-        {
-            var path = Path.Combine(runtimeDir, name);
-            if (File.Exists(path)) TryAdd(refs, path);
-        }
-
-        TryAdd(refs, typeof(object).Assembly.Location);
-        TryAdd(refs, typeof(Enumerable).Assembly.Location);
-        TryAdd(refs, typeof(System.Text.StringBuilder).Assembly.Location);
-
-        return refs;
+        return RoslynCompletionEngine.CollectPublicDefaultReferences();
     }
 
     private static void TryAdd(List<MetadataReference> list, string path)

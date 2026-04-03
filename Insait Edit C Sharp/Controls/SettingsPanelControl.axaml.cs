@@ -278,16 +278,12 @@ public partial class SettingsPanelControl : UserControl
         ValidatePath("MSBuildPathBox", "MSBuildStatus", isDirectory: false, expectedName: "MSBuild.exe");
     }
 
-    private void ValidatePath(string boxName, string statusName, bool isDirectory, string? expectedName = null)
+    private void ValidatePath(string boxName, string statusBaseName, bool isDirectory, string? expectedName = null)
     {
-        var statusBlock = this.FindControl<TextBlock>(statusName);
-        if (statusBlock == null) return;
-
         var value = GetBox(boxName);
         if (string.IsNullOrWhiteSpace(value))
         {
-            statusBlock.Text = "⚠ Not configured";
-            statusBlock.Foreground = FindBrush("SettingsTextMutedBrush");
+            SetStatus(statusBaseName, "⚠️", "Not configured", "SettingsTextMutedBrush");
             return;
         }
 
@@ -295,8 +291,7 @@ public partial class SettingsPanelControl : UserControl
 
         if (!exists)
         {
-            statusBlock.Text = "❌ Path not found";
-            statusBlock.Foreground = FindBrush("SettingsErrorBrush");
+            SetStatus(statusBaseName, "❌", "Path not found", "SettingsErrorBrush");
             return;
         }
 
@@ -305,22 +300,36 @@ public partial class SettingsPanelControl : UserControl
             var fileName = Path.GetFileName(value);
             if (!fileName.Equals(expectedName, StringComparison.OrdinalIgnoreCase))
             {
-                statusBlock.Text = $"⚠ Expected {expectedName}";
-                statusBlock.Foreground = FindBrush("SettingsYellowBrush");
+                SetStatus(statusBaseName, "⚠️", $"Expected {expectedName}", "SettingsYellowBrush");
                 return;
             }
         }
 
-        statusBlock.Text = "✅ Valid";
-        statusBlock.Foreground = FindBrush("SettingsSuccessBrush");
+        SetStatus(statusBaseName, "✅", "Valid", "SettingsSuccessBrush");
     }
 
     private void ClearAllStatuses()
     {
         foreach (var name in new[] { "DotNetSdkStatus", "GitHubCliStatus", "CopilotCliStatus", "SignToolStatus", "MSBuildStatus" })
         {
-            var tb = this.FindControl<TextBlock>(name);
-            if (tb != null) tb.Text = "";
+            SetStatus(name, string.Empty, string.Empty, "SettingsTextMutedBrush");
+        }
+    }
+
+    private void SetStatus(string statusBaseName, string icon, string message, string textBrushKey)
+    {
+        var iconBlock = this.FindControl<TextBlock>($"{statusBaseName}Icon");
+        var textBlock = this.FindControl<TextBlock>($"{statusBaseName}Text");
+
+        if (iconBlock != null)
+        {
+            iconBlock.Text = icon;
+        }
+
+        if (textBlock != null)
+        {
+            textBlock.Text = message;
+            textBlock.Foreground = FindBrush(textBrushKey);
         }
     }
 
@@ -634,7 +643,7 @@ public partial class SettingsPanelControl : UserControl
             border.IsVisible = true;
             border.Background = isSuccess
                 ? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#2050C878"))
-                : new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#20548AF7"));
+                : new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#22FFC09F"));
         }
 
         if (text != null)

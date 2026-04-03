@@ -650,6 +650,7 @@
     <x:String x:Key="Git.RevertOptionDescription">↩ Revert — applies the inverse of this commit as a new commit (safe, keeps history).</x:String>
     <x:String x:Key="Git.ResetRootButton">⚠ Reset to initial state (hard reset)</x:String>
     <x:String x:Key="Git.ResetButton">⚠ Reset TO this commit (hard reset — loses newer commits)</x:String>
+    <x:String x:Key="Git.ResetToCommitButton">Reset project to this commit</x:String>
     <x:String x:Key="Git.ResetRootDescription">Reset — restores the project exactly to the initial commit state. All subsequent commits and local changes will be lost.</x:String>
     <x:String x:Key="Git.ResetDescription">Reset — moves HEAD (and the branch) back to this commit. All newer commits and local changes WILL BE LOST permanently.</x:String>
     <x:String x:Key="Git.Reverting">Reverting…</x:String>
@@ -1165,6 +1166,10 @@ Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="NuGet.Project.Label">Project:</x:String>
     <x:String x:Key="NuGet.Tooltip.Refresh">Refresh</x:String>
     <x:String x:Key="NuGet.ByAuthor">by {0}</x:String>
+    <x:String x:Key="NuGet.PackageNamePlaceholder">Package Name</x:String>
+    <x:String x:Key="NuGet.ByAuthorPlaceholder">by Author</x:String>
+    <x:String x:Key="NuGet.NotAvailable">N/A</x:String>
+    <x:String x:Key="NuGet.AbsoluteDateFormat">MMM dd, yyyy</x:String>
     <x:String x:Key="NuGet.InstalledVersion">Installed: v{0}</x:String>
     <x:String x:Key="NuGet.InstalledCount">{0} package(s) installed</x:String>
     <x:String x:Key="NuGet.UpdatesAvailable">{0} update(s) available</x:String>

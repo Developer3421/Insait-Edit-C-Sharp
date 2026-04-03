@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -328,10 +329,12 @@ public class GitService
     /// </summary>
     public async Task<GitResult> DiscardAllChangesAsync()
     {
-        // Clean untracked files
-        await RunGitCommandAsync("clean -fd");
-        // Reset tracked files
-        return await RunGitCommandAsync("checkout -- .");
+        var resetResult = await RunGitCommandAsync("reset --hard HEAD");
+        if (!resetResult.Success)
+            return resetResult;
+
+        var cleanResult = await RunGitCommandAsync("clean -fd");
+        return CombineResults(resetResult, cleanResult, treatSecondaryFailureAsWarning: true);
     }
 
     #endregion
@@ -815,12 +818,18 @@ public class GitService
     #region Reset
 
     /// <summary>
-    /// Hard reset to a specific commit — discards ALL local changes and moves HEAD to that commit.
+    /// Hard reset to a specific commit — discards ALL local changes, removes untracked files,
+    /// and moves HEAD to that commit so the working tree matches the selected revision.
     /// USE WITH CAUTION: this rewrites history on the local branch.
     /// </summary>
     public async Task<GitResult> ResetHardAsync(string commitHash)
     {
-        return await RunGitCommandAsync($"reset --hard \"{commitHash}\"");
+        var resetResult = await RunGitCommandAsync($"reset --hard \"{commitHash}\"");
+        if (!resetResult.Success)
+            return resetResult;
+
+        var cleanResult = await RunGitCommandAsync("clean -fd");
+        return CombineResults(resetResult, cleanResult, treatSecondaryFailureAsWarning: true);
     }
 
     /// <summary>
@@ -974,6 +983,25 @@ public class GitService
         {
             ".png" or ".jpg" or ".jpeg" or ".gif" or ".svg" or ".ico" or ".ttf" or ".otf" or ".woff" or ".woff2" => true,
             _ => false
+        };
+    }
+
+    private static GitResult CombineResults(GitResult primary, GitResult secondary, bool treatSecondaryFailureAsWarning = false)
+    {
+        var output = string.Join(Environment.NewLine,
+            new[] { primary.Output.Trim(), secondary.Output.Trim() }
+                .Where(static value => !string.IsNullOrWhiteSpace(value)));
+
+        var error = string.Join(Environment.NewLine,
+            new[] { primary.Error.Trim(), secondary.Error.Trim() }
+                .Where(static value => !string.IsNullOrWhiteSpace(value)));
+
+        return new GitResult
+        {
+            Success = primary.Success && (secondary.Success || treatSecondaryFailureAsWarning),
+            Output = output,
+            Error = error,
+            ExitCode = secondary.Success || treatSecondaryFailureAsWarning ? primary.ExitCode : secondary.ExitCode
         };
     }
 
