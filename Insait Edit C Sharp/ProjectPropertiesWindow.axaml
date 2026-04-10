@@ -85,31 +85,35 @@
             <Setter Property="Background" Value="#FFFFD0B8"/>
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
-            <Setter Property="Foreground" Value="#FFF0E8F4"/>
-            <Setter Property="BorderBrush" Value="#FF3A2E50"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="Padding" Value="10,7"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="CaretBrush" Value="#5B1E8C"/>
-            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
+            <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="#88FFC09F"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox.nav-search">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
-            <Setter Property="BorderBrush" Value="#FF2A2048"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
+            <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
         </Style>
         <Style Selector="TextBox.nav-search /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="#FF231D35"/>

@@ -78,17 +78,18 @@
             <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
-            <Setter Property="Foreground" Value="#FFF0E8F4"/>
-            <Setter Property="BorderBrush" Value="#FF3E3050"/>
-            <Setter Property="CaretBrush" Value="#5B1E8C"/>
-            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
+            <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
+            <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
             <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="Padding" Value="10,7"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox:focus"><Setter Property="BorderBrush" Value="#FFFFC09F"/></Style>
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
@@ -108,12 +109,15 @@
             <Setter Property="FontSize" Value="12"/>
         </Style>
         <Style Selector="TextBox.log-out">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
-            <Setter Property="Foreground" Value="#FFA6E3A1"/>
-            <Setter Property="BorderBrush" Value="#FF2A2230"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
             <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Padding" Value="10"/>
+            <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
         </Style>
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI Emoji, Segoe UI, Arial"/>

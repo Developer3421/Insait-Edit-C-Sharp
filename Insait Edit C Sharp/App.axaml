@@ -1,21 +1,25 @@
-<Application xmlns="https://github.com/avaloniaui"
+﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Insait_Edit_C_Sharp.App"
              xmlns:semi="https://irihi.tech/semi">
 
     <Application.Styles>
         <FluentTheme/>
-        <!-- AvaloniaEdit Semi theme — styles only TextEditor parts,
+        <!-- AvaloniaEdit Semi theme â€” styles only TextEditor parts,
              does NOT replace FluentTheme for the rest of the application -->
   
 
         <!-- Dark purple caret + soft orange background in all TextBoxes -->
         <Style Selector="TextBox">
-            <Setter Property="CaretBrush" Value="#5B1E8C"/>
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
+            <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
 
         <!-- Global style for emoji icons - ensures color emoji rendering -->

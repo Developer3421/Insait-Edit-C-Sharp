@@ -341,20 +341,21 @@
         
         <!-- TextBox high-contrast for dark backgrounds: visible caret + selection -->
         <Style Selector="TextBox">
-            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
-            <Setter Property="CaretBrush" Value="#5B1E8C"/>
-            <Setter Property="SelectionBrush" Value="{StaticResource AccentOrangeBrush}"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
+            <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
+            <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox:focus-within /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
@@ -365,13 +366,13 @@
         </Style>
         <!-- AI Chat Input: custom dark orange bg override -->
         <Style Selector="TextBox#AIChatInput /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox#AIChatInput:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox#AIChatInput:focus-within /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <!-- SelectableTextBlock: visible selection in dark theme -->
         <Style Selector="SelectableTextBlock">

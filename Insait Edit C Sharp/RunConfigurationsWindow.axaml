@@ -45,17 +45,17 @@
             <Setter Property="Background" Value="#50FFC09F"/>
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
-            <Setter Property="Foreground" Value="#FFF0E8F4"/>
-            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="#5B1E8C"/>
+            <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="#FF352840"/>

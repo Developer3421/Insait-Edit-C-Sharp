@@ -89,15 +89,16 @@
         </Style>
         <!-- TextBox: dark background to prevent white-on-white -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
-            <Setter Property="Foreground" Value="{StaticResource AccountTextBrush}"/>
-            <Setter Property="CaretBrush" Value="#5B1E8C"/>
-            <Setter Property="SelectionBrush" Value="#60FFC09F"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
+            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
+            <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
     </UserControl.Styles>
     

@@ -158,15 +158,15 @@
 
         <!-- TextBox -->
         <Style Selector="TextBox">
-            <Setter Property="Foreground"               Value="{StaticResource TextBrush}"/>
-            <Setter Property="CaretBrush"               Value="{StaticResource TextBrush}"/>
-            <Setter Property="SelectionBrush"           Value="#60FFC09F"/>
+            <Setter Property="Foreground"               Value="#FF1F1A24"/>
+            <Setter Property="CaretBrush"               Value="#FF6C2FA0"/>
+            <Setter Property="SelectionBrush"           Value="#66E9C9B8"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="Background"               Value="#FF2E1B0C"/>
-            <Setter Property="BorderBrush"              Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Background"               Value="#FFF7F2EC"/>
+            <Setter Property="BorderBrush"              Value="#FFB8A6C4"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2E1B0C"/>
+            <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox:pointerover">
             <Setter Property="BorderBrush" Value="#FF5A496F"/>
