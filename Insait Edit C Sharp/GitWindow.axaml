@@ -12,7 +12,6 @@
         MinWidth="820" MinHeight="500"
         CanResize="True">
 
-    <!-- ══ SAME PALETTE AS MAINWINDOW ══════════════════════════ -->
     <Window.Resources>
         <Color x:Key="Bg">#FF1F1A24</Color>
         <Color x:Key="Surface">#FF2A2230</Color>
@@ -21,6 +20,7 @@
         <Color x:Key="Muted">#FF9E90B0</Color>
         <Color x:Key="Orange">#FFFFC09F</Color>
         <Color x:Key="OrangeHover">#FFFFD4B8</Color>
+        <Color x:Key="Purple">#FFDCC4FF</Color>
         <Color x:Key="Green">#FFA6E3A1</Color>
         <Color x:Key="Blue">#FF89B4FA</Color>
         <Color x:Key="Red">#FFF38BA8</Color>
@@ -32,9 +32,27 @@
         <SolidColorBrush x:Key="TextBrush"    Color="{StaticResource Text}"/>
         <SolidColorBrush x:Key="MutedBrush"   Color="{StaticResource Muted}"/>
         <SolidColorBrush x:Key="OrangeBrush"  Color="{StaticResource Orange}"/>
+        <SolidColorBrush x:Key="PurpleBrush"  Color="{StaticResource Purple}"/>
         <SolidColorBrush x:Key="GreenBrush"   Color="{StaticResource Green}"/>
         <SolidColorBrush x:Key="BlueBrush"    Color="{StaticResource Blue}"/>
         <SolidColorBrush x:Key="RedBrush"     Color="{StaticResource Red}"/>
+
+        <LinearGradientBrush x:Key="TitleBarGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#FF3C3C3C" Offset="0"/>
+            <GradientStop Color="#FF2E2840" Offset="0.6"/>
+            <GradientStop Color="#FF251E30" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="LeftAccentGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#FFFFC09F" Offset="0"/>
+            <GradientStop Color="#FFDCC4FF" Offset="0.5"/>
+            <GradientStop Color="Transparent" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="SectionHeaderGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#18FFC09F" Offset="0"/>
+            <GradientStop Color="Transparent" Offset="1"/>
+        </LinearGradientBrush>
     </Window.Resources>
 
     <Window.Styles>
@@ -50,7 +68,7 @@
             <Setter Property="VerticalContentAlignment"   Value="Center"/>
         </Style>
         <Style Selector="Button.wb:pointerover">
-            <Setter Property="Background" Value="#20FFDAB0"/>
+            <Setter Property="Background" Value="#25FFFFFF"/>
         </Style>
         <Style Selector="Button.wb.close:pointerover">
             <Setter Property="Background" Value="#CCE81123"/>
@@ -63,20 +81,20 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width"  Value="30"/>
             <Setter Property="Height" Value="30"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding"  Value="0"/>
             <Setter Property="Cursor"   Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment"   Value="Center"/>
         </Style>
         <Style Selector="Button.tb:pointerover">
-            <Setter Property="Background" Value="#20FFDAB0"/>
+            <Setter Property="Background" Value="#22FFC09F"/>
         </Style>
         <Style Selector="Button.tb:pressed">
-            <Setter Property="Background" Value="#40FFDAB0"/>
+            <Setter Property="Background" Value="#44FFC09F"/>
         </Style>
         <Style Selector="Button.tb:disabled">
-            <Setter Property="Opacity" Value="0.35"/>
+            <Setter Property="Opacity" Value="0.3"/>
         </Style>
 
         <!-- Primary orange btn -->
@@ -84,7 +102,7 @@
             <Setter Property="Background"  Value="{StaticResource OrangeBrush}"/>
             <Setter Property="Foreground"  Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding"  Value="14,7"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -102,14 +120,16 @@
         <Style Selector="Button.sec">
             <Setter Property="Background"  Value="#FF3E3050"/>
             <Setter Property="Foreground"  Value="{StaticResource TextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#FF4E3E62"/>
+            <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding"  Value="14,7"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor"   Value="Hand"/>
         </Style>
         <Style Selector="Button.sec:pointerover">
             <Setter Property="Background" Value="#FF4E4060"/>
+            <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
         </Style>
 
         <!-- Right-panel tab -->
@@ -125,42 +145,44 @@
             <Setter Property="CornerRadius" Value="0"/>
         </Style>
         <Style Selector="Button.rtab:pointerover">
-            <Setter Property="Background" Value="#20FFDAB0"/>
+            <Setter Property="Background" Value="#18FFC09F"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         </Style>
         <Style Selector="Button.rtab.active">
-            <Setter Property="Foreground"  Value="{StaticResource TextBrush}"/>
+            <Setter Property="Foreground"  Value="{StaticResource OrangeBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
         </Style>
 
         <!-- File row -->
         <Style Selector="Border.frow">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Padding"    Value="6,3"/>
-            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Padding"    Value="6,4"/>
+            <Setter Property="CornerRadius" Value="4"/>
         </Style>
         <Style Selector="Border.frow:pointerover">
-            <Setter Property="Background" Value="#18FFDAB0"/>
+            <Setter Property="Background" Value="#14FFC09F"/>
         </Style>
 
         <!-- Commit row -->
         <Style Selector="Border.crow">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Padding"    Value="8,6"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="CornerRadius" Value="5"/>
         </Style>
         <Style Selector="Border.crow:pointerover">
-            <Setter Property="Background" Value="#18FFDAB0"/>
+            <Setter Property="Background" Value="#14FFC09F"/>
         </Style>
         <Style Selector="Border.crow.sel">
-            <Setter Property="Background" Value="#28FFDAB0"/>
+            <Setter Property="Background" Value="#24FFC09F"/>
+            <Setter Property="BorderBrush" Value="#30FFC09F"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <!-- TextBox -->
         <Style Selector="TextBox">
             <Setter Property="Foreground"               Value="#FF1F1A24"/>
             <Setter Property="CaretBrush"               Value="#FF6C2FA0"/>
-            <Setter Property="SelectionBrush"           Value="#66E9C9B8"/>
+            <Setter Property="SelectionBrush"           Value="#66FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
             <Setter Property="Background"               Value="#FFF7F2EC"/>
             <Setter Property="BorderBrush"              Value="#FFB8A6C4"/>
@@ -169,12 +191,32 @@
             <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
         <Style Selector="TextBox:pointerover">
-            <Setter Property="BorderBrush" Value="#FF5A496F"/>
+            <Setter Property="BorderBrush" Value="#FF8A6A4A"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
         </Style>
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="Opacity"    Value="1"/>
+        </Style>
+
+        <!-- Dark TextBox variant (filter, console) -->
+        <Style Selector="TextBox.dark">
+            <Setter Property="Foreground"  Value="{StaticResource TextBrush}"/>
+            <Setter Property="Background"  Value="#FF252030"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="CaretBrush"  Value="{StaticResource OrangeBrush}"/>
+            <Setter Property="SelectionBrush" Value="#50FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
+        </Style>
+        <Style Selector="TextBox.dark /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF252030"/>
+        </Style>
+        <Style Selector="TextBox.dark:focus">
+            <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
+        </Style>
+        <Style Selector="TextBox.dark /template/ TextBlock#PART_Watermark">
             <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
             <Setter Property="Opacity"    Value="1"/>
         </Style>
@@ -186,10 +228,10 @@
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         </Style>
         <Style Selector="Expander.sec > ToggleButton:pointerover">
-            <Setter Property="Background" Value="#18FFDAB0"/>
+            <Setter Property="Background" Value="#18FFC09F"/>
         </Style>
 
-        <!-- CheckBox tint -->
+        <!-- CheckBox -->
         <Style Selector="CheckBox">
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         </Style>
@@ -200,22 +242,41 @@
     </Window.Background>
 
     <Panel>
-    <Grid RowDefinitions="32,*">
+    <Grid RowDefinitions="40,*">
 
         <!-- ═══ TITLE BAR ══════════════════════════════════════ -->
-        <Grid Grid.Row="0" Background="{StaticResource SurfBrush}"
-              PointerPressed="TitleBar_PointerPressed">
+        <Grid Grid.Row="0" PointerPressed="TitleBar_PointerPressed">
+            <Grid.Background>
+                <StaticResource ResourceKey="TitleBarGradient"/>
+            </Grid.Background>
+            <!-- Orange bottom accent line -->
+            <Rectangle Height="2" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                <Rectangle.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#FFFFC09F" Offset="0"/>
+                        <GradientStop Color="#FFDCC4FF" Offset="0.4"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
-                            VerticalAlignment="Center" Margin="12,0">
-                    <TextBlock Text="🔀" FontSize="14" VerticalAlignment="Center"/>
-                    <TextBlock Text="Git" FontSize="13" FontWeight="SemiBold"
+                            VerticalAlignment="Center" Margin="14,0">
+                    <Image Source="avares://Insait Edit C Sharp/Icons/AppIconIDE.png"
+                           Width="16" Height="16" VerticalAlignment="Center"/>
+                    <TextBlock Text="🔀" FontSize="14" FontFamily="Segoe UI Emoji, Segoe UI"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="Git" FontSize="13" FontWeight="Bold"
                                Foreground="{StaticResource OrangeBrush}" VerticalAlignment="Center"/>
-                    <Border Background="#FF3E3050" CornerRadius="4" Padding="8,2" Margin="4,0">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="⎇" FontSize="11" Foreground="{StaticResource GreenBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="—" FontSize="12" Foreground="#FF555555" VerticalAlignment="Center"/>
+                    <Border Background="#28FFC09F" CornerRadius="5" Padding="8,3"
+                            BorderBrush="#30FFC09F" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="⎇" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"
+                                       Foreground="{StaticResource GreenBrush}" VerticalAlignment="Center"/>
                             <TextBlock Name="TitleBranchText" Text="main" FontSize="11"
-                                       Foreground="{StaticResource TextBrush}" VerticalAlignment="Center"/>
+                                       Foreground="{StaticResource OrangeBrush}" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <TextBlock Name="TitleRepoText" Text="" FontSize="11"
@@ -224,10 +285,10 @@
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button Classes="wb" Click="Minimize_Click">
-                        <TextBlock Text="─" FontSize="11"/>
+                        <Image Source="avares://Insait Edit C Sharp/Icons/MinButton.png" Width="26" Height="26"/>
                     </Button>
                     <Button Classes="wb close" Click="Close_Click">
-                        <TextBlock Text="✕" FontSize="12"/>
+                        <Image Source="avares://Insait Edit C Sharp/Icons/CloseButton.png" Width="26" Height="26"/>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -237,12 +298,20 @@
         <Grid Grid.Row="1" ColumnDefinitions="320,5,*">
 
             <!-- ─── LEFT: changes + commit ──────────────────── -->
-            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto"
-                  Background="{StaticResource SurfBrush}">
+            <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto">
+                <!-- Orange accent stripe -->
+                <Rectangle Grid.RowSpan="4" Width="3" HorizontalAlignment="Left" VerticalAlignment="Stretch" ZIndex="10">
+                    <Rectangle.Fill>
+                        <StaticResource ResourceKey="LeftAccentGradient"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <Border Grid.Column="0" Background="{StaticResource SurfBrush}"
+                        Grid.RowSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 
                 <!-- Scope + refresh -->
-                <Border Grid.Row="0" Background="{StaticResource BgBrush}"
-                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,6">
+                <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="11,6">
                     <Grid ColumnDefinitions="Auto,*,Auto">
                         <TextBlock Grid.Column="0" Name="ScopeLabel" Text="{DynamicResource Git.Scope}" FontSize="11"
                                    Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -253,48 +322,58 @@
                                   SelectionChanged="ScopeCombo_SelectionChanged">
                             <ComboBoxItem Content="{DynamicResource Git.SolutionAll}" Tag="solution"/>
                         </ComboBox>
-                        <Button Grid.Column="2" Classes="tb" Width="26" Height="26" Margin="4,0,0,0"
+                        <Button Grid.Column="2" Classes="tb" Width="28" Height="28" Margin="4,0,0,0"
                                 Name="RefreshBtn" ToolTip.Tip="{DynamicResource Git.Refresh}" Click="Refresh_Click">
-                            <TextBlock Text="🔄" FontSize="12"/>
+                            <TextBlock Text="🔄" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
                         </Button>
                     </Grid>
                 </Border>
 
                 <!-- Toolbar -->
-                <Border Grid.Row="1" Background="{StaticResource BgBrush}"
-                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="4">
+                <Border Grid.Row="1" Background="{StaticResource SurfBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="6,4">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Orientation="Horizontal" Spacing="2">
-                            <Button Classes="tb" Name="CommitToolbarBtn" ToolTip.Tip="{DynamicResource Git.FocusCommitMessage}" Click="CommitToolbar_Click">
-                                <TextBlock Text="✓" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
+                            <!-- Commit -->
+                            <Button Classes="tb" Name="CommitToolbarBtn"
+                                    ToolTip.Tip="{DynamicResource Git.FocusCommitMessage}" Click="CommitToolbar_Click">
+                                <TextBlock Text="✅" FontSize="14" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
+                            <!-- Pull -->
                             <Button Classes="tb" Name="PullBtn" ToolTip.Tip="{DynamicResource Git.Pull}" Click="Pull_Click">
-                                <TextBlock Text="↓" FontSize="15" FontWeight="Bold" Foreground="{StaticResource BlueBrush}"/>
+                                <TextBlock Text="⬇️" FontSize="14" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
+                            <!-- Push -->
                             <Button Classes="tb" Name="PushBtn" ToolTip.Tip="{DynamicResource Git.Push}" Click="Push_Click">
-                                <TextBlock Text="↑" FontSize="15" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
+                                <TextBlock Text="⬆️" FontSize="14" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
-                            <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,6"/>
+                            <Rectangle Width="1" Fill="{StaticResource BorderBrush}" Margin="4,6"/>
+                            <!-- Fetch -->
                             <Button Classes="tb" Name="FetchBtn" ToolTip.Tip="{DynamicResource Git.Fetch}" Click="Fetch_Click">
-                                <TextBlock Text="⟳" FontSize="14"/>
+                                <TextBlock Text="🔄" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
+                            <!-- Stash -->
                             <Button Classes="tb" Name="StashBtn" ToolTip.Tip="{DynamicResource Git.Stash}" Click="Stash_Click">
-                                <TextBlock Text="📦" FontSize="12"/>
+                                <TextBlock Text="📦" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
+                            <!-- Pop Stash -->
                             <Button Classes="tb" Name="PopStashBtn" ToolTip.Tip="{DynamicResource Git.PopStash}" Click="PopStash_Click">
-                                <TextBlock Text="📤" FontSize="12"/>
+                                <TextBlock Text="📤" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
+                            <!-- Rollback -->
                             <Button Classes="tb" Name="RollbackBtn" ToolTip.Tip="{DynamicResource Git.Rollback}" Click="Rollback_Click">
-                                <TextBlock Text="↺" FontSize="13"/>
+                                <TextBlock Text="↩️" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-                            <!-- Create GitHub repo using GitHubAccountService -->
-                            <Button Classes="tb" Name="CreateRepoBtn" ToolTip.Tip="{DynamicResource Git.CreateRepo}" Click="CreateRepo_Click">
-                                <TextBlock Text="🐙" FontSize="14"/>
+                            <!-- Create GitHub repo -->
+                            <Button Classes="tb" Name="CreateRepoBtn"
+                                    ToolTip.Tip="{DynamicResource Git.CreateRepo}" Click="CreateRepo_Click">
+                                <TextBlock Text="🐙" FontSize="15" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
+                            <!-- Console -->
                             <Button Classes="tb" ToolTip.Tip="{DynamicResource Git.Console}" Click="ConsoleTabFromToolbar_Click">
-                                <TextBlock Text="⌨" FontSize="13"/>
+                                <TextBlock Text="💻" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             </Button>
                         </StackPanel>
                     </Grid>
@@ -302,29 +381,33 @@
 
                 <!-- Branch bar + file checklist -->
                 <Grid Grid.Row="2" RowDefinitions="Auto,*">
-                    <!-- Branch -->
-                    <Border Grid.Row="0" Background="{StaticResource BgBrush}"
-                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="8,5">
+                    <!-- Branch bar -->
+                    <Border Grid.Row="0" BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="0,0,0,1" Padding="11,6">
+                        <Border.Background>
+                            <StaticResource ResourceKey="SectionHeaderGradient"/>
+                        </Border.Background>
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <TextBlock Grid.Column="0" Text="⎇" FontSize="13"
+                                       FontFamily="Segoe UI Emoji, Segoe UI"
                                        Foreground="{StaticResource GreenBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <Button Grid.Column="1" Background="Transparent" BorderThickness="0" Padding="0"
                                     Name="BranchBtn" Click="Branch_Click" Cursor="Hand">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <TextBlock Name="BranchNameText" Text="main" FontSize="12" FontWeight="SemiBold"
-                                               Foreground="{StaticResource TextBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="▼" FontSize="8" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                               Foreground="{StaticResource OrangeBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="▾" FontSize="10" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                             <!-- Ahead/Behind -->
                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6"
                                         Name="AheadBehindPanel" IsVisible="False">
                                 <StackPanel Orientation="Horizontal" Spacing="2" Name="BehindStack">
-                                    <TextBlock Text="↓" FontSize="11" Foreground="{StaticResource BlueBrush}"/>
+                                    <TextBlock Text="⬇" FontSize="10" Foreground="{StaticResource BlueBrush}"/>
                                     <TextBlock Name="BehindText" Text="0" FontSize="11" Foreground="{StaticResource BlueBrush}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="2" Name="AheadStack">
-                                    <TextBlock Text="↑" FontSize="11" Foreground="{StaticResource GreenBrush}"/>
+                                    <TextBlock Text="⬆" FontSize="10" Foreground="{StaticResource GreenBrush}"/>
                                     <TextBlock Name="AheadText" Text="0" FontSize="11" Foreground="{StaticResource GreenBrush}"/>
                                 </StackPanel>
                             </StackPanel>
@@ -333,8 +416,8 @@
 
                     <!-- File checklist -->
                     <Grid Grid.Row="1" RowDefinitions="Auto,*">
-                        <!-- Checklist header -->
-                        <Border Grid.Row="0" Padding="8,5"
+                        <!-- Header -->
+                        <Border Grid.Row="0" Padding="11,5"
                                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
                             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                                 <CheckBox Grid.Column="0" Name="SelectAllCheck"
@@ -345,17 +428,17 @@
                                            VerticalAlignment="Center" Margin="6,0,0,0"/>
                                 <TextBlock Grid.Column="2" Name="SelectedCountLbl"
                                            Text="0/0" FontSize="11"
-                                           Foreground="{StaticResource MutedBrush}"
+                                           Foreground="{StaticResource OrangeBrush}"
                                            VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <Button Grid.Column="3" Classes="tb" Width="22" Height="22"
                                         ToolTip.Tip="{DynamicResource Git.StageSelected}" Click="StageSelected_Click">
-                                    <TextBlock Text="+" FontSize="14" FontWeight="Bold"
+                                    <TextBlock Text="➕" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"
                                                Foreground="{StaticResource GreenBrush}"/>
                                 </Button>
                             </Grid>
                         </Border>
 
-                        <!-- No repo / clean / file list -->
+                        <!-- File list -->
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled">
                             <StackPanel Margin="0,4">
@@ -363,9 +446,10 @@
                                 <!-- No repo -->
                                 <StackPanel Name="NoRepoPanel" Spacing="12" Margin="16,28"
                                             HorizontalAlignment="Center" IsVisible="True">
-                                    <TextBlock Text="🔀" FontSize="40" HorizontalAlignment="Center" Opacity="0.3"/>
+                                    <TextBlock Text="🔀" FontSize="44" FontFamily="Segoe UI Emoji, Segoe UI"
+                                               HorizontalAlignment="Center" Opacity="0.4"/>
                                     <TextBlock Text="{DynamicResource Git.NoRepoTitle}" FontSize="14" FontWeight="SemiBold"
-                                               HorizontalAlignment="Center" Foreground="{StaticResource TextBrush}"/>
+                                               HorizontalAlignment="Center" Foreground="{StaticResource OrangeBrush}"/>
                                     <TextBlock Text="{DynamicResource Git.NoRepoDescription}"
                                                FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
                                                Foreground="{StaticResource MutedBrush}" MaxWidth="220"/>
@@ -379,12 +463,14 @@
 
                                 <!-- Clean -->
                                 <StackPanel Name="CleanPanel" IsVisible="False"
-                                            Margin="16,28" HorizontalAlignment="Center">
-                                    <TextBlock Text="✓" FontSize="32" HorizontalAlignment="Center"
-                                               Foreground="{StaticResource GreenBrush}" Opacity="0.6"/>
-                                     <TextBlock Text="{DynamicResource Git.NothingToCommit}" FontSize="13" HorizontalAlignment="Center"
-                                               Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
-                                     <TextBlock Text="{DynamicResource Git.WorkingTreeClean}" FontSize="11" HorizontalAlignment="Center"
+                                            Margin="16,28" HorizontalAlignment="Center" Spacing="4">
+                                    <TextBlock Text="✅" FontSize="36" FontFamily="Segoe UI Emoji, Segoe UI"
+                                               HorizontalAlignment="Center" Opacity="0.8"/>
+                                    <TextBlock Text="{DynamicResource Git.NothingToCommit}" FontSize="13"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{StaticResource GreenBrush}" Margin="0,8,0,0"/>
+                                    <TextBlock Text="{DynamicResource Git.WorkingTreeClean}" FontSize="11"
+                                               HorizontalAlignment="Center"
                                                Foreground="{StaticResource MutedBrush}"/>
                                 </StackPanel>
 
@@ -402,17 +488,14 @@
                                                     </ContextMenu>
                                                 </Border.ContextMenu>
                                                 <Grid ColumnDefinitions="Auto,18,*,Auto">
-                                                    <!-- Checkbox -->
                                                     <CheckBox Grid.Column="0"
                                                               IsChecked="{Binding IsSelected}"
                                                               Click="FileCheck_Click"
                                                               VerticalAlignment="Center"/>
-                                                    <!-- Status icon -->
                                                     <TextBlock Grid.Column="1" Text="{Binding StatusIcon}"
                                                                FontSize="11" FontWeight="Bold"
                                                                Foreground="{Binding StatusColor}"
                                                                VerticalAlignment="Center" TextAlignment="Center"/>
-                                                    <!-- Name + path -->
                                                     <StackPanel Grid.Column="2" Orientation="Horizontal"
                                                                 Spacing="6" Margin="4,0"
                                                                 PointerPressed="File_PointerPressed">
@@ -423,11 +506,11 @@
                                                                    Foreground="{StaticResource MutedBrush}"
                                                                    VerticalAlignment="Center"/>
                                                     </StackPanel>
-                                                    <!-- Discard btn -->
                                                     <Button Grid.Column="3" Classes="tb" Width="18" Height="18"
                                                             Tag="{Binding}" ToolTip.Tip="{DynamicResource Git.Discard}"
                                                             Click="DiscardFileBtn_Click">
-                                                        <TextBlock Text="↺" FontSize="10"
+                                                        <TextBlock Text="↩️" FontSize="10"
+                                                                   FontFamily="Segoe UI Emoji, Segoe UI"
                                                                    Foreground="{StaticResource MutedBrush}"/>
                                                     </Button>
                                                 </Grid>
@@ -442,9 +525,14 @@
                 </Grid>
 
                 <!-- Commit area -->
-                <Border Grid.Row="3" Background="{StaticResource BgBrush}"
-                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0"
-                        Padding="8" Name="CommitAreaBorder" IsVisible="False">
+                <Border Grid.Row="3" BorderBrush="{StaticResource OrangeBrush}" BorderThickness="0,2,0,0"
+                        Padding="10,8" Name="CommitAreaBorder" IsVisible="False">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#14FFC09F" Offset="0"/>
+                            <GradientStop Color="Transparent" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
                     <StackPanel Spacing="6">
                         <TextBox Name="CommitMsgBox"
                                  TextChanged="CommitMsgBox_TextChanged"
@@ -452,24 +540,22 @@
                                  AcceptsReturn="True" TextWrapping="Wrap"
                                  MinHeight="56" MaxHeight="110"
                                  Background="#FF252030"
+                                 Foreground="{StaticResource TextBrush}"
+                                 CaretBrush="{StaticResource OrangeBrush}"
                                  BorderBrush="{StaticResource BorderBrush}"
-                                 FontSize="12" CornerRadius="4" Padding="8,6"/>
+                                 FontSize="12" CornerRadius="6" Padding="8,6"/>
                         <Grid ColumnDefinitions="*,Auto">
                             <Button Grid.Column="0" Classes="primary" Content="{DynamicResource Git.Commit}"
                                     Name="CommitBtn" Click="Commit_Click"
                                     IsEnabled="False" HorizontalAlignment="Stretch"/>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="6,0,0,0">
                                 <Button Classes="tb" Width="30" Height="30"
-                                        ToolTip.Tip="{DynamicResource Git.CommitAndPush}"
-                                        Click="CommitPush_Click">
-                                    <TextBlock Text="↑" FontSize="14" FontWeight="Bold"
-                                               Foreground="{StaticResource GreenBrush}"/>
+                                        ToolTip.Tip="{DynamicResource Git.CommitAndPush}" Click="CommitPush_Click">
+                                    <TextBlock Text="⬆️" FontSize="14" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                 </Button>
                                 <Button Classes="tb" Width="30" Height="30"
-                                        ToolTip.Tip="{DynamicResource Git.AmendLastCommit}"
-                                        Click="Amend_Click">
-                                    <TextBlock Text="✎" FontSize="12"
-                                               Foreground="{StaticResource Yellow}"/>
+                                        ToolTip.Tip="{DynamicResource Git.AmendLastCommit}" Click="Amend_Click">
+                                    <TextBlock Text="✏️" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -498,39 +584,35 @@
                         <StackPanel Orientation="Horizontal">
                             <Button Classes="rtab active" Name="LogTabBtn" Click="LogTab_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="🕒" FontSize="11"/>
+                                    <TextBlock Text="🕒" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     <TextBlock Text="{DynamicResource Git.TabLog}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Classes="rtab" Name="DiffTabBtn" Click="DiffTab_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="⟺" FontSize="11"/>
+                                    <TextBlock Text="📊" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     <TextBlock Text="{DynamicResource Git.TabChanges}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Classes="rtab" Name="ConsoleTabBtn" Click="ConsoleTab_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="⌨" FontSize="11"/>
+                                    <TextBlock Text="💻" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     <TextBlock Text="{DynamicResource Git.Console}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
                                     Margin="0,0,8,0" VerticalAlignment="Center">
-                            <Button Classes="tb" Width="24" Height="24"
+                            <Button Classes="tb" Width="26" Height="26"
                                     Name="AllBranchesBtn" ToolTip.Tip="{DynamicResource Git.AllBranches}"
                                     Click="AllBranches_Click">
-                                <TextBlock Text="⎇" FontSize="11"/>
+                                <TextBlock Text="⎇" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"
+                                           Foreground="{StaticResource GreenBrush}"/>
                             </Button>
-                            <TextBox Name="LogFilterBox" Watermark="{DynamicResource Git.FilterCommits}"
-                                     Width="180" Height="24"
-                                     Background="#FF252030"
-                                     Foreground="{StaticResource TextBrush}"
-                                     CaretBrush="#5B1E8C"
-                                     SelectionBrush="#60FFC09F"
-                                     SelectionForegroundBrush="#FF1F1A24"
-                                     BorderBrush="{StaticResource BorderBrush}"
-                                     FontSize="11" CornerRadius="4" Padding="6,2"
+                            <TextBox Name="LogFilterBox" Classes="dark"
+                                     Watermark="{DynamicResource Git.FilterCommits}"
+                                     Width="180" Height="26"
+                                     FontSize="11" CornerRadius="5" Padding="6,3"
                                      TextChanged="LogFilter_TextChanged"/>
                         </StackPanel>
                     </Grid>
@@ -545,13 +627,15 @@
 
                             <!-- Local -->
                             <Grid Grid.Column="0" RowDefinitions="Auto,*">
-                                <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
-                                        BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="0,0,0,1" Padding="10,5">
+                                <Border Grid.Row="0" BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0,0,0,1" Padding="10,6">
+                                    <Border.Background>
+                                        <StaticResource ResourceKey="SectionHeaderGradient"/>
+                                    </Border.Background>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="💻" FontSize="12"/>
+                                        <TextBlock Text="💻" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                         <TextBlock Text="{DynamicResource Git.Local}" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="{StaticResource TextBrush}"/>
+                                                   Foreground="{StaticResource OrangeBrush}"/>
                                         <TextBlock Name="LocalBranchLabel" Text="(main)" FontSize="11"
                                                    Foreground="{StaticResource GreenBrush}"/>
                                     </StackPanel>
@@ -564,23 +648,23 @@
                                                 <Border Classes="crow" PointerPressed="LocalCommit_PointerPressed">
                                                     <Border.ContextMenu>
                                                         <ContextMenu>
-                                                             <MenuItem Header="{DynamicResource Git.MenuCheckoutRevision}" Click="CtxCheckoutRevision_Click"/>
-                                                             <MenuItem Header="{DynamicResource Git.MenuNewBranchFromHere}" Click="CtxNewBranchFromHere_Click"/>
+                                                            <MenuItem Header="{DynamicResource Git.MenuCheckoutRevision}" Click="CtxCheckoutRevision_Click"/>
+                                                            <MenuItem Header="{DynamicResource Git.MenuNewBranchFromHere}" Click="CtxNewBranchFromHere_Click"/>
                                                             <Separator/>
-                                                             <MenuItem Header="{DynamicResource Git.MenuCherryPick}"  Click="CtxCherryPick_Click"/>
-                                                             <MenuItem Header="{DynamicResource Git.MenuRevertCommit}" Click="CtxRevertCommit_Click"/>
+                                                            <MenuItem Header="{DynamicResource Git.MenuCherryPick}"  Click="CtxCherryPick_Click"/>
+                                                            <MenuItem Header="{DynamicResource Git.MenuRevertCommit}" Click="CtxRevertCommit_Click"/>
                                                             <Separator/>
-                                                             <MenuItem Header="{DynamicResource Git.MenuCopyHash}"    Click="CtxCopyHash_Click"/>
+                                                            <MenuItem Header="{DynamicResource Git.MenuCopyHash}"    Click="CtxCopyHash_Click"/>
                                                         </ContextMenu>
                                                     </Border.ContextMenu>
                                                     <Grid ColumnDefinitions="20,*">
                                                         <Canvas Grid.Column="0" Width="20">
-                                                            <Ellipse Width="8" Height="8"
+                                                            <Ellipse Width="10" Height="10"
                                                                      Fill="{StaticResource OrangeBrush}"
-                                                                     Canvas.Left="6" Canvas.Top="8"/>
-                                                            <Line StartPoint="10,0" EndPoint="10,8"
+                                                                     Canvas.Left="5" Canvas.Top="7"/>
+                                                            <Line StartPoint="10,0" EndPoint="10,7"
                                                                   Stroke="{StaticResource BorderBrush}" StrokeThickness="1.5"/>
-                                                            <Line StartPoint="10,16" EndPoint="10,34"
+                                                            <Line StartPoint="10,17" EndPoint="10,34"
                                                                   Stroke="{StaticResource BorderBrush}" StrokeThickness="1.5"/>
                                                         </Canvas>
                                                         <StackPanel Grid.Column="1" Spacing="1" Margin="4,0,4,0">
@@ -589,7 +673,7 @@
                                                                        TextTrimming="CharacterEllipsis"/>
                                                             <StackPanel Orientation="Horizontal" Spacing="8">
                                                                 <TextBlock Text="{Binding ShortHash}" FontSize="10"
-                                                                           Foreground="{StaticResource BlueBrush}"
+                                                                           Foreground="{StaticResource OrangeBrush}"
                                                                            FontFamily="Consolas, monospace"/>
                                                                 <TextBlock Text="{Binding AuthorName}" FontSize="10"
                                                                            Foreground="{StaticResource MutedBrush}"/>
@@ -614,9 +698,10 @@
                             <Grid Grid.Column="2" RowDefinitions="Auto,*">
                                 <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
                                         BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="0,0,0,1" Padding="10,5">
+                                        BorderThickness="0,0,0,1" Padding="10,6">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="☁" FontSize="12" Foreground="{StaticResource BlueBrush}"/>
+                                        <TextBlock Text="☁️" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"
+                                                   Foreground="{StaticResource BlueBrush}"/>
                                         <TextBlock Text="{DynamicResource Git.Remote}" FontSize="12" FontWeight="SemiBold"
                                                    Foreground="{StaticResource TextBrush}"/>
                                         <TextBlock Name="RemoteBranchLabel" Text="(origin/main)" FontSize="11"
@@ -631,12 +716,12 @@
                                                 <Border Classes="crow" PointerPressed="RemoteCommit_PointerPressed">
                                                     <Grid ColumnDefinitions="20,*">
                                                         <Canvas Grid.Column="0" Width="20">
-                                                            <Ellipse Width="8" Height="8"
+                                                            <Ellipse Width="10" Height="10"
                                                                      Fill="{StaticResource BlueBrush}"
-                                                                     Canvas.Left="6" Canvas.Top="8"/>
-                                                            <Line StartPoint="10,0" EndPoint="10,8"
+                                                                     Canvas.Left="5" Canvas.Top="7"/>
+                                                            <Line StartPoint="10,0" EndPoint="10,7"
                                                                   Stroke="{StaticResource BorderBrush}" StrokeThickness="1.5"/>
-                                                            <Line StartPoint="10,16" EndPoint="10,34"
+                                                            <Line StartPoint="10,17" EndPoint="10,34"
                                                                   Stroke="{StaticResource BorderBrush}" StrokeThickness="1.5"/>
                                                         </Canvas>
                                                         <StackPanel Grid.Column="1" Spacing="1" Margin="4,0,4,0">
@@ -680,7 +765,7 @@
                                                    TextWrapping="Wrap"/>
                                         <StackPanel Orientation="Horizontal" Spacing="10">
                                             <TextBlock Name="CommitDetailHash" Text="" FontSize="11"
-                                                       Foreground="{StaticResource BlueBrush}"
+                                                       Foreground="{StaticResource OrangeBrush}"
                                                        FontFamily="Consolas, monospace"/>
                                             <TextBlock Name="CommitDetailAuthor" Text="" FontSize="11"
                                                        Foreground="{StaticResource MutedBrush}"/>
@@ -740,10 +825,14 @@
                     <Grid RowDefinitions="Auto,*">
                         <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="0,0,0,1" Padding="10,5">
-                            <TextBlock Name="DiffFileLabel" Text="{DynamicResource Git.SelectFileToViewDiff}"
-                                       FontSize="11" FontStyle="Italic"
-                                       Foreground="{StaticResource MutedBrush}"/>
+                                BorderThickness="0,0,0,1" Padding="10,6">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="📊" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                <TextBlock Name="DiffFileLabel" Text="{DynamicResource Git.SelectFileToViewDiff}"
+                                           FontSize="11" FontStyle="Italic"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
                         </Border>
                         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
                                       VerticalScrollBarVisibility="Auto">
@@ -751,7 +840,7 @@
                                        Margin="8,4" FontFamily="Consolas, monospace"
                                        FontSize="12" Foreground="{StaticResource TextBrush}"
                                        TextWrapping="NoWrap"
-                                       SelectionBrush="#664FC3F7"/>
+                                       SelectionBrush="#60FFC09F"/>
                         </ScrollViewer>
                     </Grid>
                 </Grid>
@@ -761,11 +850,16 @@
                     <Grid RowDefinitions="Auto,*">
                         <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
                                 BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="0,0,0,1" Padding="4,2">
-                            <StackPanel Orientation="Horizontal" Spacing="2">
-                                <Button Classes="tb" Width="24" Height="24"
+                                BorderThickness="0,0,0,1" Padding="6,3">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="💻" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Git.Console}" FontSize="11"
+                                           Foreground="{StaticResource OrangeBrush}"
+                                           FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button Classes="tb" Width="24" Height="24" Margin="8,0,0,0"
                                         ToolTip.Tip="{DynamicResource Git.Clear}" Click="ClearConsole_Click">
-                                    <TextBlock Text="🗑" FontSize="11"/>
+                                    <TextBlock Text="🗑️" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                 </Button>
                             </StackPanel>
                         </Border>
@@ -776,7 +870,7 @@
                                        FontFamily="Consolas, monospace" FontSize="12"
                                        Foreground="{StaticResource GreenBrush}"
                                        TextWrapping="NoWrap"
-                                       SelectionBrush="#664FC3F7"/>
+                                       SelectionBrush="#60FFC09F"/>
                         </ScrollViewer>
                     </Grid>
                 </Grid>
@@ -787,10 +881,11 @@
 
     <!-- Loading overlay -->
     <Border Name="LoadingOverlay" Background="#CC1F1A24" IsVisible="False">
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
-            <TextBlock Text="⏳" FontSize="28" HorizontalAlignment="Center"/>
-            <TextBlock Name="LoadingText" Text="{DynamicResource Git.Loading}" FontSize="12"
-                       Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center"/>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+            <TextBlock Text="⏳" FontSize="36" FontFamily="Segoe UI Emoji, Segoe UI"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Name="LoadingText" Text="{DynamicResource Git.Loading}" FontSize="13"
+                       Foreground="{StaticResource OrangeBrush}" HorizontalAlignment="Center"/>
         </StackPanel>
     </Border>
     </Panel>
