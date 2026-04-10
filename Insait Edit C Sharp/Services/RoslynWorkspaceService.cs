@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 
@@ -45,7 +42,6 @@ public sealed class RoslynWorkspaceService : IDisposable
     private DocumentId? _activeDocumentId;
     private string? _trackedFilePath;
     private string? _projectDir;
-    private List<string>? _projectCsFiles;
     private readonly Dictionary<string, DocumentId> _documentIds = new(StringComparer.OrdinalIgnoreCase);
 
     // ── Public properties ──────────────────────────────────────────────────
@@ -103,7 +99,6 @@ public sealed class RoslynWorkspaceService : IDisposable
             if (string.Equals(_projectDir, projectDir, StringComparison.OrdinalIgnoreCase))
                 return;
             _projectDir = projectDir;
-            _projectCsFiles = null;
             _trackedFilePath = null; // force rebuild on next SyncDocument
         }
     }
@@ -152,81 +147,20 @@ public sealed class RoslynWorkspaceService : IDisposable
 
         _documentIds.Clear();
 
-        var projectId = ProjectId.CreateNewId();
-        var documentId = DocumentId.CreateNewId(projectId);
-
-        var projectInfo = ProjectInfo.Create(
-            projectId,
-            VersionStamp.Create(),
-            name: "RoslynLiveProject",
-            assemblyName: "RoslynLiveProject",
-            language: LanguageNames.CSharp,
-            compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithNullableContextOptions(NullableContextOptions.Enable),
-            parseOptions: new CSharpParseOptions(LanguageVersion.Latest),
-            metadataReferences: _defaultRefs);
-
-        var solution = _workspace.CurrentSolution.AddProject(projectInfo);
-
-        // Add the active document — use the full path as document name to avoid
-        // collisions when multiple files share the same filename.
-        var docInfo = DocumentInfo.Create(
-            documentId,
-            name: filePath,
-            loader: TextLoader.From(TextAndVersion.Create(
-                SourceText.From(sourceCode), VersionStamp.Create())),
-            filePath: filePath);
-
-        solution = solution.AddDocument(docInfo);
-        _documentIds[filePath] = documentId;
-
-        // Add other project .cs files as context.
-        // Use full path as document name so files with the same short name don't collide.
-        var contextFiles = GetProjectCsFiles();
-        foreach (var csFile in contextFiles)
-        {
-            if (string.Equals(csFile, filePath, StringComparison.OrdinalIgnoreCase))
-                continue;
-            try
-            {
-                var auxDid = DocumentId.CreateNewId(projectId);
-                var auxText = File.ReadAllText(csFile);
-                solution = solution.AddDocument(DocumentInfo.Create(auxDid, csFile,
-                    loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
-                    filePath: csFile));
-                _documentIds[csFile] = auxDid;
-            }
-            catch { /* skip unreadable files */ }
-        }
+        var build = RoslynProjectFactory.CreateBuild(_projectDir, _defaultRefs, filePath, sourceCode);
+        var solution = _workspace.CurrentSolution.AddProject(build.ProjectInfo);
 
         _workspace.TryApplyChanges(solution);
 
-        _projectId = projectId;
-        _activeDocumentId = documentId;
+        _projectId = build.ProjectInfo.Id;
+        _activeDocumentId = build.ActiveDocumentId;
         _trackedFilePath = filePath;
+        foreach (var pair in build.DocumentIds)
+            _documentIds[pair.Key] = pair.Value;
 
         DocumentChanged?.Invoke(this, new WorkspaceDocumentChangedEventArgs(filePath));
     }
 
-    private List<string> GetProjectCsFiles()
-    {
-        if (_projectCsFiles != null) return _projectCsFiles;
-        _projectCsFiles = new List<string>();
-        if (string.IsNullOrEmpty(_projectDir) || !Directory.Exists(_projectDir))
-            return _projectCsFiles;
-        try
-        {
-            foreach (var f in Directory.GetFiles(_projectDir, "*.cs", SearchOption.AllDirectories))
-            {
-                if (f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) ||
-                    f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
-                    continue;
-                _projectCsFiles.Add(f);
-            }
-        }
-        catch { }
-        return _projectCsFiles;
-    }
 
     // ── MEF assembly list ──────────────────────────────────────────────────
     private static IEnumerable<Assembly> BuildMefAssemblies()

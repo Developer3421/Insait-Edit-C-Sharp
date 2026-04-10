@@ -12,6 +12,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Input.Platform;
 using IOPath = System.IO.Path;
 using IOFile = System.IO.File;
 using IODirectory = System.IO.Directory;

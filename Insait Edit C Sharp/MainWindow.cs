@@ -444,7 +444,7 @@ public partial class MainWindow
             CanResize = false,
             ShowInTaskbar = false,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.BorderOnly,
+            SystemDecorations = WindowDecorations.BorderOnly,
             Background = new SolidColorBrush(Color.Parse("#FF1F1A24"))
         };
 
@@ -574,7 +574,7 @@ public partial class MainWindow
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             CanResize = false,
             ShowInTaskbar = false,
-            SystemDecorations = SystemDecorations.BorderOnly
+            SystemDecorations = WindowDecorations.BorderOnly
         };
         var result = SaveConfirmationResult.Cancel;
         var grid = new Grid { RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(20) };

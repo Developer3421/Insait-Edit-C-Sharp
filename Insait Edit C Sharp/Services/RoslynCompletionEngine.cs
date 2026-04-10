@@ -286,9 +286,6 @@ public sealed class RoslynCompletionEngine : IDisposable
 
     // ── project context ───────────────────────────────────────────────────
     private string? _projectDir;
-    private List<string>? _projectCsFiles;
-    private readonly NuGetReferenceResolver _nugetResolver = new();
-    private List<MetadataReference>? _nugetRefs;
 
     /// <summary>
     /// Sets the project directory so all .cs files are loaded into the workspace
@@ -299,35 +296,10 @@ public sealed class RoslynCompletionEngine : IDisposable
         if (string.Equals(_projectDir, projectDir, StringComparison.OrdinalIgnoreCase))
             return;
         _projectDir = projectDir;
-        _projectCsFiles = null;
         _trackedFilePath = null; // force rebuild
-        
-        // Resolve NuGet package references for better completion
-        _nugetResolver.InvalidateCache();
-        _nugetRefs = _nugetResolver.Resolve(projectDir);
-        
-        System.Diagnostics.Debug.WriteLine(
-            $"[RoslynCompletion] Project context: {projectDir}, NuGet refs: {_nugetRefs.Count}");
-    }
 
-    private List<string> GetProjectCsFiles()
-    {
-        if (_projectCsFiles != null) return _projectCsFiles;
-        _projectCsFiles = new List<string>();
-        if (string.IsNullOrEmpty(_projectDir) || !Directory.Exists(_projectDir))
-            return _projectCsFiles;
-        try
-        {
-            foreach (var f in Directory.GetFiles(_projectDir, "*.cs", SearchOption.AllDirectories))
-            {
-                if (f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) ||
-                    f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
-                    continue;
-                _projectCsFiles.Add(f);
-            }
-        }
-        catch { }
-        return _projectCsFiles;
+        System.Diagnostics.Debug.WriteLine(
+            $"[RoslynCompletion] Project context: {projectDir}");
     }
 
     // ── workspace sync ─────────────────────────────────────────────────────
@@ -359,68 +331,13 @@ public sealed class RoslynCompletionEngine : IDisposable
                 _workspace.CurrentSolution.RemoveProject(_projectId));
         }
 
-        var projectId  = ProjectId.CreateNewId();
-        var documentId = DocumentId.CreateNewId(projectId);
-
-        // Combine default refs + NuGet package refs
-        var allRefs = new List<MetadataReference>(_defaultRefs);
-        if (_nugetRefs != null && _nugetRefs.Count > 0)
-        {
-            var existingPaths = new HashSet<string>(
-                _defaultRefs.Select(r => r.Display ?? ""), StringComparer.OrdinalIgnoreCase);
-            foreach (var nugetRef in _nugetRefs)
-            {
-                if (nugetRef.Display != null && existingPaths.Add(nugetRef.Display))
-                    allRefs.Add(nugetRef);
-            }
-        }
-
-        var projectInfo = ProjectInfo.Create(
-            projectId,
-            VersionStamp.Create(),
-            name: "LiveEdit",
-            assemblyName: "LiveEdit",
-            language: LanguageNames.CSharp,
-            compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithNullableContextOptions(NullableContextOptions.Enable),
-            parseOptions: new CSharpParseOptions(LanguageVersion.Latest),
-            metadataReferences: allRefs);
-
-        var solution = _workspace.CurrentSolution.AddProject(projectInfo);
-
-        // Add the active document — use the full path as document name to avoid
-        // collisions when multiple files share the same filename (e.g. Program.cs).
-        var docInfo = DocumentInfo.Create(
-            documentId,
-            name: filePath,
-            loader: TextLoader.From(TextAndVersion.Create(
-                SourceText.From(sourceCode), VersionStamp.Create())),
-            filePath: filePath);
-
-        solution = solution.AddDocument(docInfo);
-
-        // Add other project .cs files as context (for cross-file namespace resolution).
-        // Use full path as document name so that files with the same filename don't collide.
-        var contextFiles = GetProjectCsFiles();
-        foreach (var csFile in contextFiles)
-        {
-            if (string.Equals(csFile, filePath, StringComparison.OrdinalIgnoreCase))
-                continue;
-            try
-            {
-                var auxDid = DocumentId.CreateNewId(projectId);
-                var auxText = File.ReadAllText(csFile);
-                solution = solution.AddDocument(DocumentInfo.Create(auxDid, csFile,
-                    loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
-                    filePath: csFile));
-            }
-            catch { /* skip unreadable files */ }
-        }
+        var build = RoslynProjectFactory.CreateBuild(_projectDir, _defaultRefs, filePath, sourceCode);
+        var solution = _workspace.CurrentSolution.AddProject(build.ProjectInfo);
 
         _workspace.TryApplyChanges(solution);
 
-        _projectId       = projectId;
-        _documentId      = documentId;
+        _projectId       = build.ProjectInfo.Id;
+        _documentId      = build.ActiveDocumentId;
         _trackedFilePath = filePath;
     }
 

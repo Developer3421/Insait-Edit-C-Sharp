@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Insait_Edit_C_Sharp.ViewModels;
 
 // Alias to avoid ambiguity with Microsoft.CodeAnalysis.DiagnosticSeverity
@@ -24,61 +25,14 @@ public class CodeAnalysisService
     private CancellationTokenSource? _analysisCts;
     private readonly List<MetadataReference> _defaultReferences;
     private readonly NuGetReferenceResolver _nugetResolver = new();
-    
-    // Codes that are ALWAYS suppressed (genuinely irrelevant noise)
-    private static readonly HashSet<string> _alwaysSuppressedCodes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "CS1591", // Missing XML comment for publicly visible type or member
-        "CS8019", // Unnecessary using directive
-    };
-    
-    // Codes to suppress ONLY when NuGet references were NOT loaded (fallback mode).
-    // When we have proper package references, these errors are legitimate.
-    private static readonly HashSet<string> _fallbackSuppressedCodes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "CS0103", // The name 'X' does not exist in the current context
-        "CS0246", // The type or namespace name 'X' could not be found
-        "CS0234", // The type or namespace name 'X' does not exist in namespace 'Y'
-        "CS1061", // 'X' does not contain a definition for 'Y'
-        "CS0117", // 'X' does not contain a definition for 'Y'
-        "CS0121", // Ambiguous call
-        "CS7036", // No argument given that corresponds to required parameter
-        "CS0012", // The type 'X' is defined in an assembly that is not referenced
-        "CS0616", // 'X' is not an attribute class
-        "CS0433", // The type 'X' exists in both assemblies
-        "CS0518", // Predefined type 'System.X' is not defined or imported
-        "CS1729", // 'X' does not contain a constructor that takes N arguments
-        "CS0535", // 'X' does not implement interface member 'Y'
-        "CS0122", // 'X' is inaccessible due to its protection level
-        "CS0305", // Using the generic type requires N type arguments
-        "CS1503", // Argument N: cannot convert from 'X' to 'Y'
-        "CS0029", // Cannot implicitly convert type 'X' to 'Y'
-        "CS0311", // The type 'X' cannot be used as type parameter
-    };
-    
 
     public CodeAnalysisService()
     {
         _defaultReferences = GetDefaultReferences();
     }
-    
-    /// <summary>
-    /// Check if a diagnostic should be suppressed.
-    /// When NuGet references are loaded, only genuine noise is suppressed.
-    /// When refs are missing (fallback mode), type-not-found errors are also suppressed.
-    /// </summary>
-    private static bool ShouldSuppressDiagnostic(Diagnostic diagnostic, bool hasNuGetRefs)
-    {
-        // Always suppress noise codes
-        if (_alwaysSuppressedCodes.Contains(diagnostic.Id))
-            return true;
-        
-        // When NuGet refs are NOT loaded, suppress type-not-found errors
-        if (!hasNuGetRefs && _fallbackSuppressedCodes.Contains(diagnostic.Id))
-            return true;
-        
-        return false;
-    }
+
+    // All severity resolution is delegated to DiagnosticSeverityMatrix so that
+    // both InlineDiagnosticService and CodeAnalysisService stay in sync.
 
     /// <summary>
     /// Get default assembly references for compilation
@@ -88,50 +42,6 @@ public class CodeAnalysisService
         return RoslynCompletionEngine.CollectPublicDefaultReferences();
     }
     
-    /// <summary>
-    /// Load additional references from NuGet packages and project output directory.
-    /// Returns (references, hasNuGetRefs) where hasNuGetRefs indicates if NuGet packages were found.
-    /// </summary>
-    private (List<MetadataReference> refs, bool hasNuGetRefs) GetProjectReferences(string projectPath)
-    {
-        var references = new List<MetadataReference>();
-        var addedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        
-        // Add default refs paths to avoid duplicates
-        foreach (var r in _defaultReferences)
-            if (r.Display != null)
-                addedPaths.Add(r.Display);
-
-        string? projectDir = null;
-        
-        if (File.Exists(projectPath))
-        {
-            projectDir = Path.GetDirectoryName(projectPath);
-        }
-        else if (Directory.Exists(projectPath))
-        {
-            projectDir = projectPath;
-        }
-        
-        if (projectDir == null)
-            return (references, false);
-        
-        // Use NuGetReferenceResolver to get package references
-        var nugetRefs = _nugetResolver.Resolve(projectDir);
-        bool hasNuGetRefs = nugetRefs.Count > 0;
-        
-        foreach (var nugetRef in nugetRefs)
-        {
-            if (nugetRef.Display != null && addedPaths.Add(nugetRef.Display))
-                references.Add(nugetRef);
-        }
-        
-        System.Diagnostics.Debug.WriteLine(
-            $"[CodeAnalysis] Project references: {references.Count} NuGet refs loaded, fallback mode: {!hasNuGetRefs}");
-        
-        return (references, hasNuGetRefs);
-    }
-
     /// <summary>
     /// Analyze a single C# file
     /// </summary>
@@ -146,28 +56,34 @@ public class CodeAnalysisService
         try
         {
             content ??= await File.ReadAllTextAsync(filePath);
-            var syntaxTree = CSharpSyntaxTree.ParseText(content, path: filePath);
+            var build = RoslynProjectFactory.CreateBuild(Path.GetDirectoryName(filePath), _defaultReferences, filePath, content);
 
-            // Create compilation
-            var compilation = CSharpCompilation.Create(
-                "TempAnalysis",
-                new[] { syntaxTree },
-                _defaultReferences,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            using var workspace = new AdhocWorkspace(RoslynWorkspaceService.Instance.Host);
+            var solution = workspace.CurrentSolution.AddProject(build.ProjectInfo);
+            if (!workspace.TryApplyChanges(solution))
+                throw new InvalidOperationException("Failed to initialize Roslyn workspace for file analysis.");
 
-            // Get diagnostics
-            var roslynDiagnostics = compilation.GetDiagnostics();
+            var project = workspace.CurrentSolution.GetProject(build.ProjectInfo.Id);
+            if (project == null)
+                return diagnostics;
+
+            var roslynDiagnostics = await CollectProjectDiagnosticsAsync(project, CancellationToken.None);
 
             foreach (var diagnostic in roslynDiagnostics)
             {
-                // Skip suppressed diagnostics (fallback mode — no NuGet refs for single file)
-                if (ShouldSuppressDiagnostic(diagnostic, false))
+                if (!build.BelongsToFile(diagnostic, filePath))
+                    continue;
+
+                // Resolve effective severity via the central matrix (null = suppress)
+                var severity = DiagnosticSeverityMatrix.ResolveApp(
+                    diagnostic.Id, diagnostic.Severity, build.HasProjectMetadataReferences);
+                if (severity is null)
                     continue;
                     
                 var lineSpan = diagnostic.Location.GetLineSpan();
                 diagnostics.Add(new DiagnosticItem
                 {
-                    Severity = ConvertSeverity(diagnostic.Severity),
+                    Severity = severity.Value,
                     Message = diagnostic.GetMessage(),
                     FilePath = filePath,
                     FileName = Path.GetFileName(filePath),
@@ -293,21 +209,30 @@ public class CodeAnalysisService
         if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
             return diagnostics;
 
-        string[] csFiles;
+        string activeFilePath;
+        string activeSource;
         try
         {
-            csFiles = Directory.GetFiles(projectDir, "*.cs", SearchOption.AllDirectories)
-                .Where(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) &&
-                            !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar) &&
-                            !f.Contains(Path.DirectorySeparatorChar + ".vs" + Path.DirectorySeparatorChar))
-                .ToArray();
+            activeFilePath = Directory.GetFiles(projectDir, "*.cs", SearchOption.AllDirectories)
+                .First(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                            !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                            !f.Contains(Path.DirectorySeparatorChar + ".vs" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+            activeSource = await File.ReadAllTextAsync(activeFilePath, cancellationToken);
         }
-        catch (Exception ex)
+        catch
+        {
+            return diagnostics;
+        }
+
+        var build = RoslynProjectFactory.CreateBuild(projectDir, _defaultReferences, activeFilePath, activeSource);
+        using var workspace = new AdhocWorkspace(RoslynWorkspaceService.Instance.Host);
+        var solution = workspace.CurrentSolution.AddProject(build.ProjectInfo);
+        if (!workspace.TryApplyChanges(solution))
         {
             diagnostics.Add(new DiagnosticItem
             {
                 Severity = AppDiagnosticSeverity.Error,
-                Message = $"Failed to enumerate project files: {ex.Message}",
+                Message = "Failed to initialize Roslyn workspace for project analysis.",
                 FilePath = targetPath,
                 FileName = Path.GetFileName(targetPath),
                 Line = 1,
@@ -317,67 +242,29 @@ public class CodeAnalysisService
             return diagnostics;
         }
 
-        var syntaxTrees = new List<SyntaxTree>();
-        var filePathMap = new Dictionary<SyntaxTree, string>();
-
-        foreach (var file in csFiles)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                var content = await File.ReadAllTextAsync(file, cancellationToken);
-                var syntaxTree = CSharpSyntaxTree.ParseText(content, path: file, cancellationToken: cancellationToken);
-                syntaxTrees.Add(syntaxTree);
-                filePathMap[syntaxTree] = file;
-            }
-            catch (Exception ex)
-            {
-                diagnostics.Add(new DiagnosticItem
-                {
-                    Severity = AppDiagnosticSeverity.Error,
-                    Message = $"Failed to parse file: {ex.Message}",
-                    FilePath = file,
-                    FileName = Path.GetFileName(file),
-                    Line = 1,
-                    Column = 1,
-                    Code = "PARSE_ERROR"
-                });
-            }
-        }
-
-        if (syntaxTrees.Count == 0)
+        var project = workspace.CurrentSolution.GetProject(build.ProjectInfo.Id);
+        if (project == null)
             return diagnostics;
 
-        var (projectReferences, hasNuGetRefs) = GetProjectReferences(targetPath);
-        var allReferences = _defaultReferences.Concat(projectReferences).ToList();
-
-        var compilation = CSharpCompilation.Create(
-            Path.GetFileNameWithoutExtension(targetPath),
-            syntaxTrees,
-            allReferences,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithNullableContextOptions(NullableContextOptions.Enable));
-
-        foreach (var diagnostic in compilation.GetDiagnostics(cancellationToken))
+        foreach (var diagnostic in await CollectProjectDiagnosticsAsync(project, cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (diagnostic.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden)
+            if (!build.ShouldIncludeDiagnostic(diagnostic))
                 continue;
 
-            if (ShouldSuppressDiagnostic(diagnostic, hasNuGetRefs))
+            // Resolve effective severity via the central matrix (null = suppress)
+            var severity = DiagnosticSeverityMatrix.ResolveApp(
+                diagnostic.Id, diagnostic.Severity, build.HasProjectMetadataReferences);
+            if (severity is null)
                 continue;
 
             var location = diagnostic.Location;
-            var filePath = location.SourceTree != null && filePathMap.TryGetValue(location.SourceTree, out var path)
-                ? path
-                : location.SourceTree?.FilePath ?? targetPath;
-
+            var filePath = location.SourceTree?.FilePath ?? location.GetLineSpan().Path;
             var lineSpan = location.GetLineSpan();
             diagnostics.Add(new DiagnosticItem
             {
-                Severity = ConvertSeverity(diagnostic.Severity),
+                Severity = severity.Value,
                 Message = diagnostic.GetMessage(),
                 FilePath = filePath,
                 FileName = Path.GetFileName(filePath),
@@ -388,6 +275,67 @@ public class CodeAnalysisService
         }
 
         return diagnostics;
+    }
+
+    private static async Task<List<Diagnostic>> CollectProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken)
+    {
+        var compilation = await project.GetCompilationAsync(cancellationToken);
+        if (compilation == null)
+            return new List<Diagnostic>();
+
+        var diagnostics = compilation.GetDiagnostics(cancellationToken).ToList();
+
+        // Merge project NuGet analyzers with built-in IDE analyzers (IDE0001…IDE1006)
+        var projectAnalyzers = project.AnalyzerReferences
+            .SelectMany(reference => SafeGetAnalyzers(reference, project.Language));
+        var analyzers = BuiltInAnalyzerProvider.Merge(projectAnalyzers);
+
+        if (analyzers.Length == 0)
+            return diagnostics;
+
+        var options = new CompilationWithAnalyzersOptions(
+            new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty),
+            onAnalyzerException: null,
+            concurrentAnalysis: true,
+            logAnalyzerExecutionTime: false,
+            reportSuppressedDiagnostics: false);
+
+        try
+        {
+            var analyzerDiagnostics = await compilation
+                .WithAnalyzers(analyzers, options)
+                .GetAnalyzerDiagnosticsAsync(cancellationToken);
+            diagnostics.AddRange(analyzerDiagnostics);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[CodeAnalysis] Analyzer run failed: {ex.Message}");
+        }
+
+        return diagnostics
+            .GroupBy(static diagnostic => new
+            {
+                diagnostic.Id,
+                FilePath = diagnostic.Location.SourceTree?.FilePath ?? diagnostic.Location.GetLineSpan().Path,
+                diagnostic.Location.SourceSpan.Start,
+                diagnostic.Location.SourceSpan.Length,
+                Message = diagnostic.GetMessage(),
+                diagnostic.Severity,
+            })
+            .Select(static group => group.First())
+            .ToList();
+    }
+
+    private static IEnumerable<DiagnosticAnalyzer> SafeGetAnalyzers(AnalyzerReference reference, string language)
+    {
+        try
+        {
+            return reference.GetAnalyzers(language);
+        }
+        catch
+        {
+            return Enumerable.Empty<DiagnosticAnalyzer>();
+        }
     }
 
     /// <summary>
@@ -456,12 +404,16 @@ public class CodeAnalysisService
                 var code = errorMatch.Groups[5].Value;
                 var message = errorMatch.Groups[6].Value;
 
-                var severity = severityStr switch
+                // Apply matrix reclassification for build output too
+                // (e.g. CS8019 from build output → Info, not Warning)
+                var nativeRoslyn = severityStr switch
                 {
-                    "error" => AppDiagnosticSeverity.Error,
-                    "warning" => AppDiagnosticSeverity.Warning,
-                    _ => AppDiagnosticSeverity.Info
+                    "error"   => Microsoft.CodeAnalysis.DiagnosticSeverity.Error,
+                    "warning" => Microsoft.CodeAnalysis.DiagnosticSeverity.Warning,
+                    _         => Microsoft.CodeAnalysis.DiagnosticSeverity.Info,
                 };
+                var severity = DiagnosticSeverityMatrix.ResolveApp(code, nativeRoslyn, hasNuGetRefs: true)
+                               ?? AppDiagnosticSeverity.Info;
 
                 diagnostics.Add(new DiagnosticItem
                 {
@@ -479,16 +431,6 @@ public class CodeAnalysisService
         return diagnostics;
     }
 
-    private AppDiagnosticSeverity ConvertSeverity(Microsoft.CodeAnalysis.DiagnosticSeverity severity)
-    {
-        return severity switch
-        {
-            Microsoft.CodeAnalysis.DiagnosticSeverity.Error => AppDiagnosticSeverity.Error,
-            Microsoft.CodeAnalysis.DiagnosticSeverity.Warning => AppDiagnosticSeverity.Warning,
-            Microsoft.CodeAnalysis.DiagnosticSeverity.Info => AppDiagnosticSeverity.Info,
-            _ => AppDiagnosticSeverity.Hint
-        };
-    }
 
     private void OnProgress(string message, int current, int total)
     {

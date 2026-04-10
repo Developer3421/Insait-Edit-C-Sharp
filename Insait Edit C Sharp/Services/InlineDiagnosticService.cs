@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
-using System.IO;
 using System.Reflection;
 using Insait_Edit_C_Sharp.Controls;
 
@@ -32,34 +32,12 @@ public sealed class InlineDiagnosticService : IDisposable
     private string?     _trackedFilePath;
 
     private readonly QuickFixService       _quickFixService;
-    private readonly NuGetReferenceResolver _nugetResolver = new();
     private CancellationTokenSource?       _cts;
 
     // ── project context ──────────────────────────────────────────────────
     private string? _projectDir;
-    private List<string>? _projectCsFiles;
-    private List<MetadataReference>? _nugetRefs;
+    private RoslynProjectBuild? _currentBuild;
 
-    // ── Noise suppression ─────────────────────────────────────────────────
-    // Only suppress codes that are genuinely irrelevant noise.
-    // With NuGet references loaded, most type-not-found errors are now legitimate.
-    private static readonly HashSet<string> _alwaysSuppressedCodes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "CS1591", // Missing XML comment
-        "CS8019", // Unnecessary using directive
-    };
-    
-    // Codes to suppress ONLY when NuGet references were NOT loaded (fallback mode).
-    // When we have proper references, these errors are legitimate.
-    private static readonly HashSet<string> _fallbackSuppressedCodes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "CS0103", "CS0246", "CS0234", "CS1061", "CS0117",
-        "CS0121", "CS7036", "CS0012",
-        "CS0616", "CS0433", "CS0518", "CS1729",
-        "CS0535", "CS0122", "CS0305", "CS1503",
-        "CS0029", "CS0311",
-    };
-    
     /// <summary>Whether NuGet references were successfully loaded for the current project.</summary>
     private bool _hasNuGetRefs;
     
@@ -123,23 +101,21 @@ public sealed class InlineDiagnosticService : IDisposable
         try   { document = SyncDocument(filePath, sourceCode); }
         catch { return spans; }
 
-        // Get semantic diagnostics
-        var semanticModel = await document.GetSemanticModelAsync(ct);
-        if (semanticModel == null) return spans;
+        var compilation = await document.Project.GetCompilationAsync(ct);
+        if (compilation == null) return spans;
 
-        var syntaxTree = await document.GetSyntaxTreeAsync(ct);
-        if (syntaxTree == null) return spans;
-
-        // Collect both syntax AND semantic diagnostics
-        var allDiagnostics = semanticModel.GetDiagnostics(cancellationToken: ct)
-            .Concat(syntaxTree.GetDiagnostics(ct))
-            .Where(d => d.Severity != Microsoft.CodeAnalysis.DiagnosticSeverity.Hidden)
-            .Where(d => !ShouldSuppress(d))
+        var build = _currentBuild;
+        var allDiagnostics = (await CollectDiagnosticsAsync(document.Project, compilation, ct))
+            .Where(d => build?.BelongsToFile(d, filePath) ?? false)
             .ToList();
 
         foreach (var diag in allDiagnostics)
         {
             ct.ThrowIfCancellationRequested();
+
+            // Resolve effective severity (null → suppress)
+            var kind = ResolveKind(diag);
+            if (kind is null) continue;
 
             var loc   = diag.Location;
             if (!loc.IsInSource) continue;
@@ -167,7 +143,7 @@ public sealed class InlineDiagnosticService : IDisposable
                 Column      = line.Character + 1,
                 Message     = diag.GetMessage(),
                 Code        = diag.Id,
-                Severity    = ConvertSeverity(diag.Severity),
+                Severity    = kind.Value,   // resolved severity from matrix
                 Fixes       = fixes,
             });
         }
@@ -184,37 +160,12 @@ public sealed class InlineDiagnosticService : IDisposable
         if (string.Equals(_projectDir, projectDir, StringComparison.OrdinalIgnoreCase))
             return;
         _projectDir = projectDir;
-        _projectCsFiles = null;
         _trackedFilePath = null; // force rebuild
-        
-        // Resolve NuGet package references
-        _nugetResolver.InvalidateCache();
-        _nugetRefs = _nugetResolver.Resolve(projectDir);
-        _hasNuGetRefs = _nugetRefs.Count > 0;
+        _currentBuild = null;
         _quickFixService.SetProjectContext(projectDir);
-        
-        System.Diagnostics.Debug.WriteLine(
-            $"[InlineDiag] Project context: {projectDir}, NuGet refs: {_nugetRefs.Count}, fallback mode: {!_hasNuGetRefs}");
-    }
 
-    private List<string> GetProjectCsFiles()
-    {
-        if (_projectCsFiles != null) return _projectCsFiles;
-        _projectCsFiles = new List<string>();
-        if (string.IsNullOrEmpty(_projectDir) || !Directory.Exists(_projectDir))
-            return _projectCsFiles;
-        try
-        {
-            foreach (var f in Directory.GetFiles(_projectDir, "*.cs", SearchOption.AllDirectories))
-            {
-                if (f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) ||
-                    f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
-                    continue;
-                _projectCsFiles.Add(f);
-            }
-        }
-        catch { }
-        return _projectCsFiles;
+        System.Diagnostics.Debug.WriteLine(
+            $"[InlineDiag] Project context: {projectDir}, fallback mode: {!_hasNuGetRefs}");
     }
 
     // ── Workspace management ───────────────────────────────────────────────
@@ -251,89 +202,86 @@ public sealed class InlineDiagnosticService : IDisposable
         if (_projectId != null)
             _workspace.TryApplyChanges(_workspace.CurrentSolution.RemoveProject(_projectId));
 
-        var projectId  = ProjectId.CreateNewId();
-        var documentId = DocumentId.CreateNewId(projectId);
-
-        // Combine default refs + NuGet package refs
-        var allRefs = new List<MetadataReference>(_refs);
-        if (_nugetRefs != null && _nugetRefs.Count > 0)
-        {
-            var existingPaths = new HashSet<string>(
-                _refs.Select(r => r.Display ?? ""), StringComparer.OrdinalIgnoreCase);
-            foreach (var nugetRef in _nugetRefs)
-            {
-                if (nugetRef.Display != null && existingPaths.Add(nugetRef.Display))
-                    allRefs.Add(nugetRef);
-            }
-        }
-
-        var info = ProjectInfo.Create(
-            projectId, VersionStamp.Create(),
-            "InlineDiag", "InlineDiag", LanguageNames.CSharp,
-            compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithNullableContextOptions(NullableContextOptions.Enable),
-            parseOptions: new CSharpParseOptions(LanguageVersion.Latest),
-            metadataReferences: allRefs);
-
-        var sol = _workspace.CurrentSolution.AddProject(info);
-        // Use the full path as document name to avoid collisions when multiple
-        // files share the same short filename (e.g. Program.cs in sub-projects).
-        var docInfo = DocumentInfo.Create(
-            documentId,
-            filePath,
-            loader: TextLoader.From(TextAndVersion.Create(SourceText.From(sourceCode), VersionStamp.Create())),
-            filePath: filePath);
-
-        sol = sol.AddDocument(docInfo);
-
-        // Add other project .cs files as context
-        var contextFiles = GetProjectCsFiles();
-        foreach (var csFile in contextFiles)
-        {
-            if (string.Equals(csFile, filePath, StringComparison.OrdinalIgnoreCase))
-                continue;
-            try
-            {
-                var auxDid = DocumentId.CreateNewId(projectId);
-                var auxText = File.ReadAllText(csFile);
-                sol = sol.AddDocument(DocumentInfo.Create(auxDid, csFile,
-                    loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
-                    filePath: csFile));
-            }
-            catch { /* skip unreadable files */ }
-        }
+        var build = RoslynProjectFactory.CreateBuild(_projectDir, _refs, filePath, sourceCode);
+        var sol = _workspace.CurrentSolution.AddProject(build.ProjectInfo);
 
         _workspace.TryApplyChanges(sol);
 
-        _projectId       = projectId;
-        _documentId      = documentId;
+        _currentBuild    = build;
+        _hasNuGetRefs    = build.HasProjectMetadataReferences;
+        _projectId       = build.ProjectInfo.Id;
+        _documentId      = build.ActiveDocumentId;
         _trackedFilePath = filePath;
     }
 
-    // ── Suppression ────────────────────────────────────────────────────────
+    // ── Suppression / severity resolution ─────────────────────────────────
+    // All logic is delegated to DiagnosticSeverityMatrix so the two services
+    // stay in sync automatically.
 
-    private bool ShouldSuppress(Diagnostic d)
+    private DiagnosticSeverityKind? ResolveKind(Diagnostic d)
+        => DiagnosticSeverityMatrix.ResolveInline(d.Id, d.Severity, _hasNuGetRefs);
+
+
+    private static async Task<List<Diagnostic>> CollectDiagnosticsAsync(Project project, Compilation compilation, CancellationToken ct)
     {
-        // Always suppress noise codes
-        if (_alwaysSuppressedCodes.Contains(d.Id))
-            return true;
-        
-        // When NuGet refs are NOT loaded, suppress type-not-found errors
-        // (they're almost certainly false positives from missing assemblies)
-        if (!_hasNuGetRefs && _fallbackSuppressedCodes.Contains(d.Id))
-            return true;
-        
-        return false;
+        var diagnostics = compilation.GetDiagnostics(ct).ToList();
+
+        // Merge project-level NuGet analyzers with the built-in IDE analyzers
+        // so we get IDE0001…IDE1006 diagnostics (Info/Hint level) in addition
+        // to the standard CS compiler diagnostics.
+        var projectAnalyzers = project.AnalyzerReferences
+            .SelectMany(r => SafeGetAnalyzers(r, project.Language));
+
+        var analyzers = BuiltInAnalyzerProvider.Merge(projectAnalyzers);
+
+        if (analyzers.Length == 0)
+            return diagnostics;
+
+        var options = new CompilationWithAnalyzersOptions(
+            new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty),
+            onAnalyzerException: null,
+            concurrentAnalysis: true,
+            logAnalyzerExecutionTime: false,
+            reportSuppressedDiagnostics: false);
+
+        try
+        {
+            var analyzerDiagnostics = await compilation
+                .WithAnalyzers(analyzers, options)
+                .GetAnalyzerDiagnosticsAsync(ct);
+            diagnostics.AddRange(analyzerDiagnostics);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[InlineDiag] Analyzer run failed: {ex.Message}");
+        }
+
+        // Deduplicate (same code + location + message)
+        return diagnostics
+            .GroupBy(static d => new
+            {
+                d.Id,
+                FilePath = d.Location.SourceTree?.FilePath ?? d.Location.GetLineSpan().Path,
+                d.Location.SourceSpan.Start,
+                d.Location.SourceSpan.Length,
+                Message = d.GetMessage(),
+                d.Severity,
+            })
+            .Select(static g => g.First())
+            .ToList();
     }
 
-    private static DiagnosticSeverityKind ConvertSeverity(Microsoft.CodeAnalysis.DiagnosticSeverity s)
-        => s switch
+    private static IEnumerable<DiagnosticAnalyzer> SafeGetAnalyzers(AnalyzerReference reference, string language)
+    {
+        try
         {
-            Microsoft.CodeAnalysis.DiagnosticSeverity.Error   => DiagnosticSeverityKind.Error,
-            Microsoft.CodeAnalysis.DiagnosticSeverity.Warning => DiagnosticSeverityKind.Warning,
-            Microsoft.CodeAnalysis.DiagnosticSeverity.Info    => DiagnosticSeverityKind.Info,
-            _                                                  => DiagnosticSeverityKind.Hint,
-        };
+            return reference.GetAnalyzers(language);
+        }
+        catch
+        {
+            return Enumerable.Empty<DiagnosticAnalyzer>();
+        }
+    }
 
     // ── MEF ───────────────────────────────────────────────────────────────
 

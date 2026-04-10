@@ -6,11 +6,13 @@ using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Insait_Edit_C_Sharp.ViewModels;
+using Insait_Edit_C_Sharp.Services.RoslynHintsServices;
 
 namespace Insait_Edit_C_Sharp.Controls;
 
@@ -233,6 +235,37 @@ public partial class DiagnosticsPanel : UserControl
             VerticalAlignment = VerticalAlignment.Center,
         };
 
+        // ── Hint category badge (🎨 Style / 🗑 Unused / 🚀 Modern) ──────
+        var category = HintCategoryRegistry.Default.GetCategory(item.Code);
+        Border? categoryBadge = null;
+        if (category is not null &&
+            (item.Severity == DiagnosticSeverity.Info || item.Severity == DiagnosticSeverity.Hint))
+        {
+            var badgeColor = item.Severity switch
+            {
+                DiagnosticSeverity.Hint => Color.Parse("#FFA6E3A1"),
+                _ => Color.Parse("#FF89B4FA"),
+            };
+            categoryBadge = new Border
+            {
+                Background = new SolidColorBrush(badgeColor) { Opacity = 0.18 },
+                BorderBrush = new SolidColorBrush(badgeColor) { Opacity = 0.45 },
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(3),
+                Padding = new Thickness(3, 0),
+                Margin = new Thickness(0, 0, 4, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = new TextBlock
+                {
+                    Text = $"{category.CategoryIcon} {category.CategoryName}",
+                    FontSize = 9,
+                    Foreground = new SolidColorBrush(badgeColor),
+                    VerticalAlignment = VerticalAlignment.Center,
+                },
+            };
+            ToolTip.SetTip(categoryBadge, category.CategoryDescription);
+        }
+
         var code = new TextBlock
         {
             Text = item.Code,
@@ -285,16 +318,22 @@ public partial class DiagnosticsPanel : UserControl
 
         var grid = new Grid { Margin = new Thickness(4, 1) };
         grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // icon
+        grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // category badge
         grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // code
         grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));   // message
         grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // location
         grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));   // copy btn
         Grid.SetColumn(icon, 0);
-        Grid.SetColumn(code, 1);
-        Grid.SetColumn(message, 2);
-        Grid.SetColumn(location, 3);
-        Grid.SetColumn(copyBtn, 4);
+        Grid.SetColumn(code, 2);
+        Grid.SetColumn(message, 3);
+        Grid.SetColumn(location, 4);
+        Grid.SetColumn(copyBtn, 5);
         grid.Children.Add(icon);
+        if (categoryBadge is not null)
+        {
+            Grid.SetColumn(categoryBadge, 1);
+            grid.Children.Add(categoryBadge);
+        }
         grid.Children.Add(code);
         grid.Children.Add(message);
         grid.Children.Add(location);

@@ -948,8 +948,6 @@ public partial class MainWindow : Window
         var noProblems = this.FindControl<TextBlock>("NoProblemsText");
         if (noProblems != null) noProblems.Text = L("Problems.NoProblems");
 
-        var msgText = this.FindControl<TextBlock>("ProblemsMessagesText");
-        if (msgText != null) msgText.Text = L("Problems.Messages");
 
         // ── Build/Run output ─────────────────────────────────────
         var buildOut = this.FindControl<SelectableTextBlock>("BuildOutputText");
@@ -1490,7 +1488,7 @@ public partial class MainWindow : Window
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             CanResize = false,
             ShowInTaskbar = false,
-            SystemDecorations = SystemDecorations.BorderOnly
+            SystemDecorations = WindowDecorations.BorderOnly
         };
 
         var result = SaveConfirmationResult.Cancel;
@@ -1963,7 +1961,7 @@ ExecuteMenuAction(string action)
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             CanResize = false,
             ShowInTaskbar = false,
-            SystemDecorations = SystemDecorations.None,
+            SystemDecorations = WindowDecorations.None,
             Background = new SolidColorBrush(Color.Parse("#FF1E1E2E"))
         };
 
@@ -2506,7 +2504,7 @@ ExecuteMenuAction(string action)
             Width = 450,
             Height = 250,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.None,
+            SystemDecorations = WindowDecorations.None,
             Background = Avalonia.Media.Brushes.Transparent,
             TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent }
         };
@@ -2590,7 +2588,7 @@ ExecuteMenuAction(string action)
             Width = 400,
             Height = 200,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.None,
+            SystemDecorations = WindowDecorations.None,
             Background = Avalonia.Media.Brushes.Transparent
         };
 
@@ -2648,7 +2646,7 @@ ExecuteMenuAction(string action)
             Width = 500,
             Height = 380,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.None,
+            SystemDecorations = WindowDecorations.None,
             Background = Avalonia.Media.Brushes.Transparent
         };
 
@@ -2870,7 +2868,7 @@ ExecuteMenuAction(string action)
             Width = 450,
             Height = 250,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.None,
+            SystemDecorations = WindowDecorations.None,
             Background = Avalonia.Media.Brushes.Transparent
         };
 

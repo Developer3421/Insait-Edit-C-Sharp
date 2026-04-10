@@ -10,6 +10,7 @@ using Avalonia.Media.Imaging;
 using Insait_Edit_C_Sharp.Services;
 using System.Net.Http;
 using System.IO;
+using Avalonia.Input.Platform;
 
 namespace Insait_Edit_C_Sharp.Controls;
 

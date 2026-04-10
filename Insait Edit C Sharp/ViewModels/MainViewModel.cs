@@ -37,6 +37,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private string? _currentProjectPath;
     private int _errorsCount;
     private int _warningsCount;
+    private int _messagesCount;
 
     // File system watcher for automatic refresh
     private FileSystemWatcher? _fileWatcher;
@@ -111,7 +112,13 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         set => SetProperty(ref _warningsCount, value);
     }
 
-    public int ProblemsCount => ErrorsCount + WarningsCount;
+    public int MessagesCount
+    {
+        get => _messagesCount;
+        set => SetProperty(ref _messagesCount, value);
+    }
+
+    public int ProblemsCount => ErrorsCount + WarningsCount + MessagesCount;
 
     public bool HasProblems => ProblemsCount > 0;
 
@@ -124,12 +131,15 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         ErrorsCount = 0;
         WarningsCount = 0;
+        MessagesCount = 0;
         foreach (var problem in Problems)
         {
             if (problem.Severity == DiagnosticSeverity.Error)
                 ErrorsCount++;
             else if (problem.Severity == DiagnosticSeverity.Warning)
                 WarningsCount++;
+            else
+                MessagesCount++;
         }
         OnPropertyChanged(nameof(ProblemsCount));
         OnPropertyChanged(nameof(HasProblems));

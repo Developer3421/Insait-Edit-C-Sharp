@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
@@ -1165,7 +1166,7 @@ internal sealed class InsaitEditorSurface : Control
     {
         var cb = TopLevel.GetTopLevel(this)?.Clipboard;
         if (cb == null) return;
-        var text = await cb.GetTextAsync();
+        var text = await cb.TryGetTextAsync();
         if (string.IsNullOrEmpty(text)) return;
         if (HasSelection) DeleteSelection();
         var parts = text.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');

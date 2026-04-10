@@ -69,7 +69,7 @@
                                FontSize="11" Foreground="#FF9E90B0" TextWrapping="Wrap"/>
                 </StackPanel>
                 <CheckBox x:Name="ShowKeyCheck" Content="{DynamicResource Gemini.Settings.ShowKey}" Foreground="#FF9E90B0" FontSize="12"
-                          Checked="ShowKeyCheck_Checked" Unchecked="ShowKeyCheck_Unchecked"/>
+                          IsCheckedChanged="ShowKeyCheck_Changed"/>
                 <Grid ColumnDefinitions="*,12,*">
                     <Button Grid.Column="0" Classes="cancel-btn" Click="CancelButton_Click"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">

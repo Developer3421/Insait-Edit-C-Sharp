@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Insait_Edit_C_Sharp.Services;
 using System;
+using Avalonia.Input.Platform;
 
 namespace Insait_Edit_C_Sharp;
 

@@ -32,14 +32,10 @@ public partial class GeminiSettingsWindow : Window
     private void CloseButton_Click(object? sender, RoutedEventArgs e) => Close();
     private void CancelButton_Click(object? sender, RoutedEventArgs e) => Close();
 
-    private void ShowKeyCheck_Checked(object? sender, RoutedEventArgs e)
+    private void ShowKeyCheck_Changed(object? sender, RoutedEventArgs e)
     {
-        if (_apiKeyBox != null) _apiKeyBox.PasswordChar = '\0';
-    }
-
-    private void ShowKeyCheck_Unchecked(object? sender, RoutedEventArgs e)
-    {
-        if (_apiKeyBox != null) _apiKeyBox.PasswordChar = '•';
+        if (_apiKeyBox == null) return;
+        _apiKeyBox.PasswordChar = _showKeyCheck?.IsChecked == true ? '\0' : '•';
     }
 
     private void SaveButton_Click(object? sender, RoutedEventArgs e)

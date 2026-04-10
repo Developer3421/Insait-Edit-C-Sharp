@@ -1770,7 +1770,7 @@
                                                 </StackPanel>
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                                     <TextBlock Text="ℹ" FontSize="11" Foreground="#FF89B4FA"/>
-                                                    <TextBlock Text="0 Messages" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}" Name="ProblemsMessagesText"/>
+                                                    <TextBlock x:CompileBindings="False" Text="{Binding MessagesCount, StringFormat='{}{0} Messages'}" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}" Name="ProblemsMessagesText"/>
                                                 </StackPanel>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">

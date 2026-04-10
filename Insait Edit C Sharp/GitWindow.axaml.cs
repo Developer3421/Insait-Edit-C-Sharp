@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -473,7 +474,7 @@ public partial class GitWindow : Window
             Title = L("Git.RevertResetTitle"),
             Width = 460, Height = isRoot ? 220 : 280,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.BorderOnly,
+            SystemDecorations = WindowDecorations.BorderOnly,
             CanResize = false,
             Background = new SolidColorBrush(Color.Parse("#FF2A2230"))
         };
@@ -670,7 +671,7 @@ public partial class GitWindow : Window
             Title = L("Git.CreateRepoDialogTitle"),
             Width = 460, Height = loggedIn ? 300 : 240,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.BorderOnly,
+            SystemDecorations = WindowDecorations.BorderOnly,
             CanResize = false,
             Background = new SolidColorBrush(Color.Parse("#FF2A2230"))
         };
@@ -791,7 +792,7 @@ public partial class GitWindow : Window
             Width = 520,
             Height = 320,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            SystemDecorations = SystemDecorations.BorderOnly,
+            SystemDecorations = WindowDecorations.BorderOnly,
             CanResize = false,
             Background = new SolidColorBrush(Color.Parse("#FF2A2230"))
         };
