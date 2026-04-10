@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.AutoFixWindow"
         Title="Auto Fix — Roslyn Quick Fixes"
@@ -109,7 +109,7 @@
 
         <!-- TextBox -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -119,10 +119,10 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>

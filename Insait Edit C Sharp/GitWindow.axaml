@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -162,11 +162,11 @@
             <Setter Property="CaretBrush"               Value="{StaticResource TextBrush}"/>
             <Setter Property="SelectionBrush"           Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="Background"               Value="{StaticResource SurfBrush}"/>
+            <Setter Property="Background"               Value="#FF2E1B0C"/>
             <Setter Property="BorderBrush"              Value="{StaticResource BorderBrush}"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource SurfBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:pointerover">
             <Setter Property="BorderBrush" Value="#FF5A496F"/>
@@ -526,7 +526,7 @@
                                      Width="180" Height="24"
                                      Background="#FF252030"
                                      Foreground="{StaticResource TextBrush}"
-                                     CaretBrush="{StaticResource TextBrush}"
+                                     CaretBrush="#5B1E8C"
                                      SelectionBrush="#60FFC09F"
                                      SelectionForegroundBrush="#FF1F1A24"
                                      BorderBrush="{StaticResource BorderBrush}"

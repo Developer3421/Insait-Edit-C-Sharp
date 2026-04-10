@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Insait_Edit_C_Sharp"
         x:Class="Insait_Edit_C_Sharp.MsixManagerWindow"
@@ -78,17 +78,17 @@
             <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="#FFF0E8F4"/>
             <Setter Property="BorderBrush" Value="#FF3E3050"/>
-            <Setter Property="CaretBrush" Value="#FFF0E8F4"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="Padding" Value="10,7"/>
             <Setter Property="FontSize" Value="12"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus"><Setter Property="BorderBrush" Value="#FFFFC09F"/></Style>
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
@@ -108,7 +108,7 @@
             <Setter Property="FontSize" Value="12"/>
         </Style>
         <Style Selector="TextBox.log-out">
-            <Setter Property="Background" Value="#FF0E0C14"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="#FFA6E3A1"/>
             <Setter Property="BorderBrush" Value="#FF2A2230"/>
             <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>

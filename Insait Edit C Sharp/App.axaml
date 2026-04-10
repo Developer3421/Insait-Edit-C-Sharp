@@ -9,6 +9,15 @@
              does NOT replace FluentTheme for the rest of the application -->
   
 
+        <!-- Dark purple caret + soft orange background in all TextBoxes -->
+        <Style Selector="TextBox">
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
+        </Style>
+        <Style Selector="TextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF2E1B0C"/>
+        </Style>
+
         <!-- Global style for emoji icons - ensures color emoji rendering -->
         <Style Selector="TextBlock.emoji">
             <Setter Property="FontFamily" Value="Segoe UI Emoji, Noto Color Emoji, Apple Color Emoji, Segoe UI Symbol"/>

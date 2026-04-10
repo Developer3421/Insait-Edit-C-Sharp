@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.Controls.RenameSymbolDialog"
         Title="Rename Symbol"
@@ -20,15 +20,15 @@
     <Window.Styles>
         <!-- TextBox styles -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="{StaticResource DlgSurface}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="{StaticResource DlgText}"/>
             <Setter Property="BorderBrush" Value="{StaticResource DlgBorder}"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="{StaticResource DlgText}"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource DlgSurface}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource DlgAccent}"/>

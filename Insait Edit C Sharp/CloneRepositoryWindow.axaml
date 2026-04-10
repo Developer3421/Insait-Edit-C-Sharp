@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.CloneRepositoryWindow"
         Title="Clone Repository"
@@ -8,12 +8,12 @@
         FontFamily="Segoe UI Emoji, Segoe UI" Background="#FF1F1A24">
     <Window.Styles>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox">
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="#FFF0E8F4"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
         </Style>
         <Style Selector="Button:pointerover">
             <Setter Property="Background" Value="#FF3E3050"/>

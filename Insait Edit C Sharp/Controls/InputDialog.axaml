@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.Controls.InputDialog"
         Title="Input"
@@ -14,19 +14,19 @@
     <Window.Styles>
         <!-- TextBox -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="#FFF0E8F4"/>
             <Setter Property="BorderBrush" Value="#FF3E3050"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="CaretBrush" Value="#FFF0E8F4"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="#FFFFC09F"/>

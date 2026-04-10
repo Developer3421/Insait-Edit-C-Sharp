@@ -141,13 +141,13 @@
         <!-- TextBox high-contrast style for dark backgrounds -->
         <Style Selector="TextBox">
             <Setter Property="Foreground" Value="{StaticResource NuGetTextBrush}"/>
-            <Setter Property="CaretBrush" Value="{StaticResource NuGetTextBrush}"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
             <Setter Property="SelectionBrush" Value="{StaticResource NuGetAccentBrush}"/>
             <Setter Property="SelectionForegroundBrush" Value="#FFFFFFFF"/>
-            <Setter Property="Background" Value="{StaticResource NuGetBgBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource NuGetBgBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource NuGetAccentBrush}"/>
@@ -169,7 +169,7 @@
                            LetterSpacing="1"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
                     <Button Classes="icon-btn" ToolTip.Tip="{DynamicResource NuGet.Tooltip.Refresh}" Name="RefreshButton" Click="RefreshButton_Click">
-                        <TextBlock Text="🔄" FontSize="14" Classes="emoji"/>
+                        <TextBlock Text="??" FontSize="14" Classes="emoji"/>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -180,19 +180,19 @@
             <StackPanel Orientation="Horizontal">
                 <Button Classes="nuget-tab active" Name="BrowseTab" Click="BrowseTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="🔍" FontSize="12" Classes="emoji"/>
+                        <TextBlock Text="??" FontSize="12" Classes="emoji"/>
                         <TextBlock Name="BrowseTabText" Text="{DynamicResource NuGet.Browse}"/>
                     </StackPanel>
                 </Button>
                 <Button Classes="nuget-tab" Name="InstalledTab" Click="InstalledTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="📦" FontSize="12" Classes="emoji"/>
+                        <TextBlock Text="??" FontSize="12" Classes="emoji"/>
                         <TextBlock Name="InstalledTabText" Text="{DynamicResource NuGet.Installed}"/>
                     </StackPanel>
                 </Button>
                 <Button Classes="nuget-tab" Name="UpdatesTab" Click="UpdatesTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="⬆️" FontSize="12" Classes="emoji"/>
+                        <TextBlock Text="??" FontSize="12" Classes="emoji"/>
                         <TextBlock Text="{DynamicResource NuGet.Updates}" Name="UpdatesTabText"/>
                     </StackPanel>
                 </Button>
@@ -212,7 +212,7 @@
                                  CornerRadius="6" Padding="10,8"
                                  KeyDown="SearchBox_KeyDown"/>
                         <Button Grid.Column="1" Classes="icon-btn" Margin="0,0,4,0" Click="SearchButton_Click">
-                            <TextBlock Text="🔎" FontSize="14" FontFamily="{StaticResource EmojiFont}"/>
+                            <TextBlock Text="??" FontSize="14" FontFamily="{StaticResource EmojiFont}"/>
                         </Button>
                     </Grid>
                 </Border>
@@ -296,14 +296,14 @@
                     <Border Grid.Row="0" Padding="12,10" Background="#14FFC09F">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <Button Grid.Column="0" Classes="icon-btn" Click="CloseDetailsButton_Click" Margin="0,0,8,0">
-                                <TextBlock Text="←" FontSize="16" Foreground="{StaticResource NuGetTextBrush}"/>
+                                <TextBlock Text="?" FontSize="16" Foreground="{StaticResource NuGetTextBrush}"/>
                             </Button>
                             <TextBlock Grid.Column="1" Text="{DynamicResource NuGet.PackageDetails}" FontSize="12" FontWeight="SemiBold" 
                                        Foreground="{StaticResource NuGetTextBrush}" VerticalAlignment="Center"
                                        Name="PackageDetailsHeaderText"/>
                             <Button Grid.Column="2" Classes="icon-btn" Name="NuGetOrgLinkButton" Click="NuGetOrgLink_Click" 
                                     ToolTip.Tip="{DynamicResource NuGet.ViewOnNuGetOrg}">
-                                <TextBlock Text="🌐" FontSize="14" FontFamily="{StaticResource EmojiFont}"/>
+                                <TextBlock Text="??" FontSize="14" FontFamily="{StaticResource EmojiFont}"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -315,7 +315,7 @@
                             <Grid ColumnDefinitions="48,*">
                                 <Border Grid.Column="0" Width="48" Height="48" CornerRadius="8" Background="#14FFC09F" ClipToBounds="True">
                                     <Panel>
-                                        <TextBlock Text="📦" FontSize="22" FontFamily="{StaticResource EmojiFont}"
+                                        <TextBlock Text="??" FontSize="22" FontFamily="{StaticResource EmojiFont}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                                    Name="DetailDefaultIcon"/>
                                         <Image Name="DetailIconImage" Stretch="Uniform" Width="48" Height="48"/>
@@ -356,8 +356,8 @@
                                                    Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                                    Name="DownloadsLabelText"/>
                                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-                                            <TextBlock Text="📥" FontSize="13" FontFamily="{StaticResource EmojiFont}"/>
-                                            <TextBlock Name="DetailDownloadsText" Text="—" FontSize="14" FontWeight="SemiBold"
+                                            <TextBlock Text="??" FontSize="13" FontFamily="{StaticResource EmojiFont}"/>
+                                            <TextBlock Name="DetailDownloadsText" Text="�" FontSize="14" FontWeight="SemiBold"
                                                        Foreground="{StaticResource NuGetTextBrush}"/>
                                         </StackPanel>
                                     </StackPanel>
@@ -368,8 +368,8 @@
                                                    Foreground="{StaticResource NuGetTextMutedBrush}" LetterSpacing="1"
                                                    Name="PublishedLabelText"/>
                                         <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
-                                            <TextBlock Text="📅" FontSize="13" FontFamily="{StaticResource EmojiFont}"/>
-                                            <TextBlock Name="DetailPublishedText" Text="—" FontSize="14" FontWeight="SemiBold"
+                                            <TextBlock Text="??" FontSize="13" FontFamily="{StaticResource EmojiFont}"/>
+                                            <TextBlock Name="DetailPublishedText" Text="�" FontSize="14" FontWeight="SemiBold"
                                                        Foreground="{StaticResource NuGetTextBrush}"/>
                                         </StackPanel>
                                     </StackPanel>
@@ -410,7 +410,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Button Classes="nuget-secondary" Name="ProjectLinkButton" Click="ProjectLinkButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="🔗" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
+                                            <TextBlock Text="??" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
                                             <TextBlock Text="{DynamicResource NuGet.ProjectLink}" Name="ProjectLinkText"/>
                                         </StackPanel>
                                     </Button>
@@ -427,13 +427,13 @@
                             <Button Grid.Column="1" Classes="nuget-danger" Name="UninstallButton" Click="UninstallButton_Click" 
                                     Margin="0,0,8,0" IsVisible="False">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="🗑️" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
+                                    <TextBlock Text="???" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
                                     <TextBlock Text="{DynamicResource NuGet.Uninstall}" Name="UninstallButtonText"/>
                                 </StackPanel>
                             </Button>
                             <Button Grid.Column="2" Classes="nuget-primary" Name="InstallButton" Click="InstallButton_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="📦" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
+                                    <TextBlock Text="??" FontSize="11" FontFamily="{StaticResource EmojiFont}"/>
                                     <TextBlock Text="{DynamicResource NuGet.Install}" Name="InstallButtonText"/>
                                 </StackPanel>
                             </Button>

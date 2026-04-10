@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -259,7 +259,7 @@
         <Style Selector="Button.tool-window-tab">
             <Setter Property="Height" Value="32"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#FFB0B0B0"/>
+            <Setter Property="Foreground" Value="#FFA090C0"/>
             <Setter Property="BorderThickness" Value="0,0,0,2"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Padding" Value="12,0"/>
@@ -269,16 +269,16 @@
             <Setter Property="CornerRadius" Value="0"/>
         </Style>
         <Style Selector="Button.tool-window-tab:pointerover">
-            <Setter Property="Background" Value="#30FFFFFF"/>
-            <Setter Property="Foreground" Value="#FFE0E0E0"/>
+            <Setter Property="Background" Value="#25DCC4FF"/>
+            <Setter Property="Foreground" Value="#FFDCC4FF"/>
         </Style>
         <Style Selector="Button.tool-window-tab.active">
-            <Setter Property="Background" Value="#FF4E5254"/>
+            <Setter Property="Background" Value="#FF2E2450"/>
             <Setter Property="Foreground" Value="#FFFFFFFF"/>
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
         </Style>
         <Style Selector="Button.tool-window-tab:pressed">
-            <Setter Property="Background" Value="#FF5A5D5F"/>
+            <Setter Property="Background" Value="#FF3A2E60"/>
         </Style>
         
         <!-- Tool Action Button (for toolbar) -->
@@ -286,7 +286,7 @@
             <Setter Property="Width" Value="24"/>
             <Setter Property="Height" Value="24"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#FFB0B0B0"/>
+            <Setter Property="Foreground" Value="#FFC0A0D8"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -295,18 +295,18 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.tool-action-button:pointerover">
-            <Setter Property="Background" Value="#40FFFFFF"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Background" Value="#40DCC4FF"/>
+            <Setter Property="Foreground" Value="#FFDCC4FF"/>
         </Style>
         <Style Selector="Button.tool-action-button:pressed">
-            <Setter Property="Background" Value="#60FFFFFF"/>
+            <Setter Property="Background" Value="#60DCC4FF"/>
         </Style>
         
         <!-- Status Bar Button (JetBrains Rider Style) -->
         <Style Selector="Button.status-bar-button">
             <Setter Property="Height" Value="22"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#FFB0B0B0"/>
+            <Setter Property="Foreground" Value="#FFB8A8D8"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="6,0"/>
             <Setter Property="FontSize" Value="11"/>
@@ -315,16 +315,16 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.status-bar-button:pointerover">
-            <Setter Property="Background" Value="#30FFFFFF"/>
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Background" Value="#30DCC4FF"/>
+            <Setter Property="Foreground" Value="#FFDCC4FF"/>
         </Style>
         <Style Selector="Button.status-bar-button:pressed">
-            <Setter Property="Background" Value="#40FFFFFF"/>
+            <Setter Property="Background" Value="#45DCC4FF"/>
         </Style>
         
         <!-- GridSplitter style (horizontal - for bottom panel) -->
         <Style Selector="GridSplitter.tool-splitter">
-            <Setter Property="Background" Value="#FF3C3F41"/>
+            <Setter Property="Background" Value="#FF251E3A"/>
             <Setter Property="Cursor" Value="SizeNorthSouth"/>
         </Style>
         <Style Selector="GridSplitter.tool-splitter:pointerover">
@@ -342,19 +342,19 @@
         <!-- TextBox high-contrast for dark backgrounds: visible caret + selection -->
         <Style Selector="TextBox">
             <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
-            <Setter Property="CaretBrush" Value="{StaticResource AppTextBrush}"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
             <Setter Property="SelectionBrush" Value="{StaticResource AccentOrangeBrush}"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus-within /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource AppSurfaceBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
@@ -365,13 +365,13 @@
         </Style>
         <!-- AI Chat Input: custom dark orange bg override -->
         <Style Selector="TextBox#AIChatInput /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF1A0A04"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox#AIChatInput:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF1A0A04"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox#AIChatInput:focus-within /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF1A0A04"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <!-- SelectableTextBlock: visible selection in dark theme -->
         <Style Selector="SelectableTextBlock">
@@ -1678,17 +1678,38 @@
                               ResizeDirection="Rows" HorizontalAlignment="Stretch"/>
                 
                 <!-- Terminal / Output Panel (JetBrains Rider Style) -->
-                <Border Grid.Row="3" Background="#FF221C2C" BorderBrush="#FF3E3050" BorderThickness="0,1,0,0">
+                <Border Grid.Row="3" BorderThickness="0,2,0,0">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#FF16122A" Offset="0"/>
+                            <GradientStop Color="#FF1A1630" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.BorderBrush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#FFFFC09F" Offset="0"/>
+                            <GradientStop Color="#FFDCC4FF" Offset="0.5"/>
+                            <GradientStop Color="#FF89B4FA" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.BorderBrush>
                     <Grid RowDefinitions="32,*">
                         <!-- Tool Window Header Bar (Rider-style) -->
-                        <Border Grid.Row="0" Background="#FF2D2438">
+                        <Border Grid.Row="0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#FF1D1838" Offset="0"/>
+                                    <GradientStop Color="#FF252046" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <!-- Left: Tabs -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Stretch">
                                     <!-- Problems Tab -->
                                     <Button Classes="tool-window-tab" Name="ProblemsTabButton" Click="ProblemsTab_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="⚠" FontSize="12" Foreground="#FFF5A623"/>
+                                            <Border Background="#30FFD080" CornerRadius="4" Padding="3,1">
+                                                <TextBlock Text="⚠️" FontSize="11" FontFamily="Segoe UI Emoji" Foreground="#FFFFD080"/>
+                                            </Border>
                                             <TextBlock Text="Problems" FontSize="12"/>
                                             <Border Background="#50F38BA8" CornerRadius="8" Padding="5,1" x:CompileBindings="False" IsVisible="{Binding HasProblems}">
                                                 <TextBlock Text="{Binding ProblemsCount}" FontSize="10" Foreground="#FFF38BA8" FontWeight="SemiBold"/>
@@ -1699,7 +1720,7 @@
                                     <!-- Build Tab -->
                                     <Button Classes="tool-window-tab" Name="BuildTabButton" Click="BuildTab_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="🔨" FontSize="11"/>
+                                            <TextBlock Text="🔨" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                             <TextBlock Text="Build" FontSize="12"/>
                                         </StackPanel>
                                     </Button>
@@ -1707,7 +1728,9 @@
                                     <!-- Run Tab -->
                                     <Button Classes="tool-window-tab" Name="RunTabButton" Click="RunTab_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="▶" FontSize="10" Foreground="#FFA6E3A1"/>
+                                            <Border Background="#3078FF98" CornerRadius="4" Padding="4,1">
+                                                <TextBlock Text="▶" FontSize="10" Foreground="#FF78FF98" FontWeight="Bold"/>
+                                            </Border>
                                             <TextBlock Text="Run" FontSize="12"/>
                                         </StackPanel>
                                     </Button>
@@ -1715,7 +1738,7 @@
                                     <!-- Terminal Tab (Active by default) -->
                                     <Button Classes="tool-window-tab active" Name="TerminalTabButton" Click="TerminalTab_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="⬛" FontSize="10"/>
+                                            <TextBlock Text="💻" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                             <TextBlock Text="Terminal" FontSize="12"/>
                                         </StackPanel>
                                     </Button>
@@ -1729,18 +1752,18 @@
                                 <!-- Right: Tool Actions -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,4,0" VerticalAlignment="Center">
                                     <Button Classes="tool-action-button" ToolTip.Tip="New External Terminal" Name="NewTerminalButton" Click="NewTerminal_Click">
-                                        <TextBlock Text="+" FontSize="14" FontWeight="Bold"/>
+                                        <TextBlock Text="＋" FontSize="13" FontWeight="Bold" Foreground="#FF78FFD6"/>
                                     </Button>
-                                    <Border Width="1" Height="16" Background="#FF3E3050" Margin="4,0"/>
+                                    <Border Width="1" Height="16" Background="#FF5A4580" Margin="4,0"/>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Clear" Name="ClearTerminalButton" Click="ClearTerminal_Click">
-                                        <TextBlock Text="🗑" FontSize="11"/>
+                                        <TextBlock Text="🗑️" FontSize="12" FontFamily="Segoe UI Emoji"/>
                                     </Button>
-                                    <Border Width="1" Height="16" Background="#FF3E3050" Margin="4,0"/>
+                                    <Border Width="1" Height="16" Background="#FF5A4580" Margin="4,0"/>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Minimize Panel" Name="MinimizePanelButton" Click="MinimizePanel_Click">
-                                        <TextBlock Text="▁" FontSize="10"/>
+                                        <TextBlock Text="⬇" FontSize="11" Foreground="#FFDCC4FF"/>
                                     </Button>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Hide Panel (Esc)" Name="HidePanelButton" Click="HidePanel_Click">
-                                        <TextBlock Text="✕" FontSize="10"/>
+                                        <TextBlock Text="✕" FontSize="11" Foreground="#FFF38BA8"/>
                                     </Button>
                                 </StackPanel>
                             </Grid>
@@ -1750,50 +1773,62 @@
                         <Grid Grid.Row="1">
                             <!-- Left side: Terminal sessions list (optional, collapsed by default) -->
                             <!-- Main Terminal Content -->
-                            <Border Name="TerminalContainer" Background="#FF1F1A24"/>
+                            <Border Name="TerminalContainer" Background="#FF120E22"/>
                             
                             <!-- Problems Panel (hidden by default) -->
-                            <Border Name="ProblemsPanel" Background="#FF221C2C" IsVisible="False">
+                            <Border Name="ProblemsPanel" Background="#FF16122A" IsVisible="False">
                                 <Grid RowDefinitions="Auto,Auto,*">
                                     <!-- Header row with counts and actions -->
-                                    <Border Grid.Row="0" Background="#FF2A2230" Padding="8,4"
-                                            BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+                                    <Border Grid.Row="0" Padding="8,4"
+                                            BorderBrush="#FF4A3878" BorderThickness="0,0,0,1">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="#FF221C3C" Offset="0"/>
+                                                <GradientStop Color="#FF2A2248" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
                                         <Grid ColumnDefinitions="Auto,*,Auto">
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="⛔" FontSize="11" Foreground="#FFF38BA8"/>
+                                                    <TextBlock Text="🔴" FontSize="11" FontFamily="Segoe UI Emoji"/>
                                                     <TextBlock x:CompileBindings="False" Text="{Binding ErrorsCount, StringFormat='{}{0} Errors'}" FontSize="11" Foreground="#FFF38BA8" Name="ProblemsErrorsText"/>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="⚠" FontSize="11" Foreground="#FFF5A623"/>
+                                                    <TextBlock Text="🟡" FontSize="11" FontFamily="Segoe UI Emoji"/>
                                                     <TextBlock x:CompileBindings="False" Text="{Binding WarningsCount, StringFormat='{}{0} Warnings'}" FontSize="11" Foreground="#FFF5A623" Name="ProblemsWarningsText"/>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="ℹ" FontSize="11" Foreground="#FF89B4FA"/>
+                                                    <TextBlock Text="🔵" FontSize="11" FontFamily="Segoe UI Emoji"/>
                                                     <TextBlock x:CompileBindings="False" Text="{Binding MessagesCount, StringFormat='{}{0} Messages'}" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}" Name="ProblemsMessagesText"/>
                                                 </StackPanel>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
                                                 <Button Classes="tool-action-button" ToolTip.Tip="Copy all errors to clipboard" Name="CopyProblemsButton" Click="CopyProblems_Click">
-                                                    <TextBlock Text="📋" FontSize="11"/>
+                                                    <TextBlock Text="📋" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
                                                 <Button Classes="tool-action-button" ToolTip.Tip="Refresh Analysis" Name="RefreshAnalysisButton" Click="RefreshAnalysis_Click">
-                                                    <TextBlock Text="🔄" FontSize="11"/>
+                                                    <TextBlock Text="🔄" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
                                                 <Button Classes="tool-action-button" ToolTip.Tip="Clear Problems" Name="ClearProblemsButton" Click="ClearProblems_Click">
-                                                    <TextBlock Text="🗑" FontSize="11"/>
+                                                    <TextBlock Text="🗑️" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
                                     
                                     <!-- Tab bar: All Errors / Current File -->
-                                    <Border Grid.Row="1" Background="#FF2A2230" Padding="8,2"
-                                            BorderBrush="#FF3E3050" BorderThickness="0,0,0,1">
+                                    <Border Grid.Row="1" Padding="8,2"
+                                            BorderBrush="#FF4A3878" BorderThickness="0,0,0,1">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="#FF1E1838" Offset="0"/>
+                                                <GradientStop Color="#FF261E42" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
                                         <StackPanel Orientation="Horizontal" Spacing="4">
                                             <Button Name="ProblemsTabAll" Content="📂 All Errors" FontSize="11"
                                                     Height="24" Padding="10,2"
-                                                    Background="#FF3E3050" Foreground="{StaticResource AppTextBrush}"
+                                                    Background="#FF3A2E5C" Foreground="{StaticResource AppTextBrush}"
                                                     BorderThickness="0" CornerRadius="4"
                                                     Click="ProblemsTabAll_Click"/>
                                             <Button Name="ProblemsTabCurrentFile" Content="📄 Current File" FontSize="11"
@@ -1833,12 +1868,14 @@
                                                                FontFamily="Consolas"
                                                                Margin="8,0,4,0"/>
                                                     <!-- Copy single error button -->
-                                                    <Button Grid.Column="4" Content="📋" FontSize="9"
+                                                    <Button Grid.Column="4" FontSize="11"
                                                             Width="22" Height="20" Padding="0"
-                                                            Background="Transparent" Foreground="{StaticResource AppTextMutedBrush}"
+                                                            Background="Transparent"
                                                             BorderThickness="0" CornerRadius="3"
                                                             ToolTip.Tip="Copy error"
-                                                            Click="CopySingleProblem_Click"/>
+                                                            Click="CopySingleProblem_Click">
+                                                        <TextBlock Text="📋" FontSize="11" FontFamily="Segoe UI Emoji"/>
+                                                    </Button>
                                                 </Grid>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
@@ -1867,7 +1904,7 @@
                             </Border>
                             
                             <!-- Build Output Panel (hidden by default) -->
-                            <Border Name="BuildPanel" Background="#FF1F1A24" IsVisible="False">
+                            <Border Name="BuildPanel" Background="#FF120E22" IsVisible="False">
                                 <ScrollViewer Name="BuildOutputScrollViewer" 
                                               HorizontalScrollBarVisibility="Auto" 
                                               VerticalScrollBarVisibility="Auto">
@@ -1883,7 +1920,7 @@
                             </Border>
                             
                             <!-- Run Output Panel (hidden by default) -->
-                            <Border Name="RunPanel" Background="#FF1F1A24" IsVisible="False">
+                            <Border Name="RunPanel" Background="#FF120E22" IsVisible="False">
                                 <ScrollViewer>
                                     <SelectableTextBlock Name="RunOutputText" Text="Run output will appear here..." 
                                                FontFamily="Consolas, Monaco, monospace" FontSize="12"
@@ -1994,7 +2031,7 @@
                                      BorderBrush="#FF7A3810"
                                      BorderThickness="1"
                                      Foreground="{StaticResource AppTextBrush}"
-                                     CaretBrush="{StaticResource AppTextBrush}"
+                                     CaretBrush="#5B1E8C"
                                      SelectionBrush="{StaticResource AccentPurpleBrush}"
                                      SelectionForegroundBrush="#FF1F1A24"
                                      CornerRadius="8"
@@ -2016,18 +2053,32 @@
         </Grid>
         
         <!-- ROW 2: STATUS BAR (JetBrains Rider Style) -->
-        <Border Grid.Row="2" Background="#FF3C3C3C" BorderBrush="#FF3E3050" BorderThickness="0,1,0,0">
+        <Border Grid.Row="2" BorderThickness="0,1,0,0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FF160C2E" Offset="0"/>
+                    <GradientStop Color="#FF22183C" Offset="0.4"/>
+                    <GradientStop Color="#FF1C1430" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.BorderBrush>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FFFFC09F" Offset="0"/>
+                    <GradientStop Color="#FFDCC4FF" Offset="0.5"/>
+                    <GradientStop Color="#FF89B4FA" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.BorderBrush>
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <!-- Left: Branch info and status -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
                     <!-- Git Branch -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Git Branch">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="⎇" FontSize="11" Foreground="#FFA6E3A1"/>
-                            <TextBlock Text="main" FontSize="11" Foreground="#FF9E90B0" Name="GitBranchText"/>
+                            <TextBlock Text="🌿" FontSize="11" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="main" FontSize="11" Foreground="#FFA6E3A1" Name="GitBranchText"/>
                         </StackPanel>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Sync status -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Synchronize Changes">
                         <StackPanel Orientation="Horizontal" Spacing="3">
@@ -2035,16 +2086,16 @@
                             <TextBlock Text="↑0" FontSize="10" Foreground="#FFA6E3A1"/>
                         </StackPanel>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Errors/Warnings -->
                     <Button Classes="status-bar-button" ToolTip.Tip="View Problems" Name="StatusProblemsButton" Click="StatusProblems_Click">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <StackPanel Orientation="Horizontal" Spacing="2">
-                                <TextBlock Text="⛔" FontSize="9" Foreground="#FFF38BA8" FontFamily="Segoe UI Emoji"/>
+                                <TextBlock Text="🔴" FontSize="11" FontFamily="Segoe UI Emoji"/>
                                 <TextBlock x:CompileBindings="False" Text="{Binding ErrorsCount}" FontSize="11" Foreground="#FFF38BA8" Name="StatusErrorsCount"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="2">
-                                <TextBlock Text="⚠" FontSize="9" Foreground="#FFF5A623" FontFamily="Segoe UI Emoji"/>
+                                <TextBlock Text="🟡" FontSize="11" FontFamily="Segoe UI Emoji"/>
                                 <TextBlock x:CompileBindings="False" Text="{Binding WarningsCount}" FontSize="11" Foreground="#FFF5A623" Name="StatusWarningsCount"/>
                             </StackPanel>
                         </StackPanel>
@@ -2053,39 +2104,39 @@
                 
                 <!-- Center: Status message -->
                 <TextBlock Grid.Column="1" x:CompileBindings="False" Text="{Binding StatusText}" FontSize="11" 
-                           Foreground="#FF9E90B0" VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Foreground="#FFCCA9FF" VerticalAlignment="Center" HorizontalAlignment="Center"
                            Name="StatusMessageText"/>
                 
                 <!-- Right: Editor info -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
                     <!-- Encoding -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Select Encoding" Name="EncodingButton" Click="EncodingButton_Click">
-                        <TextBlock Text="UTF-8" FontSize="11" Foreground="#FF9E90B0" Name="EncodingText"/>
+                        <TextBlock Text="UTF-8" FontSize="11" Foreground="#FFB8A8D8" Name="EncodingText"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Line Endings -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Select End of Line Sequence" Name="LineEndingsButton" Click="LineEndingsButton_Click">
-                        <TextBlock Text="CRLF" FontSize="11" Foreground="#FF9E90B0" Name="LineEndingsText"/>
+                        <TextBlock Text="CRLF" FontSize="11" Foreground="#FFB8A8D8" Name="LineEndingsText"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Language -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Select Language Mode" Name="LanguageModeButton" Click="LanguageModeButton_Click">
-                        <TextBlock Text="C#" FontSize="11" Foreground="#FF9E90B0" Name="LanguageModeText"/>
+                        <TextBlock Text="C#" FontSize="11" Foreground="#FFFFC09F" Name="LanguageModeText"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Cursor Position -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Go to Line" Name="CursorPositionButton" Click="CursorPositionButton_Click">
-                        <TextBlock Text="Ln 1, Col 1" FontSize="11" Foreground="#FF9E90B0" Name="CursorPositionText"/>
+                        <TextBlock Text="Ln 1, Col 1" FontSize="11" Foreground="#FFB8A8D8" Name="CursorPositionText"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Spaces/Tabs -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Select Indentation" Name="IndentationButton" Click="IndentationButton_Click">
-                        <TextBlock Text="Spaces: 4" FontSize="11" Foreground="#FF9E90B0" Name="IndentationText"/>
+                        <TextBlock Text="Spaces: 4" FontSize="11" Foreground="#FFB8A8D8" Name="IndentationText"/>
                     </Button>
-                    <Border Width="1" Height="14" Background="#FF4A4055" Margin="4,0"/>
+                    <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Notifications -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Notifications" Name="NotificationsButton" Click="NotificationsButton_Click">
-                        <TextBlock Text="🔔" FontSize="11" Foreground="#FF9E90B0" FontFamily="Segoe UI Emoji" Name="NotificationsButtonText"/>
+                        <TextBlock Text="🔔" FontSize="13" Foreground="#FFFFC09F" FontFamily="Segoe UI Emoji" Name="NotificationsButtonText"/>
                     </Button>
                 </StackPanel>
             </Grid>

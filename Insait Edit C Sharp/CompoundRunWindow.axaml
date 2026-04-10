@@ -53,17 +53,17 @@
             <Setter Property="Background" Value="#50FFC09F"/>
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="#FFF0E8F4"/>
             <Setter Property="BorderBrush" Value="#FF3E3050"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="#FFF0E8F4"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF352840"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="#FF352840"/>
@@ -86,7 +86,7 @@
             <Border Grid.Row="0" Background="#FF2D2438" CornerRadius="8,8,0,0" Name="TitleBar">
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="12,0">
-                        <TextBlock Text="⚡" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="?" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock Text="{DynamicResource Compound.Title}" FontSize="13" FontWeight="SemiBold"
                                    Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
                         <Border Background="#FF4A3D58" CornerRadius="4" Padding="6,2">
@@ -125,7 +125,7 @@
                                 <DataTemplate x:DataType="services:CompoundRunConfiguration" x:CompileBindings="False">
                                     <StackPanel Spacing="4" Margin="4">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="⚡" FontSize="14" Foreground="#FFFFC09F"
+                                            <TextBlock Text="?" FontSize="14" Foreground="#FFFFC09F"
                                                        VerticalAlignment="Center"/>
                                             <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
                                                        Foreground="#FFF0E8F4" VerticalAlignment="Center"/>
@@ -144,9 +144,9 @@
                         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="8">
                             <Button Content="+" Classes="action-button" Width="36" Height="32"
                                     ToolTip.Tip="{DynamicResource Compound.NewTooltip}" Name="AddCompoundButton"/>
-                            <Button Content="−" Classes="action-button" Width="36" Height="32"
+                            <Button Content="-" Classes="action-button" Width="36" Height="32"
                                     ToolTip.Tip="{DynamicResource Compound.RemoveTooltip}" Name="RemoveCompoundButton"/>
-                            <Button Content="📋" Classes="action-button" Width="36" Height="32"
+                            <Button Content="??" Classes="action-button" Width="36" Height="32"
                                     ToolTip.Tip="{DynamicResource Compound.DuplicateTooltip}" Name="DuplicateCompoundButton"/>
                         </StackPanel>
                     </Grid>
@@ -160,7 +160,7 @@
                         <!-- Empty state -->
                         <Border Name="EmptyStatePanel" IsVisible="True" Padding="40">
                             <StackPanel HorizontalAlignment="Center" Spacing="12">
-                                <TextBlock Text="⚡" FontSize="48" HorizontalAlignment="Center"
+                                <TextBlock Text="?" FontSize="48" HorizontalAlignment="Center"
                                            Foreground="#FF3E3050"/>
                                 <TextBlock Text="{DynamicResource Compound.EmptyTitle}"
                                            Foreground="#FF9E90B0" HorizontalAlignment="Center"

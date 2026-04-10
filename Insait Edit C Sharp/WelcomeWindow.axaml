@@ -117,7 +117,7 @@
 
         <!-- Search Box -->
         <Style Selector="TextBox.search-box">
-            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -126,10 +126,10 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
         </Style>
         <Style Selector="TextBox.search-box /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox.search-box:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
@@ -213,7 +213,7 @@
                                 <Grid ColumnDefinitions="Auto,*">
                                     <Border Width="36" Height="36" CornerRadius="8" 
                                             Background="{StaticResource AccentPurpleBrush}" Opacity="0.2">
-                                        <TextBlock Text="📦" FontSize="16" Foreground="{StaticResource AccentPurpleBrush}"
+                                        <TextBlock Text="??" FontSize="16" Foreground="{StaticResource AccentPurpleBrush}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
@@ -228,7 +228,7 @@
                                 <Grid ColumnDefinitions="Auto,*">
                                     <Border Width="36" Height="36" CornerRadius="8" 
                                             Background="{StaticResource AccentOrangeBrush}" Opacity="0.2">
-                                        <TextBlock Text="➕" FontSize="16" Foreground="{StaticResource AccentOrangeBrush}"
+                                        <TextBlock Text="?" FontSize="16" Foreground="{StaticResource AccentOrangeBrush}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
@@ -243,7 +243,7 @@
                                 <Grid ColumnDefinitions="Auto,*">
                                     <Border Width="36" Height="36" CornerRadius="8" 
                                             Background="{StaticResource AccentBlueBrush}" Opacity="0.2">
-                                        <TextBlock Text="📁" FontSize="16" Foreground="{StaticResource AccentBlueBrush}"
+                                        <TextBlock Text="??" FontSize="16" Foreground="{StaticResource AccentBlueBrush}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
@@ -258,7 +258,7 @@
                                 <Grid ColumnDefinitions="Auto,*">
                                     <Border Width="36" Height="36" CornerRadius="8" 
                                             Background="{StaticResource AccentGreenBrush}" Opacity="0.2">
-                                        <TextBlock Text="🔀" FontSize="16" Foreground="{StaticResource AccentGreenBrush}"
+                                        <TextBlock Text="??" FontSize="16" Foreground="{StaticResource AccentGreenBrush}"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
@@ -294,7 +294,7 @@
                     <Border Grid.Row="0" Padding="24,20">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBox Classes="search-box" Name="SearchBox" 
-                                     Watermark="🔍  Search recent projects..."
+                                     Watermark="??  Search recent projects..."
                                      TextChanged="SearchBox_TextChanged"/>
                             <Button Grid.Column="1" Name="ClearAllButton" Classes="link-btn" Content="Clear All" 
                                     Margin="16,0,0,0" VerticalAlignment="Center"
@@ -355,7 +355,7 @@
                             <StackPanel Grid.Row="1" Name="EmptyState" 
                                         HorizontalAlignment="Center" VerticalAlignment="Center"
                                         IsVisible="False">
-                                <TextBlock Text="📂" FontSize="48" HorizontalAlignment="Center" Opacity="0.5"/>
+                                <TextBlock Text="??" FontSize="48" HorizontalAlignment="Center" Opacity="0.5"/>
                                 <TextBlock Text="No recent projects" FontSize="16" 
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            HorizontalAlignment="Center" Margin="0,16,0,4"/>

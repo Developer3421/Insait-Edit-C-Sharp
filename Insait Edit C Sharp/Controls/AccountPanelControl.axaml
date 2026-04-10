@@ -89,15 +89,15 @@
         </Style>
         <!-- TextBox: dark background to prevent white-on-white -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="{StaticResource AccountBgBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="{StaticResource AccountTextBrush}"/>
-            <Setter Property="CaretBrush" Value="{StaticResource AccountTextBrush}"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource AccountBgBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
     </UserControl.Styles>
     
@@ -110,7 +110,7 @@
                            Foreground="{StaticResource AccountTextMutedBrush}" VerticalAlignment="Center"
                            LetterSpacing="1"/>
                 <Button Grid.Column="1" Classes="icon-btn" Name="RefreshButton" Click="Refresh_Click">
-                    <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                    <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji"/>
                 </Button>
             </Grid>
         </Border>
@@ -123,7 +123,7 @@
                 <StackPanel Name="NotLoggedInPanel" Margin="16" Spacing="16" IsVisible="True">
                     <Border Background="#20FFC09F" CornerRadius="8" Padding="16">
                         <StackPanel Spacing="12">
-                            <TextBlock Text="🔗" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
+                            <TextBlock Text="??" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
                             <TextBlock Name="SignInTitleText" Text="Sign in with GitHub" FontSize="16" FontWeight="SemiBold"
                                        Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
                             <TextBlock Name="SignInDescText" Text="Connect your GitHub account to access your repositories."
@@ -181,7 +181,7 @@
                         <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8,6">
                             <TextBox Name="TokenInputBox" Watermark="ghp_xxxxxxxxxxxx"
                                      BorderThickness="0"
-                                     PasswordChar="●"
+                                     PasswordChar="?"
                                      FontSize="12"/>
                         </Border>
                         <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
@@ -207,7 +207,7 @@
                             <Border Width="48" Height="48" CornerRadius="24" ClipToBounds="True"
                                     Background="{StaticResource AccountBorderBrush}">
                                 <Grid>
-                                    <TextBlock Text="👤" FontSize="24" FontFamily="Segoe UI Emoji"
+                                    <TextBlock Text="??" FontSize="24" FontFamily="Segoe UI Emoji"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                                Name="DefaultAvatarIcon"/>
                                     <Image Name="AvatarImage" Width="48" Height="48" Stretch="UniformToFill"/>
@@ -257,14 +257,14 @@
                         <TextBlock Name="YourReposLabel" Classes="section-header" Text="YOUR REPOSITORIES"/>
                         <Button Grid.Column="1" Classes="icon-btn" Name="ViewOnGitHubButton"
                                 Click="ViewOnGitHub_Click" VerticalAlignment="Bottom" Margin="0,0,0,4">
-                            <TextBlock Text="🌐" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji"/>
                         </Button>
                     </Grid>
                     
                     <!-- Search Box -->
                     <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8,6" Margin="0,0,0,8">
                         <Grid ColumnDefinitions="Auto,*">
-                            <TextBlock Text="🔍" FontSize="12" FontFamily="Segoe UI Emoji" 
+                            <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji" 
                                        VerticalAlignment="Center" Margin="0,0,8,0"
                                        Foreground="{StaticResource AccountTextMutedBrush}"/>
                             <TextBox Grid.Column="1" Name="RepoSearchBox" Watermark="Search repositories..."
@@ -281,7 +281,7 @@
                                     <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
                                         <!-- Repo Name & Visibility -->
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="📁" FontSize="12" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                            <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                                             <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
                                                        Foreground="{StaticResource AccountTextBrush}" VerticalAlignment="Center"/>
                                             <Border Background="#22FFC09F" CornerRadius="4" Padding="4,1" 
@@ -306,11 +306,11 @@
                                         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" 
                                                     Spacing="12" Margin="18,6,0,0">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <TextBlock Text="⭐" FontSize="10" FontFamily="Segoe UI Emoji"/>
+                                                <TextBlock Text="?" FontSize="10" FontFamily="Segoe UI Emoji"/>
                                                 <TextBlock Text="{Binding Stars}" FontSize="10" Foreground="{StaticResource AccountTextMutedBrush}"/>
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <TextBlock Text="🍴" FontSize="10" FontFamily="Segoe UI Emoji"/>
+                                                <TextBlock Text="??" FontSize="10" FontFamily="Segoe UI Emoji"/>
                                                 <TextBlock Text="{Binding Forks}" FontSize="10" Foreground="{StaticResource AccountTextMutedBrush}"/>
                                             </StackPanel>
                                         </StackPanel>
@@ -329,7 +329,7 @@
                     <Button Classes="account-secondary" Name="SignOutButton" Click="SignOut_Click" 
                             HorizontalAlignment="Stretch" Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                            <TextBlock Text="🚪" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji"/>
                             <TextBlock Name="SignOutText" Text="Sign out"/>
                         </StackPanel>
                     </Button>
@@ -338,7 +338,7 @@
                 <!-- Loading Overlay -->
                 <Border Name="LoadingOverlay" Background="#CC1A0F08" IsVisible="False" ZIndex="100">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-                        <TextBlock Text="⏳" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
+                        <TextBlock Text="?" FontSize="32" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center"/>
                         <TextBlock Name="LoadingText" Text="Loading..." FontSize="14"
                                    Foreground="{StaticResource AccountTextBrush}" HorizontalAlignment="Center"/>
                     </StackPanel>

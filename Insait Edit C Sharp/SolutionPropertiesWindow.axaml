@@ -67,14 +67,14 @@
             <Setter Property="Background" Value="#FFFFD0B8"/>
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#FF231D35"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="#FFF0E8F4"/>
             <Setter Property="BorderBrush" Value="#FF3A2E50"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="Padding" Value="10,7"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="CaretBrush" Value="#FFFFC09F"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
         </Style>
@@ -82,16 +82,16 @@
             <Setter Property="BorderBrush" Value="#88FFC09F"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF231D35"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox.nav-search">
-            <Setter Property="Background" Value="#FF1C1530"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="BorderBrush" Value="#FF2A2048"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="8,6"/>
         </Style>
         <Style Selector="TextBox.nav-search /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF1C1530"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="ComboBox">
             <Setter Property="Background" Value="#FF231D35"/>
@@ -158,7 +158,7 @@
                     <Border Grid.Column="0" Width="4" Background="#FFFFC09F"
                             Margin="0,9,0,9" VerticalAlignment="Stretch"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12,0">
-                        <TextBlock Text="🗒" FontSize="16" VerticalAlignment="Center"
+                        <TextBlock Text="??" FontSize="16" VerticalAlignment="Center"
                                    Foreground="#FFFFC09F"/>
                         <StackPanel VerticalAlignment="Center" Spacing="1">
                             <TextBlock Name="TitleText" Text="{DynamicResource SolProps.Title}"
@@ -187,7 +187,7 @@
                         BorderBrush="#FF2A2040" BorderThickness="0,0,0,1"
                         Padding="28,13">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="📁" FontSize="18" VerticalAlignment="Center"
+                        <TextBlock Text="??" FontSize="18" VerticalAlignment="Center"
                                    Foreground="#FFFFC09F" FontFamily="Segoe UI Emoji"/>
                         <TextBlock Name="PageTitle"
                                    Text="{DynamicResource SolProps.NavProjects}"

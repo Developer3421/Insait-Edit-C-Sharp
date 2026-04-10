@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -146,7 +146,7 @@
         <Style Selector="TextBox">
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="{StaticResource GitTextBrush}"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
         </Style>
     </UserControl.Styles>
     
@@ -157,7 +157,7 @@
             <StackPanel Orientation="Horizontal">
                 <Button Classes="git-tab active" Name="LocalChangesTab" Click="LocalChangesTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="📝" FontSize="12"/>
+                        <TextBlock Text="??" FontSize="12"/>
                         <TextBlock Text="Local Changes"/>
                         <Border Background="#40FFFFFF" CornerRadius="8" Padding="6,1" Name="ChangesCountBadge" IsVisible="False">
                             <TextBlock Text="0" FontSize="10" Foreground="{StaticResource GitTextBrush}" Name="TotalChangesCount"/>
@@ -166,13 +166,13 @@
                 </Button>
                 <Button Classes="git-tab" Name="LogTab" Click="LogTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="📋" FontSize="12"/>
+                        <TextBlock Text="??" FontSize="12"/>
                         <TextBlock Text="Log"/>
                     </StackPanel>
                 </Button>
                 <Button Classes="git-tab" Name="ConsoleTab" Click="ConsoleTab_Click">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="⌨" FontSize="12"/>
+                        <TextBlock Text="?" FontSize="12"/>
                         <TextBlock Text="Console"/>
                     </StackPanel>
                 </Button>
@@ -184,38 +184,38 @@
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Orientation="Horizontal" Spacing="2">
                     <Button Classes="git-toolbar" ToolTip.Tip="Commit (Ctrl+K)" Name="CommitToolbarButton" Click="CommitToolbar_Click">
-                        <TextBlock Text="✓" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitGreenBrush}"/>
+                        <TextBlock Text="?" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitGreenBrush}"/>
                     </Button>
                     <Button Classes="git-toolbar" ToolTip.Tip="Update Project (Ctrl+T)" Name="UpdateToolbarButton" Click="Update_Click">
-                        <TextBlock Text="↓" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitBlueBrush}"/>
+                        <TextBlock Text="?" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitBlueBrush}"/>
                     </Button>
                     <Button Classes="git-toolbar" ToolTip.Tip="Push (Ctrl+Shift+K)" Name="PushToolbarButton" Click="Push_Click">
-                        <TextBlock Text="↑" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitGreenBrush}"/>
+                        <TextBlock Text="?" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GitGreenBrush}"/>
                     </Button>
                     <Border Width="1" Background="{StaticResource GitBorderBrush}" Margin="4,4"/>
                     <Button Classes="git-toolbar" ToolTip.Tip="Show History" Name="HistoryToolbarButton" Click="ShowHistory_Click">
-                        <TextBlock Text="🕒" FontSize="13"/>
+                        <TextBlock Text="??" FontSize="13"/>
                     </Button>
                     <Button Classes="git-toolbar" ToolTip.Tip="Rollback" Name="RollbackToolbarButton" Click="Rollback_Click">
-                        <TextBlock Text="↺" FontSize="14"/>
+                        <TextBlock Text="?" FontSize="14"/>
                     </Button>
                     <Border Width="1" Background="{StaticResource GitBorderBrush}" Margin="4,4"/>
                     <Button Classes="git-toolbar" ToolTip.Tip="Shelve Changes" Name="ShelveToolbarButton" Click="Shelve_Click">
-                        <TextBlock Text="📦" FontSize="12"/>
+                        <TextBlock Text="??" FontSize="12"/>
                     </Button>
                     <Button Classes="git-toolbar" ToolTip.Tip="Unshelve Changes" Name="UnshelveToolbarButton" Click="Unshelve_Click">
-                        <TextBlock Text="📤" FontSize="12"/>
+                        <TextBlock Text="??" FontSize="12"/>
                     </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
                     <Button Classes="git-toolbar" ToolTip.Tip="Group By: Directory" Name="GroupByButton" Click="GroupBy_Click">
-                        <TextBlock Text="📁" FontSize="12"/>
+                        <TextBlock Text="??" FontSize="12"/>
                     </Button>
                     <Button Classes="git-toolbar" ToolTip.Tip="Refresh (Ctrl+F5)" Name="RefreshToolbarButton" Click="Refresh_Click">
-                        <TextBlock Text="🔄" FontSize="12"/>
+                        <TextBlock Text="??" FontSize="12"/>
                     </Button>
                     <Button Classes="git-toolbar" ToolTip.Tip="Settings" Name="SettingsToolbarButton" Click="Settings_Click">
-                        <TextBlock Text="⚙" FontSize="13"/>
+                        <TextBlock Text="?" FontSize="13"/>
                     </Button>
                 </StackPanel>
             </Grid>
@@ -226,7 +226,7 @@
             
             <!-- No Repository State -->
             <StackPanel Name="NoRepositoryPanel" Spacing="16" Margin="16,40" HorizontalAlignment="Center">
-                <TextBlock Text="🔀" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                <TextBlock Text="??" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
                 <TextBlock Text="No Git Repository" FontSize="14" FontWeight="SemiBold" 
                            HorizontalAlignment="Center" Foreground="{StaticResource GitTextBrush}"/>
                 <TextBlock Text="Open a folder containing a Git repository or initialize a new one."
@@ -251,13 +251,13 @@
                         BorderBrush="{StaticResource GitBorderBrush}" BorderThickness="0,0,0,1">
                     <Grid ColumnDefinitions="Auto,*,Auto">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="⎇" FontSize="13" Foreground="{StaticResource GitGreenBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="?" FontSize="13" Foreground="{StaticResource GitGreenBrush}" VerticalAlignment="Center"/>
                             <Button Background="Transparent" BorderThickness="0" Padding="0" 
                                     Name="BranchButton" Click="Branch_Click" Cursor="Hand">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <TextBlock Text="main" FontSize="12" FontWeight="SemiBold" 
                                                Foreground="{StaticResource GitTextBrush}" Name="CurrentBranchText" VerticalAlignment="Center"/>
-                                    <TextBlock Text="▼" FontSize="8" Foreground="{StaticResource GitTextMutedBrush}" 
+                                    <TextBlock Text="?" FontSize="8" Foreground="{StaticResource GitTextMutedBrush}" 
                                                VerticalAlignment="Center" Margin="0,1,0,0"/>
                                 </StackPanel>
                             </Button>
@@ -266,15 +266,15 @@
                             <!-- Sync Status -->
                             <StackPanel Orientation="Horizontal" Spacing="4" Name="SyncStatusPanel" IsVisible="False">
                                 <StackPanel Orientation="Horizontal" Spacing="2" Name="BehindPanel">
-                                    <TextBlock Text="↓" FontSize="11" Foreground="{StaticResource GitBlueBrush}"/>
+                                    <TextBlock Text="?" FontSize="11" Foreground="{StaticResource GitBlueBrush}"/>
                                     <TextBlock Text="0" FontSize="11" Foreground="{StaticResource GitBlueBrush}" Name="BehindCountText"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="2" Name="AheadPanel">
-                                    <TextBlock Text="↑" FontSize="11" Foreground="{StaticResource GitGreenBrush}"/>
+                                    <TextBlock Text="?" FontSize="11" Foreground="{StaticResource GitGreenBrush}"/>
                                     <TextBlock Text="0" FontSize="11" Foreground="{StaticResource GitGreenBrush}" Name="AheadCountText"/>
                                 </StackPanel>
                             </StackPanel>
-                            <TextBlock Text="→" FontSize="10" Foreground="{StaticResource GitTextMutedBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="?" FontSize="10" Foreground="{StaticResource GitTextMutedBrush}" VerticalAlignment="Center"/>
                             <TextBlock Text="origin/main" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}" 
                                        Name="TrackingBranchText" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -290,7 +290,7 @@
                             <Expander.Header>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,8,0">
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="📋" FontSize="11"/>
+                                        <TextBlock Text="??" FontSize="11"/>
                                         <TextBlock Text="Default Changelist" FontSize="12" 
                                                    Foreground="{StaticResource GitTextBrush}"/>
                                         <TextBlock Text="0" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}" Name="StagedCountText"/>
@@ -298,7 +298,7 @@
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
                                         <Button Classes="git-small-action" ToolTip.Tip="Rollback" 
                                                 Name="UnstageAllButton" Click="UnstageAll_Click">
-                                            <TextBlock Text="↺" FontSize="12" Foreground="{StaticResource GitTextMutedBrush}"/>
+                                            <TextBlock Text="?" FontSize="12" Foreground="{StaticResource GitTextMutedBrush}"/>
                                         </Button>
                                     </StackPanel>
                                 </Grid>
@@ -331,7 +331,7 @@
                                                 </StackPanel>
                                                 <Button Grid.Column="2" Classes="git-small-action" ToolTip.Tip="Rollback" 
                                                         Tag="{Binding}" Click="UnstageFileButton_Click">
-                                                    <TextBlock Text="↺" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}"/>
+                                                    <TextBlock Text="?" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}"/>
                                                 </Button>
                                             </Grid>
                                         </Border>
@@ -345,7 +345,7 @@
                             <Expander.Header>
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,8,0">
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="❓" FontSize="11"/>
+                                        <TextBlock Text="?" FontSize="11"/>
                                         <TextBlock Text="Unversioned Files" FontSize="12" 
                                                    Foreground="{StaticResource GitTextBrush}"/>
                                         <TextBlock Text="0" FontSize="11" Foreground="{StaticResource GitTextMutedBrush}" Name="ChangesCountText"/>
@@ -353,7 +353,7 @@
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
                                         <Button Classes="git-small-action" ToolTip.Tip="Delete" 
                                                 Name="DiscardAllButton" Click="DiscardAll_Click">
-                                            <TextBlock Text="🗑" FontSize="10" Foreground="{StaticResource GitTextMutedBrush}"/>
+                                            <TextBlock Text="??" FontSize="10" Foreground="{StaticResource GitTextMutedBrush}"/>
                                         </Button>
                                         <Button Classes="git-small-action" ToolTip.Tip="Add to VCS" 
                                                 Name="StageAllButton" Click="StageAll_Click">
@@ -389,7 +389,7 @@
                                                 </StackPanel>
                                                 <Button Grid.Column="2" Classes="git-small-action" ToolTip.Tip="Delete"
                                                         Tag="{Binding}" Click="DiscardFileButton_Click">
-                                                    <TextBlock Text="🗑" FontSize="9" Foreground="{StaticResource GitTextMutedBrush}"/>
+                                                    <TextBlock Text="??" FontSize="9" Foreground="{StaticResource GitTextMutedBrush}"/>
                                                 </Button>
                                                 <Button Grid.Column="3" Classes="git-small-action" ToolTip.Tip="Add to VCS"
                                                         Tag="{Binding}" Click="StageFileButton_Click">
@@ -404,7 +404,7 @@
                         
                         <!-- Empty State -->
                         <StackPanel Name="NoChangesPanel" IsVisible="False" Margin="16,32" HorizontalAlignment="Center">
-                            <TextBlock Text="✓" FontSize="32" HorizontalAlignment="Center" Foreground="{StaticResource GitGreenBrush}" Opacity="0.5"/>
+                            <TextBlock Text="?" FontSize="32" HorizontalAlignment="Center" Foreground="{StaticResource GitGreenBrush}" Opacity="0.5"/>
                             <TextBlock Text="Nothing to commit" FontSize="13" HorizontalAlignment="Center" 
                                        Foreground="{StaticResource GitTextMutedBrush}" Margin="0,8,0,0"/>
                             <TextBlock Text="Working tree is clean" FontSize="11" HorizontalAlignment="Center" 
@@ -437,11 +437,11 @@
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="4,0,0,0">
                                 <Button Classes="git-toolbar" ToolTip.Tip="Commit and Push" 
                                         Name="CommitPushButton" Click="CommitPush_Click" Width="28" Height="28">
-                                    <TextBlock Text="↑" FontSize="14" FontWeight="Bold"/>
+                                    <TextBlock Text="?" FontSize="14" FontWeight="Bold"/>
                                 </Button>
                                 <Button Classes="git-toolbar" ToolTip.Tip="Amend Commit" 
                                         Name="AmendButton" Click="Amend_Click" Width="28" Height="28">
-                                    <TextBlock Text="✎" FontSize="12"/>
+                                    <TextBlock Text="?" FontSize="12"/>
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -465,7 +465,7 @@
                                  Name="LogFilterBox"/>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="4,0,0,0">
                             <Button Classes="git-toolbar" ToolTip.Tip="All Branches" Width="24" Height="24">
-                                <TextBlock Text="⎇" FontSize="11"/>
+                                <TextBlock Text="?" FontSize="11"/>
                             </Button>
                         </StackPanel>
                     </Grid>
@@ -526,7 +526,7 @@
                         BorderBrush="{StaticResource GitBorderBrush}" BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal" Spacing="2">
                         <Button Classes="git-toolbar" ToolTip.Tip="Clear" Name="ClearConsoleButton" Click="ClearConsole_Click">
-                            <TextBlock Text="🗑" FontSize="11"/>
+                            <TextBlock Text="??" FontSize="11"/>
                         </Button>
                     </StackPanel>
                 </Border>
@@ -548,7 +548,7 @@
         <!-- Loading Overlay -->
         <Border Grid.RowSpan="3" Background="#CC1E1F22" Name="LoadingOverlay" IsVisible="False">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
-                <TextBlock Text="⏳" FontSize="24" HorizontalAlignment="Center"/>
+                <TextBlock Text="?" FontSize="24" HorizontalAlignment="Center"/>
                 <TextBlock Text="Loading..." FontSize="12" Foreground="{StaticResource GitTextBrush}" Name="LoadingText"/>
             </StackPanel>
         </Border>

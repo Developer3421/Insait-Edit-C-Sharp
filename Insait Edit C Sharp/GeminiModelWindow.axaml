@@ -1,21 +1,21 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+﻿<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Insait_Edit_C_Sharp.GeminiModelWindow" Title="Custom Translation Step 2"
         WindowStartupLocation="CenterOwner" SystemDecorations="None"
         Width="540" Height="420" CanResize="False" ShowInTaskbar="False" Background="#FF1F1A24">
     <Window.Styles>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus-within /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox">
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="#FFF0E8F4"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
         </Style>
     </Window.Styles>
     <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8">

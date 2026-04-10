@@ -47,7 +47,7 @@
         </Style>
 
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -55,10 +55,10 @@
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
-            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="CaretBrush" Value="#5B1E8C"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="{StaticResource BgTertiaryBrush}"/>
+            <Setter Property="Background" Value="#FF2E1B0C"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{StaticResource AccentOrangeBrush}"/>
@@ -108,7 +108,7 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
                         <StackPanel Orientation="Horizontal" Margin="16,0" VerticalAlignment="Center" Spacing="8">
-                            <TextBlock Text="📦" FontSize="14"/>
+                            <TextBlock Text="??" FontSize="14"/>
                             <TextBlock Name="TitleBarText" Text="New Solution" FontSize="12" FontWeight="SemiBold"
                                        Foreground="{StaticResource AccentOrangeBrush}"/>
                         </StackPanel>
@@ -161,7 +161,7 @@
                             <RadioButton Name="SlnxFormat" GroupName="SolutionFormat" IsChecked="True"
                                          Foreground="{StaticResource TextPrimaryBrush}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="📄 .slnx" FontWeight="SemiBold"/>
+                                    <TextBlock Text="?? .slnx" FontWeight="SemiBold"/>
                                     <TextBlock Text="(Modern XML format)" 
                                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
                                 </StackPanel>
@@ -169,7 +169,7 @@
                             <RadioButton Name="SlnFormat" GroupName="SolutionFormat"
                                          Foreground="{StaticResource TextPrimaryBrush}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="📦 .sln" FontWeight="SemiBold"/>
+                                    <TextBlock Text="?? .sln" FontWeight="SemiBold"/>
                                     <TextBlock Text="(Legacy format)" 
                                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
                                 </StackPanel>
