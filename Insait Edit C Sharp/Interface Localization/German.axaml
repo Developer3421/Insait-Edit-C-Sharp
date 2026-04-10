@@ -41,6 +41,7 @@
     <x:String x:Key="Panel.Explorer">EXPLORER</x:String>
     <x:String x:Key="Panel.Search">SUCHE</x:String>
     <x:String x:Key="Panel.CopilotCli">COPILOT CLI</x:String>
+    <x:String x:Key="Panel.GitHubCopilot">STEUERFELD</x:String>
     <x:String x:Key="Explorer.NewFile">Neue Datei</x:String>
     <x:String x:Key="Explorer.NewFolder">Neuer Ordner</x:String>
     <x:String x:Key="Explorer.Refresh">Aktualisieren</x:String>

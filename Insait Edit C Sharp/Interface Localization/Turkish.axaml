@@ -40,6 +40,7 @@
     <x:String x:Key="Panel.Explorer">GEZGİN</x:String>
     <x:String x:Key="Panel.Search">ARAMA</x:String>
     <x:String x:Key="Panel.CopilotCli">COPILOT CLI</x:String>
+    <x:String x:Key="Panel.GitHubCopilot">KONTROL PANELİ</x:String>
     <x:String x:Key="Explorer.NewFile">Yeni Dosya</x:String>
     <x:String x:Key="Explorer.NewFolder">Yeni Klasör</x:String>
     <x:String x:Key="Explorer.Refresh">Yenile</x:String>

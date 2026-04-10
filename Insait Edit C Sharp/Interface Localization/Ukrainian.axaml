@@ -41,6 +41,7 @@
     <x:String x:Key="Panel.Explorer">ПРОВІДНИК</x:String>
     <x:String x:Key="Panel.Search">ПОШУК</x:String>
     <x:String x:Key="Panel.CopilotCli">COPILOT CLI</x:String>
+    <x:String x:Key="Panel.GitHubCopilot">ПАНЕЛЬ КЕРУВАННЯ</x:String>
     <x:String x:Key="Explorer.NewFile">Новий файл</x:String>
     <x:String x:Key="Explorer.NewFolder">Нова тека</x:String>
     <x:String x:Key="Explorer.Refresh">Оновити</x:String>
