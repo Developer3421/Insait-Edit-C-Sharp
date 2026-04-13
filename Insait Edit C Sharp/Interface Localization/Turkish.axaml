@@ -856,6 +856,12 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="RunConfig.ActivateToolWindow">Çıktıda araç penceresini etkinleştir</x:String>
     <x:String x:Key="RunConfig.Projects">proje</x:String>
     <x:String x:Key="RunConfig.Default">Varsayılan</x:String>
+    <x:String x:Key="RunConfig.RunCompound">▶▶ Bileşik Çalıştır</x:String>
+    <x:String x:Key="RunConfig.EnvVarKeyPlaceholder">DEĞİŞKEN_ADI</x:String>
+    <x:String x:Key="RunConfig.EnvVarValuePlaceholder">değer</x:String>
+    <x:String x:Key="RunConfig.BrowseWorkingDirTitle">Çalışma Dizini Seç</x:String>
+    <x:String x:Key="RunConfig.NewConfig">Yeni Yapılandırma</x:String>
+    <x:String x:Key="RunConfig.CopySuffix"> (Kopya)</x:String>
 
     <!-- PublishWindow -->
     <x:String x:Key="Publish.Title">Projeyi Yayınla</x:String>

@@ -100,6 +100,12 @@
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="#FFF7F2EC"/>
         </Style>
+        <!-- Watermark/placeholder: explicit contrast color against the cream background -->
+        <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="#FF9E8072"/>
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="FontStyle" Value="Italic"/>
+        </Style>
     </UserControl.Styles>
     
     <Grid RowDefinitions="Auto,*" Background="{StaticResource AccountSurfaceBrush}">
@@ -180,7 +186,7 @@
                         <TextBlock Name="TokenAltText" Text="Or use Personal Access Token:" FontSize="12" 
                                    Foreground="{StaticResource AccountTextBrush}" FontWeight="SemiBold"/>
                         <Border Background="{StaticResource AccountBgBrush}" CornerRadius="6" Padding="8,6">
-                            <TextBox Name="TokenInputBox" Watermark="ghp_xxxxxxxxxxxx"
+                            <TextBox Name="TokenInputBox" PlaceholderText="ghp_xxxxxxxxxxxx"
                                      BorderThickness="0"
                                      PasswordChar="?"
                                      FontSize="12"/>
@@ -268,7 +274,7 @@
                             <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji" 
                                        VerticalAlignment="Center" Margin="0,0,8,0"
                                        Foreground="{StaticResource AccountTextMutedBrush}"/>
-                            <TextBox Grid.Column="1" Name="RepoSearchBox" Watermark="Search repositories..."
+                            <TextBox Grid.Column="1" Name="RepoSearchBox" PlaceholderText="Search repositories..."
                                      BorderThickness="0"
                                      FontSize="12" TextChanged="RepoSearch_TextChanged"/>
                         </Grid>
@@ -292,7 +298,7 @@
                                         </StackPanel>
                                         
                                         <!-- Language Badge -->
-                                        <Border Grid.Column="1" Background="{StaticResource AccountAccentBrush}" BorderBrush="#FFF5EBDD" BorderThickness="1"
+                                        <Border Grid.Row="0" Grid.Column="1" Background="{StaticResource AccountAccentBrush}" BorderBrush="#FFF5EBDD" BorderThickness="1"
                                                 CornerRadius="4" Padding="6,2"
                                                 IsVisible="{Binding Language, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                                             <TextBlock Text="{Binding Language}" FontSize="10" FontWeight="SemiBold" Foreground="#FF1A0F08"/>

@@ -164,8 +164,6 @@ public partial class MenuWindow : Window
         AddMenuItem(panel, LocalizationService.Get("Menu.SaveAs"), "", () => _mainWindow.ExecuteMenuAction("SaveAs"));
         AddMenuItem(panel, LocalizationService.Get("Menu.SaveAll"), "Ctrl+Shift+S", () => _mainWindow.ExecuteMenuAction("SaveAll"));
 
-        AddSeparator(panel);
-        AddMenuItem(panel, LocalizationService.Get("Menu.Exit"), "Alt+F4", () => _mainWindow.ExecuteMenuAction("Exit"));
     }
 
     private void CreateEditContent(StackPanel panel)
@@ -180,11 +178,7 @@ public partial class MenuWindow : Window
         AddMenuItem(panel, LocalizationService.Get("Menu.Replace"), "Ctrl+H", () => _mainWindow.ExecuteMenuAction("Replace"));
         AddMenuItem(panel, LocalizationService.Get("Menu.FindInFiles"), "Ctrl+Shift+F", () => _mainWindow.ExecuteMenuAction("FindInFiles"));
 
-        AddSeparator(panel);
-        AddHeader(panel, LocalizationService.Get("Menu.Code"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.FormatDocument"), "Ctrl+Shift+F", () => _mainWindow.ExecuteMenuAction("FormatDocument"));
-        AddMenuItem(panel, LocalizationService.Get("Menu.ToggleComment"), "Ctrl+/", () => _mainWindow.ExecuteMenuAction("ToggleComment"));
-        AddMenuItem(panel, LocalizationService.Get("AutoFix.OpenWindow"), "Ctrl+Shift+A", () => _mainWindow.ExecuteMenuAction("OpenAutoFix"));
+
     }
 
     private void CreateViewContent(StackPanel panel)

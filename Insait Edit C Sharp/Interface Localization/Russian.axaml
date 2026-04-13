@@ -860,6 +860,12 @@
     <x:String x:Key="RunConfig.ActivateToolWindow">Активировать окно инструментов при выводе</x:String>
     <x:String x:Key="RunConfig.Projects">проектов</x:String>
     <x:String x:Key="RunConfig.Default">По умолчанию</x:String>
+    <x:String x:Key="RunConfig.RunCompound">▶▶ Запустить составную</x:String>
+    <x:String x:Key="RunConfig.EnvVarKeyPlaceholder">ИМЯ_ПЕРЕМЕННОЙ</x:String>
+    <x:String x:Key="RunConfig.EnvVarValuePlaceholder">значение</x:String>
+    <x:String x:Key="RunConfig.BrowseWorkingDirTitle">Выбрать рабочую папку</x:String>
+    <x:String x:Key="RunConfig.NewConfig">Новая конфигурация</x:String>
+    <x:String x:Key="RunConfig.CopySuffix"> (Копия)</x:String>
 
     <!-- PublishWindow -->
     <x:String x:Key="Publish.Title">Публикация проекта</x:String>

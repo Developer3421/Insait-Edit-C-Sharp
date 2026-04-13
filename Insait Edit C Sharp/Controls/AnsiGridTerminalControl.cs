@@ -19,14 +19,14 @@ namespace Insait_Edit_C_Sharp.Controls;
 public sealed class AnsiGridTerminalControl : UserControl
 {
     private readonly ScrollViewer _scroll;
-    private readonly TextBlock _text;
+    private readonly SelectableTextBlock _text;
 
     private readonly AnsiGridBuffer _buffer = new(cols: 120, rows: 3000);
     private readonly AnsiParser _parser;
 
     public AnsiGridTerminalControl()
     {
-        _text = new TextBlock
+        _text = new SelectableTextBlock
         {
             FontFamily = new FontFamily("Consolas, Courier New, monospace"),
             FontSize = 14,

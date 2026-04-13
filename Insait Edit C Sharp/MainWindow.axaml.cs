@@ -980,7 +980,7 @@ public partial class MainWindow : Window
         SetButtonTooltip("SendAIButton", L("AI.Tooltip.Execute"));
 
         var aiInput = this.FindControl<TextBox>("AIChatInput");
-        if (aiInput != null) aiInput.Watermark = L("AI.InputPlaceholder");
+        if (aiInput != null) aiInput.PlaceholderText = L("AI.InputPlaceholder");
 
         // ── AI Welcome message ────────────────────────────────────
         var aiWelcomeTitle = this.FindControl<TextBlock>("AiWelcomeTitle");

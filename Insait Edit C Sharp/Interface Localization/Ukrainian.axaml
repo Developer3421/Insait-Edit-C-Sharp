@@ -860,6 +860,12 @@
     <x:String x:Key="RunConfig.ActivateToolWindow">Активувати вікно інструментів при виведенні</x:String>
     <x:String x:Key="RunConfig.Projects">проєктів</x:String>
     <x:String x:Key="RunConfig.Default">За замовчуванням</x:String>
+    <x:String x:Key="RunConfig.RunCompound">▶▶ Запустити складену</x:String>
+    <x:String x:Key="RunConfig.EnvVarKeyPlaceholder">НАЗВА_ЗМІННОЇ</x:String>
+    <x:String x:Key="RunConfig.EnvVarValuePlaceholder">значення</x:String>
+    <x:String x:Key="RunConfig.BrowseWorkingDirTitle">Обрати робочу теку</x:String>
+    <x:String x:Key="RunConfig.NewConfig">Нова конфігурація</x:String>
+    <x:String x:Key="RunConfig.CopySuffix"> (Копія)</x:String>
 
     <!-- ── 15. PublishWindow ─────────────────────────────────────── -->
     <x:String x:Key="Publish.Title">Публікація проєкту</x:String>

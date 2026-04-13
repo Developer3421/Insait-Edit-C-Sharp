@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Insait_Edit_C_Sharp.Services;
 using System;
 using System.Collections.Generic;
@@ -18,6 +20,7 @@ public partial class RunConfigurationsWindow : Window
     private readonly string _projectPath;
     private readonly ObservableCollection<RunConfiguration> _configurations = new();
     private readonly ObservableCollection<CompoundRunConfiguration> _compoundConfigurations = new();
+    private readonly List<(TextBox KeyBox, TextBox ValueBox, Border Row)> _envVarRows = new();
     private RunConfiguration? _selectedConfiguration;
     private CompoundRunConfiguration? _selectedCompound;
     private bool _isDirty;
@@ -278,7 +281,7 @@ public partial class RunConfigurationsWindow : Window
 
             // Update Run button label
             var runBtn = this.FindControl<Button>("RunButton");
-            if (runBtn != null) runBtn.Content = "▶▶ Run Compound";
+            if (runBtn != null) runBtn.Content = LocalizationService.Get("RunConfig.RunCompound");
         }
     }
 
@@ -391,7 +394,7 @@ public partial class RunConfigurationsWindow : Window
 
             // Reset Run button label
             var runBtn = this.FindControl<Button>("RunButton");
-            if (runBtn != null) runBtn.Content = "▶ Run";
+            if (runBtn != null) runBtn.Content = LocalizationService.Get("RunConfig.Run");
 
             // Save current changes first
             if (_isDirty && _selectedConfiguration != null)
@@ -434,6 +437,9 @@ public partial class RunConfigurationsWindow : Window
         {
             LoadLaunchProfiles(config.ProjectPath, launchProfileCombo, config.LaunchProfile);
         }
+
+        // Load environment variables into panel
+        RefreshEnvVarsPanel();
     }
 
     private async void LoadFrameworks(string projectPath, ComboBox comboBox, string? selectedFramework)
@@ -527,13 +533,22 @@ public partial class RunConfigurationsWindow : Window
         {
             _selectedConfiguration.LaunchProfile = null;
         }
+
+        // Collect environment variables from UI rows
+        _selectedConfiguration.EnvironmentVariables.Clear();
+        foreach (var (keyBox, valueBox, _) in _envVarRows)
+        {
+            var k = keyBox.Text?.Trim() ?? "";
+            if (!string.IsNullOrEmpty(k))
+                _selectedConfiguration.EnvironmentVariables[k] = valueBox.Text ?? "";
+        }
     }
 
     private void AddConfiguration_Click(object? sender, RoutedEventArgs e)
     {
         var newConfig = new RunConfiguration
         {
-            Name = "New Configuration",
+            Name = LocalizationService.Get("RunConfig.NewConfig"),
             ProjectPath = _configurations.FirstOrDefault()?.ProjectPath ?? "",
             WorkingDirectory = Path.GetDirectoryName(_projectPath) ?? "",
             Configuration = "Debug"
@@ -570,7 +585,7 @@ public partial class RunConfigurationsWindow : Window
 
         var newConfig = new RunConfiguration
         {
-            Name = _selectedConfiguration.Name + " (Copy)",
+            Name = _selectedConfiguration.Name + LocalizationService.Get("RunConfig.CopySuffix"),
             ProjectPath = _selectedConfiguration.ProjectPath,
             WorkingDirectory = _selectedConfiguration.WorkingDirectory,
             Configuration = _selectedConfiguration.Configuration,
@@ -594,7 +609,7 @@ public partial class RunConfigurationsWindow : Window
     {
         var dialog = await StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions
         {
-            Title = "Select Working Directory",
+            Title = LocalizationService.Get("RunConfig.BrowseWorkingDirTitle"),
             AllowMultiple = false
         });
 
@@ -612,11 +627,121 @@ public partial class RunConfigurationsWindow : Window
     {
         if (_selectedConfiguration == null) return;
 
-        _selectedConfiguration.EnvironmentVariables["NEW_VAR"] = "";
+        // Generate a unique key
+        var key = "NEW_VAR";
+        var idx = 1;
+        while (_selectedConfiguration.EnvironmentVariables.ContainsKey(key))
+            key = $"NEW_VAR_{idx++}";
+
+        _selectedConfiguration.EnvironmentVariables[key] = "";
         _isDirty = true;
-        
-        // Refresh the environment variables display
-        LoadConfigurationDetails(_selectedConfiguration);
+        RefreshEnvVarsPanel();
+    }
+
+    private void RefreshEnvVarsPanel()
+    {
+        var panel = this.FindControl<StackPanel>("EnvVarsPanel");
+        var noEnvText = this.FindControl<TextBlock>("NoEnvVarsText");
+        if (panel == null) return;
+
+        // Remove all env var rows, keep the placeholder TextBlock in DOM
+        for (var i = panel.Children.Count - 1; i >= 0; i--)
+        {
+            if (panel.Children[i] != noEnvText)
+                panel.Children.RemoveAt(i);
+        }
+        _envVarRows.Clear();
+
+        var hasVars = _selectedConfiguration?.EnvironmentVariables.Count > 0;
+        if (noEnvText != null) noEnvText.IsVisible = !hasVars;
+        if (!hasVars || _selectedConfiguration == null) return;
+
+        foreach (var kvp in _selectedConfiguration.EnvironmentVariables.ToList())
+            AddEnvVarRow(panel, kvp.Key, kvp.Value);
+    }
+
+    private void AddEnvVarRow(StackPanel panel, string key, string value)
+    {
+        var rowBorder = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse("#FF2A2240")),
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(6, 4),
+            Margin = new Thickness(0, 2)
+        };
+
+        var rowGrid = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("*,Auto,*,Auto")
+        };
+
+        var keyBox = new TextBox
+        {
+            Text = key,
+            PlaceholderText = LocalizationService.Get("RunConfig.EnvVarKeyPlaceholder"),
+            FontFamily = new FontFamily("Consolas, Courier New, monospace"),
+            FontSize = 12
+        };
+
+        var eqLabel = new TextBlock
+        {
+            Text = " = ",
+            FontSize = 14,
+            FontWeight = FontWeight.Bold,
+            Foreground = new SolidColorBrush(Color.Parse("#FFFFC09F")),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(4, 0)
+        };
+
+        var valueBox = new TextBox
+        {
+            Text = value,
+            PlaceholderText = LocalizationService.Get("RunConfig.EnvVarValuePlaceholder"),
+            FontFamily = new FontFamily("Consolas, Courier New, monospace"),
+            FontSize = 12
+        };
+
+        var deleteBtn = new Button
+        {
+            Content = "🗑",
+            Width = 30,
+            Height = 30,
+            Background = Brushes.Transparent,
+            BorderThickness = new Thickness(0),
+            Foreground = new SolidColorBrush(Color.Parse("#FFF38BA8")),
+            Cursor = new Cursor(StandardCursorType.Hand),
+            Padding = new Thickness(4, 0),
+            Margin = new Thickness(4, 0, 0, 0),
+            FontSize = 14,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        Grid.SetColumn(keyBox, 0);
+        Grid.SetColumn(eqLabel, 1);
+        Grid.SetColumn(valueBox, 2);
+        Grid.SetColumn(deleteBtn, 3);
+        rowGrid.Children.Add(keyBox);
+        rowGrid.Children.Add(eqLabel);
+        rowGrid.Children.Add(valueBox);
+        rowGrid.Children.Add(deleteBtn);
+        rowBorder.Child = rowGrid;
+
+        var entry = (keyBox, valueBox, rowBorder);
+        _envVarRows.Add(entry);
+
+        keyBox.TextChanged += (_, _) => _isDirty = true;
+        valueBox.TextChanged += (_, _) => _isDirty = true;
+
+        deleteBtn.Click += (_, _) =>
+        {
+            _envVarRows.Remove(entry);
+            panel.Children.Remove(rowBorder);
+            _isDirty = true;
+            var noEnvText = this.FindControl<TextBlock>("NoEnvVarsText");
+            if (noEnvText != null) noEnvText.IsVisible = _envVarRows.Count == 0;
+        };
+
+        panel.Children.Add(rowBorder);
     }
 
     private async void Run_Click(object? sender, RoutedEventArgs e)

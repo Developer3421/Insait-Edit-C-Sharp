@@ -860,6 +860,12 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="RunConfig.ActivateToolWindow">Toolfenster bei Ausgabe aktivieren</x:String>
     <x:String x:Key="RunConfig.Projects">Projekte</x:String>
     <x:String x:Key="RunConfig.Default">Standard</x:String>
+    <x:String x:Key="RunConfig.RunCompound">▶▶ Zusammengesetzt starten</x:String>
+    <x:String x:Key="RunConfig.EnvVarKeyPlaceholder">VAR_NAME</x:String>
+    <x:String x:Key="RunConfig.EnvVarValuePlaceholder">Wert</x:String>
+    <x:String x:Key="RunConfig.BrowseWorkingDirTitle">Arbeitsverzeichnis auswählen</x:String>
+    <x:String x:Key="RunConfig.NewConfig">Neue Konfiguration</x:String>
+    <x:String x:Key="RunConfig.CopySuffix"> (Kopie)</x:String>
 
     <!-- PublishWindow -->
     <x:String x:Key="Publish.Title">Projekt veröffentlichen</x:String>

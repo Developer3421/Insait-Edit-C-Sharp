@@ -8,12 +8,13 @@ internal sealed class AnsiParser
 {
     private readonly AnsiGridBuffer _buffer;
 
-    private enum State { Text, Esc, Csi }
+    private enum State { Text, Esc, Csi, Osc, OscEsc }
     private State _state;
 
     private readonly List<int> _csiParams = new();
     private int _currentParam;
     private bool _hasParam;
+    private bool _csiPrivate; // ESC[? private-mode sequences
 
     public event EventHandler? Changed;
 
@@ -50,16 +51,27 @@ internal sealed class AnsiParser
                         _csiParams.Clear();
                         _currentParam = 0;
                         _hasParam = false;
+                        _csiPrivate = false;
+                    }
+                    else if (ch == ']')
+                    {
+                        // OSC sequence (e.g. window title ESC]0;title BEL)
+                        _state = State.Osc;
                     }
                     else
                     {
-                        // Not a CSI sequence we handle.
+                        // Other ESC sequences (ESC=, ESC>, ESC c, etc.) — discard
                         _state = State.Text;
                     }
                     break;
 
                 case State.Csi:
-                    if (char.IsDigit(ch))
+                    // Private/intermediate bytes: ?, >, <, !
+                    if (ch == '?' || ch == '>' || ch == '<' || ch == '!')
+                    {
+                        _csiPrivate = true;
+                    }
+                    else if (char.IsDigit(ch))
                     {
                         _currentParam = (_currentParam * 10) + (ch - '0');
                         _hasParam = true;
@@ -76,9 +88,28 @@ internal sealed class AnsiParser
                         if (_hasParam || _csiParams.Count > 0)
                             _csiParams.Add(_hasParam ? _currentParam : 0);
 
-                        anyChange |= ExecuteCsi(ch, _csiParams);
+                        anyChange |= ExecuteCsi(ch, _csiParams, _csiPrivate);
                         _state = State.Text;
                     }
+                    break;
+
+                // OSC: swallow everything until BEL (\x07) or ESC\ (ST)
+                case State.Osc:
+                    if (ch == '\x07')
+                    {
+                        _state = State.Text;
+                    }
+                    else if (ch == '\u001b')
+                    {
+                        // Could be ESC\ (String Terminator)
+                        _state = State.OscEsc;
+                    }
+                    // else: consume OSC payload silently
+                    break;
+
+                case State.OscEsc:
+                    // Expecting '\' for ST (ESC \), either way return to Text
+                    _state = State.Text;
                     break;
             }
         }
@@ -109,8 +140,11 @@ internal sealed class AnsiParser
         }
     }
 
-    private bool ExecuteCsi(char finalByte, List<int> ps)
+    private bool ExecuteCsi(char finalByte, List<int> ps, bool isPrivate = false)
     {
+        // Private/intermediate mode sequences (ESC[?25h, ESC[?25l, etc.) — discard silently
+        if (isPrivate) return false;
+
         // Supported subset
         switch (finalByte)
         {
