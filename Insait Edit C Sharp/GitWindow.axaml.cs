@@ -11,6 +11,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Models;
 using Insait_Edit_C_Sharp.Services;
@@ -19,6 +20,8 @@ namespace Insait_Edit_C_Sharp;
 
 public partial class GitWindow : Window
 {
+    private static readonly IBrush WhiteWatermarkBrush = new SolidColorBrush(Colors.White);
+
     // ─── Services ─────────────────────────────────────────────
     private readonly GitService _git = new();
     private readonly GitHubAccountService _ghService = new();
@@ -63,6 +66,8 @@ public partial class GitWindow : Window
     {
         InitializeComponent();
         ApplyLocalization();
+        HookWatermarkForeground("LogFilterBox");
+        HookWatermarkForeground("CommitMsgBox");
         _ghService.ErrorOccurred += (_, message) => AppendConsole(message);
         LocalizationService.LanguageChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(ApplyLocalization);
         _autoRefreshTimer.Tick += AutoRefreshTimer_Tick;
@@ -727,6 +732,7 @@ public partial class GitWindow : Window
         var defaultName = Path.GetFileName(_solutionPath ?? "my-project");
         var nameBox = new TextBox
         {
+            Classes = { "dark" },
             Text = defaultName, FontSize = 12,
             Background = new SolidColorBrush(Color.Parse("#FF1F1A24")),
             Foreground = new SolidColorBrush(Color.Parse("#FFF0E8F4")),
@@ -742,12 +748,14 @@ public partial class GitWindow : Window
         });
         var descBox = new TextBox
         {
+            Classes = { "dark" },
             FontSize = 12, Watermark = L("Git.ShortDescription"),
             Background = new SolidColorBrush(Color.Parse("#FF1F1A24")),
             Foreground = new SolidColorBrush(Color.Parse("#FFF0E8F4")),
             BorderBrush = new SolidColorBrush(Color.Parse("#FF3E3050")),
             CornerRadius = new CornerRadius(4), Padding = new Thickness(8, 6)
         };
+        ForceWatermarkForeground(descBox);
         sp.Children.Add(descBox);
 
         var privateCheck = new CheckBox
@@ -1378,6 +1386,45 @@ public partial class GitWindow : Window
     {
         var c = this.FindControl<Control>(name);
         if (c != null) c.IsVisible = visible;
+    }
+
+    private void HookWatermarkForeground(string textBoxName)
+    {
+        void Apply()
+        {
+            var textBox = this.FindControl<TextBox>(textBoxName);
+            if (textBox != null)
+                ForceWatermarkForeground(textBox);
+        }
+
+        Dispatcher.UIThread.Post(Apply, DispatcherPriority.Loaded);
+        Opened += (_, _) => Dispatcher.UIThread.Post(Apply, DispatcherPriority.Loaded);
+    }
+
+    private static void ForceWatermarkForeground(TextBox textBox)
+    {
+        void Apply()
+        {
+            var watermark = textBox
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .FirstOrDefault(tb => string.Equals(tb.Name, "PART_Watermark", StringComparison.Ordinal));
+
+            if (watermark == null)
+                return;
+
+            watermark.Foreground = WhiteWatermarkBrush;
+            watermark.Opacity = 1;
+        }
+
+        textBox.AttachedToVisualTree += (_, _) => Dispatcher.UIThread.Post(Apply, DispatcherPriority.Loaded);
+        textBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == TextBox.TextProperty)
+                Dispatcher.UIThread.Post(Apply, DispatcherPriority.Loaded);
+        };
+
+        Dispatcher.UIThread.Post(Apply, DispatcherPriority.Loaded);
     }
 
     private void NotifyWorkspaceRefreshRequested()

@@ -197,7 +197,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
         </Style>
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
             <Setter Property="Opacity"    Value="1"/>
         </Style>
 
@@ -217,7 +217,19 @@
             <Setter Property="BorderBrush" Value="{StaticResource OrangeBrush}"/>
         </Style>
         <Style Selector="TextBox.dark /template/ TextBlock#PART_Watermark">
-            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Opacity"    Value="1"/>
+        </Style>
+        <Style Selector="TextBox.filter-box /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Opacity"    Value="1"/>
+        </Style>
+        <Style Selector="TextBox#CommitMsgBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Opacity"    Value="1"/>
+        </Style>
+        <Style Selector="TextBox#LogFilterBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
             <Setter Property="Opacity"    Value="1"/>
         </Style>
 
@@ -535,6 +547,7 @@
                     </Border.Background>
                     <StackPanel Spacing="6">
                         <TextBox Name="CommitMsgBox"
+                                 Classes="dark"
                                  TextChanged="CommitMsgBox_TextChanged"
                                  Watermark="{DynamicResource Git.CommitMessageWatermark}"
                                  AcceptsReturn="True" TextWrapping="Wrap"
@@ -609,7 +622,7 @@
                                 <TextBlock Text="⎇" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"
                                            Foreground="{StaticResource GreenBrush}"/>
                             </Button>
-                            <TextBox Name="LogFilterBox" Classes="dark"
+                            <TextBox Name="LogFilterBox" Classes="dark filter-box"
                                      Watermark="{DynamicResource Git.FilterCommits}"
                                      Width="180" Height="26"
                                      FontSize="11" CornerRadius="5" Padding="6,3"

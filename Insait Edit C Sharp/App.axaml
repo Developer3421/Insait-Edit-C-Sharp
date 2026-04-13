@@ -13,13 +13,28 @@
         <Style Selector="TextBox">
             <Setter Property="CaretBrush" Value="#FF6C2FA0"/>
             <Setter Property="Background" Value="#FFF7F2EC"/>
-            <Setter Property="Foreground" Value="#FF1F1A24"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#FFB8A6C4"/>
             <Setter Property="SelectionBrush" Value="#66E9C9B8"/>
             <Setter Property="SelectionForegroundBrush" Value="#FF1F1A24"/>
         </Style>
         <Style Selector="TextBox /template/ Border#PART_BorderElement">
             <Setter Property="Background" Value="#FFF7F2EC"/>
+        </Style>
+        <Style Selector="TextBox.dark">
+            <Setter Property="Background" Value="#FF252030"/>
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="CaretBrush" Value="#FFFFC09F"/>
+            <Setter Property="SelectionBrush" Value="#50FFC09F"/>
+            <Setter Property="SelectionForegroundBrush" Value="White"/>
+        </Style>
+        <Style Selector="TextBox.dark /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF252030"/>
+        </Style>
+        <Style Selector="TextBox.dark /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="#FFFFFFFF"/>
+            <Setter Property="Opacity" Value="1"/>
         </Style>
 
         <!-- Global style for emoji icons - ensures color emoji rendering -->
