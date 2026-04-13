@@ -387,6 +387,7 @@
     <x:String x:Key="Search.Word">Wort</x:String>
 
     <!-- WelcomeWindow -->
+    <x:String x:Key="Welcome.WindowLabel">Willkommen-Fenster</x:String>
     <x:String x:Key="Welcome.Title">Willkommen bei Insait Edit</x:String>
     <x:String x:Key="Welcome.Subtitle">C# IDE mit Insait Code Editor</x:String>
     <x:String x:Key="Welcome.Version">Version 1.0.0 Vorschau</x:String>
@@ -1393,7 +1394,7 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="StatusBar.Selection.CharsLines">{0} Zeichen, {1} Zeilen</x:String>
 
     <!-- ── Terminal ──────────────────────────────────────────────── -->
-    <x:String x:Key="Terminal.Welcome.Version">Insait Terminal [Version 2.0.0]</x:String>
+    <x:String x:Key="Terminal.Welcome.Version">Insait Terminal [Version 1.0.0]</x:String>
     <x:String x:Key="Terminal.Welcome.Hint">(c) Insait Edit. Geben Sie 'help' für Befehle ein.</x:String>
     <x:String x:Key="Terminal.Msg.SwitchedToPS">Zu PowerShell-Modus gewechselt.</x:String>
     <x:String x:Key="Terminal.Msg.SwitchedToCmd">Zu CMD-Modus gewechselt.</x:String>
@@ -1411,7 +1412,7 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="Terminal.Dotnet.EnterNumber">Nummer eingeben (1–{0}): </x:String>
     <x:String x:Key="Terminal.Dotnet.InvalidSelection">❌ Ungültige Auswahl. Eingabe 1–{0} oder 0 zum Abbrechen.</x:String>
     <x:String x:Key="Terminal.Dotnet.Selected">📦 Ausgewählt: {0}</x:String>
-    <x:String x:Key="Terminal.Help.Title">INSAIT TERMINAL v2.0 HILFE</x:String>
+    <x:String x:Key="Terminal.Help.Title">INSAIT TERMINAL v1.0 HILFE</x:String>
     <x:String x:Key="Terminal.Help.BuiltinSection">Integrierte Befehle:</x:String>
     <x:String x:Key="Terminal.Help.DotnetSection">.NET-Befehle (automatische Projekterkennung):</x:String>
     <x:String x:Key="Terminal.Help.ShortcutsSection">Tastenkombinationen:</x:String>

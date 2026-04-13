@@ -38,6 +38,9 @@ public partial class WelcomeWindow : Window
 
         Title = L("Welcome.Title");
 
+        var titleBarText = this.FindControl<TextBlock>("WelcomeTitleBarText");
+        if (titleBarText != null) titleBarText.Text = L("Welcome.WindowLabel");
+
         var subtitle = this.FindControl<TextBlock>("WelcomeSubtitleText");
         if (subtitle != null) subtitle.Text = L("Welcome.Subtitle");
         var version = this.FindControl<TextBlock>("WelcomeVersionText");
@@ -67,8 +70,6 @@ public partial class WelcomeWindow : Window
         if (docLink != null) docLink.Content = L("Welcome.Documentation");
         var ghLink = this.FindControl<Button>("GitHubLink");
         if (ghLink != null) ghLink.Content = L("Welcome.GitHub");
-        var settingsLink = this.FindControl<Button>("SettingsLink");
-        if (settingsLink != null) settingsLink.Content = L("Welcome.Settings");
 
         var searchBox = this.FindControl<TextBox>("SearchBox");
         if (searchBox != null) searchBox.Watermark = L("Welcome.SearchRecent");
@@ -285,10 +286,6 @@ public partial class WelcomeWindow : Window
         OpenUrl("https://github.com/insait-edit/insait-edit-csharp");
     }
 
-    private void Settings_Click(object? sender, RoutedEventArgs e)
-    {
-        // TODO: Open settings window
-    }
 
     private void OpenUrl(string url)
     {

@@ -387,6 +387,7 @@
     <x:String x:Key="Search.Word">Слово</x:String>
 
     <!-- WelcomeWindow -->
+    <x:String x:Key="Welcome.WindowLabel">Окно приветствия</x:String>
     <x:String x:Key="Welcome.Title">Добро пожаловать в Insait Edit</x:String>
     <x:String x:Key="Welcome.Subtitle">C# IDE на базе Insait Code Editor</x:String>
     <x:String x:Key="Welcome.Version">Версия 1.0.0 Предпросмотр</x:String>
@@ -1393,7 +1394,7 @@
     <x:String x:Key="StatusBar.Selection.CharsLines">{0} симв., {1} строк</x:String>
 
     <!-- ── Терминал ──────────────────────────────────────────────── -->
-    <x:String x:Key="Terminal.Welcome.Version">Insait Терминал [Версия 2.0.0]</x:String>
+    <x:String x:Key="Terminal.Welcome.Version">Insait Терминал [Версия 1.0.0]</x:String>
     <x:String x:Key="Terminal.Welcome.Hint">(c) Insait Edit. Введите 'help' для списка команд.</x:String>
     <x:String x:Key="Terminal.Msg.SwitchedToPS">Переключено в режим PowerShell.</x:String>
     <x:String x:Key="Terminal.Msg.SwitchedToCmd">Переключено в режим CMD.</x:String>
@@ -1411,7 +1412,7 @@
     <x:String x:Key="Terminal.Dotnet.EnterNumber">Введите номер (1–{0}): </x:String>
     <x:String x:Key="Terminal.Dotnet.InvalidSelection">❌ Неверный выбор. Введите 1–{0} или 0 для отмены.</x:String>
     <x:String x:Key="Terminal.Dotnet.Selected">📦 Выбрано: {0}</x:String>
-    <x:String x:Key="Terminal.Help.Title">СПРАВКА INSAIT ТЕРМИНАЛ v2.0</x:String>
+    <x:String x:Key="Terminal.Help.Title">СПРАВКА INSAIT ТЕРМИНАЛ v1.0</x:String>
     <x:String x:Key="Terminal.Help.BuiltinSection">Встроенные команды:</x:String>
     <x:String x:Key="Terminal.Help.DotnetSection">Команды .NET (авто-поиск проекта):</x:String>
     <x:String x:Key="Terminal.Help.ShortcutsSection">Сочетания клавиш:</x:String>

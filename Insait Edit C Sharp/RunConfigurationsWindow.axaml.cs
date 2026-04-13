@@ -109,8 +109,6 @@ public partial class RunConfigurationsWindow : Window
         // Footer buttons
         var runBtn = this.FindControl<Button>("RunButton");
         if (runBtn != null) runBtn.Content = L("RunConfig.Run");
-        var debugBtn = this.FindControl<Button>("DebugButton");
-        if (debugBtn != null) debugBtn.Content = L("RunConfig.Debug");
         var applyBtn = this.FindControl<Button>("ApplyButton");
         if (applyBtn != null) applyBtn.Content = L("RunConfig.Apply");
         var cancelBtn = this.FindControl<Button>("CancelButton");
@@ -180,11 +178,6 @@ public partial class RunConfigurationsWindow : Window
             runButton.Click += Run_Click;
         }
 
-        var debugButton = this.FindControl<Button>("DebugButton");
-        if (debugButton != null)
-        {
-            debugButton.Click += Debug_Click;
-        }
 
         var applyButton = this.FindControl<Button>("ApplyButton");
         if (applyButton != null)
@@ -631,10 +624,6 @@ public partial class RunConfigurationsWindow : Window
         CloseWithSelection(shouldRun: true);
     }
 
-    private async void Debug_Click(object? sender, RoutedEventArgs e)
-    {
-        CloseWithSelection(shouldRun: true, startWithDebugging: true);
-    }
 
     private void Apply_Click(object? sender, RoutedEventArgs e)
     {

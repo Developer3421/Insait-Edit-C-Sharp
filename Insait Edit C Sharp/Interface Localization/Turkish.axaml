@@ -386,6 +386,7 @@
     <x:String x:Key="Search.Word">Kelime</x:String>
 
     <!-- WelcomeWindow -->
+    <x:String x:Key="Welcome.WindowLabel">Hoş Geldiniz Penceresi</x:String>
     <x:String x:Key="Welcome.Title">Insait Edit'e Hoş Geldiniz</x:String>
     <x:String x:Key="Welcome.Subtitle">Insait Code Editor tabanlı C# IDE</x:String>
     <x:String x:Key="Welcome.Version">Sürüm 1.0.0 Önizleme</x:String>
@@ -1393,7 +1394,7 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="StatusBar.Selection.CharsLines">{0} karakter, {1} satır</x:String>
 
     <!-- ── Terminal ──────────────────────────────────────────────── -->
-    <x:String x:Key="Terminal.Welcome.Version">Insait Terminal [Sürüm 2.0.0]</x:String>
+    <x:String x:Key="Terminal.Welcome.Version">Insait Terminal [Sürüm 1.0.0]</x:String>
     <x:String x:Key="Terminal.Welcome.Hint">(c) Insait Edit. Komutlar için 'help' yazın.</x:String>
     <x:String x:Key="Terminal.Msg.SwitchedToPS">PowerShell moduna geçildi.</x:String>
     <x:String x:Key="Terminal.Msg.SwitchedToCmd">CMD moduna geçildi.</x:String>
@@ -1411,7 +1412,7 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="Terminal.Dotnet.EnterNumber">Numara girin (1–{0}): </x:String>
     <x:String x:Key="Terminal.Dotnet.InvalidSelection">❌ Geçersiz seçim. 1–{0} arası veya iptal için 0 girin.</x:String>
     <x:String x:Key="Terminal.Dotnet.Selected">📦 Seçildi: {0}</x:String>
-    <x:String x:Key="Terminal.Help.Title">INSAIT TERMINAL v2.0 YARDIM</x:String>
+    <x:String x:Key="Terminal.Help.Title">INSAIT TERMINAL v1.0 YARDIM</x:String>
     <x:String x:Key="Terminal.Help.BuiltinSection">Dahili Komutlar:</x:String>
     <x:String x:Key="Terminal.Help.DotnetSection">.NET Komutları (otomatik proje bulma):</x:String>
     <x:String x:Key="Terminal.Help.ShortcutsSection">Klavye Kısayolları:</x:String>

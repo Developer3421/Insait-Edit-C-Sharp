@@ -387,6 +387,7 @@
     <x:String x:Key="Search.Word">Слово</x:String>
 
     <!-- ── 2. WelcomeWindow ──────────────────────────────────────── -->
+    <x:String x:Key="Welcome.WindowLabel">Вікно вітання</x:String>
     <x:String x:Key="Welcome.Title">Ласкаво просимо до Insait Edit</x:String>
     <x:String x:Key="Welcome.Subtitle">C# IDE на базі Insait Code Editor</x:String>
     <x:String x:Key="Welcome.Version">Версія 1.0.0 Попередній перегляд</x:String>
@@ -1393,7 +1394,7 @@
     <x:String x:Key="StatusBar.Selection.CharsLines">{0} симв., {1} рядк.</x:String>
 
     <!-- ── Термінал ──────────────────────────────────────────────── -->
-    <x:String x:Key="Terminal.Welcome.Version">Insait Термінал [Версія 2.0.0]</x:String>
+    <x:String x:Key="Terminal.Welcome.Version">Insait Термінал [Версія 1.0.0]</x:String>
     <x:String x:Key="Terminal.Welcome.Hint">(c) Insait Edit. Введіть 'help' для списку команд.</x:String>
     <x:String x:Key="Terminal.Msg.SwitchedToPS">Перемкнуто в режим PowerShell.</x:String>
     <x:String x:Key="Terminal.Msg.SwitchedToCmd">Перемкнуто в режим CMD.</x:String>
@@ -1411,7 +1412,7 @@
     <x:String x:Key="Terminal.Dotnet.EnterNumber">Введіть номер (1–{0}): </x:String>
     <x:String x:Key="Terminal.Dotnet.InvalidSelection">❌ Невірний вибір. Введіть 1–{0} або 0 для скасування.</x:String>
     <x:String x:Key="Terminal.Dotnet.Selected">📦 Вибрано: {0}</x:String>
-    <x:String x:Key="Terminal.Help.Title">ДОВІДКА INSAIT ТЕРМІНАЛ v2.0</x:String>
+    <x:String x:Key="Terminal.Help.Title">ДОВІДКА INSAIT ТЕРМІНАЛ v1.0</x:String>
     <x:String x:Key="Terminal.Help.BuiltinSection">Вбудовані команди:</x:String>
     <x:String x:Key="Terminal.Help.DotnetSection">Команди .NET (авто-пошук проєкту):</x:String>
     <x:String x:Key="Terminal.Help.ShortcutsSection">Комбінації клавіш:</x:String>
