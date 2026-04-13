@@ -943,10 +943,22 @@ public partial class MainWindow : Window
         SetButtonTooltip("HidePanelButton", L("Tooltip.HidePanel"));
         SetButtonTooltip("RefreshAnalysisButton", L("Tooltip.RefreshAnalysis"));
         SetButtonTooltip("ClearProblemsButton", L("Tooltip.ClearProblems"));
+        SetButtonTooltip("CopyProblemsButton", L("Tooltip.CopyProblems"));
 
         // ── Problems panel ───────────────────────────────────────
         var noProblems = this.FindControl<TextBlock>("NoProblemsText");
         if (noProblems != null) noProblems.Text = L("Problems.NoProblems");
+
+        var errLabel = this.FindControl<TextBlock>("ProblemsLabelErrorsText");
+        if (errLabel != null) errLabel.Text = L("Problems.LabelErrors");
+        var warnLabel = this.FindControl<TextBlock>("ProblemsLabelWarningsText");
+        if (warnLabel != null) warnLabel.Text = L("Problems.LabelWarnings");
+        var msgLabel = this.FindControl<TextBlock>("ProblemsLabelMessagesText");
+        if (msgLabel != null) msgLabel.Text = L("Problems.LabelMessages");
+        var tabAll = this.FindControl<TextBlock>("ProblemsTabAllText");
+        if (tabAll != null) tabAll.Text = L("Problems.TabAll");
+        var tabCurrent = this.FindControl<TextBlock>("ProblemsTabCurrentFileText");
+        if (tabCurrent != null) tabCurrent.Text = L("Problems.TabCurrentFile");
 
 
         // ── Build/Run output ─────────────────────────────────────
@@ -4159,23 +4171,34 @@ ExecuteMenuAction(string action)
         var tabCurrent = this.FindControl<Button>("ProblemsTabCurrentFile");
         var label = this.FindControl<TextBlock>("ProblemsCurrentFileLabel");
 
+        var activeColor   = Color.Parse("#FF3A2E5C");
+        var activeFg      = Color.Parse("#FFF0E8F4");
+        var activeBorder  = Color.Parse("#FFFFC09F"); // AccentOrangeBrush
+        var inactiveFg    = Color.Parse("#FF9E90B0");
+
         if (tabAll != null)
         {
-            tabAll.Background = _problemsShowAll
-                ? new SolidColorBrush(Color.Parse("#FF3E3050"))
+            tabAll.Background   = _problemsShowAll
+                ? new SolidColorBrush(activeColor)
                 : Brushes.Transparent;
-            tabAll.Foreground = _problemsShowAll
-                ? new SolidColorBrush(Color.Parse("#FFF0E8F4"))
-                : new SolidColorBrush(Color.Parse("#FF9E90B0"));
+            tabAll.Foreground   = _problemsShowAll
+                ? new SolidColorBrush(activeFg)
+                : new SolidColorBrush(inactiveFg);
+            tabAll.BorderBrush  = _problemsShowAll
+                ? new SolidColorBrush(activeBorder)
+                : Brushes.Transparent;
         }
         if (tabCurrent != null)
         {
-            tabCurrent.Background = !_problemsShowAll
-                ? new SolidColorBrush(Color.Parse("#FF3E3050"))
+            tabCurrent.Background  = !_problemsShowAll
+                ? new SolidColorBrush(activeColor)
                 : Brushes.Transparent;
-            tabCurrent.Foreground = !_problemsShowAll
-                ? new SolidColorBrush(Color.Parse("#FFF0E8F4"))
-                : new SolidColorBrush(Color.Parse("#FF9E90B0"));
+            tabCurrent.Foreground  = !_problemsShowAll
+                ? new SolidColorBrush(activeFg)
+                : new SolidColorBrush(inactiveFg);
+            tabCurrent.BorderBrush = !_problemsShowAll
+                ? new SolidColorBrush(activeBorder)
+                : Brushes.Transparent;
         }
         if (label != null)
         {

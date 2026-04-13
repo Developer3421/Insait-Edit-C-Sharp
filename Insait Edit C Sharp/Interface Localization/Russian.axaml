@@ -58,10 +58,16 @@
     <x:String x:Key="Tooltip.HidePanel">Скрыть (Esc)</x:String>
     <x:String x:Key="Tooltip.RefreshAnalysis">Обновить анализ</x:String>
     <x:String x:Key="Tooltip.ClearProblems">Очистить проблемы</x:String>
+    <x:String x:Key="Tooltip.CopyProblems">Скопировать все ошибки в буфер обмена</x:String>
     <x:String x:Key="Problems.NoProblems">Проблем не обнаружено. Нажмите «Анализ» для проверки.</x:String>
     <x:String x:Key="Problems.Errors">{0} ошибок</x:String>
     <x:String x:Key="Problems.Warnings">{0} предупреждений</x:String>
     <x:String x:Key="Problems.Messages">0 сообщений</x:String>
+    <x:String x:Key="Problems.TabAll">Все</x:String>
+    <x:String x:Key="Problems.TabCurrentFile">Текущий файл</x:String>
+    <x:String x:Key="Problems.LabelErrors">ошибок</x:String>
+    <x:String x:Key="Problems.LabelWarnings">предупреждений</x:String>
+    <x:String x:Key="Problems.LabelMessages">сообщений</x:String>
     <x:String x:Key="Output.BuildPlaceholder">Результат сборки появится здесь...</x:String>
     <x:String x:Key="Output.RunPlaceholder">Результат запуска появится здесь...</x:String>
     <x:String x:Key="Status.GitBranch">Ветка Git</x:String>

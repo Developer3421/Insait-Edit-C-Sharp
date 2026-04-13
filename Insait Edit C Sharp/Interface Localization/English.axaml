@@ -58,10 +58,16 @@
     <x:String x:Key="Tooltip.HidePanel">Hide (Esc)</x:String>
     <x:String x:Key="Tooltip.RefreshAnalysis">Refresh Analysis</x:String>
     <x:String x:Key="Tooltip.ClearProblems">Clear Problems</x:String>
+    <x:String x:Key="Tooltip.CopyProblems">Copy all errors to clipboard</x:String>
     <x:String x:Key="Problems.NoProblems">No problems detected. Press Analyze to check for issues.</x:String>
     <x:String x:Key="Problems.Errors">{0} Errors</x:String>
     <x:String x:Key="Problems.Warnings">{0} Warnings</x:String>
     <x:String x:Key="Problems.Messages">0 Messages</x:String>
+    <x:String x:Key="Problems.TabAll">All</x:String>
+    <x:String x:Key="Problems.TabCurrentFile">Current File</x:String>
+    <x:String x:Key="Problems.LabelErrors">Errors</x:String>
+    <x:String x:Key="Problems.LabelWarnings">Warnings</x:String>
+    <x:String x:Key="Problems.LabelMessages">Messages</x:String>
     <x:String x:Key="Output.BuildPlaceholder">Build output will appear here...</x:String>
     <x:String x:Key="Output.RunPlaceholder">Run output will appear here...</x:String>
     <x:String x:Key="Status.GitBranch">Git Branch</x:String>

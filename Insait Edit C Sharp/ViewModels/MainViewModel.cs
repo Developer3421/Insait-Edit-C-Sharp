@@ -1373,6 +1373,28 @@ public class DiagnosticItem
     };
 
     /// <summary>
+    /// Semi-transparent background color for severity badge
+    /// </summary>
+    public string SeverityBgColor => Severity switch
+    {
+        DiagnosticSeverity.Error => "#22F38BA8",
+        DiagnosticSeverity.Warning => "#22F5A623",
+        DiagnosticSeverity.Info => "#2289B4FA",
+        _ => "#22A6E3A1"
+    };
+
+    /// <summary>
+    /// Border color for severity left bar
+    /// </summary>
+    public string SeverityBarColor => Severity switch
+    {
+        DiagnosticSeverity.Error => "#CFF38BA8",
+        DiagnosticSeverity.Warning => "#CFF5A623",
+        DiagnosticSeverity.Info => "#CF89B4FA",
+        _ => "#CFA6E3A1"
+    };
+
+    /// <summary>
     /// Location display string
     /// </summary>
     public string Location => $"{FileName}({Line},{Column})";

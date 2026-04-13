@@ -58,10 +58,16 @@
     <x:String x:Key="Tooltip.HidePanel">Ausblenden (Esc)</x:String>
     <x:String x:Key="Tooltip.RefreshAnalysis">Analyse aktualisieren</x:String>
     <x:String x:Key="Tooltip.ClearProblems">Probleme löschen</x:String>
+    <x:String x:Key="Tooltip.CopyProblems">Alle Fehler in die Zwischenablage kopieren</x:String>
     <x:String x:Key="Problems.NoProblems">Keine Probleme erkannt. Drücken Sie Analysieren, um zu prüfen.</x:String>
     <x:String x:Key="Problems.Errors">{0} Fehler</x:String>
     <x:String x:Key="Problems.Warnings">{0} Warnungen</x:String>
     <x:String x:Key="Problems.Messages">0 Nachrichten</x:String>
+    <x:String x:Key="Problems.TabAll">Alle</x:String>
+    <x:String x:Key="Problems.TabCurrentFile">Aktuelle Datei</x:String>
+    <x:String x:Key="Problems.LabelErrors">Fehler</x:String>
+    <x:String x:Key="Problems.LabelWarnings">Warnungen</x:String>
+    <x:String x:Key="Problems.LabelMessages">Nachrichten</x:String>
     <x:String x:Key="Output.BuildPlaceholder">Build-Ausgabe wird hier angezeigt...</x:String>
     <x:String x:Key="Output.RunPlaceholder">Ausführungsausgabe wird hier angezeigt...</x:String>
     <x:String x:Key="Status.GitBranch">Git-Branch</x:String>

@@ -57,10 +57,16 @@
     <x:String x:Key="Tooltip.HidePanel">Gizle (Esc)</x:String>
     <x:String x:Key="Tooltip.RefreshAnalysis">Analizi Yenile</x:String>
     <x:String x:Key="Tooltip.ClearProblems">Sorunları Temizle</x:String>
+    <x:String x:Key="Tooltip.CopyProblems">Tüm hataları panoya kopyala</x:String>
     <x:String x:Key="Problems.NoProblems">Sorun bulunamadı. Kontrol için «Analiz» düğmesine basın.</x:String>
     <x:String x:Key="Problems.Errors">{0} Hata</x:String>
     <x:String x:Key="Problems.Warnings">{0} Uyarı</x:String>
     <x:String x:Key="Problems.Messages">0 Mesaj</x:String>
+    <x:String x:Key="Problems.TabAll">Tümü</x:String>
+    <x:String x:Key="Problems.TabCurrentFile">Geçerli Dosya</x:String>
+    <x:String x:Key="Problems.LabelErrors">Hata</x:String>
+    <x:String x:Key="Problems.LabelWarnings">Uyarı</x:String>
+    <x:String x:Key="Problems.LabelMessages">Mesaj</x:String>
     <x:String x:Key="Output.BuildPlaceholder">Derleme çıktısı burada görüntülenecek...</x:String>
     <x:String x:Key="Output.RunPlaceholder">Çalıştırma çıktısı burada görüntülenecek...</x:String>
     <x:String x:Key="Status.GitBranch">Git Dalı</x:String>

@@ -1788,67 +1788,128 @@
                             <!-- Problems Panel (hidden by default) -->
                             <Border Name="ProblemsPanel" Background="#FF16122A" IsVisible="False">
                                 <Grid RowDefinitions="Auto,Auto,*">
-                                    <!-- Header row with counts and actions -->
-                                    <Border Grid.Row="0" Padding="8,4"
+                                    <!-- Header row with counts and actions — styled colored badges -->
+                                    <Border Grid.Row="0" Padding="10,6"
                                             BorderBrush="#FF4A3878" BorderThickness="0,0,0,1">
                                         <Border.Background>
                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                                <GradientStop Color="#FF221C3C" Offset="0"/>
-                                                <GradientStop Color="#FF2A2248" Offset="1"/>
+                                                <GradientStop Color="#FF1D1536" Offset="0"/>
+                                                <GradientStop Color="#FF26204A" Offset="1"/>
                                             </LinearGradientBrush>
                                         </Border.Background>
                                         <Grid ColumnDefinitions="Auto,*,Auto">
-                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="🔴" FontSize="11" FontFamily="Segoe UI Emoji"/>
-                                                    <TextBlock x:CompileBindings="False" Text="{Binding ErrorsCount, StringFormat='{}{0} Errors'}" FontSize="11" Foreground="#FFF38BA8" Name="ProblemsErrorsText"/>
-                                                </StackPanel>
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="🟡" FontSize="11" FontFamily="Segoe UI Emoji"/>
-                                                    <TextBlock x:CompileBindings="False" Text="{Binding WarningsCount, StringFormat='{}{0} Warnings'}" FontSize="11" Foreground="#FFF5A623" Name="ProblemsWarningsText"/>
-                                                </StackPanel>
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <TextBlock Text="🔵" FontSize="11" FontFamily="Segoe UI Emoji"/>
-                                                    <TextBlock x:CompileBindings="False" Text="{Binding MessagesCount, StringFormat='{}{0} Messages'}" FontSize="11" Foreground="{StaticResource AppTextMutedBrush}" Name="ProblemsMessagesText"/>
-                                                </StackPanel>
+                                            <!-- Colored stat badges -->
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <!-- Errors badge -->
+                                                <Border Background="#1FF38BA8" CornerRadius="6" Padding="8,4"
+                                                        BorderBrush="#55F38BA8" BorderThickness="1">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                        <TextBlock Text="🔴" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                                        <TextBlock x:CompileBindings="False"
+                                                                   Text="{Binding ErrorsCount}"
+                                                                   FontSize="14" FontWeight="Bold"
+                                                                   Foreground="#FFF38BA8" VerticalAlignment="Center"
+                                                                   Name="ProblemsErrorsText"/>
+                                                        <TextBlock Name="ProblemsLabelErrorsText"
+                                                                   FontSize="10" Foreground="#88F38BA8" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                <!-- Warnings badge -->
+                                                <Border Background="#1FF5A623" CornerRadius="6" Padding="8,4"
+                                                        BorderBrush="#55F5A623" BorderThickness="1">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                        <TextBlock Text="🟡" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                                        <TextBlock x:CompileBindings="False"
+                                                                   Text="{Binding WarningsCount}"
+                                                                   FontSize="14" FontWeight="Bold"
+                                                                   Foreground="#FFF5A623" VerticalAlignment="Center"
+                                                                   Name="ProblemsWarningsText"/>
+                                                        <TextBlock Name="ProblemsLabelWarningsText"
+                                                                   FontSize="10" Foreground="#88F5A623" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                                <!-- Messages badge -->
+                                                <Border Background="#1F89B4FA" CornerRadius="6" Padding="8,4"
+                                                        BorderBrush="#5589B4FA" BorderThickness="1">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                        <TextBlock Text="🔵" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                                        <TextBlock x:CompileBindings="False"
+                                                                   Text="{Binding MessagesCount}"
+                                                                   FontSize="14" FontWeight="Bold"
+                                                                   Foreground="{StaticResource AccentBlueBrush}" VerticalAlignment="Center"
+                                                                   Name="ProblemsMessagesText"/>
+                                                        <TextBlock Name="ProblemsLabelMessagesText"
+                                                                   FontSize="10" Foreground="#8889B4FA" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
-                                                <Button Classes="tool-action-button" ToolTip.Tip="Copy all errors to clipboard" Name="CopyProblemsButton" Click="CopyProblems_Click">
+                                            <!-- Action buttons -->
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                <Button Classes="tool-action-button" ToolTip.Tip="{DynamicResource Tooltip.CopyProblems}" Name="CopyProblemsButton" Click="CopyProblems_Click">
                                                     <TextBlock Text="📋" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
-                                                <Button Classes="tool-action-button" ToolTip.Tip="Refresh Analysis" Name="RefreshAnalysisButton" Click="RefreshAnalysis_Click">
+                                                <Button Classes="tool-action-button" ToolTip.Tip="{DynamicResource Tooltip.RefreshAnalysis}" Name="RefreshAnalysisButton" Click="RefreshAnalysis_Click">
                                                     <TextBlock Text="🔄" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
-                                                <Button Classes="tool-action-button" ToolTip.Tip="Clear Problems" Name="ClearProblemsButton" Click="ClearProblems_Click">
+                                                <Button Classes="tool-action-button" ToolTip.Tip="{DynamicResource Tooltip.ClearProblems}" Name="ClearProblemsButton" Click="ClearProblems_Click">
                                                     <TextBlock Text="🗑️" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
-                                    
-                                    <!-- Tab bar: All Errors / Current File -->
-                                    <Border Grid.Row="1" Padding="8,2"
+
+                                    <!-- Tab bar: All / Current File — with colored emoji + localized labels -->
+                                    <Border Grid.Row="1" Padding="8,4"
                                             BorderBrush="#FF4A3878" BorderThickness="0,0,0,1">
                                         <Border.Background>
                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                                <GradientStop Color="#FF1E1838" Offset="0"/>
-                                                <GradientStop Color="#FF261E42" Offset="1"/>
+                                                <GradientStop Color="#FF1A1530" Offset="0"/>
+                                                <GradientStop Color="#FF211A3C" Offset="1"/>
                                             </LinearGradientBrush>
                                         </Border.Background>
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <Button Name="ProblemsTabAll" Content="📂 All Errors" FontSize="11"
-                                                    Height="24" Padding="10,2"
-                                                    Background="#FF3A2E5C" Foreground="{StaticResource AppTextBrush}"
-                                                    BorderThickness="0" CornerRadius="4"
-                                                    Click="ProblemsTabAll_Click"/>
-                                            <Button Name="ProblemsTabCurrentFile" Content="📄 Current File" FontSize="11"
-                                                    Height="24" Padding="10,2"
-                                                    Background="Transparent" Foreground="{StaticResource AppTextMutedBrush}"
-                                                    BorderThickness="0" CornerRadius="4"
-                                                    Click="ProblemsTabCurrentFile_Click"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <!-- All tab (active by default) -->
+                                            <Button Name="ProblemsTabAll"
+                                                    Height="26" Padding="10,2"
+                                                    Background="#FF3A2E5C"
+                                                    Foreground="{StaticResource AppTextBrush}"
+                                                    BorderThickness="0,0,0,2"
+                                                    BorderBrush="{StaticResource AccentOrangeBrush}"
+                                                    CornerRadius="4,4,0,0" FontSize="11"
+                                                    Cursor="Hand"
+                                                    Click="ProblemsTabAll_Click">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <TextBlock Text="📋" FontSize="12"
+                                                               FontFamily="Segoe UI Emoji"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Name="ProblemsTabAllText"
+                                                               FontWeight="SemiBold"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <!-- Current File tab (inactive by default) -->
+                                            <Button Name="ProblemsTabCurrentFile"
+                                                    Height="26" Padding="10,2"
+                                                    Background="Transparent"
+                                                    Foreground="{StaticResource AppTextMutedBrush}"
+                                                    BorderThickness="0,0,0,2"
+                                                    BorderBrush="Transparent"
+                                                    CornerRadius="4,4,0,0" FontSize="11"
+                                                    Cursor="Hand"
+                                                    Click="ProblemsTabCurrentFile_Click">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <TextBlock Text="📄" FontSize="12"
+                                                               FontFamily="Segoe UI Emoji"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Name="ProblemsTabCurrentFileText"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <!-- Current file name label -->
                                             <TextBlock Name="ProblemsCurrentFileLabel" Text="" FontSize="10"
                                                        Foreground="{StaticResource AppTextMutedBrush}"
-                                                       VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                       VerticalAlignment="Center" Margin="4,0,0,0"
+                                                       FontStyle="Italic" Opacity="0.75"/>
                                         </StackPanel>
                                     </Border>
                                     
@@ -1858,58 +1919,105 @@
                                              SelectionChanged="ProblemsListBox_SelectionChanged">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate x:DataType="vm:DiagnosticItem" x:CompileBindings="False">
-                                                <Grid ColumnDefinitions="24,Auto,*,Auto,Auto" Margin="4,2" Background="Transparent">
-                                                    <!-- Severity Icon -->
-                                                    <TextBlock Grid.Column="0" Text="{Binding SeverityIcon}" FontSize="12" VerticalAlignment="Center"/>
-                                                    <!-- Code -->
-                                                    <Border Grid.Column="1" Background="#30808080" CornerRadius="3" Padding="4,1" Margin="4,0" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Code}" FontSize="10" Foreground="#FF89B4FA" FontFamily="Consolas"/>
-                                                    </Border>
-                                                    <!-- Message -->
-                                                    <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="12" 
-                                                               Foreground="{StaticResource AppTextBrush}" 
-                                                               VerticalAlignment="Center"
-                                                               TextTrimming="CharacterEllipsis"
-                                                               Margin="4,0"/>
-                                                    <!-- Location -->
-                                                    <TextBlock Grid.Column="3" Text="{Binding Location}" FontSize="11" 
-                                                               Foreground="{StaticResource AppTextMutedBrush}" 
-                                                               VerticalAlignment="Center"
-                                                               FontFamily="Consolas"
-                                                               Margin="8,0,4,0"/>
-                                                    <!-- Copy single error button -->
-                                                    <Button Grid.Column="4" FontSize="11"
-                                                            Width="22" Height="20" Padding="0"
-                                                            Background="Transparent"
-                                                            BorderThickness="0" CornerRadius="3"
-                                                            ToolTip.Tip="Copy error"
-                                                            Click="CopySingleProblem_Click">
-                                                        <TextBlock Text="📋" FontSize="11" FontFamily="Segoe UI Emoji"/>
-                                                    </Button>
-                                                </Grid>
+                                                <Border Margin="2,1" CornerRadius="5" Padding="0" ClipToBounds="True">
+                                                    <Border.Background>
+                                                        <SolidColorBrush Color="#08FFFFFF"/>
+                                                    </Border.Background>
+                                                    <Grid ColumnDefinitions="3,26,Auto,*,Auto,Auto">
+                                                        <!-- Severity left accent bar -->
+                                                        <Border Grid.Column="0" CornerRadius="3,0,0,3"
+                                                                Background="{Binding SeverityBarColor}"/>
+                                                        <!-- Severity icon badge -->
+                                                        <Border Grid.Column="1" Width="20" Height="20" CornerRadius="5"
+                                                                Background="{Binding SeverityBgColor}"
+                                                                BorderBrush="{Binding SeverityColor}" BorderThickness="1"
+                                                                VerticalAlignment="Center" Margin="3,0">
+                                                            <TextBlock Text="{Binding SeverityIcon}" FontSize="10"
+                                                                       FontFamily="Segoe UI Emoji"
+                                                                       Foreground="{Binding SeverityColor}"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <!-- Code badge -->
+                                                        <Border Grid.Column="2" CornerRadius="3" Padding="4,1"
+                                                                Margin="0,0,4,0" VerticalAlignment="Center">
+                                                            <Border.Background>
+                                                                <SolidColorBrush Color="#3089B4FA"/>
+                                                            </Border.Background>
+                                                            <TextBlock Text="{Binding Code}" FontSize="10"
+                                                                       Foreground="#FF89B4FA" FontFamily="Consolas"/>
+                                                        </Border>
+                                                        <!-- Message -->
+                                                        <TextBlock Grid.Column="3" Text="{Binding Message}" FontSize="12"
+                                                                   Foreground="{StaticResource AppTextBrush}"
+                                                                   VerticalAlignment="Center"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   Margin="2,0"/>
+                                                        <!-- Location -->
+                                                        <TextBlock Grid.Column="4" Text="{Binding Location}" FontSize="10"
+                                                                   Foreground="{StaticResource AppTextMutedBrush}"
+                                                                   VerticalAlignment="Center"
+                                                                   FontFamily="Consolas"
+                                                                   Margin="6,0,4,0" Opacity="0.7"/>
+                                                        <!-- Copy single item button -->
+                                                        <Button Grid.Column="5" Width="22" Height="20" Padding="0"
+                                                                Background="Transparent" BorderThickness="0" CornerRadius="3"
+                                                                ToolTip.Tip="Copy error"
+                                                                Click="CopySingleProblem_Click">
+                                                            <TextBlock Text="📋" FontSize="10" FontFamily="Segoe UI Emoji"/>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
                                         <ListBox.Styles>
                                             <Style Selector="ListBoxItem">
-                                                <Setter Property="Padding" Value="0"/>
-                                                <Setter Property="MinHeight" Value="24"/>
+                                                <Setter Property="Padding" Value="2,1"/>
+                                                <Setter Property="MinHeight" Value="26"/>
                                                 <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="CornerRadius" Value="5"/>
                                             </Style>
-                                            <Style Selector="ListBoxItem:pointerover">
-                                                <Setter Property="Background" Value="#15FFDAB0"/>
+                                            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="#12DCC4FF"/>
                                             </Style>
-                                            <Style Selector="ListBoxItem:selected">
-                                                <Setter Property="Background" Value="#30FFC09F"/>
+                                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="#20CBA6F7"/>
+                                            </Style>
+                                            <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
+                                                <Setter Property="Background" Value="#28CBA6F7"/>
                                             </Style>
                                         </ListBox.Styles>
                                     </ListBox>
-                                    <!-- Empty state -->
-                                    <TextBlock Grid.Row="2" Text="No problems detected. Press Analyze to check for issues." 
-                                               FontSize="12" Foreground="{StaticResource AppTextMutedBrush}" 
-                                               Margin="16,12" FontStyle="Italic"
-                                                 IsVisible="{Binding !HasProblems}"
-                                                 x:CompileBindings="False"
-                                               Name="NoProblemsText"/>
+                                    <!-- Empty state — styled centered placeholder -->
+                                    <Border Grid.Row="2"
+                                            IsVisible="{Binding !HasProblems, FallbackValue=True}"
+                                            x:CompileBindings="False"
+                                            Name="NoProblemsContainer">
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    Spacing="10">
+                                            <Border Width="52" Height="52" CornerRadius="14"
+                                                    HorizontalAlignment="Center">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                        <GradientStop Color="#FF2A204A" Offset="0"/>
+                                                        <GradientStop Color="#FF1E1838" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <TextBlock Text="✅" FontSize="24"
+                                                           FontFamily="Segoe UI Emoji, Segoe UI, Arial"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+                                                        <TextBlock Name="NoProblemsText"
+                                                                   FontSize="12" FontStyle="Italic"
+                                                       Foreground="{StaticResource AppTextMutedBrush}"
+                                                       HorizontalAlignment="Center"
+                                                       TextAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="280"
+                                                       Opacity="0.75"/>
+                                        </StackPanel>
+                                    </Border>
                                 </Grid>
                             </Border>
                             
