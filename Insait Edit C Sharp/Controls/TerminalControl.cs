@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp.Controls;
 
@@ -28,8 +29,12 @@ public class TerminalControl : UserControl
     private readonly ConcurrentQueue<string> _inputHistory = new();
     private int _historyIndex = -1;
     private bool _isRunning;
-    private bool _isGitHubCliMode;
     private string _workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+    // .NET project auto-discovery: pending project selection state
+    private List<string>? _pendingProjectSelection;
+    private string? _pendingDotnetSubcommand;
+    private string? _pendingDotnetArgs;
     
     private TextBox? _inputTextBox;
     private AnsiGridTerminalControl? _ansiTerminal;
@@ -107,14 +112,7 @@ public class TerminalControl : UserControl
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                if (_isGitHubCliMode)
-                {
-                    _promptLabel.Text = $"🐙 gh [{_workingDirectory}]> ";
-                }
-                else
-                {
-                    _promptLabel.Text = $"{_workingDirectory}> ";
-                }
+                _promptLabel.Text = $"{_workingDirectory}> ";
             });
         }
     }
@@ -205,8 +203,8 @@ public class TerminalControl : UserControl
         Content = grid;
         
         // Show welcome message
-        AppendOutput($"Insait Terminal [Version 1.0.0]{Environment.NewLine}");
-        AppendOutput($"(c) Insait Edit. Type 'help' for commands.{Environment.NewLine}{Environment.NewLine}");
+        AppendOutput($"{L("Terminal.Welcome.Version")}{Environment.NewLine}");
+        AppendOutput($"{L("Terminal.Welcome.Hint")}{Environment.NewLine}{Environment.NewLine}");
     }
     
     private void OnInputKeyDown(object? sender, KeyEventArgs e)
@@ -263,23 +261,22 @@ public class TerminalControl : UserControl
     {
         if (string.IsNullOrWhiteSpace(command)) return;
 
+        // Handle pending .NET project selection
+        if (_pendingProjectSelection != null)
+        {
+            HandleProjectSelection(command.Trim());
+            return;
+        }
+
         // Add to history
         _inputHistory.Enqueue(command);
         _historyIndex = -1;
 
         // Show command in output
-        var prompt = _isGitHubCliMode ? "gh> " : "> ";
-        AppendOutput($"{prompt}{command}{Environment.NewLine}", Color.Parse("#569CD6"));
+        AppendOutput($"> {command}{Environment.NewLine}", Color.Parse("#569CD6"));
 
         // Handle built-in commands
         if (HandleBuiltInCommand(command)) return;
-        
-        // GitHub CLI mode - wrap commands with gh prefix
-        if (_isGitHubCliMode)
-        {
-            _ = ExecuteGitHubCliCommandAsync(command);
-            return;
-        }
 
         // Execute external command
         if (_isRunning)
@@ -326,19 +323,12 @@ public class TerminalControl : UserControl
             case "powershell":
             case "ps":
                 ShellType = TerminalShellType.PowerShell;
-                AppendOutput($"Switched to PowerShell mode.{Environment.NewLine}", Color.Parse("#4EC9B0"));
+                AppendOutput($"{L("Terminal.Msg.SwitchedToPS")}{Environment.NewLine}", Color.Parse("#4EC9B0"));
                 return true;
                 
             case "cmd":
                 ShellType = TerminalShellType.Cmd;
-                AppendOutput($"Switched to CMD mode.{Environment.NewLine}", Color.Parse("#4EC9B0"));
-                return true;
-            
-            case "github":
-            case "ghshell":
-                // Start GitHub CLI shell mode
-                ShellType = TerminalShellType.GitHubCli;
-                _ = StartGitHubCliShellAsync();
+                AppendOutput($"{L("Terminal.Msg.SwitchedToCmd")}{Environment.NewLine}", Color.Parse("#4EC9B0"));
                 return true;
             
             case "copilot":
@@ -356,15 +346,6 @@ public class TerminalControl : UserControl
                 return true;
                 
             case "exit":
-                if (_isGitHubCliMode)
-                {
-                    _isGitHubCliMode = false;
-                    _isRunning = false;
-                    UpdatePrompt();
-                    AppendOutput($"Exited GitHub CLI shell.{Environment.NewLine}", Color.Parse("#4EC9B0"));
-                    ProcessExited?.Invoke(this, EventArgs.Empty);
-                    return true;
-                }
                 StopCurrentProcess();
                 return true;
                 
@@ -402,7 +383,7 @@ public class TerminalControl : UserControl
                     }
                     else
                     {
-                        AppendOutput($"The system cannot find the path specified.{Environment.NewLine}", Color.Parse("#F44747"));
+                        AppendOutput($"{L("Terminal.Msg.PathNotFound")}{Environment.NewLine}", Color.Parse("#F44747"));
                     }
                     return true;
                 }
@@ -413,6 +394,13 @@ public class TerminalControl : UserControl
                     return true;
                 }
                 return false; // Let the running process handle it
+            
+            case "dotnet":
+            {
+                var dotnetArgs = parts.Length > 1 ? parts[1] : "";
+                _ = HandleDotnetBuiltInAsync(dotnetArgs);
+                return true;
+            }
                 
             default:
                 return false;
@@ -421,188 +409,225 @@ public class TerminalControl : UserControl
     
     private void ShowHelp()
     {
-        var help = @"
-╔══════════════════════════════════════════════════════════════╗
-║                    INSAIT TERMINAL HELP                       ║
-╠══════════════════════════════════════════════════════════════╣
-║  Built-in Commands:                                           ║
-║  ─────────────────                                            ║
-║  cls, clear    - Clear terminal output                        ║
-║  help          - Show this help                               ║
-║  admin         - Start new administrator shell                ║
-║  powershell,ps - Switch to PowerShell mode                    ║
-║  cmd           - Switch to CMD mode                           ║
-║  github, gh    - Switch to GitHub CLI mode                    ║
-║  exit          - Stop current process/mode                    ║
-║  pwd           - Print working directory                      ║
-║                                                               ║
-║  Keyboard Shortcuts:                                          ║
-║  ──────────────────                                           ║
-║  ↑/↓           - Navigate command history                     ║
-║  Ctrl+C        - Stop current process                         ║
-║  Enter         - Execute command                              ║
-╚══════════════════════════════════════════════════════════════╝
+        var title    = L("Terminal.Help.Title");
+        var builtin  = L("Terminal.Help.BuiltinSection");
+        var dotnet   = L("Terminal.Help.DotnetSection");
+        var shortcuts= L("Terminal.Help.ShortcutsSection");
+        var tip1     = L("Terminal.Help.DotnetTip");
+        var tip2     = L("Terminal.Help.DotnetTip2");
+
+        var help = $@"
+╔══════════════════════════════════════════════════════════════════╗
+║  {title,-64}║
+╠══════════════════════════════════════════════════════════════════╣
+║  {builtin,-64}║
+║  ─────────────────                                                ║
+║  cls, clear    - Clear terminal output                            ║
+║  help          - Show this help                                   ║
+║  admin         - Start new administrator shell                    ║
+║  powershell,ps - Switch to PowerShell mode                        ║
+║  cmd           - Switch to CMD mode                               ║
+║  exit          - Stop current process                             ║
+║  pwd           - Print working directory                          ║
+║  cd <path>     - Change directory                                 ║
+║  terminal, wt  - Open external Windows Terminal                   ║
+║  copilot       - Open GitHub Copilot CLI in external terminal     ║
+║                                                                   ║
+║  {dotnet,-64}║
+║  ────────────────────────────────────────                         ║
+║  dotnet run              - Build & run project                    ║
+║  dotnet run --config R   - Run with Release config                ║
+║  dotnet build            - Build project                          ║
+║  dotnet publish          - Publish project                        ║
+║  dotnet test             - Run tests                              ║
+║  dotnet clean            - Clean build output                     ║
+║  dotnet restore          - Restore NuGet packages                 ║
+║  dotnet watch run        - Run with hot reload                    ║
+║  dotnet new <template>   - Create new project                     ║
+║  dotnet --version        - Show .NET version                      ║
+║  dotnet --info           - Show .NET info                         ║
+║                                                                   ║
+║  {tip1,-64}║
+║  {tip2,-64}║
+║                                                                   ║
+║  {shortcuts,-64}║
+║  ──────────────────                                               ║
+║  ↑/↓           - Navigate command history                         ║
+║  Ctrl+C        - Stop current process                             ║
+║  Enter         - Execute command                                  ║
+╚══════════════════════════════════════════════════════════════════╝
 
 ";
-        if (_isGitHubCliMode)
-        {
-            help += @"
-╔══════════════════════════════════════════════════════════════╗
-║                  GITHUB CLI SHELL COMMANDS                    ║
-╠══════════════════════════════════════════════════════════════╣
-║  Repository:    repo create|clone|view|list|fork|delete       ║
-║  Pull Requests: pr create|list|view|checkout|merge|close      ║
-║  Issues:        issue create|list|view|close|reopen|edit      ║
-║  Workflows:     workflow list|view|run|enable|disable         ║
-║  Releases:      release create|list|view|download|delete      ║
-║  Gists:         gist create|list|view|edit|delete|clone       ║
-║  Authentication: auth login|logout|status|refresh             ║
-║  Other:         browse|codespace|search|api|copilot           ║
-║                                                               ║
-║  💡 Commands run with 'gh' prefix automatically              ║
-║  Example: Type 'pr list' instead of 'gh pr list'             ║
-╚══════════════════════════════════════════════════════════════╝
-
-";
-        }
         AppendOutput(help, Color.Parse("#4EC9B0"));
     }
     
+    // ─────────────────────────────────────────────────────────
+    //  .NET Command handling with auto project discovery
+    // ─────────────────────────────────────────────────────────
+
     /// <summary>
-    /// Execute a GitHub CLI command
+    /// Commands that need project auto-discovery (when no --project flag given).
     /// </summary>
-    private async Task ExecuteGitHubCliCommandAsync(string command)
+    private static readonly HashSet<string> _dotnetProjectCommands =
+        new(StringComparer.OrdinalIgnoreCase) { "run", "build", "publish", "test", "clean", "watch" };
+
+    private async Task HandleDotnetBuiltInAsync(string dotnetArgs)
     {
+        var argParts = dotnetArgs.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        var subCmd = argParts.Length > 0 ? argParts[0].ToLowerInvariant() : "";
+        var extraArgs = argParts.Length > 1 ? argParts[1] : "";
+
+        // For non-project commands (new, list, nuget, --version, --info, etc.) — run as-is
+        if (!_dotnetProjectCommands.Contains(subCmd) || string.IsNullOrEmpty(subCmd))
+        {
+            var rawCmd = string.IsNullOrWhiteSpace(dotnetArgs)
+                ? "dotnet --help"
+                : $"dotnet {dotnetArgs}";
+            AppendOutput(string.Format(L("Terminal.Dotnet.Running"), rawCmd) + Environment.NewLine, Color.Parse("#858585"));
+            await ExecuteExternalCommandAsync(rawCmd);
+            return;
+        }
+
+        // If the user already specified --project, just run
+        if (extraArgs.Contains("--project", StringComparison.OrdinalIgnoreCase) ||
+            extraArgs.Contains("-p ", StringComparison.OrdinalIgnoreCase))
+        {
+            var cmd = $"dotnet {dotnetArgs}";
+            AppendOutput(string.Format(L("Terminal.Dotnet.Running"), cmd) + Environment.NewLine, Color.Parse("#858585"));
+            await ExecuteExternalCommandAsync(cmd);
+            return;
+        }
+
+        // Auto-discover projects
+        AppendOutput(string.Format(L("Terminal.Dotnet.Searching"), _workingDirectory) + Environment.NewLine, Color.Parse("#858585"));
+        var projects = FindDotnetProjects(_workingDirectory);
+
+        if (projects.Count == 0)
+        {
+            AppendOutput(string.Format(L("Terminal.Dotnet.NoneFound"), _workingDirectory) + Environment.NewLine, Color.Parse("#F44747"));
+            AppendOutput($"{L("Terminal.Dotnet.NoneFoundHint")}{Environment.NewLine}", Color.Parse("#858585"));
+            return;
+        }
+
+        if (projects.Count == 1)
+        {
+            var builtCmd = BuildDotnetCommand(subCmd, extraArgs, projects[0]);
+            AppendOutput(string.Format(L("Terminal.Dotnet.Project"), Path.GetFileName(projects[0])) + Environment.NewLine, Color.Parse("#4EC9B0"));
+            AppendOutput(string.Format(L("Terminal.Dotnet.Running"), builtCmd) + Environment.NewLine, Color.Parse("#858585"));
+            await ExecuteExternalCommandAsync(builtCmd);
+            return;
+        }
+
+        // Multiple projects — ask user
+        AppendOutput($"{Environment.NewLine}{string.Format(L("Terminal.Dotnet.MultipleFound"), projects.Count)}{Environment.NewLine}", Color.Parse("#DCDCAA"));
+        for (int i = 0; i < projects.Count; i++)
+        {
+            AppendOutput($"  [{i + 1}] {Path.GetFileName(projects[i])}{Environment.NewLine}", Color.Parse("#9CDCFE"));
+            var dir = Path.GetDirectoryName(projects[i]);
+            if (!string.IsNullOrEmpty(dir))
+                AppendOutput($"      {dir}{Environment.NewLine}", Color.Parse("#858585"));
+        }
+        AppendOutput($"  [0] {L("Terminal.Msg.Cancelled").TrimEnd('.')}{Environment.NewLine}", Color.Parse("#858585"));
+        AppendOutput(string.Format(L("Terminal.Dotnet.EnterNumber"), projects.Count), Color.Parse("#569CD6"));
+
+        _pendingProjectSelection = projects;
+        _pendingDotnetSubcommand = subCmd;
+        _pendingDotnetArgs = extraArgs;
+    }
+
+    /// <summary>
+    /// Called when user types a number to select a project after auto-discovery.
+    /// </summary>
+    private void HandleProjectSelection(string input)
+    {
+        var projects = _pendingProjectSelection!;
+        var subCmd = _pendingDotnetSubcommand!;
+        var extraArgs = _pendingDotnetArgs ?? "";
+
+        // Clear state first
+        _pendingProjectSelection = null;
+        _pendingDotnetSubcommand = null;
+        _pendingDotnetArgs = null;
+
+        // Echo the user input
+        AppendOutput($"{input}{Environment.NewLine}", Color.Parse("#569CD6"));
+
+        if (!int.TryParse(input.Trim(), out var index))
+        {
+            AppendOutput($"{L("Terminal.Msg.InvalidNumber")}{Environment.NewLine}", Color.Parse("#F44747"));
+            return;
+        }
+
+        if (index == 0)
+        {
+            AppendOutput($"{L("Terminal.Msg.Cancelled")}{Environment.NewLine}", Color.Parse("#858585"));
+            return;
+        }
+
+        if (index < 1 || index > projects.Count)
+        {
+            AppendOutput(string.Format(L("Terminal.Dotnet.InvalidSelection"), projects.Count) + Environment.NewLine, Color.Parse("#F44747"));
+            return;
+        }
+
+        var selectedProject = projects[index - 1];
+        var cmd = BuildDotnetCommand(subCmd, extraArgs, selectedProject);
+        AppendOutput(string.Format(L("Terminal.Dotnet.Selected"), Path.GetFileName(selectedProject)) + Environment.NewLine, Color.Parse("#4EC9B0"));
+        AppendOutput(string.Format(L("Terminal.Dotnet.Running"), cmd) + Environment.NewLine, Color.Parse("#858585"));
+        _ = ExecuteExternalCommandAsync(cmd);
+    }
+
+    /// <summary>
+    /// Find .csproj and .fsproj files in the given directory tree (skips build artefact dirs).
+    /// </summary>
+    private static List<string> FindDotnetProjects(string directory, int maxDepth = 5)
+    {
+        var projects = new List<string>();
+        FindProjectsRecursive(directory, projects, maxDepth, 0);
+        return projects;
+    }
+
+    private static readonly HashSet<string> _skipDirs =
+        new(StringComparer.OrdinalIgnoreCase) { "bin", "obj", ".git", ".vs", "node_modules", ".idea" };
+
+    private static void FindProjectsRecursive(string dir, List<string> projects, int maxDepth, int depth)
+    {
+        if (depth > maxDepth) return;
         try
         {
-            var ghPath = FindGhExecutable();
-            var trimmedCommand = command.Trim();
-            
-            // Handle special shell commands
-            if (trimmedCommand.Equals("exit", StringComparison.OrdinalIgnoreCase))
-            {
-                _isGitHubCliMode = false;
-                _isRunning = false;
-                AppendOutput($"Exited GitHub CLI shell.{Environment.NewLine}", Color.Parse("#4EC9B0"));
-                ProcessExited?.Invoke(this, EventArgs.Empty);
-                return;
-            }
-            
-            if (trimmedCommand.Equals("gh-help", StringComparison.OrdinalIgnoreCase) || 
-                trimmedCommand.Equals("help", StringComparison.OrdinalIgnoreCase))
-            {
-                ShowHelp();
-                return;
-            }
-            
-            // Handle cd command
-            if (trimmedCommand.StartsWith("cd ", StringComparison.OrdinalIgnoreCase))
-            {
-                var targetPath = trimmedCommand.Substring(3).Trim().Trim('"');
-                string newPath;
-                if (Path.IsPathRooted(targetPath))
-                    newPath = targetPath;
-                else if (targetPath == "..")
-                    newPath = Directory.GetParent(_workingDirectory)?.FullName ?? _workingDirectory;
-                else
-                    newPath = Path.Combine(_workingDirectory, targetPath);
-                
-                if (Directory.Exists(newPath))
-                {
-                    _workingDirectory = Path.GetFullPath(newPath);
-                    UpdatePrompt();
-                    AppendOutput($"Changed directory to: {_workingDirectory}{Environment.NewLine}", Color.Parse("#4EC9B0"));
-                }
-                else
-                {
-                    AppendOutput($"Directory not found: {newPath}{Environment.NewLine}", Color.Parse("#F44747"));
-                }
-                return;
-            }
-            
-            // Handle pwd command
-            if (trimmedCommand.Equals("pwd", StringComparison.OrdinalIgnoreCase))
-            {
-                AppendOutput($"{_workingDirectory}{Environment.NewLine}");
-                return;
-            }
-            
-            // Determine if command already has 'gh' prefix
-            string ghArgs;
-            if (trimmedCommand.StartsWith("gh ", StringComparison.OrdinalIgnoreCase))
-            {
-                // Command already has 'gh' prefix, remove it
-                ghArgs = trimmedCommand.Substring(3).Trim();
-            }
-            else
-            {
-                // Add command as gh argument
-                ghArgs = trimmedCommand;
-            }
-            
-            // Interactive GitHub Copilot commands need external terminal (real TTY)
-            if (ghArgs.StartsWith("copilot ", StringComparison.OrdinalIgnoreCase) ||
-                ghArgs.Equals("copilot", StringComparison.OrdinalIgnoreCase))
-            {
-                var copilotSubArgs = ghArgs.Length > 8 ? ghArgs.Substring(8).Trim() : "";
-                
-                // suggest and explain require interactive TUI - open in external terminal
-                if (string.IsNullOrEmpty(copilotSubArgs) ||
-                    copilotSubArgs.StartsWith("suggest", StringComparison.OrdinalIgnoreCase) ||
-                    copilotSubArgs.StartsWith("explain", StringComparison.OrdinalIgnoreCase))
-                {
-                    AppendOutput($"ℹ️ Interactive Copilot commands require a real terminal.{Environment.NewLine}", Color.Parse("#DCDCAA"));
-                    OpenGitHubCopilotTerminal(copilotSubArgs);
-                    return;
-                }
-            }
-            
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = ghPath,
-                Arguments = ghArgs,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                WorkingDirectory = _workingDirectory
-            };
-            
-            using var process = new Process { StartInfo = startInfo };
-            process.Start();
-            
-            var outputTask = process.StandardOutput.ReadToEndAsync();
-            var errorTask = process.StandardError.ReadToEndAsync();
-            
-            await process.WaitForExitAsync();
-            
-            var output = await outputTask;
-            var error = await errorTask;
-            
-            if (!string.IsNullOrEmpty(output))
-            {
-                AppendOutput(output + Environment.NewLine);
-            }
-            
-            if (!string.IsNullOrEmpty(error))
-            {
-                // Some gh commands output to stderr for progress, not always errors
-                if (process.ExitCode != 0)
-                    AppendOutput(error + Environment.NewLine, Color.Parse("#F44747"));
-                else
-                    AppendOutput(error + Environment.NewLine, Color.Parse("#DCDCAA"));
-            }
-            
-            if (process.ExitCode != 0 && string.IsNullOrEmpty(output) && string.IsNullOrEmpty(error))
-            {
-                AppendOutput($"Command exited with code: {process.ExitCode}{Environment.NewLine}", Color.Parse("#F44747"));
-            }
+            var dirName = Path.GetFileName(dir);
+            if (!string.IsNullOrEmpty(dirName) && _skipDirs.Contains(dirName)) return;
+
+            foreach (var ext in new[] { "*.csproj", "*.fsproj" })
+                projects.AddRange(Directory.GetFiles(dir, ext, SearchOption.TopDirectoryOnly));
+
+            foreach (var sub in Directory.GetDirectories(dir))
+                FindProjectsRecursive(sub, projects, maxDepth, depth + 1);
         }
-        catch (Exception ex)
+        catch
         {
-            AppendOutput($"Error executing command: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
+            // Ignore access / IO errors
         }
     }
+
+    /// <summary>
+    /// Build the final dotnet CLI command string for a given subcommand and project file.
+    /// </summary>
+    private static string BuildDotnetCommand(string subCmd, string extraArgs, string projectPath)
+    {
+        // `dotnet run` and `dotnet watch` use --project flag; others take the file/dir directly.
+        var projectArg = subCmd switch
+        {
+            "run"   => $"--project \"{projectPath}\"",
+            "watch" => $"--project \"{projectPath}\"",
+            _       => $"\"{projectPath}\""
+        };
+
+        return string.IsNullOrWhiteSpace(extraArgs)
+            ? $"dotnet {subCmd} {projectArg}"
+            : $"dotnet {subCmd} {projectArg} {extraArgs}";
+    }
+
     
     /// <summary>
     /// Start a new administrator shell
@@ -620,7 +645,7 @@ public class TerminalControl : UserControl
             };
             
             Process.Start(startInfo);
-            AppendOutput($"Administrator shell started in new window.{Environment.NewLine}", Color.Parse("#4EC9B0"));
+            AppendOutput($"{L("Terminal.Msg.AdminStarted")}{Environment.NewLine}", Color.Parse("#4EC9B0"));
         }
         catch (Exception ex)
         {
@@ -857,114 +882,6 @@ public class TerminalControl : UserControl
     }
     
     /// <summary>
-    /// Start a GitHub CLI interactive shell session
-    /// This creates a special shell mode focused on GitHub CLI commands
-    /// </summary>
-    private async Task StartGitHubCliShellAsync()
-    {
-        try
-        {
-            var ghPath = FindGhExecutable();
-            
-            // Check if gh is installed
-            try
-            {
-                var testProcess = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = ghPath,
-                        Arguments = "--version",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    }
-                };
-                testProcess.Start();
-                var version = await testProcess.StandardOutput.ReadToEndAsync();
-                await testProcess.WaitForExitAsync();
-                
-                if (testProcess.ExitCode != 0)
-                {
-                    AppendOutput("❌ GitHub CLI (gh) is not installed.{Environment.NewLine}", Color.Parse("#F44747"));
-                    AppendOutput("Install with: winget install GitHub.cli{Environment.NewLine}", Color.Parse("#DCDCAA"));
-                    return;
-                }
-                
-                AppendOutput($"🐙 GitHub CLI Shell{Environment.NewLine}", Color.Parse("#4EC9B0"));
-                AppendOutput($"━━━━━━━━━━━━━━━━━━━━━━━━{Environment.NewLine}", Color.Parse("#858585"));
-                AppendOutput($"{version}", Color.Parse("#858585"));
-            }
-            catch (Exception ex)
-            {
-                AppendOutput($"❌ GitHub CLI (gh) not found: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
-                AppendOutput($"Install with: winget install GitHub.cli{Environment.NewLine}", Color.Parse("#DCDCAA"));
-                return;
-            }
-            
-            // Check authentication status
-            var authProcess = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = ghPath,
-                    Arguments = "auth status",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    WorkingDirectory = _workingDirectory
-                }
-            };
-            authProcess.Start();
-            var authOutput = await authProcess.StandardOutput.ReadToEndAsync();
-            var authError = await authProcess.StandardError.ReadToEndAsync();
-            await authProcess.WaitForExitAsync();
-            
-            if (authProcess.ExitCode == 0)
-            {
-                // Get logged in user
-                var userProcess = new Process
-                {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        FileName = ghPath,
-                        Arguments = "api user --jq .login",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        CreateNoWindow = true
-                    }
-                };
-                userProcess.Start();
-                var userName = (await userProcess.StandardOutput.ReadToEndAsync()).Trim();
-                await userProcess.WaitForExitAsync();
-                
-                AppendOutput($"✅ Logged in as: {userName}{Environment.NewLine}", Color.Parse("#4EC9B0"));
-            }
-            else
-            {
-                AppendOutput($"⚠️ Not authenticated. Run 'gh auth login' to sign in.{Environment.NewLine}", Color.Parse("#DCDCAA"));
-            }
-            
-            AppendOutput($"Working directory: {_workingDirectory}{Environment.NewLine}", Color.Parse("#858585"));
-            AppendOutput($"{Environment.NewLine}", Color.Parse("#858585"));
-            AppendOutput($"💡 Available commands: help or type 'gh <command>'{Environment.NewLine}", Color.Parse("#858585"));
-            AppendOutput($"   Quick: repo, pr, issue, workflow, release, gist, browse{Environment.NewLine}", Color.Parse("#858585"));
-            AppendOutput($"{Environment.NewLine}", Color.Parse("#858585"));
-            
-            _isRunning = true;
-            _isGitHubCliMode = true;
-            UpdatePrompt();
-            ProcessStarted?.Invoke(this, EventArgs.Empty);
-        }
-        catch (Exception ex)
-        {
-            AppendOutput($"Error starting GitHub CLI shell: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
-        }
-    }
-    
-    /// <summary>
     /// Start a persistent interactive shell session
     /// </summary>
     public async Task StartInteractiveShellAsync()
@@ -973,13 +890,6 @@ public class TerminalControl : UserControl
         
         try
         {
-            // For GitHubCli, we start an interactive PowerShell session with gh prompt customization
-            if (ShellType == TerminalShellType.GitHubCli)
-            {
-                await StartGitHubCliShellAsync();
-                return;
-            }
-            
             // Prefer ConPTY (pseudo console) for interactive sessions.
             if (UsePseudoConsole)
             {
@@ -1190,7 +1100,6 @@ public class TerminalControl : UserControl
             TerminalShellType.PowerShellCore => "pwsh.exe",
             TerminalShellType.Cmd => "cmd.exe",
             TerminalShellType.GitBash => ResolveGitBashExecutable(),
-            TerminalShellType.GitHubCli => FindGhExecutable(),
             _ => "cmd.exe"
         };
     }
@@ -1212,7 +1121,6 @@ public class TerminalControl : UserControl
             TerminalShellType.PowerShellCore => $"-NoProfile -Command \"{command}\"",
             TerminalShellType.Cmd => $"/c {command}",
             TerminalShellType.GitBash => $"-c \"{command}\"",
-            TerminalShellType.GitHubCli => command, // Commands are passed directly to gh
             _ => $"/c {command}"
         };
     }
@@ -1264,14 +1172,14 @@ public class TerminalControl : UserControl
                 _conPty.Dispose();
                 _conPty = null;
                 _usingConPty = false;
-                AppendOutput($"{Environment.NewLine}^C Process terminated.{Environment.NewLine}", Color.Parse("#DCDCAA"));
+                AppendOutput($"{Environment.NewLine}{L("Terminal.Msg.ProcessTerminated")}{Environment.NewLine}", Color.Parse("#DCDCAA"));
                 return;
             }
 
             if (_process != null && !_process.HasExited)
             {
                 _process.Kill(entireProcessTree: true);
-                AppendOutput($"{Environment.NewLine}^C Process terminated.{Environment.NewLine}", Color.Parse("#DCDCAA"));
+                AppendOutput($"{Environment.NewLine}{L("Terminal.Msg.ProcessTerminated")}{Environment.NewLine}", Color.Parse("#DCDCAA"));
             }
         }
         catch (Exception ex)
@@ -1317,6 +1225,11 @@ public class TerminalControl : UserControl
     {
         _inputTextBox?.Focus();
     }
+
+    /// <summary>
+    /// Shortcut for LocalizationService.Get — falls back to the key itself if not found.
+    /// </summary>
+    private static string L(string key) => LocalizationService.Get(key);
     
     protected override void OnUnloaded(Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -1336,8 +1249,7 @@ public enum TerminalShellType
     Cmd,
     PowerShell,
     PowerShellCore,
-    GitBash,
-    GitHubCli
+    GitBash
 }
 
 /// <summary>

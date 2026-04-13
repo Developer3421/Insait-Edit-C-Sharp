@@ -218,6 +218,10 @@ public partial class InsaitEditor : UserControl
     public void TriggerCompletion()     => _ = ShowCompletionAsync();
     public void LoadProjectReferences(string path) { /* TODO */ }
 
+    /// <summary>Returns selection info: whether there is a selection, char count and line count.</summary>
+    public (bool HasSelection, int CharCount, int LineCount) GetSelectionInfo()
+        => _surface.GetSelectionInfo();
+
     public void SetProjectContext(string? projectDir)
     {
         _surface.SetProjectContext(projectDir);

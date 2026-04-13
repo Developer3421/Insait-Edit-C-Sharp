@@ -1388,4 +1388,34 @@
     <x:String x:Key="RoslynTools.Title">Инструменты Roslyn</x:String>
     <x:String x:Key="RoslynTools.Navigate">Дважды кликните или нажмите Enter для перехода</x:String>
 
+    <!-- ── StatusBar selection info ─────────────────────────────── -->
+    <x:String x:Key="StatusBar.Selection.Chars">{0} симв.</x:String>
+    <x:String x:Key="StatusBar.Selection.CharsLines">{0} симв., {1} строк</x:String>
+
+    <!-- ── Терминал ──────────────────────────────────────────────── -->
+    <x:String x:Key="Terminal.Welcome.Version">Insait Терминал [Версия 2.0.0]</x:String>
+    <x:String x:Key="Terminal.Welcome.Hint">(c) Insait Edit. Введите 'help' для списка команд.</x:String>
+    <x:String x:Key="Terminal.Msg.SwitchedToPS">Переключено в режим PowerShell.</x:String>
+    <x:String x:Key="Terminal.Msg.SwitchedToCmd">Переключено в режим CMD.</x:String>
+    <x:String x:Key="Terminal.Msg.AdminStarted">Оболочка администратора запущена в новом окне.</x:String>
+    <x:String x:Key="Terminal.Msg.ProcessTerminated">^C Процесс завершён.</x:String>
+    <x:String x:Key="Terminal.Msg.PathNotFound">Указанный путь не найден.</x:String>
+    <x:String x:Key="Terminal.Msg.Cancelled">Отменено.</x:String>
+    <x:String x:Key="Terminal.Msg.InvalidNumber">❌ Неверный ввод. Пожалуйста, введите число.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Searching">🔍 Поиск .NET-проектов в: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.NoneFound">❌ Файлы .csproj / .fsproj не найдены в: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.NoneFoundHint">   Используйте 'cd &lt;каталог&gt;' для перехода в папку проекта.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Project">📦 Проект: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.Running">⚙️  Запуск: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.MultipleFound">🔍 Найдено {0} проектов. Выберите нужный:</x:String>
+    <x:String x:Key="Terminal.Dotnet.EnterNumber">Введите номер (1–{0}): </x:String>
+    <x:String x:Key="Terminal.Dotnet.InvalidSelection">❌ Неверный выбор. Введите 1–{0} или 0 для отмены.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Selected">📦 Выбрано: {0}</x:String>
+    <x:String x:Key="Terminal.Help.Title">СПРАВКА INSAIT ТЕРМИНАЛ v2.0</x:String>
+    <x:String x:Key="Terminal.Help.BuiltinSection">Встроенные команды:</x:String>
+    <x:String x:Key="Terminal.Help.DotnetSection">Команды .NET (авто-поиск проекта):</x:String>
+    <x:String x:Key="Terminal.Help.ShortcutsSection">Сочетания клавиш:</x:String>
+    <x:String x:Key="Terminal.Help.DotnetTip">💡 dotnet run/build/publish/test автоматически находит *.csproj / *.fsproj</x:String>
+    <x:String x:Key="Terminal.Help.DotnetTip2">   Если найдено несколько проектов — вы выбираете нужный.</x:String>
+
 </ResourceDictionary>

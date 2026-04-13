@@ -1388,4 +1388,34 @@ Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="RoslynTools.Title">Roslyn Tools</x:String>
     <x:String x:Key="RoslynTools.Navigate">Double-click or Enter to navigate</x:String>
 
+    <!-- ── StatusBar selection info ─────────────────────────────── -->
+    <x:String x:Key="StatusBar.Selection.Chars">{0} chars</x:String>
+    <x:String x:Key="StatusBar.Selection.CharsLines">{0} chars, {1} lines</x:String>
+
+    <!-- ── Terminal ──────────────────────────────────────────────── -->
+    <x:String x:Key="Terminal.Welcome.Version">Insait Terminal [Version 2.0.0]</x:String>
+    <x:String x:Key="Terminal.Welcome.Hint">(c) Insait Edit. Type 'help' for commands.</x:String>
+    <x:String x:Key="Terminal.Msg.SwitchedToPS">Switched to PowerShell mode.</x:String>
+    <x:String x:Key="Terminal.Msg.SwitchedToCmd">Switched to CMD mode.</x:String>
+    <x:String x:Key="Terminal.Msg.AdminStarted">Administrator shell started in new window.</x:String>
+    <x:String x:Key="Terminal.Msg.ProcessTerminated">^C Process terminated.</x:String>
+    <x:String x:Key="Terminal.Msg.PathNotFound">The system cannot find the path specified.</x:String>
+    <x:String x:Key="Terminal.Msg.Cancelled">Cancelled.</x:String>
+    <x:String x:Key="Terminal.Msg.InvalidNumber">❌ Invalid input. Please enter a number.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Searching">🔍 Searching for .NET projects in: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.NoneFound">❌ No .csproj / .fsproj files found in: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.NoneFoundHint">   Use 'cd &lt;directory&gt;' to navigate to a project folder.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Project">📦 Project: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.Running">⚙️  Running: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.MultipleFound">🔍 Found {0} projects. Choose which to use:</x:String>
+    <x:String x:Key="Terminal.Dotnet.EnterNumber">Enter number (1–{0}): </x:String>
+    <x:String x:Key="Terminal.Dotnet.InvalidSelection">❌ Invalid selection. Enter 1–{0} or 0 to cancel.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Selected">📦 Selected: {0}</x:String>
+    <x:String x:Key="Terminal.Help.Title">INSAIT TERMINAL v2.0 HELP</x:String>
+    <x:String x:Key="Terminal.Help.BuiltinSection">Built-in Commands:</x:String>
+    <x:String x:Key="Terminal.Help.DotnetSection">.NET Commands (auto project discovery):</x:String>
+    <x:String x:Key="Terminal.Help.ShortcutsSection">Keyboard Shortcuts:</x:String>
+    <x:String x:Key="Terminal.Help.DotnetTip">💡 dotnet run/build/publish/test auto-find *.csproj / *.fsproj</x:String>
+    <x:String x:Key="Terminal.Help.DotnetTip2">   If multiple projects found — you choose which one.</x:String>
+
 </ResourceDictionary>

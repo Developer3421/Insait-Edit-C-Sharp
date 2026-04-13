@@ -1388,4 +1388,34 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="RoslynTools.Title">Roslyn Araçları</x:String>
     <x:String x:Key="RoslynTools.Navigate">Gezinmek için çift tıklayın veya Enter'a basın</x:String>
 
+    <!-- ── StatusBar selection info ─────────────────────────────── -->
+    <x:String x:Key="StatusBar.Selection.Chars">{0} karakter</x:String>
+    <x:String x:Key="StatusBar.Selection.CharsLines">{0} karakter, {1} satır</x:String>
+
+    <!-- ── Terminal ──────────────────────────────────────────────── -->
+    <x:String x:Key="Terminal.Welcome.Version">Insait Terminal [Sürüm 2.0.0]</x:String>
+    <x:String x:Key="Terminal.Welcome.Hint">(c) Insait Edit. Komutlar için 'help' yazın.</x:String>
+    <x:String x:Key="Terminal.Msg.SwitchedToPS">PowerShell moduna geçildi.</x:String>
+    <x:String x:Key="Terminal.Msg.SwitchedToCmd">CMD moduna geçildi.</x:String>
+    <x:String x:Key="Terminal.Msg.AdminStarted">Yönetici kabuğu yeni pencerede başlatıldı.</x:String>
+    <x:String x:Key="Terminal.Msg.ProcessTerminated">^C İşlem sonlandırıldı.</x:String>
+    <x:String x:Key="Terminal.Msg.PathNotFound">Belirtilen yol bulunamadı.</x:String>
+    <x:String x:Key="Terminal.Msg.Cancelled">İptal edildi.</x:String>
+    <x:String x:Key="Terminal.Msg.InvalidNumber">❌ Geçersiz giriş. Lütfen bir sayı girin.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Searching">🔍 .NET projeleri aranıyor: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.NoneFound">❌ .csproj / .fsproj dosyası bulunamadı: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.NoneFoundHint">   Proje klasörüne gitmek için 'cd &lt;dizin&gt;' kullanın.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Project">📦 Proje: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.Running">⚙️  Çalıştırılıyor: {0}</x:String>
+    <x:String x:Key="Terminal.Dotnet.MultipleFound">🔍 {0} proje bulundu. Hangisini kullanmak istediğinizi seçin:</x:String>
+    <x:String x:Key="Terminal.Dotnet.EnterNumber">Numara girin (1–{0}): </x:String>
+    <x:String x:Key="Terminal.Dotnet.InvalidSelection">❌ Geçersiz seçim. 1–{0} arası veya iptal için 0 girin.</x:String>
+    <x:String x:Key="Terminal.Dotnet.Selected">📦 Seçildi: {0}</x:String>
+    <x:String x:Key="Terminal.Help.Title">INSAIT TERMINAL v2.0 YARDIM</x:String>
+    <x:String x:Key="Terminal.Help.BuiltinSection">Dahili Komutlar:</x:String>
+    <x:String x:Key="Terminal.Help.DotnetSection">.NET Komutları (otomatik proje bulma):</x:String>
+    <x:String x:Key="Terminal.Help.ShortcutsSection">Klavye Kısayolları:</x:String>
+    <x:String x:Key="Terminal.Help.DotnetTip">💡 dotnet run/build/publish/test otomatik olarak *.csproj / *.fsproj bulur</x:String>
+    <x:String x:Key="Terminal.Help.DotnetTip2">   Birden fazla proje bulunursa — hangisini kullanacağınızı siz seçersiniz.</x:String>
+
 </ResourceDictionary>

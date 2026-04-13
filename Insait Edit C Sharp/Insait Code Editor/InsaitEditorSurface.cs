@@ -923,6 +923,7 @@ internal sealed class InsaitEditorSurface : Control
         _selStartLine = li; _selStartCol = ci;
         _selEndLine = -1; _selEndCol = -1;
         InvalidateVisual(); e.Handled = true;
+        CursorMoved?.Invoke(this, CursorPosition);
 
         // Ctrl+Click → Go to Definition
         if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
@@ -941,6 +942,7 @@ internal sealed class InsaitEditorSurface : Control
             PositionFromPoint(pt, out int li, out int ci);
             _selEndLine = li; _selEndCol = ci; _cursorLine = li; _cursorCol = ci;
             InvalidateVisual();
+            CursorMoved?.Invoke(this, CursorPosition);
         }
         else
         {
@@ -1212,6 +1214,17 @@ internal sealed class InsaitEditorSurface : Control
         _selEndLine = _lines.Count - 1; _selEndCol = _lines[_selEndLine].Length;
         _cursorLine = _selEndLine; _cursorCol = _selEndCol;
         InvalidateVisual();
+        CursorMoved?.Invoke(this, CursorPosition);
+    }
+
+    /// <summary>Returns selection info: whether there is a selection, the number of selected characters and lines.</summary>
+    public (bool HasSelection, int CharCount, int LineCount) GetSelectionInfo()
+    {
+        if (!HasSelection) return (false, 0, 0);
+        var text = GetSelectedText();
+        if (string.IsNullOrEmpty(text)) return (false, 0, 0);
+        int lineCount = text.Count(c => c == '\n') + 1;
+        return (true, text.Length, lineCount);
     }
 
     // ── Cursor ───────────────────────────────────────────────────────────

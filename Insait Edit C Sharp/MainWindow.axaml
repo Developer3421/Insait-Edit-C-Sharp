@@ -94,6 +94,18 @@
         <Style Selector="Button#RestartButton:pressed">
             <Setter Property="Background" Value="#FF4A306E"/>
         </Style>
+        <Style Selector="Button#StopProjectButton:pointerover">
+            <Setter Property="Background" Value="#FFE53935"/>
+        </Style>
+        <Style Selector="Button#StopProjectButton:pressed">
+            <Setter Property="Background" Value="#FF8B0000"/>
+        </Style>
+        <Style Selector="Button#RestartProjectButton:pointerover">
+            <Setter Property="Background" Value="#FF388E3C"/>
+        </Style>
+        <Style Selector="Button#RestartProjectButton:pressed">
+            <Setter Property="Background" Value="#FF1B5E20"/>
+        </Style>
         <Style Selector="Button#UserAgreementButton:pointerover">
             <Setter Property="Background" Value="#FF564270"/>
         </Style>
@@ -539,6 +551,38 @@
                             Cursor="Hand"
                             Margin="2,0,0,0">
                         <TextBlock Text="🐛" FontSize="15" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Stop Project Button -->
+                    <Button Name="StopProjectButton" ToolTip.Tip="Stop Running Project (Shift+F5)"
+                            Click="StopProject_Click"
+                            Background="#FFC0392B"
+                            Foreground="White"
+                            CornerRadius="5"
+                            Height="28"
+                            Width="34"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            Margin="2,0,0,0">
+                        <TextBlock Text="⏹" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Restart Project Button -->
+                    <Button Name="RestartProjectButton" ToolTip.Tip="Restart Project (Ctrl+F5)"
+                            Click="RestartProject_Click"
+                            Background="#FF2E7D4F"
+                            Foreground="White"
+                            CornerRadius="5"
+                            Height="28"
+                            Width="34"
+                            Padding="0"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Cursor="Hand"
+                            Margin="2,0,0,0">
+                        <TextBlock Text="🔄" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
                     
                     <!-- Stop Button (hidden by default) -->
@@ -2240,23 +2284,18 @@
                     </Button>
                     <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Line Endings -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Select End of Line Sequence" Name="LineEndingsButton" Click="LineEndingsButton_Click">
+                    <Button Classes="status-bar-button" ToolTip.Tip="Line Endings" Name="LineEndingsButton" IsEnabled="False">
                         <TextBlock Text="CRLF" FontSize="11" Foreground="#FFB8A8D8" Name="LineEndingsText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Language -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Select Language Mode" Name="LanguageModeButton" Click="LanguageModeButton_Click">
+                    <Button Classes="status-bar-button" ToolTip.Tip="Language Mode" Name="LanguageModeButton" IsEnabled="False">
                         <TextBlock Text="C#" FontSize="11" Foreground="#FFFFC09F" Name="LanguageModeText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
-                    <!-- Cursor Position -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Go to Line" Name="CursorPositionButton" Click="CursorPositionButton_Click">
+                    <!-- Cursor Position / Selection Info -->
+                    <Button Classes="status-bar-button" ToolTip.Tip="Go to Line · Shows selected chars and lines" Name="CursorPositionButton" Click="CursorPositionButton_Click">
                         <TextBlock Text="Ln 1, Col 1" FontSize="11" Foreground="#FFB8A8D8" Name="CursorPositionText"/>
-                    </Button>
-                    <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
-                    <!-- Spaces/Tabs -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Select Indentation" Name="IndentationButton" Click="IndentationButton_Click">
-                        <TextBlock Text="Spaces: 4" FontSize="11" Foreground="#FFB8A8D8" Name="IndentationText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Notifications -->

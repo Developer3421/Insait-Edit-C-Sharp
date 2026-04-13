@@ -162,7 +162,19 @@ public partial class MainWindow
     private void UpdateCursorPositionDisplay(int line, int column)
     {
         var tb = this.FindControl<TextBlock>("CursorPositionText");
-        if (tb != null) tb.Text = $"Ln {line}, Col {column}";
+        if (tb == null) return;
+
+        var sel = _insaitEditor?.GetSelectionInfo() ?? default;
+        if (sel.HasSelection)
+        {
+            tb.Text = sel.LineCount > 1
+                ? string.Format(LocalizationService.Get("StatusBar.Selection.CharsLines"), sel.CharCount, sel.LineCount)
+                : string.Format(LocalizationService.Get("StatusBar.Selection.Chars"), sel.CharCount);
+        }
+        else
+        {
+            tb.Text = $"Ln {line}, Col {column}";
+        }
     }
 
     private void InitializeNotificationCenter()
@@ -199,24 +211,20 @@ public partial class MainWindow
         var encodingText = this.FindControl<TextBlock>("EncodingText");
         var lineEndingsText = this.FindControl<TextBlock>("LineEndingsText");
         var languageModeText = this.FindControl<TextBlock>("LanguageModeText");
-        var indentationText = this.FindControl<TextBlock>("IndentationText");
-        var cursorPositionText = this.FindControl<TextBlock>("CursorPositionText");
 
         if (tab == null || tab.IsWelcomeTab)
         {
             if (encodingText != null) encodingText.Text = "UTF-8";
             if (lineEndingsText != null) lineEndingsText.Text = "CRLF";
             if (languageModeText != null) languageModeText.Text = "Plain Text";
-            if (indentationText != null) indentationText.Text = "Spaces: 4";
-            if (cursorPositionText != null) cursorPositionText.Text = "Ln 1, Col 1";
+            UpdateCursorPositionDisplay(1, 1);
             return;
         }
 
         if (encodingText != null) encodingText.Text = GetEncodingDisplayName(tab.EncodingKind);
         if (lineEndingsText != null) lineEndingsText.Text = GetLineEndingDisplayName(tab.LineEnding);
         if (languageModeText != null) languageModeText.Text = GetLanguageDisplayName(tab.Language);
-        if (indentationText != null) indentationText.Text = tab.UsesTabs ? $"Tabs: {tab.IndentSize}" : $"Spaces: {tab.IndentSize}";
-        if (cursorPositionText != null) cursorPositionText.Text = $"Ln {tab.CursorLine}, Col {tab.CursorColumn}";
+        UpdateCursorPositionDisplay(tab.CursorLine, tab.CursorColumn);
     }
 
     private static string GetEncodingDisplayName(string encodingKind) => encodingKind switch
@@ -1440,6 +1448,8 @@ public partial class MainWindow
     private async void BuildProject_Click(object? sender, RoutedEventArgs e) => await BuildProjectAsync();
     private async void RunProject_Click(object? sender, RoutedEventArgs e) => await RunProjectAsync();
     private async void DebugProject_Click(object? sender, RoutedEventArgs e) => await RunProjectInDebugModeAsync();
+    private void StopProject_Click(object? sender, RoutedEventArgs e) { StopRunningProcess(); }
+    private async void RestartProject_Click(object? sender, RoutedEventArgs e) { StopRunningProcess(); await RunProjectAsync(); }
     private async void Publish_Click(object? sender, RoutedEventArgs e) => await ShowPublishWindowAsync();
     private async void MsixManager_Click(object? sender, RoutedEventArgs e) => await ShowMsixManagerWindowAsync();
     private void CancelBuild_Click(object? sender, RoutedEventArgs e) { _buildService.CancelBuild(); _publishService.Cancel(); StopRunningProcess(); _viewModel.StatusText = "Build cancelled"; }
