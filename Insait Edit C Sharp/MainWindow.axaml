@@ -376,25 +376,6 @@
             <Setter Property="Foreground" Value="{StaticResource AppTextMutedBrush}"/>
             <Setter Property="Opacity" Value="1"/>
         </Style>
-        <!-- AI Chat Input: dark theme override -->
-        <Style Selector="TextBox#AIChatInput">
-            <Setter Property="Foreground" Value="#FFF0E8F4"/>
-            <Setter Property="Background" Value="#FF1A0A04"/>
-            <Setter Property="BorderBrush" Value="#FF7A3810"/>
-        </Style>
-        <Style Selector="TextBox#AIChatInput /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF1A0A04"/>
-        </Style>
-        <Style Selector="TextBox#AIChatInput:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF231208"/>
-        </Style>
-        <Style Selector="TextBox#AIChatInput:focus-within /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#FF231208"/>
-        </Style>
-        <Style Selector="TextBox#AIChatInput /template/ TextBlock#PART_Watermark">
-            <Setter Property="Foreground" Value="#FFFFFFFF"/>
-            <Setter Property="Opacity" Value="1"/>
-        </Style>
         <!-- SelectableTextBlock: visible selection in dark theme -->
         <Style Selector="SelectableTextBlock">
             <Setter Property="SelectionBrush" Value="#60FFC09F"/>
@@ -2195,11 +2176,10 @@
                     <Border Grid.Row="2" Padding="12" Background="#20000000">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBox Grid.Column="0" Name="AIChatInput"
-                                     PlaceholderText="Enter command (create, ls, help...)"
-                                     Background="#FF1A0A04"
-                                     BorderBrush="#FF7A3810"
+                                     Background="#FFF7F2EC"
+                                     BorderBrush="#FFB8A6C4"
                                      BorderThickness="1"
-                                     Foreground="{StaticResource AppTextBrush}"
+                                     Foreground="#FF1F1A24"
                                      CaretBrush="#5B1E8C"
                                      SelectionBrush="{StaticResource AccentPurpleBrush}"
                                      SelectionForegroundBrush="#FF1F1A24"
@@ -2209,14 +2189,7 @@
                                      FontSize="12"
                                      TextWrapping="Wrap"
                                      AcceptsReturn="False"
-                                     KeyDown="AIChatInput_KeyDown">
-                                <TextBox.Styles>
-                                    <Style Selector="^ /template/ TextBlock#PART_Watermark">
-                                        <Setter Property="Foreground" Value="#FFFFFFFF"/>
-                                        <Setter Property="Opacity" Value="1"/>
-                                    </Style>
-                                </TextBox.Styles>
-                            </TextBox>
+                                     KeyDown="AIChatInput_KeyDown"/>
                             <Button Grid.Column="1" Classes="icon-button" Margin="8,0,0,0"
                                     Background="{StaticResource AccentPurpleBrush}"
                                     ToolTip.Tip="Send" Name="SendAIButton" Click="SendAI_Click">
