@@ -69,6 +69,26 @@ public partial class MainWindow
             return;
         }
 
+        // Collect all projects from the file tree
+        var projects = new List<(string Label, string Path)>();
+        foreach (var item in _viewModel.FileTreeItems)
+            CollectProjectPathsFromTree(item, projects);
+
+        // If 2+ projects exist, show selection window
+        if (projects.Count >= 2)
+        {
+            var selectWindow = new SelectProjectWindow(projects);
+            await selectWindow.ShowDialog(this);
+
+            if (string.IsNullOrEmpty(selectWindow.SelectedProjectPath))
+            {
+                _viewModel.StatusText = "Analysis cancelled";
+                return;
+            }
+
+            projectPath = selectWindow.SelectedProjectPath;
+        }
+
         _isAnalysisInProgress = true;
         _viewModel.StatusText = "Analysing project…";
         SwitchToolWindowPanel("problems");
@@ -82,6 +102,23 @@ public partial class MainWindow
             _isAnalysisInProgress = false;
             _viewModel.StatusText = $"Analysis error: {ex.Message}";
         }
+    }
+
+    /// <summary>
+    /// Recursively collects project file paths (.csproj) from the file tree.
+    /// </summary>
+    private static void CollectProjectPathsFromTree(FileTreeItem item,
+        List<(string Label, string Path)> projects)
+    {
+        if (item.ItemType == FileTreeItemType.Project)
+        {
+            var projectFile = item.FullPath;
+            if (!string.IsNullOrEmpty(projectFile))
+                projects.Add((item.Name, projectFile));
+        }
+
+        foreach (var child in item.Children)
+            CollectProjectPathsFromTree(child, projects);
     }
 
     // ═══════════════════════════════════════════════════════════

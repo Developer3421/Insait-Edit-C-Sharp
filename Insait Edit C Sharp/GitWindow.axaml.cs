@@ -452,8 +452,31 @@ public partial class GitWindow : Window
         NotifyWorkspaceRefreshRequested();
     }
 
-    private void CtxNewBranchFromHere_Click(object? sender, RoutedEventArgs e)
-        => AppendConsole(L("Git.CreateBranchFromCommitHint"));
+    private async void CtxNewBranchFromHere_Click(object? sender, RoutedEventArgs e)
+    {
+        var commit = ResolveCommitContext(sender);
+        if (commit == null) return;
+
+        var dialog = new InputDialog(
+            FormatLocalized("Git.CreateBranchFromCommit", commit.ShortHash),
+            FormatLocalized("Git.NewBranchFromCommitName", commit.ShortHash),
+            string.Empty,
+            "🌿");
+
+        await dialog.ShowDialog(this);
+
+        if (!string.IsNullOrWhiteSpace(dialog.Result))
+        {
+            var name = dialog.Result;
+            ShowLoading(FormatLocalized("Git.CreatingBranchFromCommit", name, commit.ShortHash));
+            AppendConsole($"git checkout -b {name} {commit.Hash}");
+            var r = await _git.RunGitCommandInternalAsync($"checkout -b \"{name}\" {commit.Hash}");
+            HideLoading();
+            AppendConsole(r ? FormatLocalized("Git.CreatedBranch", name) : L("Git.CreateRepoFailed"));
+            NotifyWorkspaceRefreshRequested();
+            await RefreshAsync();
+        }
+    }
 
     private async void CtxCherryPick_Click(object? sender, RoutedEventArgs e)
     {
@@ -1209,7 +1232,181 @@ public partial class GitWindow : Window
     { SwitchRightTab("log"); await RefreshLogAsync(); }
 
     private void DiffTab_Click(object? sender, RoutedEventArgs e)    => SwitchRightTab("diff");
+    private async void BranchesTab_Click(object? sender, RoutedEventArgs e)
+    { SwitchRightTab("branches"); await RefreshBranchesListAsync(); }
     private void ConsoleTab_Click(object? sender, RoutedEventArgs e) => SwitchRightTab("console");
+
+    // ═══════════════════════════════════════════════════════════
+    //  Branches panel
+    // ═══════════════════════════════════════════════════════════
+
+    private async Task RefreshBranchesListAsync()
+    {
+        try
+        {
+            var branches = await _git.GetBranchesAsync(includeRemote: true);
+            var local  = branches.Where(b => !b.IsRemote).ToList();
+            var remote = branches.Where(b => b.IsRemote).ToList();
+
+            this.FindControl<ItemsControl>("LocalBranchesList")
+                ?.SetValue(ItemsControl.ItemsSourceProperty, local);
+            this.FindControl<ItemsControl>("RemoteBranchesList")
+                ?.SetValue(ItemsControl.ItemsSourceProperty, remote);
+
+            SetVisible("NoBranchesPanel", local.Count == 0 && remote.Count == 0);
+        }
+        catch (Exception ex)
+        {
+            AppendConsole(FormatLocalized("Git.Error", ex.Message));
+        }
+    }
+
+    private async void NewBranchFromPanel_Click(object? sender, RoutedEventArgs e)
+        => await CreateBranchDialogAsync();
+
+    private async void RefreshBranches_Click(object? sender, RoutedEventArgs e)
+        => await RefreshBranchesListAsync();
+
+    private async void BranchItem_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.ClickCount == 2 && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
+            && sender is Border b && b.DataContext is GitBranch branch && !branch.IsCurrent)
+        {
+            await CheckoutAsync(branch.IsRemote ? branch.Name : branch.Name);
+            await RefreshBranchesListAsync();
+        }
+    }
+
+    private async void CtxCheckoutBranch_Click(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as MenuItem)?.DataContext is GitBranch branch && !branch.IsCurrent)
+        {
+            await CheckoutAsync(branch.Name);
+            await RefreshBranchesListAsync();
+        }
+    }
+
+    private async void CtxDeleteBranch_Click(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as MenuItem)?.DataContext is not GitBranch branch) return;
+        if (branch.IsCurrent) return; // cannot delete current branch
+
+        await DeleteBranchDialogAsync(branch.Name);
+    }
+
+    private async Task DeleteBranchDialogAsync(string branchName)
+    {
+        var dialog = new Window
+        {
+            Title = L("Git.DeleteBranch"),
+            Width = 420, Height = 200,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            SystemDecorations = WindowDecorations.BorderOnly,
+            CanResize = false,
+            Background = new SolidColorBrush(Color.Parse("#FF2A2230"))
+        };
+
+        var sp = new StackPanel { Margin = new Thickness(20), Spacing = 10 };
+
+        sp.Children.Add(new TextBlock
+        {
+            Text = FormatLocalized("Git.DeleteBranchConfirm", branchName),
+            FontSize = 12, FontWeight = FontWeight.SemiBold,
+            Foreground = new SolidColorBrush(Color.Parse("#FFF38BA8")),
+            TextWrapping = TextWrapping.Wrap
+        });
+
+        var forceCheck = new CheckBox
+        {
+            Content = L("Git.DeleteBranchForce"), IsChecked = false, FontSize = 12,
+            Foreground = new SolidColorBrush(Color.Parse("#FFF0E8F4"))
+        };
+        sp.Children.Add(forceCheck);
+
+        bool? result = null;
+        var btns = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8
+        };
+
+        var cancelBtn = MakeBtn(LocalizationService.Get("Common.Cancel"), "#FF3E3050", "#FFF0E8F4");
+        var deleteBtn = MakeBtn(L("Git.DeleteBranch"), "#FF4A2020", "#FFF38BA8");
+
+        cancelBtn.Click += (_, _) => dialog.Close();
+        deleteBtn.Click += (_, _) => { result = true; dialog.Close(); };
+
+        btns.Children.Add(cancelBtn);
+        btns.Children.Add(deleteBtn);
+        sp.Children.Add(btns);
+
+        dialog.Content = sp;
+        await dialog.ShowDialog(this);
+
+        if (result != true) return;
+
+        bool force = forceCheck.IsChecked == true;
+        ShowLoading(FormatLocalized("Git.DeletingBranch", branchName));
+        AppendConsole($"git branch {(force ? "-D" : "-d")} {branchName}");
+        var r = await _git.DeleteBranchAsync(branchName, force);
+        HideLoading();
+        AppendConsole(r.Success
+            ? FormatLocalized("Git.DeletedBranch", branchName)
+            : FormatLocalized("Git.Error", r.Error));
+        await RefreshBranchesListAsync();
+        await RefreshAsync(showLoadingOverlay: false);
+    }
+
+    private async void CtxRenameBranch_Click(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as MenuItem)?.DataContext is not GitBranch branch) return;
+        if (!branch.IsCurrent) // git branch -m only works for the current branch
+        {
+            // Checkout first, then rename
+            await CheckoutAsync(branch.Name);
+        }
+
+        var dialog = new InputDialog(
+            L("Git.RenameBranch"),
+            L("Git.NewBranchName"),
+            branch.Name,
+            "✏️");
+
+        await dialog.ShowDialog(this);
+
+        if (!string.IsNullOrWhiteSpace(dialog.Result) && dialog.Result != branch.Name)
+        {
+            var newName = dialog.Result;
+            ShowLoading(FormatLocalized("Git.RenamingBranch", newName));
+            AppendConsole($"git branch -m \"{newName}\"");
+            var r = await _git.RenameBranchAsync(newName);
+            HideLoading();
+            AppendConsole(r.Success
+                ? FormatLocalized("Git.RenamedBranch", newName)
+                : FormatLocalized("Git.Error", r.Error));
+            NotifyWorkspaceRefreshRequested();
+            await RefreshBranchesListAsync();
+            await RefreshAsync(showLoadingOverlay: false);
+        }
+    }
+
+    private async void CtxMergeBranch_Click(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as MenuItem)?.DataContext is not GitBranch branch) return;
+        if (branch.IsCurrent) return; // can't merge into itself
+
+        ShowLoading(FormatLocalized("Git.MergingBranch", branch.Name));
+        AppendConsole($"git merge \"{branch.Name}\"");
+        var r = await _git.MergeBranchAsync(branch.Name);
+        HideLoading();
+        AppendConsole(r.Success
+            ? FormatLocalized("Git.MergedBranch", branch.Name)
+            : FormatLocalized("Git.MergeError", r.Error));
+        NotifyWorkspaceRefreshRequested();
+        await RefreshBranchesListAsync();
+        await RefreshAsync(showLoadingOverlay: false);
+    }
 
     // ═══════════════════════════════════════════════════════════
     //  Commit
@@ -1337,8 +1534,8 @@ public partial class GitWindow : Window
     private void SwitchRightTab(string tab)
     {
         _rightTab = tab;
-        string[] tabBtns   = { "LogTabBtn", "DiffTabBtn", "ConsoleTabBtn" };
-        string[] tabPanels = { "LogPanel",  "DiffPanel",  "ConsolePanel"  };
+        string[] tabBtns   = { "LogTabBtn", "DiffTabBtn", "BranchesTabBtn", "ConsoleTabBtn" };
+        string[] tabPanels = { "LogPanel",  "DiffPanel",  "BranchesPanel",  "ConsolePanel"  };
         for (int i = 0; i < tabBtns.Length; i++)
         {
             this.FindControl<Button>(tabBtns[i])?.Classes.Remove("active");
@@ -1346,9 +1543,10 @@ public partial class GitWindow : Window
         }
         var (btn, panel) = tab switch
         {
-            "diff"    => ("DiffTabBtn",    "DiffPanel"),
-            "console" => ("ConsoleTabBtn", "ConsolePanel"),
-            _         => ("LogTabBtn",     "LogPanel")
+            "diff"     => ("DiffTabBtn",     "DiffPanel"),
+            "branches" => ("BranchesTabBtn", "BranchesPanel"),
+            "console"  => ("ConsoleTabBtn",  "ConsolePanel"),
+            _          => ("LogTabBtn",      "LogPanel")
         };
         this.FindControl<Button>(btn)?.Classes.Add("active");
         this.FindControl<Control>(panel)?.SetValue(IsVisibleProperty, true);

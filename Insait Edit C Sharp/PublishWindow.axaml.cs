@@ -501,6 +501,7 @@ public partial class PublishWindow : Window
         var compressionCheck = this.FindControl<CheckBox>("CompressionCheck");
         var nativeLibsCheck = this.FindControl<CheckBox>("NativeLibrariesCheck");
         var cleanOutputCheck = this.FindControl<CheckBox>("CleanOutputCheck");
+        var noPdbCheck = this.FindControl<CheckBox>("NoPdbCheck");
         var profileCombo = this.FindControl<ComboBox>("PublishProfileComboBox");
         var iconPathBox = this.FindControl<TextBox>("IconPathBox");
 
@@ -553,6 +554,7 @@ public partial class PublishWindow : Window
             EnableCompressionInSingleFile = compressionCheck?.IsChecked ?? false,
             IncludeNativeLibrariesForSelfExtract = nativeLibsCheck?.IsChecked ?? false,
             CleanOutputFolder = cleanOutputCheck?.IsChecked ?? true,
+            ExcludeDebugSymbols = noPdbCheck?.IsChecked ?? false,
             PublishProfileName = publishProfile,
             ApplicationIcon = string.IsNullOrWhiteSpace(iconPathBox?.Text) ? null : iconPathBox.Text
         };

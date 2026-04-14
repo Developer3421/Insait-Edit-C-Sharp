@@ -860,6 +860,9 @@ public partial class MainWindow : Window
         {
             _ = _gitWindow.RefreshAsync();
         }
+
+        // Update the branch name in the status bar
+        _ = UpdateGitBranchTextAsync();
     }
 
     private void UpdateTitle()
@@ -998,14 +1001,11 @@ public partial class MainWindow : Window
         if (searchInput != null) searchInput.Watermark = L("Search.FileNamePlaceholder");
         var contentInput = this.FindControl<TextBox>("ContentSearchInputBox");
         if (contentInput != null) contentInput.Watermark = L("Search.ContentPlaceholder");
-        var replaceInput = this.FindControl<TextBox>("ReplaceInputBox");
-        if (replaceInput != null) replaceInput.Watermark = L("Search.ReplacePlaceholder");
 
         SetButtonTooltip("SearchTabFilesBtn", L("Search.FindFiles"));
         SetButtonTooltip("SearchTabContentBtn", L("Search.FindInFiles"));
         SetButtonTooltip("SearchFileNamesButton", L("Search.FindFiles"));
         SetButtonTooltip("SearchContentButton", L("Search.FindInFiles"));
-        SetButtonTooltip("ReplaceAllButton", L("Search.ReplaceAll"));
 
         // Context menu items
         var ctxRun = this.FindControl<MenuItem>("ContextMenuRun");
@@ -2273,6 +2273,11 @@ ExecuteMenuAction(string action)
         await OpenGitWindowAsync();
     }
 
+    private async void GitBranch_Click(object? sender, RoutedEventArgs e)
+    {
+        await OpenGitWindowAsync();
+    }
+
     private async Task OpenGitWindowAsync()
     {
         // Collect all project paths from the solution
@@ -2291,11 +2296,44 @@ ExecuteMenuAction(string action)
             _gitWindow.Activate();
             await _gitWindow.RefreshAsync();
         }
+
+        // Update the branch text in the status bar after git window is opened
+        await UpdateGitBranchTextAsync();
+    }
+
+    /// <summary>
+    /// Updates the Git branch name displayed in the status bar.
+    /// </summary>
+    private async Task UpdateGitBranchTextAsync()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_projectPath)) return;
+
+            var gitService = new Services.GitService();
+            var projectDir = GetProjectDirectory(_projectPath);
+            if (string.IsNullOrEmpty(projectDir)) return;
+
+            var repoRoot = await gitService.FindRepositoryRootAsync(projectDir);
+            if (repoRoot == null) return;
+
+            gitService.RepositoryPath = repoRoot;
+            var branch = await gitService.GetCurrentBranchAsync();
+
+            var branchText = this.FindControl<TextBlock>("GitBranchText");
+            if (branchText != null && !string.IsNullOrWhiteSpace(branch))
+                branchText.Text = branch;
+        }
+        catch
+        {
+            // Silently ignore — status bar branch is best-effort
+        }
     }
 
     private void GitWindow_WorkspaceRefreshRequested(object? sender, EventArgs e)
     {
         _ = RefreshFileTreeAsync();
+        _ = UpdateGitBranchTextAsync();
     }
 
     private List<string> CollectAllProjectPaths()

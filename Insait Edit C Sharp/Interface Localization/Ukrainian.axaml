@@ -710,6 +710,27 @@
     <x:String x:Key="Git.BranchName">Назва гілки:</x:String>
     <x:String x:Key="Git.CreatingBranch">Створення {0}…</x:String>
     <x:String x:Key="Git.CreatedBranch">Створено {0}</x:String>
+    <x:String x:Key="Git.TabBranches">Гілки</x:String>
+    <x:String x:Key="Git.LocalBranches">Локальні гілки</x:String>
+    <x:String x:Key="Git.DeleteBranch">Видалити гілку</x:String>
+    <x:String x:Key="Git.DeletingBranch">Видалення гілки {0}…</x:String>
+    <x:String x:Key="Git.DeletedBranch">Гілку '{0}' видалено</x:String>
+    <x:String x:Key="Git.DeleteBranchConfirm">Ви впевнені, що хочете видалити гілку '{0}'?</x:String>
+    <x:String x:Key="Git.DeleteBranchForce">Примусово видалити (навіть якщо не злита)</x:String>
+    <x:String x:Key="Git.RenameBranch">Перейменувати гілку</x:String>
+    <x:String x:Key="Git.RenamingBranch">Перейменування гілки на {0}…</x:String>
+    <x:String x:Key="Git.RenamedBranch">Гілку перейменовано на '{0}'</x:String>
+    <x:String x:Key="Git.NewBranchName">Нова назва гілки:</x:String>
+    <x:String x:Key="Git.MergeBranch">Злити в поточну</x:String>
+    <x:String x:Key="Git.MergingBranch">Злиття {0}…</x:String>
+    <x:String x:Key="Git.MergedBranch">Гілку '{0}' успішно злито</x:String>
+    <x:String x:Key="Git.MergeError">Помилка злиття: {0}</x:String>
+    <x:String x:Key="Git.BranchCurrent">поточна</x:String>
+    <x:String x:Key="Git.BranchTracking">відстежує: {0}</x:String>
+    <x:String x:Key="Git.CreateBranchFromCommit">Створити гілку з {0}</x:String>
+    <x:String x:Key="Git.NewBranchFromCommitName">Назва гілки (з {0}):</x:String>
+    <x:String x:Key="Git.CreatingBranchFromCommit">Створення гілки {0} з {1}…</x:String>
+    <x:String x:Key="Git.NoBranches">Гілок не знайдено</x:String>
     <x:String x:Key="Git.NoFilesSelected">Файли не вибрано</x:String>
     <x:String x:Key="Git.Committing">Створення коміту…</x:String>
     <x:String x:Key="Git.CommitSuccessful">Коміт успішний</x:String>
@@ -902,6 +923,8 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="Publish.NativeLibsTooltip">Включає нативні бібліотеки до одного файлу</x:String>
     <x:String x:Key="Publish.CleanOutput">🗑 Очистити вихідну теку перед публікацією</x:String>
     <x:String x:Key="Publish.CleanOutputTooltip">Видаляє всі файли у вихідній теці перед публікацією для чистої збірки</x:String>
+    <x:String x:Key="Publish.NoPdb">🚫 Без PDB файлів (DebugType=none)</x:String>
+    <x:String x:Key="Publish.NoPdbTooltip">Виключити файли символів налагодження (.pdb) з публікації. Встановлює DebugType=none.</x:String>
     <x:String x:Key="Publish.PublishProfile">Профіль публікації (необов'язково)</x:String>
     <x:String x:Key="Publish.NewProfile">+ Новий профіль</x:String>
     <x:String x:Key="Publish.ProfileHint">Використовуйте наявні профілі публікації з теки Properties/PublishProfiles</x:String>
@@ -951,6 +974,7 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="ProjectProps.DefaultNamespace">Простір імен за замовчуванням</x:String>
     <x:String x:Key="ProjectProps.TargetFramework">Цільовий фреймворк</x:String>
     <x:String x:Key="ProjectProps.OutputType">Тип виводу</x:String>
+    <x:String x:Key="ProjectProps.LangVersion">Версія мови C#</x:String>
     <x:String x:Key="ProjectProps.LangVersion">Версія мови C#</x:String>
     <x:String x:Key="ProjectProps.Nullable">Типи з підтримкою null</x:String>
     <x:String x:Key="ProjectProps.ImplicitUsings">Увімкнути неявні using</x:String>
@@ -1346,28 +1370,13 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="Settings.AutoDetect">🔍  Автовизначення всіх шляхів</x:String>
     <x:String x:Key="Settings.Save">💾  Зберегти налаштування</x:String>
 
-    <!-- ── Gemini AI Windows ─────────────────────────────────────── -->
-    <x:String x:Key="Gemini.Lang.Title">🌐  Додати переклад — крок 1 з 2</x:String>
-    <x:String x:Key="Gemini.Lang.Prompt">Введіть назву мови, яку ви хочете додати:</x:String>
-    <x:String x:Key="Gemini.Lang.FieldLabel">Назва мови</x:String>
-    <x:String x:Key="Gemini.Lang.Hint">Переклад генерується Google Gemini AI на основі вашого англійського словника. Переконайтеся, що ваш API-ключ встановлено в Меню &gt; Налаштування &gt; Gemini.</x:String>
-    <x:String x:Key="Gemini.Lang.Cancel">Скасувати</x:String>
-    <x:String x:Key="Gemini.Lang.Next">Далі →</x:String>
-    <x:String x:Key="Gemini.Model.Title">Крок 2 — вибір моделі Gemini</x:String>
-    <x:String x:Key="Gemini.Model.TargetLang">Цільова мова:</x:String>
-    <x:String x:Key="Gemini.Model.FieldLabel">Модель Gemini</x:String>
-    <x:String x:Key="Gemini.Model.AvailableTypes">Доступні типи моделей:</x:String>
-    <x:String x:Key="Gemini.Model.ProModels">Pro-моделі: gemini-1.5-pro, gemini-2.0-pro-exp (вища якість, повільніше, дорожче)</x:String>
-    <x:String x:Key="Gemini.Model.FlashModels">Flash-моделі: gemini-1.5-flash, gemini-2.0-flash (швидше, дешевше, відмінно для перекладу)</x:String>
-    <x:String x:Key="Gemini.Model.Tip">Порада: gemini-2.0-flash рекомендовано для завдань перекладу.</x:String>
-    <x:String x:Key="Gemini.Model.Cancel">Скасувати</x:String>
-    <x:String x:Key="Gemini.Model.Generate">Генерувати переклад</x:String>
-    <x:String x:Key="Gemini.Settings.Title">Налаштування Gemini API</x:String>
-    <x:String x:Key="Gemini.Settings.ApiKeyLabel">Ключ Google Gemini API</x:String>
-    <x:String x:Key="Gemini.Settings.ApiKeyHint">Отримайте безкоштовний ключ на: https://aistudio.google.com/app/apikey</x:String>
-    <x:String x:Key="Gemini.Settings.ShowKey">Показати ключ</x:String>
-    <x:String x:Key="Gemini.Settings.Cancel">Скасувати</x:String>
-    <x:String x:Key="Gemini.Settings.Save">💾  Зберегти</x:String>
+    <!-- ── GitHub Copilot Control Panel ────────────────────────────── -->
+    <x:String x:Key="GitHub.ControlPanel">Панель керування GitHub Copilot</x:String>
+    <x:String x:Key="GitHub.LaunchCopilot">Запустити GitHub Copilot CLI</x:String>
+    <x:String x:Key="GitHub.OpenTranslationsFolder">Відкрити папку перекладів</x:String>
+    <x:String x:Key="GitHub.CustomLanguages">🌐 Кастомні мови</x:String>
+    <x:String x:Key="GitHub.AddCustomLanguage">Додати кастомну мову з AXAML…</x:String>
+    <x:String x:Key="GitHub.SelectAxamlFile">Виберіть AXAML-файл перекладу</x:String>
 
     <!-- ── Roslyn / Code tools windows ──────────────────────────── -->
     <x:String x:Key="GenMember.Title">Генерувати член</x:String>

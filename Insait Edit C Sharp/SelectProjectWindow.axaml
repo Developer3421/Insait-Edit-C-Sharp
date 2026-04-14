@@ -1,0 +1,83 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Insait_Edit_C_Sharp.SelectProjectWindow"
+        Title="Select Project"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        Width="420" Height="340"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Background="#FF1F1A24">
+
+    <Window.Styles>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="#FF2A2230"/>
+            <Setter Property="BorderBrush" Value="#FF3E3050"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Foreground" Value="#FFF0E8F4"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#FF3D3050"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#FF5A3D8A"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#FF3E3050" BorderThickness="1" CornerRadius="8">
+        <Grid RowDefinitions="36,Auto,*,Auto">
+
+            <!-- Title bar -->
+            <Border Grid.Row="0" Background="#FF2D2438" CornerRadius="8,8,0,0"
+                    Name="TitleBar" PointerPressed="TitleBar_PointerPressed">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="🔍 Select Project to Analyze"
+                               FontSize="13" FontWeight="SemiBold"
+                               Foreground="#FFF0E8F4" VerticalAlignment="Center" Margin="12,0"/>
+                    <Button Grid.Column="1" Name="CloseButton" Click="CloseButton_Click"
+                            Background="Transparent" BorderThickness="0"
+                            Width="36" Height="36" Padding="0" Cursor="Hand">
+                        <TextBlock Text="✕" Foreground="#FFF0E8F4" FontSize="14"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Description -->
+            <TextBlock Grid.Row="1" Margin="16,12,16,8"
+                       Text="The solution contains multiple projects. Select which project to analyze:"
+                       FontSize="12" Foreground="#FF9E90B0" TextWrapping="Wrap"
+                       Name="DescriptionText"/>
+
+            <!-- Project list -->
+            <ListBox Grid.Row="2" Name="ProjectListBox" Margin="16,0,16,8"
+                     SelectionMode="Single" DoubleTapped="ProjectList_DoubleTapped"/>
+
+            <!-- Buttons -->
+            <Grid Grid.Row="3" ColumnDefinitions="*,12,*" Margin="16,0,16,16">
+                <Button Grid.Column="0" Click="CancelButton_Click"
+                        Background="#FF3D3050" Foreground="#FFF0E8F4"
+                        BorderThickness="0" CornerRadius="6"
+                        Padding="16,8" Cursor="Hand"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                    <TextBlock Text="Cancel" FontSize="13"/>
+                </Button>
+                <Button Grid.Column="2" Name="AnalyzeButton" Click="AnalyzeButton_Click"
+                        Background="#FF6B5A9A" Foreground="#FFF0E8F4"
+                        BorderThickness="0" CornerRadius="6"
+                        Padding="16,8" Cursor="Hand"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                    <TextBlock Text="🔍 Analyze" FontSize="13"/>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
+

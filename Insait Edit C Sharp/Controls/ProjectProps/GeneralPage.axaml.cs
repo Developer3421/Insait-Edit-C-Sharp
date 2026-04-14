@@ -79,14 +79,10 @@ public partial class GeneralPage : UserControl
 
         AssemblyNameBox.Text     = Prop("AssemblyName")  ?? name;
         DefaultNamespaceBox.Text = Prop("RootNamespace") ?? name;
-        StartupObjectBox.Text    = Prop("StartupObject") ?? "";
         if (AppIconPathBox is { } ib) ib.Text = Prop("ApplicationIcon") ?? "";
         SelectByContent(TargetFrameworkCombo, Prop("TargetFramework") ?? "net9.0");
         SelectByTag(OutputTypeCombo, Prop("OutputType") ?? "Exe");
-        SelectByContent(LangVersionCombo, Prop("LangVersion") ?? "Default (latest major)");
-        SelectByContent(NullableCombo, Prop("Nullable") ?? "enable");
-        ImplicitUsingsCheck.IsChecked = ParseBool(Prop("ImplicitUsings"), true);
-        AllowUnsafeCheck.IsChecked    = ParseBool(Prop("AllowUnsafeBlocks"), false);
+        SelectByTag(LangVersionCombo, Prop("LangVersion") ?? "default");
         UpdateIconPreview();
     }
 
@@ -102,16 +98,10 @@ public partial class GeneralPage : UserControl
         }
         Set("AssemblyName",    AssemblyNameBox.Text?.Trim());
         Set("RootNamespace",   DefaultNamespaceBox.Text?.Trim());
-        Set("StartupObject",   StartupObjectBox.Text?.Trim());
         Set("ApplicationIcon", AppIconPathBox?.Text?.Trim());
         Set("TargetFramework", ComboContent(TargetFrameworkCombo));
         Set("OutputType",      ComboTag(OutputTypeCombo) ?? ComboContent(OutputTypeCombo));
-        var lv = ComboContent(LangVersionCombo);
-        if (!string.IsNullOrEmpty(lv) && !lv.StartsWith("Default")) Set("LangVersion", lv);
-        else pg.Element("LangVersion")?.Remove();
-        Set("Nullable",        ComboContent(NullableCombo));
-        Set("ImplicitUsings",  ImplicitUsingsCheck.IsChecked == true ? "enable" : "disable");
-        Set("AllowUnsafeBlocks", AllowUnsafeCheck.IsChecked == true ? "true" : null);
+        Set("LangVersion",    ComboTag(LangVersionCombo) ?? ComboContent(LangVersionCombo));
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────

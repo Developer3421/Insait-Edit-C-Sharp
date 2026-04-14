@@ -23,16 +23,8 @@ public partial class ProjectPropertiesWindow : Window
     private enum ProjectKind { CSharp, FSharp, VisualBasic, NanoFramework, Unknown }
     private ProjectKind _projectKind = ProjectKind.Unknown;
 
-    // Pages
+    // Page
     private readonly GeneralPage _generalPage = new();
-    private readonly BuildPage   _buildPage   = new();
-    private readonly DebugPage   _debugPage   = new();
-    private readonly PackagePage _packagePage = new();
-    private readonly SigningPage _signingPage = new();
-
-    private record NavEntry(string BtnName, string Title, Control Page);
-    private List<NavEntry> _navMap = new();
-    private NavEntry? _activePage;
 
     // Track the TargetFramework at load time so we can detect changes
     private string? _originalTargetFramework;
@@ -67,8 +59,7 @@ public partial class ProjectPropertiesWindow : Window
     private void SetupUI()
     {
         SetupTitleBar();
-        SetupNav();
-        SetupSearch();
+        SetupContent();
         SetupFooter();
     }
 
@@ -87,89 +78,13 @@ public partial class ProjectPropertiesWindow : Window
         if (this.FindControl<TextBlock>("SubTitleText") is { } st) st.Text = projDir;
     }
 
-    private void SetupNav()
+    private void SetupContent()
     {
-        _navMap = new List<NavEntry>
-        {
-            new("NavGeneral",  "General",        _generalPage),
-            new("NavBuild",    "Build",           _buildPage),
-            new("NavDebug",    "Debug",           _debugPage),
-            new("NavPackage",  "Package / NuGet", _packagePage),
-            new("NavSigning",  "Signing",         _signingPage),
-        };
+        var host = this.FindControl<Panel>("PageHost")!;
+        host.Children.Add(_generalPage);
 
-        // Hide pages that don't apply to the current project type
-        ApplyNavVisibility();
-
-        foreach (var entry in _navMap)
-        {
-            var btn = this.FindControl<Button>(entry.BtnName);
-            if (btn != null)
-                btn.Click += (_, _) => ActivatePage(entry);
-        }
-
-        // Activate the first visible page
-        var first = _navMap.FirstOrDefault(e => this.FindControl<Button>(e.BtnName)?.IsVisible != false);
-        if (first != null) ActivatePage(first);
-    }
-
-    private void ApplyNavVisibility()
-    {
-        // For non-MSBuild projects only General page makes sense;
-        // F# / VB / nanoFramework hide package-only features.
-        bool isMsBuild = IsMsBuildProject(_projectPath);
-
-        void SetVisible(string btnName, bool visible)
-        {
-            if (this.FindControl<Button>(btnName) is { } btn) btn.IsVisible = visible;
-        }
-
-        // All MSBuild projects: all pages shown.
-        // Unknown: only show General (or nothing useful — show a disabled nav).
-        SetVisible("NavBuild",   isMsBuild);
-        SetVisible("NavDebug",   isMsBuild);
-        SetVisible("NavPackage", _projectKind is ProjectKind.CSharp or ProjectKind.FSharp or ProjectKind.VisualBasic);
-        SetVisible("NavSigning", _projectKind is ProjectKind.CSharp or ProjectKind.FSharp or ProjectKind.VisualBasic);
-    }
-
-    private void ActivatePage(NavEntry entry)
-    {
-        var host       = this.FindControl<Panel>("PageHost")!;
-        var titleBlock = this.FindControl<TextBlock>("PageTitle")!;
-
-        if (_activePage != null)
-        {
-            _activePage.Page.IsVisible = false;
-            var oldBtn = this.FindControl<Button>(_activePage.BtnName);
-            oldBtn?.Classes.Remove("active");
-        }
-
-        if (!host.Children.Contains(entry.Page))
-            host.Children.Add(entry.Page);
-
-        entry.Page.IsVisible = true;
-        var btn = this.FindControl<Button>(entry.BtnName);
-        if (btn != null && !btn.Classes.Contains("active")) btn.Classes.Add("active");
-        titleBlock.Text = entry.Title;
-        _activePage = entry;
-    }
-
-    private void SetupSearch()
-    {
-        var box = this.FindControl<TextBox>("NavSearchBox");
-        if (box == null) return;
-        box.TextChanged += (_, _) => FilterNav(box.Text ?? "");
-    }
-
-    private void FilterNav(string query)
-    {
-        query = query.Trim().ToLowerInvariant();
-        foreach (var entry in _navMap)
-        {
-            var btn = this.FindControl<Button>(entry.BtnName);
-            if (btn == null || !btn.IsVisible) continue;
-            btn.IsVisible = string.IsNullOrEmpty(query) || entry.Title.ToLowerInvariant().Contains(query);
-        }
+        if (this.FindControl<TextBlock>("PageTitle") is { } pt)
+            pt.Text = "General";
     }
 
     private void SetupFooter()
@@ -197,10 +112,6 @@ public partial class ProjectPropertiesWindow : Window
                                         ?? pg?.Element("TargetFrameworks")?.Value?.Trim();
 
                 _generalPage.Populate(pg, _projectPath);
-                _buildPage.Populate(pg);
-                _debugPage.Populate();
-                _packagePage.Populate(pg, _projectPath);
-                _signingPage.Populate(pg);
             }
             else
             {
@@ -236,9 +147,6 @@ public partial class ProjectPropertiesWindow : Window
             }
 
             _generalPage.Apply(pg);
-            _buildPage.Apply(pg);
-            _packagePage.Apply(pg);
-            _signingPage.Apply(pg);
 
             doc.Save(_projectPath);
             SetStatus($"✔  Saved at {DateTime.Now:HH:mm:ss}");

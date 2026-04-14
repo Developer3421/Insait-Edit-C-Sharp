@@ -278,7 +278,9 @@ public partial class MenuWindow : Window
 
         foreach (var (lang, flag, label) in languages)
         {
-            var isActive = LocalizationService.CurrentLanguage == lang;
+            // A standard language is only "active" when no custom language is loaded
+            var isActive = LocalizationService.CurrentLanguage == lang
+                           && GitHubCopilotService.LoadedLanguageName == null;
             var text = $"{flag}  {label}" + (isActive ? "  ✓" : "");
             AddMenuItem(panel, text, "", () =>
             {
@@ -288,39 +290,71 @@ public partial class MenuWindow : Window
         }
 
         AddSeparator(panel);
-        AddHeader(panel, "🤖 Custom AI Translation");
+        AddHeader(panel, LocalizationService.Get("GitHub.CustomLanguages"));
 
-        // List custom languages stored in the languages DB
-        var customLangs = LanguagesDbService.LoadAll();
-        foreach (var entry in customLangs)
+        // List custom languages from the translations folder
+        var customLangs = GitHubCopilotService.GetAvailableCustomLanguages();
+        foreach (var langName in customLangs)
         {
-            var entryName = entry.LanguageName;
-            var dictOk = CustomTranslationService.DictionaryExists(entryName);
-            var label2 = $"🌐  {entryName}" + (dictOk ? "" : " ⚠");
-            AddMenuItem(panel, label2, "", () =>
+            var name = langName;
+            var isLoaded = GitHubCopilotService.LoadedLanguageName == name;
+            var label = $"🌐  {name}" + (isLoaded ? "  ✓" : "");
+            AddMenuItem(panel, label, "", () =>
             {
-                if (dictOk)
-                {
-                    CustomTranslationService.LoadCustomDictionary(entryName);
-                    LocalizationService.NotifyLanguageChanged();
-                }
+                GitHubCopilotService.LoadCustomDictionary(name);
+                LocalizationService.SaveCustomLanguageName(name);
+                LocalizationService.NotifyLanguageChanged();
                 Close();
             });
         }
 
-        AddMenuItem(panel, "➕  Add Custom Language via Gemini...", "", () =>
+        AddMenuItem(panel, $"➕  {LocalizationService.Get("GitHub.AddCustomLanguage")}", "", async () =>
         {
+            var dialog = new Avalonia.Platform.Storage.FilePickerOpenOptions
+            {
+                Title = LocalizationService.Get("GitHub.SelectAxamlFile"),
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new Avalonia.Platform.Storage.FilePickerFileType("AXAML files")
+                    {
+                        Patterns = new[] { "*.axaml" }
+                    }
+                }
+            };
+
+            var files = await _mainWindow.StorageProvider.OpenFilePickerAsync(dialog);
+            if (files.Count > 0)
+            {
+                var path = files[0].Path.LocalPath;
+                var imported = GitHubCopilotService.ImportDictionaryFile(path);
+                if (imported != null)
+                {
+                    GitHubCopilotService.LoadCustomDictionary(imported);
+                    LocalizationService.SaveCustomLanguageName(imported);
+                    LocalizationService.NotifyLanguageChanged();
+                }
+            }
+
             Close();
-            var w = new GeminiLanguageNameWindow();
-            w.ShowDialog(_mainWindow);
         });
 
         AddSeparator(panel);
-        AddMenuItem(panel, "🔑  Gemini API Settings...", "", () =>
+        AddHeader(panel, LocalizationService.Get("GitHub.ControlPanel"));
+
+        AddMenuItem(panel, $"🚀  {LocalizationService.Get("GitHub.LaunchCopilot")}", "", async () =>
         {
+            await GitHubCopilotService.EnsureEnglishDictionaryAsync();
+            GitHubCopilotService.LaunchCopilotCli();
             Close();
-            var w = new GeminiSettingsWindow();
-            w.ShowDialog(_mainWindow);
+        });
+
+
+        AddMenuItem(panel, $"📂  {LocalizationService.Get("GitHub.OpenTranslationsFolder")}", "", async () =>
+        {
+            await GitHubCopilotService.EnsureEnglishDictionaryAsync();
+            GitHubCopilotService.OpenTranslationsFolder();
+            Close();
         });
     }
 

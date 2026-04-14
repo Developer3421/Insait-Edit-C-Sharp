@@ -48,6 +48,7 @@ public partial class InsaitEditor : UserControl
     // ── Editor state ─────────────────────────────────────────────────────
     private string _currentFilePath = "untitled.cs";
     private bool   _isDirty;
+    private string? _projectDir;
 
     // ── Roslyn services ──────────────────────────────────────────────────
     private readonly InlineDiagnosticService _diagService      = new();
@@ -224,6 +225,7 @@ public partial class InsaitEditor : UserControl
 
     public void SetProjectContext(string? projectDir)
     {
+        _projectDir = projectDir;
         _surface.SetProjectContext(projectDir);
         _completionEngine.SetProjectContext(projectDir);
         _diagService.SetProjectContext(projectDir);
@@ -915,7 +917,7 @@ public partial class InsaitEditor : UserControl
         var parentWin = TopLevel.GetTopLevel(this) as Window;
         if (parentWin == null) return;
 
-        _autoFixWin = new AutoFixWindow(_currentFilePath, _surface.Text);
+        _autoFixWin = new AutoFixWindow(_currentFilePath, _surface.Text, _projectDir);
 
         _autoFixWin.FixApplied += (_, args) =>
         {

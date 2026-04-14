@@ -22,7 +22,6 @@ public static class SettingsDbService
     private const string KeyFileName = "insait_settings.key";
     private const string Collection  = "settings";
     private const string LangKey     = "language";
-    private const string GeminiApiKeyKey = "gemini_api_key";
 
     // ---------- private state ----------
 
@@ -102,57 +101,6 @@ public static class SettingsDbService
         }
     }
 
-    /// <summary>
-    /// Returns the saved Gemini API key, or <see langword="null"/> when not set / error.
-    /// </summary>
-    public static string? LoadGeminiApiKey()
-    {
-        try
-        {
-            var password = GetOrCreatePassword();
-            if (password == null) return null;
-
-            using var db = OpenDb(password);
-            var col = db.GetCollection<SettingEntry>(Collection);
-            var entry = col.FindOne(x => x.Key == GeminiApiKeyKey);
-            return entry?.Value;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[SettingsDb] LoadGeminiApiKey failed: {ex.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Saves the Gemini API key to the encrypted database.
-    /// </summary>
-    public static void SaveGeminiApiKey(string apiKey)
-    {
-        try
-        {
-            var password = GetOrCreatePassword();
-            if (password == null) return;
-
-            using var db = OpenDb(password);
-            var col = db.GetCollection<SettingEntry>(Collection);
-
-            var existing = col.FindOne(x => x.Key == GeminiApiKeyKey);
-            if (existing != null)
-            {
-                existing.Value = apiKey;
-                col.Update(existing);
-            }
-            else
-            {
-                col.Insert(new SettingEntry { Key = GeminiApiKeyKey, Value = apiKey });
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[SettingsDb] SaveGeminiApiKey failed: {ex.Message}");
-        }
-    }
 
     // ---------- generic setting API ----------
 

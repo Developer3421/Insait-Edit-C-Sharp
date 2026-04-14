@@ -710,6 +710,27 @@
     <x:String x:Key="Git.BranchName">Branch-Name:</x:String>
     <x:String x:Key="Git.CreatingBranch">Erstelle {0}…</x:String>
     <x:String x:Key="Git.CreatedBranch">{0} erstellt</x:String>
+    <x:String x:Key="Git.TabBranches">Branches</x:String>
+    <x:String x:Key="Git.LocalBranches">Lokale Branches</x:String>
+    <x:String x:Key="Git.DeleteBranch">Branch löschen</x:String>
+    <x:String x:Key="Git.DeletingBranch">Lösche Branch {0}…</x:String>
+    <x:String x:Key="Git.DeletedBranch">Branch '{0}' gelöscht</x:String>
+    <x:String x:Key="Git.DeleteBranchConfirm">Branch '{0}' wirklich löschen?</x:String>
+    <x:String x:Key="Git.DeleteBranchForce">Erzwungenes Löschen (auch wenn nicht gemergt)</x:String>
+    <x:String x:Key="Git.RenameBranch">Branch umbenennen</x:String>
+    <x:String x:Key="Git.RenamingBranch">Benenne Branch um in {0}…</x:String>
+    <x:String x:Key="Git.RenamedBranch">Branch umbenannt zu '{0}'</x:String>
+    <x:String x:Key="Git.NewBranchName">Neuer Branch-Name:</x:String>
+    <x:String x:Key="Git.MergeBranch">In aktuellen Branch mergen</x:String>
+    <x:String x:Key="Git.MergingBranch">Merge von {0}…</x:String>
+    <x:String x:Key="Git.MergedBranch">Branch '{0}' erfolgreich gemergt</x:String>
+    <x:String x:Key="Git.MergeError">Merge-Fehler: {0}</x:String>
+    <x:String x:Key="Git.BranchCurrent">aktuell</x:String>
+    <x:String x:Key="Git.BranchTracking">verfolgt: {0}</x:String>
+    <x:String x:Key="Git.CreateBranchFromCommit">Branch erstellen von {0}</x:String>
+    <x:String x:Key="Git.NewBranchFromCommitName">Branch-Name (von {0}):</x:String>
+    <x:String x:Key="Git.CreatingBranchFromCommit">Erstelle Branch {0} von {1}…</x:String>
+    <x:String x:Key="Git.NoBranches">Keine Branches gefunden</x:String>
     <x:String x:Key="Git.NoFilesSelected">Keine Dateien ausgewählt</x:String>
     <x:String x:Key="Git.Committing">Commit wird erstellt…</x:String>
     <x:String x:Key="Git.CommitSuccessful">Commit erfolgreich</x:String>
@@ -902,6 +923,8 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="Publish.NativeLibsTooltip">Bündelt native Bibliotheken in die Einzeldatei</x:String>
     <x:String x:Key="Publish.CleanOutput">🗑 Ausgabeordner vor Veröffentlichung bereinigen</x:String>
     <x:String x:Key="Publish.CleanOutputTooltip">Löscht alle Dateien im Ausgabeordner vor der Veröffentlichung für einen sauberen Build</x:String>
+    <x:String x:Key="Publish.NoPdb">🚫 Ohne PDB-Dateien (DebugType=none)</x:String>
+    <x:String x:Key="Publish.NoPdbTooltip">Debug-Symboldateien (.pdb) von der Veröffentlichung ausschließen. Setzt DebugType=none.</x:String>
     <x:String x:Key="Publish.PublishProfile">Veröffentlichungsprofil (optional)</x:String>
     <x:String x:Key="Publish.NewProfile">+ Neues Profil</x:String>
     <x:String x:Key="Publish.ProfileHint">Verwenden Sie vorhandene Veröffentlichungsprofile aus dem Ordner Properties/PublishProfiles</x:String>
@@ -951,6 +974,7 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="ProjectProps.DefaultNamespace">Standard-Namespace</x:String>
     <x:String x:Key="ProjectProps.TargetFramework">Zielframework</x:String>
     <x:String x:Key="ProjectProps.OutputType">Ausgabetyp</x:String>
+    <x:String x:Key="ProjectProps.LangVersion">C#-Sprachversion</x:String>
     <x:String x:Key="ProjectProps.LangVersion">C#-Sprachversion</x:String>
     <x:String x:Key="ProjectProps.Nullable">Nullable-Verweistypen</x:String>
     <x:String x:Key="ProjectProps.ImplicitUsings">Implizite Usings aktivieren</x:String>
@@ -1346,28 +1370,13 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="Settings.AutoDetect">🔍  Alle Pfade automatisch erkennen</x:String>
     <x:String x:Key="Settings.Save">💾  Einstellungen speichern</x:String>
 
-    <!-- ── Gemini AI Windows ─────────────────────────────────────── -->
-    <x:String x:Key="Gemini.Lang.Title">🌐  Übersetzung hinzufügen — Schritt 1 von 2</x:String>
-    <x:String x:Key="Gemini.Lang.Prompt">Geben Sie den Namen der Sprache ein, die Sie hinzufügen möchten:</x:String>
-    <x:String x:Key="Gemini.Lang.FieldLabel">Sprachname</x:String>
-    <x:String x:Key="Gemini.Lang.Hint">Die Übersetzung wird von Google Gemini AI anhand Ihres englischen Wörterbuchs erstellt. Stellen Sie sicher, dass Ihr API-Schlüssel unter Menü &gt; Einstellungen &gt; Gemini eingestellt ist.</x:String>
-    <x:String x:Key="Gemini.Lang.Cancel">Abbrechen</x:String>
-    <x:String x:Key="Gemini.Lang.Next">Weiter →</x:String>
-    <x:String x:Key="Gemini.Model.Title">Schritt 2 - Gemini-Modell wählen</x:String>
-    <x:String x:Key="Gemini.Model.TargetLang">Zielsprache:</x:String>
-    <x:String x:Key="Gemini.Model.FieldLabel">Gemini-Modell</x:String>
-    <x:String x:Key="Gemini.Model.AvailableTypes">Verfügbare Modelltypen:</x:String>
-    <x:String x:Key="Gemini.Model.ProModels">Pro-Modelle: gemini-1.5-pro, gemini-2.0-pro-exp (höhere Qualität, langsamer, teurer)</x:String>
-    <x:String x:Key="Gemini.Model.FlashModels">Flash-Modelle: gemini-1.5-flash, gemini-2.0-flash (schneller, günstiger, ideal für Übersetzungen)</x:String>
-    <x:String x:Key="Gemini.Model.Tip">Tipp: gemini-2.0-flash wird für Übersetzungsaufgaben empfohlen.</x:String>
-    <x:String x:Key="Gemini.Model.Cancel">Abbrechen</x:String>
-    <x:String x:Key="Gemini.Model.Generate">Übersetzung generieren</x:String>
-    <x:String x:Key="Gemini.Settings.Title">Gemini-API-Einstellungen</x:String>
-    <x:String x:Key="Gemini.Settings.ApiKeyLabel">Google Gemini API-Schlüssel</x:String>
-    <x:String x:Key="Gemini.Settings.ApiKeyHint">Holen Sie sich Ihren kostenlosen Schlüssel unter: https://aistudio.google.com/app/apikey</x:String>
-    <x:String x:Key="Gemini.Settings.ShowKey">Schlüssel anzeigen</x:String>
-    <x:String x:Key="Gemini.Settings.Cancel">Abbrechen</x:String>
-    <x:String x:Key="Gemini.Settings.Save">💾  Speichern</x:String>
+    <!-- ── GitHub Copilot Control Panel ────────────────────────────── -->
+    <x:String x:Key="GitHub.ControlPanel">GitHub Copilot Systemsteuerung</x:String>
+    <x:String x:Key="GitHub.LaunchCopilot">GitHub Copilot CLI starten</x:String>
+    <x:String x:Key="GitHub.OpenTranslationsFolder">Übersetzungsordner öffnen</x:String>
+    <x:String x:Key="GitHub.CustomLanguages">🌐 Benutzerdefinierte Sprachen</x:String>
+    <x:String x:Key="GitHub.AddCustomLanguage">Benutzerdefinierte Sprache aus AXAML hinzufügen…</x:String>
+    <x:String x:Key="GitHub.SelectAxamlFile">AXAML-Übersetzungsdatei auswählen</x:String>
 
     <!-- ── Roslyn / Code tools windows ──────────────────────────── -->
     <x:String x:Key="GenMember.Title">Member generieren</x:String>

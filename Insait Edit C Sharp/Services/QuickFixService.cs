@@ -142,15 +142,11 @@ public sealed class QuickFixService : IDisposable
             {
                 fixes.Add(new QuickFixSuggestion
                 {
-                    Title        = "Add null check",
-                    Kind         = QuickFixKind.InsertCode,
+                    Title          = "Use null-forgiving operator (!)",
+                    Kind           = QuickFixKind.InsertCode,
                     DiagnosticCode = diagnosticCode,
-                });
-                fixes.Add(new QuickFixSuggestion
-                {
-                    Title        = "Use null-forgiving operator (!)",
-                    Kind         = QuickFixKind.InsertCode,
-                    DiagnosticCode = diagnosticCode,
+                    InsertText     = "!",
+                    InsertOffset   = diagnosticEndOffset,
                 });
             }
 
@@ -172,9 +168,11 @@ public sealed class QuickFixService : IDisposable
             {
                 fixes.Add(new QuickFixSuggestion
                 {
-                    Title        = "Add method body",
-                    Kind         = QuickFixKind.InsertCode,
+                    Title          = "Add method body",
+                    Kind           = QuickFixKind.InsertCode,
                     DiagnosticCode = diagnosticCode,
+                    InsertText     = "\n{\n    throw new NotImplementedException();\n}",
+                    InsertOffset   = diagnosticEndOffset,
                 });
             }
         }

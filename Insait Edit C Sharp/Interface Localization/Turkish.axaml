@@ -706,6 +706,27 @@
     <x:String x:Key="Git.BranchName">Dal adı:</x:String>
     <x:String x:Key="Git.CreatingBranch">{0} oluşturuluyor…</x:String>
     <x:String x:Key="Git.CreatedBranch">{0} oluşturuldu</x:String>
+    <x:String x:Key="Git.TabBranches">Dallar</x:String>
+    <x:String x:Key="Git.LocalBranches">Yerel Dallar</x:String>
+    <x:String x:Key="Git.DeleteBranch">Dalı Sil</x:String>
+    <x:String x:Key="Git.DeletingBranch">{0} dalı siliniyor…</x:String>
+    <x:String x:Key="Git.DeletedBranch">'{0}' dalı silindi</x:String>
+    <x:String x:Key="Git.DeleteBranchConfirm">'{0}' dalını silmek istediğinizden emin misiniz?</x:String>
+    <x:String x:Key="Git.DeleteBranchForce">Zorla sil (birleştirilmemiş olsa bile)</x:String>
+    <x:String x:Key="Git.RenameBranch">Dalı Yeniden Adlandır</x:String>
+    <x:String x:Key="Git.RenamingBranch">Dal {0} olarak yeniden adlandırılıyor…</x:String>
+    <x:String x:Key="Git.RenamedBranch">Dal '{0}' olarak yeniden adlandırıldı</x:String>
+    <x:String x:Key="Git.NewBranchName">Yeni dal adı:</x:String>
+    <x:String x:Key="Git.MergeBranch">Mevcut Dala Birleştir</x:String>
+    <x:String x:Key="Git.MergingBranch">{0} birleştiriliyor…</x:String>
+    <x:String x:Key="Git.MergedBranch">'{0}' dalı başarıyla birleştirildi</x:String>
+    <x:String x:Key="Git.MergeError">Birleştirme hatası: {0}</x:String>
+    <x:String x:Key="Git.BranchCurrent">mevcut</x:String>
+    <x:String x:Key="Git.BranchTracking">izleme: {0}</x:String>
+    <x:String x:Key="Git.CreateBranchFromCommit">{0} üzerinden dal oluştur</x:String>
+    <x:String x:Key="Git.NewBranchFromCommitName">Dal adı ({0} üzerinden):</x:String>
+    <x:String x:Key="Git.CreatingBranchFromCommit">{1} üzerinden {0} dalı oluşturuluyor…</x:String>
+    <x:String x:Key="Git.NoBranches">Dal bulunamadı</x:String>
     <x:String x:Key="Git.NoFilesSelected">Hiç dosya seçilmedi</x:String>
     <x:String x:Key="Git.Committing">Commit oluşturuluyor…</x:String>
     <x:String x:Key="Git.CommitSuccessful">Commit başarılı</x:String>
@@ -898,6 +919,8 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="Publish.NativeLibsTooltip">Yerel kitaplıkları tek dosyaya paketler</x:String>
     <x:String x:Key="Publish.CleanOutput">🗑 Yayınlamadan önce çıktı klasörünü temizle</x:String>
     <x:String x:Key="Publish.CleanOutputTooltip">Temiz bir derleme için yayınlamadan önce çıktı klasöründeki tüm dosyaları siler</x:String>
+    <x:String x:Key="Publish.NoPdb">🚫 PDB dosyaları yok (DebugType=none)</x:String>
+    <x:String x:Key="Publish.NoPdbTooltip">Hata ayıklama sembol dosyalarını (.pdb) yayından hariç tut. DebugType=none olarak ayarlar.</x:String>
     <x:String x:Key="Publish.PublishProfile">Yayınlama Profili (İsteğe bağlı)</x:String>
     <x:String x:Key="Publish.NewProfile">+ Yeni Profil</x:String>
     <x:String x:Key="Publish.ProfileHint">Properties/PublishProfiles klasöründeki mevcut yayınlama profillerini kullanın</x:String>
@@ -947,6 +970,7 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="ProjectProps.DefaultNamespace">Varsayılan ad alanı</x:String>
     <x:String x:Key="ProjectProps.TargetFramework">Hedef çerçeve</x:String>
     <x:String x:Key="ProjectProps.OutputType">Çıktı türü</x:String>
+    <x:String x:Key="ProjectProps.LangVersion">C# dil sürümü</x:String>
     <x:String x:Key="ProjectProps.LangVersion">C# dil sürümü</x:String>
     <x:String x:Key="ProjectProps.Nullable">Nullable başvuru türleri</x:String>
     <x:String x:Key="ProjectProps.ImplicitUsings">Örtük using'leri etkinleştir</x:String>
@@ -1346,28 +1370,13 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="Settings.AutoDetect">🔍  Tüm yolları otomatik algıla</x:String>
     <x:String x:Key="Settings.Save">💾  Ayarları Kaydet</x:String>
 
-    <!-- ── Gemini AI Windows ─────────────────────────────────────── -->
-    <x:String x:Key="Gemini.Lang.Title">🌐  Özel Çeviri Ekle — Adım 1/2</x:String>
-    <x:String x:Key="Gemini.Lang.Prompt">Eklemek istediğiniz dilin adını girin:</x:String>
-    <x:String x:Key="Gemini.Lang.FieldLabel">Dil Adı</x:String>
-    <x:String x:Key="Gemini.Lang.Hint">Çeviri, İngilizce sözlüğünüzü kullanarak Google Gemini AI tarafından oluşturulur. API anahtarınızın Menü &gt; Ayarlar &gt; Gemini'de ayarlandığından emin olun.</x:String>
-    <x:String x:Key="Gemini.Lang.Cancel">İptal</x:String>
-    <x:String x:Key="Gemini.Lang.Next">İleri →</x:String>
-    <x:String x:Key="Gemini.Model.Title">Adım 2 - Gemini Modeli Seç</x:String>
-    <x:String x:Key="Gemini.Model.TargetLang">Hedef dil:</x:String>
-    <x:String x:Key="Gemini.Model.FieldLabel">Gemini Modeli</x:String>
-    <x:String x:Key="Gemini.Model.AvailableTypes">Kullanılabilir model türleri:</x:String>
-    <x:String x:Key="Gemini.Model.ProModels">Pro modeller: gemini-1.5-pro, gemini-2.0-pro-exp (daha yüksek kalite, daha yavaş, daha pahalı)</x:String>
-    <x:String x:Key="Gemini.Model.FlashModels">Flash modeller: gemini-1.5-flash, gemini-2.0-flash (daha hızlı, daha ucuz, çeviri için harika)</x:String>
-    <x:String x:Key="Gemini.Model.Tip">İpucu: Çeviri görevleri için gemini-2.0-flash önerilir.</x:String>
-    <x:String x:Key="Gemini.Model.Cancel">İptal</x:String>
-    <x:String x:Key="Gemini.Model.Generate">Çeviri Oluştur</x:String>
-    <x:String x:Key="Gemini.Settings.Title">Gemini API Ayarları</x:String>
-    <x:String x:Key="Gemini.Settings.ApiKeyLabel">Google Gemini API Anahtarı</x:String>
-    <x:String x:Key="Gemini.Settings.ApiKeyHint">Ücretsiz anahtarınızı şu adresten alın: https://aistudio.google.com/app/apikey</x:String>
-    <x:String x:Key="Gemini.Settings.ShowKey">Anahtarı göster</x:String>
-    <x:String x:Key="Gemini.Settings.Cancel">İptal</x:String>
-    <x:String x:Key="Gemini.Settings.Save">💾  Kaydet</x:String>
+    <!-- ── GitHub Copilot Control Panel ────────────────────────────── -->
+    <x:String x:Key="GitHub.ControlPanel">GitHub Copilot Kontrol Paneli</x:String>
+    <x:String x:Key="GitHub.LaunchCopilot">GitHub Copilot CLI'yi Başlat</x:String>
+    <x:String x:Key="GitHub.OpenTranslationsFolder">Çeviri Klasörünü Aç</x:String>
+    <x:String x:Key="GitHub.CustomLanguages">🌐 Özel Diller</x:String>
+    <x:String x:Key="GitHub.AddCustomLanguage">AXAML'den Özel Dil Ekle…</x:String>
+    <x:String x:Key="GitHub.SelectAxamlFile">AXAML Çeviri Dosyası Seçin</x:String>
 
     <!-- ── Roslyn / Code tools windows ──────────────────────────── -->
     <x:String x:Key="GenMember.Title">Üye Oluştur</x:String>

@@ -68,11 +68,12 @@ public partial class AutoFixWindow : Window
     /// </summary>
     public event EventHandler<int>? NavigateToLineRequested;
 
-    public AutoFixWindow(string filePath, string sourceCode)
+    public AutoFixWindow(string filePath, string sourceCode, string? projectDir = null)
     {
         InitializeComponent();
 
         _autoFixService = new RoslynAutoFixService();
+        _autoFixService.SetProjectContext(projectDir);
         _filePath       = filePath;
         _sourceCode     = sourceCode;
         _allTemplates   = RoslynAutoFixService.GetCodeTemplates();

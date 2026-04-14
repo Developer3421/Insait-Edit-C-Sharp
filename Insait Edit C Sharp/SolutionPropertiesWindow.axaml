@@ -162,7 +162,7 @@
                     <Border Grid.Column="0" Width="4" Background="#FFFFC09F"
                             Margin="0,9,0,9" VerticalAlignment="Stretch"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" Margin="12,0">
-                        <TextBlock Text="??" FontSize="16" VerticalAlignment="Center"
+                        <TextBlock Text="⚙" FontSize="16" VerticalAlignment="Center"
                                    Foreground="#FFFFC09F"/>
                         <StackPanel VerticalAlignment="Center" Spacing="1">
                             <TextBlock Name="TitleText" Text="{DynamicResource SolProps.Title}"
@@ -191,7 +191,7 @@
                         BorderBrush="#FF2A2040" BorderThickness="0,0,0,1"
                         Padding="28,13">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="??" FontSize="18" VerticalAlignment="Center"
+                        <TextBlock Text="📁" FontSize="18" VerticalAlignment="Center"
                                    Foreground="#FFFFC09F" FontFamily="Segoe UI Emoji"/>
                         <TextBlock Name="PageTitle"
                                    Text="{DynamicResource SolProps.NavProjects}"

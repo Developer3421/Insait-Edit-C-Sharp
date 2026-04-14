@@ -15,14 +15,18 @@ public static class LocalizationService
     private static AppLanguage _currentLanguage = AppLanguage.English;
     private static ResourceInclude? _currentDictionary;
 
+    private const string CustomLangSettingKey = "custom_language";
+
     public static AppLanguage CurrentLanguage
     {
         get => _currentLanguage;
         set
         {
-            if (_currentLanguage == value) return;
+            if (_currentLanguage == value && GitHubCopilotService.LoadedLanguageName == null) return;
             _currentLanguage = value;
             LoadLanguageDictionary(value);
+            // User explicitly chose a standard language — clear the custom language choice
+            SaveCustomLanguageName(null);
             // Persist the chosen language so it is restored on next launch
             SettingsDbService.SaveLanguage(value);
             LanguageChanged?.Invoke(null, EventArgs.Empty);
@@ -60,6 +64,31 @@ public static class LocalizationService
         }
 
         LoadLanguageDictionary(_currentLanguage);
+
+        // Try to restore the last selected custom language (if any)
+        try
+        {
+            var savedCustom = SettingsDbService.LoadSetting(CustomLangSettingKey);
+            if (!string.IsNullOrEmpty(savedCustom))
+            {
+                if (GitHubCopilotService.DictionaryExists(savedCustom))
+                {
+                    GitHubCopilotService.LoadCustomDictionary(savedCustom);
+                    // Persist the choice again so SaveCustomLanguage stays in sync
+                }
+                else
+                {
+                    // File was deleted — clear the setting and stay on the standard language
+                    SettingsDbService.SaveSetting(CustomLangSettingKey, "");
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[Localization] Custom language '{savedCustom}' not found, falling back to {_currentLanguage}");
+                }
+            }
+        }
+        catch
+        {
+            // Non-fatal — just stay on the standard language
+        }
     }
 
     /// <summary>
@@ -77,12 +106,33 @@ public static class LocalizationService
     }
 
     /// <summary>
+    /// Persists the name of the active custom language so it can be restored on next launch.
+    /// Pass <c>null</c> or empty string to clear.
+    /// </summary>
+    public static void SaveCustomLanguageName(string? name)
+    {
+        try
+        {
+            SettingsDbService.SaveSetting(CustomLangSettingKey, name ?? "");
+        }
+        catch
+        {
+            // Non-fatal
+        }
+    }
+
+    /// <summary>
     /// Load the AXAML resource dictionary for the given language into Application.Current.Resources.
     /// </summary>
     private static void LoadLanguageDictionary(AppLanguage language)
     {
         var app = Application.Current;
         if (app == null) return;
+
+        // Clear any custom (user-created) dictionary overrides so they don't
+        // shadow the standard language being loaded.
+        GitHubCopilotService.UnloadCustomDictionary();
+
 
         var fileName = language switch
         {

@@ -399,7 +399,7 @@
                         <Border.Background>
                             <StaticResource ResourceKey="SectionHeaderGradient"/>
                         </Border.Background>
-                        <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                             <TextBlock Grid.Column="0" Text="⎇" FontSize="13"
                                        FontFamily="Segoe UI Emoji, Segoe UI"
                                        Foreground="{StaticResource GreenBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -423,6 +423,11 @@
                                     <TextBlock Name="AheadText" Text="0" FontSize="11" Foreground="{StaticResource GreenBrush}"/>
                                 </StackPanel>
                             </StackPanel>
+                            <Button Grid.Column="3" Classes="tb" Width="22" Height="22" Margin="4,0,0,0"
+                                    ToolTip.Tip="{DynamicResource Git.NewBranch}" Click="NewBranchFromPanel_Click">
+                                <TextBlock Text="➕" FontSize="10" FontFamily="Segoe UI Emoji, Segoe UI"
+                                           Foreground="{StaticResource GreenBrush}"/>
+                            </Button>
                         </Grid>
                     </Border>
 
@@ -605,6 +610,12 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <TextBlock Text="📊" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     <TextBlock Text="{DynamicResource Git.TabChanges}" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Classes="rtab" Name="BranchesTabBtn" Click="BranchesTab_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🌿" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Text="{DynamicResource Git.TabBranches}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Classes="rtab" Name="ConsoleTabBtn" Click="ConsoleTab_Click">
@@ -854,6 +865,151 @@
                                        FontSize="12" Foreground="{StaticResource TextBrush}"
                                        TextWrapping="NoWrap"
                                        SelectionBrush="#60FFC09F"/>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+
+                <!-- BRANCHES panel -->
+                <Grid Grid.Row="1" Name="BranchesPanel" IsVisible="False">
+                    <Grid RowDefinitions="Auto,*">
+                        <!-- Header toolbar -->
+                        <Border Grid.Row="0" Background="{StaticResource SurfBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="0,0,0,1" Padding="10,6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🌿" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Text="{DynamicResource Git.TabBranches}" FontSize="12" FontWeight="SemiBold"
+                                               Foreground="{StaticResource OrangeBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                    <Button Classes="tb" Width="28" Height="28"
+                                            ToolTip.Tip="{DynamicResource Git.NewBranch}" Click="NewBranchFromPanel_Click">
+                                        <TextBlock Text="➕" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"
+                                                   Foreground="{StaticResource GreenBrush}"/>
+                                    </Button>
+                                    <Button Classes="tb" Width="28" Height="28"
+                                            ToolTip.Tip="{DynamicResource Git.Refresh}" Click="RefreshBranches_Click">
+                                        <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Branch lists -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Margin="0,4">
+                                <!-- Local branches section -->
+                                <Border BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0,0,0,1" Padding="10,6">
+                                    <Border.Background>
+                                        <StaticResource ResourceKey="SectionHeaderGradient"/>
+                                    </Border.Background>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="💻" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                        <TextBlock Text="{DynamicResource Git.LocalBranches}" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource OrangeBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                                <ItemsControl Name="LocalBranchesList" Margin="4,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:GitBranch" x:CompileBindings="False">
+                                            <Border Classes="crow" PointerPressed="BranchItem_PointerPressed">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="{DynamicResource Git.CheckingOutBranch}" Click="CtxCheckoutBranch_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem Header="{DynamicResource Git.MergeBranch}" Click="CtxMergeBranch_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem Header="{DynamicResource Git.RenameBranch}" Click="CtxRenameBranch_Click"/>
+                                                        <MenuItem Header="{DynamicResource Git.DeleteBranch}" Click="CtxDeleteBranch_Click"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
+                                                <Grid ColumnDefinitions="22,*,Auto">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Icon}"
+                                                               FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"
+                                                               Foreground="{Binding IconColor}"
+                                                               VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Spacing="1" Margin="4,0,4,0">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                            <TextBlock Text="{Binding Name}" FontSize="12"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource TextBrush}"
+                                                                       VerticalAlignment="Center"/>
+                                                            <Border IsVisible="{Binding IsCurrent}" Background="#28A6E3A1"
+                                                                    CornerRadius="4" Padding="6,1"
+                                                                    BorderBrush="#40A6E3A1" BorderThickness="1">
+                                                                <TextBlock Text="{DynamicResource Git.BranchCurrent}" FontSize="9"
+                                                                           Foreground="{StaticResource GreenBrush}"/>
+                                                            </Border>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding LastCommitMessage}" FontSize="10"
+                                                                   Foreground="{StaticResource MutedBrush}"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{Binding LastCommitHash}" FontSize="10"
+                                                               Foreground="{StaticResource OrangeBrush}"
+                                                               FontFamily="Consolas, monospace"
+                                                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Remote branches section -->
+                                <Border BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0,0,0,1" Padding="10,6" Margin="0,8,0,0">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="☁️" FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"
+                                                   Foreground="{StaticResource BlueBrush}"/>
+                                        <TextBlock Text="{DynamicResource Git.RemoteBranches}" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                                <ItemsControl Name="RemoteBranchesList" Margin="4,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:GitBranch" x:CompileBindings="False">
+                                            <Border Classes="crow" PointerPressed="BranchItem_PointerPressed">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="{DynamicResource Git.CheckingOutBranch}" Click="CtxCheckoutBranch_Click"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
+                                                <Grid ColumnDefinitions="22,*,Auto">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Icon}"
+                                                               FontSize="13" FontFamily="Segoe UI Emoji, Segoe UI"
+                                                               Foreground="{Binding IconColor}"
+                                                               VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Spacing="1" Margin="4,0,4,0">
+                                                        <TextBlock Text="{Binding ShortName}" FontSize="12"
+                                                                   Foreground="{StaticResource TextBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding LastCommitMessage}" FontSize="10"
+                                                                   Foreground="{StaticResource MutedBrush}"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{Binding LastCommitHash}" FontSize="10"
+                                                               Foreground="{StaticResource BlueBrush}"
+                                                               FontFamily="Consolas, monospace"
+                                                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Empty state -->
+                                <StackPanel Name="NoBranchesPanel" IsVisible="False"
+                                            Margin="16,28" HorizontalAlignment="Center" Spacing="4">
+                                    <TextBlock Text="🌿" FontSize="36" FontFamily="Segoe UI Emoji, Segoe UI"
+                                               HorizontalAlignment="Center" Opacity="0.5"/>
+                                    <TextBlock Text="{DynamicResource Git.NoBranches}" FontSize="13"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
                         </ScrollViewer>
                     </Grid>
                 </Grid>

@@ -187,6 +187,9 @@
                             
                             <CheckBox Content="{DynamicResource Publish.CleanOutput}" Name="CleanOutputCheck" IsChecked="True"
                                       ToolTip.Tip="{DynamicResource Publish.CleanOutputTooltip}"/>
+                            
+                            <CheckBox Content="{DynamicResource Publish.NoPdb}" Name="NoPdbCheck"
+                                      ToolTip.Tip="{DynamicResource Publish.NoPdbTooltip}"/>
                         </StackPanel>
                     </Border>
 

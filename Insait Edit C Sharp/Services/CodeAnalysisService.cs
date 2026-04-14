@@ -209,14 +209,16 @@ public class CodeAnalysisService
         if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
             return diagnostics;
 
-        string activeFilePath;
+        string? activeFilePath;
         string activeSource;
         try
         {
             activeFilePath = Directory.GetFiles(projectDir, "*.cs", SearchOption.AllDirectories)
-                .First(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                .FirstOrDefault(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
                             !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
                             !f.Contains(Path.DirectorySeparatorChar + ".vs" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+            if (activeFilePath == null)
+                return diagnostics;
             activeSource = await File.ReadAllTextAsync(activeFilePath, cancellationToken);
         }
         catch

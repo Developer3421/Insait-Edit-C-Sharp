@@ -113,15 +113,7 @@
       <Compile Update="AxamlLiveHost.axaml.cs">
         <DependentUpon>AxamlLiveHost.axaml</DependentUpon>
       </Compile>
-      <Compile Update="GeminiSettingsWindow.axaml.cs">
-        <DependentUpon>GeminiSettingsWindow.axaml</DependentUpon>
-      </Compile>
-      <Compile Update="GeminiLanguageNameWindow.axaml.cs">
-        <DependentUpon>GeminiLanguageNameWindow.axaml</DependentUpon>
-      </Compile>
-      <Compile Update="GeminiModelWindow.axaml.cs">
-        <DependentUpon>GeminiModelWindow.axaml</DependentUpon>
-      </Compile>
+
       <Compile Update="Terminal\InsaitTerminalPanel.axaml.cs">
         <DependentUpon>InsaitTerminalPanel.axaml</DependentUpon>
       </Compile>

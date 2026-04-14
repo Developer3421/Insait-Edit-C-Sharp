@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -10,8 +9,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CodeRefactorings;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using Insait_Edit_C_Sharp.Controls;
@@ -37,6 +34,7 @@ public sealed class RoslynAutoFixService : IDisposable
     private ProjectId?  _projectId;
     private DocumentId? _documentId;
     private string?     _trackedFilePath;
+    private string?     _projectDir;
 
     public RoslynAutoFixService()
     {
@@ -45,6 +43,19 @@ public sealed class RoslynAutoFixService : IDisposable
         _defaultRefs    = RoslynCompletionEngine.CollectPublicDefaultReferences();
         _codeFixProviders    = DiscoverCodeFixProviders().ToList();
         _refactoringProviders = DiscoverRefactoringProviders().ToList();
+    }
+
+    /// <summary>
+    /// Sets the project directory so that RoslynProjectFactory can resolve all
+    /// source files, NuGet references, and .csproj properties for deep analysis.
+    /// </summary>
+    public void SetProjectContext(string? projectDir)
+    {
+        if (string.Equals(_projectDir, projectDir, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _projectDir = projectDir;
+        _trackedFilePath = null; // force rebuild on next sync
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -508,11 +519,6 @@ public sealed class RoslynAutoFixService : IDisposable
             case "CS8600": case "CS8601": case "CS8602": case "CS8603": case "CS8604":
                 entry.AvailableFixes.Add(new AutoFixAction
                 {
-                    Title = "Add null check",
-                    Kind  = AutoFixKind.InsertText,
-                });
-                entry.AvailableFixes.Add(new AutoFixAction
-                {
                     Title       = "Use null-forgiving operator (!)",
                     Kind        = AutoFixKind.InsertText,
                     InsertText  = "!",
@@ -547,7 +553,12 @@ public sealed class RoslynAutoFixService : IDisposable
             if (doc != null)
             {
                 var updated = doc.WithText(SourceText.From(sourceCode));
-                _workspace.TryApplyChanges(updated.Project.Solution);
+                if (!_workspace.TryApplyChanges(updated.Project.Solution))
+                    RebuildProject(filePath, sourceCode);
+            }
+            else
+            {
+                RebuildProject(filePath, sourceCode);
             }
         }
         return _workspace.CurrentSolution.GetDocument(_documentId!)!;
@@ -558,24 +569,13 @@ public sealed class RoslynAutoFixService : IDisposable
         if (_projectId != null)
             _workspace.TryApplyChanges(_workspace.CurrentSolution.RemoveProject(_projectId));
 
-        var pid = ProjectId.CreateNewId();
-        var did = DocumentId.CreateNewId(pid);
+        var build = RoslynProjectFactory.CreateBuild(_projectDir, _defaultRefs, filePath, sourceCode);
+        var sol = _workspace.CurrentSolution.AddProject(build.ProjectInfo);
 
-        var info = ProjectInfo.Create(pid, VersionStamp.Create(),
-            "AutoFixProject", "AutoFixProject", LanguageNames.CSharp,
-            compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithNullableContextOptions(NullableContextOptions.Enable),
-            parseOptions: new CSharpParseOptions(LanguageVersion.Latest),
-            metadataReferences: _defaultRefs);
-
-        var sol = _workspace.CurrentSolution.AddProject(info);
-        sol = sol.AddDocument(DocumentInfo.Create(did, Path.GetFileName(filePath),
-            loader: TextLoader.From(TextAndVersion.Create(SourceText.From(sourceCode), VersionStamp.Create())),
-            filePath: filePath));
         _workspace.TryApplyChanges(sol);
 
-        _projectId       = pid;
-        _documentId      = did;
+        _projectId       = build.ProjectInfo.Id;
+        _documentId      = build.ActiveDocumentId;
         _trackedFilePath = filePath;
     }
 
