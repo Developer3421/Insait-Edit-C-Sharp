@@ -755,9 +755,11 @@ Vorbehaltlich der Bedingungen dieser Vereinbarung wird Ihnen eine beschränkte, 
 
 2. EINSCHRÄNKUNGEN
 ──────────────────
+Insait Edit ist eine nichtkommerzielle, kostenlose Software. Sie dürfen damit beliebige Projekte kostenlos erstellen, einschließlich kommerzieller Projekte.
+
 Es ist Ihnen nicht gestattet:
+  • Anwendungen zu erstellen, die den grafischen Stil, das visuelle Design oder das Erscheinungsbild der Benutzeroberfläche von Insait Edit kopieren oder weitgehend nachahmen.
   • Die Software zurückzuentwickeln, zu dekompilieren oder zu disassemblieren, soweit dies nicht nach geltendem Recht ausdrücklich zulässig ist.
-  • Die Software ohne schriftliche Genehmigung zu verkaufen, zu vermieten, zu verleasen, unterzulizenzieren oder weiterzuvertreiben.
   • Eigentumsvermerke oder Kennzeichnungen auf der Software zu entfernen oder zu verändern.
 
 3. GEISTIGES EIGENTUM
@@ -1143,6 +1145,8 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <!-- Diagnostic / Editor -->
     <x:String x:Key="Diag.QuickFixes">Schnellkorrekturen:</x:String>
     <x:String x:Key="Diag.LineCol">Zeile {0}, Spalte {1}</x:String>
+    <x:String x:Key="Diag.ResolvablePackage">NuGet-Paket installieren</x:String>
+    <x:String x:Key="Diag.AddUsingSuggestion">Fehlende using-Direktive hinzufügen</x:String>
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn bereit</x:String>
 
     <!-- LED Panel Designer -->
@@ -1424,5 +1428,54 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="Terminal.Help.ShortcutsSection">Tastenkombinationen:</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip">💡 dotnet run/build/publish/test findet *.csproj / *.fsproj automatisch</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip2">   Bei mehreren Projekten — Sie wählen das gewünschte aus.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Willkommensbanner ────────────── -->
+    <x:String x:Key="InsaitTerminal.Welcome.BannerTitle">✦  Insait Edit — Integriertes Terminal  ✦</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.HelpHint">Geben Sie 'insait help' ein, um Befehle &amp; Tastenkürzel anzuzeigen.</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.Ready">Bereit für dotnet, git, cmd und alle CLI-Tools.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Hilfe ────────────────────────── -->
+    <x:String x:Key="InsaitTerminal.Help.Title">Insait Terminal — Hilfe</x:String>
+    <x:String x:Key="InsaitTerminal.Help.BuiltinCommands">INTEGRIERTE BEFEHLE:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Help">Diese Hilfe anzeigen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Clear">Terminalausgabe löschen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Restart">Shell-Sitzung neu starten</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Version">Insait Edit Version anzeigen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Welcome">Willkommensbanner anzeigen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.KeyboardShortcuts">TASTENKOMBINATIONEN:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.Enter">Befehl ausführen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.UpDown">Befehlsverlauf durchblättern</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlC">Prozess stoppen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlL">Terminal löschen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery">DOTNET CLI — AUTOMATISCHE PROJEKTERKENNUNG:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.AutoFind">→ findet *.csproj / *.fsproj automatisch</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Single">→ 1 Projekt: sofort ausgeführt</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Multiple">→ 2+ Projekte: nummeriertes Menü zur Auswahl</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetCommands">DOTNET CLI-BEFEHLE:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.New">Neues Projekt erstellen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Build">Projekt erstellen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.BuildRelease">Im Release-Modus erstellen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Run">Projekt ausführen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Test">Unit-Tests ausführen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Publish">Anwendung veröffentlichen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Clean">Build-Ausgabe bereinigen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Restore">NuGet-Pakete wiederherstellen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Watch">Watch-Modus (Hot-Reload)</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Info">.NET SDK-Informationen anzeigen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Ef">Entity Framework CLI</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGetManagement">NUGET-PAKETVERWALTUNG — AUTO-PROJEKTAUSWAHL:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.AutoSelect">→ wählt Projekt automatisch, wenn nur eines</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.Menu">→ Menü, wenn mehrere Projekte vorhanden</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ListPackage">Installierte Pakete auflisten</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.RemovePackage">NuGet-Paket entfernen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.NewList">Verfügbare Vorlagen auflisten</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ClearCache">NuGet-Cache leeren</x:String>
+    <x:String x:Key="InsaitTerminal.Help.GitCommands">GIT-BEFEHLE:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Status">Arbeitsbaum-Status anzeigen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Add">Alle Änderungen stagen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Commit">Gestagete Änderungen committen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Push">An Remote pushen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Pull">Vom Remote pullen</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Log">Letzte Commits anzeigen</x:String>
 
 </ResourceDictionary>

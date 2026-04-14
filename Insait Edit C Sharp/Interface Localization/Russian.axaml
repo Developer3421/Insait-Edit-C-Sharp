@@ -755,9 +755,11 @@
 
 2. ОГРАНИЧЕНИЯ
 ───────────────
+Insait Edit является некоммерческим, бесплатным программным обеспечением. Вы можете использовать его для создания любых проектов бесплатно, включая коммерческие.
+
 Вы не вправе:
+  • Создавать приложения, которые копируют или близко воспроизводят графический стиль, визуальный дизайн или внешний вид интерфейса Insait Edit.
   • Выполнять обратную разработку, декомпиляцию или дизассемблирование Программного обеспечения, за исключением случаев, прямо разрешённых применимым законодательством.
-  • Продавать, сдавать в аренду, передавать по сублицензии или распространять Программное обеспечение без письменного разрешения.
   • Удалять или изменять любые уведомления о правах собственности или обозначения на Программном обеспечении.
 
 3. ИНТЕЛЛЕКТУАЛЬНАЯ СОБСТВЕННОСТЬ
@@ -1143,6 +1145,8 @@
     <!-- Diagnostic / Editor -->
     <x:String x:Key="Diag.QuickFixes">Быстрые исправления:</x:String>
     <x:String x:Key="Diag.LineCol">Строка {0}, Столбец {1}</x:String>
+    <x:String x:Key="Diag.ResolvablePackage">Установить NuGet пакет</x:String>
+    <x:String x:Key="Diag.AddUsingSuggestion">Добавить отсутствующую директиву using</x:String>
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn готов</x:String>
 
     <!-- LED Panel Designer -->
@@ -1424,5 +1428,54 @@
     <x:String x:Key="Terminal.Help.ShortcutsSection">Сочетания клавиш:</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip">💡 dotnet run/build/publish/test автоматически находит *.csproj / *.fsproj</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip2">   Если найдено несколько проектов — вы выбираете нужный.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Баннер приветствия ────────────── -->
+    <x:String x:Key="InsaitTerminal.Welcome.BannerTitle">✦  Insait Edit — Встроенный терминал  ✦</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.HelpHint">Введите 'insait help' для просмотра команд и горячих клавиш.</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.Ready">Готов к dotnet, git, cmd и любым CLI-инструментам.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Справка ──────────────────────── -->
+    <x:String x:Key="InsaitTerminal.Help.Title">Insait Терминал — Справка</x:String>
+    <x:String x:Key="InsaitTerminal.Help.BuiltinCommands">ВСТРОЕННЫЕ КОМАНДЫ:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Help">Показать эту справку</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Clear">Очистить вывод терминала</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Restart">Перезапустить оболочку</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Version">Показать версию Insait Edit</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Welcome">Показать приветственный баннер</x:String>
+    <x:String x:Key="InsaitTerminal.Help.KeyboardShortcuts">СОЧЕТАНИЯ КЛАВИШ:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.Enter">Выполнить команду</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.UpDown">Навигация по истории команд</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlC">Остановить процесс</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlL">Очистить терминал</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery">DOTNET CLI — АВТОПОИСК ПРОЕКТА:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.AutoFind">→ автопоиск *.csproj / *.fsproj в рабочем каталоге</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Single">→ 1 проект: запускается сразу</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Multiple">→ 2+ проекта: нумерованное меню выбора</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetCommands">КОМАНДЫ DOTNET CLI:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.New">Создать новый проект</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Build">Собрать проект</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.BuildRelease">Собрать в режиме Release</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Run">Запустить проект</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Test">Запустить юнит-тесты</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Publish">Опубликовать приложение</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Clean">Очистить результаты сборки</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Restore">Восстановить NuGet-пакеты</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Watch">Режим наблюдения (hot-reload)</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Info">Информация о .NET SDK</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Ef">Entity Framework CLI</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGetManagement">УПРАВЛЕНИЕ NUGET-ПАКЕТАМИ — АВТОВЫБОР ПРОЕКТА:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.AutoSelect">→ автовыбор проекта, если найден один</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.Menu">→ меню выбора, если несколько проектов</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ListPackage">Просмотреть установленные пакеты</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.RemovePackage">Удалить NuGet-пакет</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.NewList">Просмотреть доступные шаблоны</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ClearCache">Очистить кеш NuGet</x:String>
+    <x:String x:Key="InsaitTerminal.Help.GitCommands">КОМАНДЫ GIT:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Status">Показать состояние рабочего дерева</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Add">Добавить все изменения в индекс</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Commit">Зафиксировать изменения</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Push">Отправить в удалённый репозиторий</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Pull">Получить из удалённого репозитория</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Log">Показать недавние коммиты</x:String>
 
 </ResourceDictionary>

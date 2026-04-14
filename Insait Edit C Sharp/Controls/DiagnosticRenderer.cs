@@ -38,6 +38,9 @@ public sealed class DiagnosticRenderer
     public static readonly Color InfoColor    = Color.Parse("#FF89B4FA");   // blue
     public static readonly Color HintColor    = Color.Parse("#FFA6E3A1");   // green
 
+    /// <summary>Colour for the NuGet/using-resolvable box highlight (purple accent).</summary>
+    public static readonly Color NuGetBoxColor = Color.Parse("#FFDCC4FF");
+
     /// <summary>Parameterless constructor for standalone / static usage.</summary>
     public DiagnosticRenderer() { }
 
@@ -220,6 +223,53 @@ public sealed class DiagnosticRenderer
         ctx.DrawLine(pen, new Point(x1, y), new Point(x2, y));
     }
 
+    /// <summary>
+    /// Draw a rounded rectangle "box" highlight around a text span — used for
+    /// symbols that can be resolved by installing a NuGet package or adding a using.
+    /// JetBrains Rider-style: subtle border + semi-transparent background.
+    /// </summary>
+    public static void DrawBoxHighlight(DrawingContext ctx,
+                                        double x1, double x2, double y,
+                                        double lineHeight,
+                                        Color borderColor,
+                                        double borderThickness = 1.4)
+    {
+        if (x2 <= x1) return;
+
+        var rect = new Rect(x1, y + 1, x2 - x1, lineHeight - 2);
+        var pen  = new Pen(new SolidColorBrush(borderColor), borderThickness);
+        var bg   = new SolidColorBrush(borderColor) { Opacity = 0.08 };
+
+        ctx.FillRectangle(bg, rect, 3);
+        ctx.DrawRectangle(null, pen, rect, 3, 3);
+    }
+
+    /// <summary>
+    /// Draw box highlights for diagnostics that have <see cref="DiagnosticSpan.HasResolvablePackageFix"/>
+    /// on the given line. Only diagnostics with known package fixes get the box.
+    /// </summary>
+    public void DrawPackageFixBoxes(DrawingContext ctx, int lineIndex,
+                                    string lineText, int lineOffset, double y)
+    {
+        if (_spans.Count == 0) return;
+        int lineEnd = lineOffset + lineText.Length;
+
+        foreach (var d in _spans)
+        {
+            if (!d.HasResolvablePackageFix) continue;
+            if (d.StartOffset >= lineEnd || d.EndOffset <= lineOffset) continue;
+
+            int sc = Math.Max(d.StartOffset - lineOffset, 0);
+            int ec = Math.Min(d.EndOffset - lineOffset, lineText.Length);
+            if (sc >= ec) continue;
+
+            double x1 = _gutterWidth + (sc - _scrollLeft) * _charWidth;
+            double x2 = _gutterWidth + (ec - _scrollLeft) * _charWidth;
+
+            DrawBoxHighlight(ctx, x1, x2, y, _lineHeight, NuGetBoxColor);
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     //  Utility
     // ═══════════════════════════════════════════════════════════════════════
@@ -258,6 +308,12 @@ public sealed class DiagnosticSpan
     public string                Code        { get; set; } = string.Empty;
     public DiagnosticSeverityKind Severity   { get; set; }
     public List<QuickFixSuggestion> Fixes    { get; set; } = new();
+
+    /// <summary>
+    /// True when Roslyn can resolve this symbol from a known NuGet package
+    /// or a known using directive. Only these get the special box highlight.
+    /// </summary>
+    public bool HasResolvablePackageFix { get; set; }
 }
 
 public enum DiagnosticSeverityKind

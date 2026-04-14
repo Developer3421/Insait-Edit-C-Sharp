@@ -145,6 +145,12 @@ public sealed class InlineDiagnosticService : IDisposable
                 Code        = diag.Id,
                 Severity    = kind.Value,   // resolved severity from matrix
                 Fixes       = fixes,
+                // Mark only those symbols that Roslyn can resolve from a known
+                // NuGet package or an existing namespace (using directive).
+                // Unknown symbols without any resolvable fix do NOT get the box.
+                HasResolvablePackageFix = fixes.Any(f =>
+                    f.Kind == QuickFixKind.InstallNuGet ||
+                    f.Kind == QuickFixKind.AddUsing),
             });
         }
 

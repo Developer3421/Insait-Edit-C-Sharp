@@ -564,11 +564,14 @@ internal sealed class InsaitEditorSurface : Control
 
         // diagnostic icons per line
         var diagLineSet = new Dictionary<int, DiagnosticSeverityKind>();
+        var diagLineHasPackageFix = new HashSet<int>();
         foreach (var d in _diagnostics)
         {
             int dLine = d.Line - 1;
             if (!diagLineSet.ContainsKey(dLine) || d.Severity < diagLineSet[dLine])
                 diagLineSet[dLine] = d.Severity;
+            if (d.HasResolvablePackageFix)
+                diagLineHasPackageFix.Add(dLine);
         }
 
         for (int li = firstVis; li <= lastVis; li++)
@@ -586,18 +589,30 @@ internal sealed class InsaitEditorSurface : Control
             // gutter diagnostic icon
             if (diagLineSet.TryGetValue(li, out var sev))
             {
-                string icon = sev switch
+                // If this line has a NuGet-resolvable diagnostic, show 📦 icon
+                // Otherwise show the standard severity icon
+                string icon;
+                Color iconClr;
+                if (diagLineHasPackageFix.Contains(li))
                 {
-                    DiagnosticSeverityKind.Error   => "●",
-                    DiagnosticSeverityKind.Warning => "▲",
-                    _                              => "◆",
-                };
-                var iconClr = sev switch
+                    icon    = "📦";
+                    iconClr = Color.Parse("#FFDCC4FF"); // purple accent for NuGet
+                }
+                else
                 {
-                    DiagnosticSeverityKind.Error   => InsaitEditorColors.DiagError,
-                    DiagnosticSeverityKind.Warning => InsaitEditorColors.DiagWarning,
-                    _                              => InsaitEditorColors.DiagInfo,
-                };
+                    icon = sev switch
+                    {
+                        DiagnosticSeverityKind.Error   => "●",
+                        DiagnosticSeverityKind.Warning => "▲",
+                        _                              => "◆",
+                    };
+                    iconClr = sev switch
+                    {
+                        DiagnosticSeverityKind.Error   => InsaitEditorColors.DiagError,
+                        DiagnosticSeverityKind.Warning => InsaitEditorColors.DiagWarning,
+                        _                              => InsaitEditorColors.DiagInfo,
+                    };
+                }
                 var ft = new FormattedText(icon,
                     System.Globalization.CultureInfo.InvariantCulture,
                     FlowDirection.LeftToRight, typeface, FontSize - 2,
@@ -730,6 +745,15 @@ internal sealed class InsaitEditorSurface : Control
                 _                              => InsaitEditorColors.DiagInfo,
             };
             DrawSquiggly(ctx, x1, x2, y + _lineHeight - 3, color);
+
+            // Draw a box highlight for symbols resolvable from a known NuGet
+            // package or using directive (like JetBrains Rider).
+            // Only diagnostics where Roslyn found a concrete package/using fix get the box.
+            if (d.HasResolvablePackageFix)
+            {
+                DiagnosticRenderer.DrawBoxHighlight(ctx, x1, x2, y, _lineHeight,
+                    DiagnosticRenderer.NuGetBoxColor);
+            }
         }
     }
 

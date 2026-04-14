@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using System.Reflection;
@@ -17,10 +15,11 @@ namespace Insait_Edit_C_Sharp.Services;
 
 /// <summary>
 /// JetBrains Rider-quality quick fix service using Roslyn code analysis.
+/// Everything is discovered naturally by Roslyn — no hardcoded dictionaries.
 /// Provides:
-///   1. Missing using directives
-///   2. Missing NuGet package suggestions
-///   3. Generic Roslyn code fixes
+///   1. Missing using directives (via Roslyn namespace search + built-in CodeFix providers)
+///   2. Missing NuGet package suggestions (via NuGet API search)
+///   3. Generic Roslyn code fixes (all built-in CodeFixProviders)
 /// </summary>
 public sealed class QuickFixService : IDisposable
 {
@@ -32,42 +31,11 @@ public sealed class QuickFixService : IDisposable
     private string?     _trackedFilePath;
     private string?     _projectDir;
 
-    // Well-known namespace → NuGet package mappings (like Rider does)
-    private static readonly Dictionary<string, string[]> NamespaceToNuGet = new(StringComparer.Ordinal)
-    {
-        ["System.Text.Json"]                         = new[] { "System.Text.Json" },
-        ["System.Net.Http"]                          = new[] { "System.Net.Http" },
-        ["Newtonsoft.Json"]                          = new[] { "Newtonsoft.Json" },
-        ["Microsoft.Extensions.Logging"]             = new[] { "Microsoft.Extensions.Logging" },
-        ["Microsoft.Extensions.DependencyInjection"] = new[] { "Microsoft.Extensions.DependencyInjection" },
-        ["Microsoft.EntityFrameworkCore"]            = new[] { "Microsoft.EntityFrameworkCore" },
-        ["AutoMapper"]                               = new[] { "AutoMapper" },
-        ["FluentValidation"]                         = new[] { "FluentValidation" },
-        ["Serilog"]                                  = new[] { "Serilog" },
-        ["NUnit"]                                    = new[] { "NUnit" },
-        ["Xunit"]                                    = new[] { "xunit" },
-        ["Moq"]                                      = new[] { "Moq" },
-        ["SkiaSharp"]                                = new[] { "SkiaSharp" },
-        ["Dapper"]                                   = new[] { "Dapper" },
-        ["Polly"]                                    = new[] { "Polly" },
-        ["MediatR"]                                  = new[] { "MediatR" },
-        ["Avalonia"]                                 = new[] { "Avalonia" },
-        ["System.IO.Ports"]                          = new[] { "System.IO.Ports" },
-        ["System.Drawing"]                           = new[] { "System.Drawing.Common" },
-        ["System.Data.SQLite"]                       = new[] { "System.Data.SQLite" },
-        ["Microsoft.Data.SqlClient"]                 = new[] { "Microsoft.Data.SqlClient" },
-        ["Npgsql"]                                   = new[] { "Npgsql" },
-        ["MySql.Data"]                               = new[] { "MySql.Data" },
-        ["RestSharp"]                                = new[] { "RestSharp" },
-        ["CsvHelper"]                                = new[] { "CsvHelper" },
-        ["ExcelDataReader"]                          = new[] { "ExcelDataReader" },
-        ["iTextSharp"]                               = new[] { "iTextSharp" },
-        ["QRCoder"]                                  = new[] { "QRCoder" },
-        ["Microsoft.CognitiveServices.Speech"]       = new[] { "Microsoft.CognitiveServices.Speech" },
-        ["Microsoft.Azure.Cosmos"]                   = new[] { "Microsoft.Azure.Cosmos" },
-        ["Amazon.S3"]                                = new[] { "AWSSDK.S3" },
-        ["Google.Cloud.Storage"]                     = new[] { "Google.Cloud.Storage.V1" },
-    };
+    /// <summary>
+    /// Shared NuGet service for searching packages by type name.
+    /// Lazy-initialized to avoid startup cost when NuGet search is not needed.
+    /// </summary>
+    private static readonly Lazy<NuGetService> _nuGetService = new(() => new NuGetService());
 
     public QuickFixService()
     {
@@ -106,19 +74,23 @@ public sealed class QuickFixService : IDisposable
             var model    = await document.GetSemanticModelAsync(ct);
             if (root == null || model == null) return fixes;
 
-            // 1. Missing using directive (CS0246, CS0103, CS0234)
+            // 1. Missing using directive / unknown type (CS0246, CS0103, CS0234)
             if (diagnosticCode is "CS0246" or "CS0103" or "CS0234")
             {
                 var missingType = ExtractMissingTypeName(diagnosticMessage);
                 if (!string.IsNullOrEmpty(missingType))
                 {
-                    // Search all known namespaces for this type
-                    var namespaceFixes = await FindNamespaceFixesAsync(document, model, root, missingType, diagnosticStartOffset, ct);
+                    // Let Roslyn search all referenced assemblies for matching types
+                    var namespaceFixes = FindNamespaceFixes(model, missingType, ct);
                     fixes.AddRange(namespaceFixes);
 
-                    // Also check NuGet packages
-                    var nugetFixes = GetNuGetSuggestions(missingType, diagnosticMessage);
-                    fixes.AddRange(nugetFixes);
+                    // Search NuGet API for packages containing this type name
+                    // (only if Roslyn didn't find anything in existing references)
+                    if (namespaceFixes.Count == 0)
+                    {
+                        var nugetFixes = await SearchNuGetForTypeAsync(missingType, ct);
+                        fixes.AddRange(nugetFixes);
+                    }
 
                     // Generate type via dialog window
                     fixes.Add(new QuickFixSuggestion
@@ -126,7 +98,7 @@ public sealed class QuickFixService : IDisposable
                         Title          = $"⚡ Generate type '{missingType}'...",
                         Kind           = QuickFixKind.GenerateType,
                         DiagnosticCode = "CS0246",
-                        InsertText     = missingType, // carries the type name for the dialog
+                        InsertText     = missingType,
                     });
                 }
             }
@@ -144,8 +116,8 @@ public sealed class QuickFixService : IDisposable
                         Title          = $"🔧 Generate member '{memberName}' on '{ownerType}'...",
                         Kind           = QuickFixKind.GenerateMember,
                         DiagnosticCode = diagnosticCode,
-                        InsertText     = ownerType,   // carries type name
-                        MemberName     = memberName,   // carries member name
+                        InsertText     = ownerType,
+                        MemberName     = memberName,
                     });
                 }
             }
@@ -161,11 +133,11 @@ public sealed class QuickFixService : IDisposable
                 });
             }
 
-            // 3. Missing return statement, missing override, etc. via Roslyn CodeFix providers
+            // 4. Roslyn built-in CodeFix providers (includes Add Import, etc.)
             var roslynFixes = await GetRoslynCodeFixesAsync(document, diagnosticStartOffset, diagnosticEndOffset, diagnosticCode, ct);
             fixes.AddRange(roslynFixes);
 
-            // 4. Nullable reference (CS8600, CS8601, CS8602, CS8603, CS8604)
+            // 5. Nullable reference (CS8600–CS8604)
             if (diagnosticCode.StartsWith("CS86"))
             {
                 fixes.Add(new QuickFixSuggestion
@@ -182,7 +154,7 @@ public sealed class QuickFixService : IDisposable
                 });
             }
 
-            // 5. CS1002 missing semicolon
+            // 6. CS1002 missing semicolon
             if (diagnosticCode == "CS1002")
             {
                 fixes.Add(new QuickFixSuggestion
@@ -195,7 +167,7 @@ public sealed class QuickFixService : IDisposable
                 });
             }
 
-            // 6. CS0501 missing body
+            // 7. CS0501/CS0161 missing body
             if (diagnosticCode is "CS0501" or "CS0161")
             {
                 fixes.Add(new QuickFixSuggestion
@@ -215,41 +187,38 @@ public sealed class QuickFixService : IDisposable
         return fixes;
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Roslyn-based natural type discovery
+    // ═══════════════════════════════════════════════════════════════════════
 
     private static string? ExtractMissingTypeName(string message)
     {
-        // "The type or namespace name 'Foo' could not be found"
-        // "The name 'Foo' does not exist in the current context"
         var m1 = System.Text.RegularExpressions.Regex.Match(message, @"'([^']+)'");
         return m1.Success ? m1.Groups[1].Value : null;
     }
 
-    private static async Task<List<QuickFixSuggestion>> FindNamespaceFixesAsync(
-        Document document,
+    /// <summary>
+    /// Let Roslyn search all referenced assemblies for types matching the
+    /// given name. Returns AddUsing suggestions for each discovered namespace.
+    /// This is fully natural — no hardcoded lists.
+    /// </summary>
+    private static List<QuickFixSuggestion> FindNamespaceFixes(
         SemanticModel model,
-        SyntaxNode root,
         string typeName,
-        int position,
         CancellationToken ct)
     {
         var fixes = new List<QuickFixSuggestion>();
-
-        // Search all referenced namespaces for types matching typeName
         var compilation = model.Compilation;
-        var candidates  = new List<string>();
+        var candidates  = new HashSet<string>();
 
         foreach (var ns in GetAllNamespaces(compilation.GlobalNamespace))
         {
             ct.ThrowIfCancellationRequested();
-            foreach (var type in ns.GetTypeMembers(typeName))
-            {
+            if (ns.GetTypeMembers(typeName).Length > 0)
                 candidates.Add(ns.ToDisplayString());
-            }
         }
 
-        foreach (var ns in candidates.Distinct().Take(5))
+        foreach (var ns in candidates.OrderBy(n => n).Take(8))
         {
             fixes.Add(new QuickFixSuggestion
             {
@@ -271,31 +240,88 @@ public sealed class QuickFixService : IDisposable
                 yield return n;
     }
 
-    private static List<QuickFixSuggestion> GetNuGetSuggestions(string typeName, string message)
+    // ═══════════════════════════════════════════════════════════════════════
+    //  NuGet API-based package discovery (natural, no hardcoded lists)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Search NuGet.org for packages that likely contain the given type.
+    /// Uses the actual NuGet search API — fully dynamic, no hardcoded mapping.
+    /// Results are cached per session to avoid repeated network calls.
+    /// </summary>
+    private static readonly Dictionary<string, List<QuickFixSuggestion>> _nuGetSearchCache = new();
+
+    private static async Task<List<QuickFixSuggestion>> SearchNuGetForTypeAsync(
+        string typeName, CancellationToken ct)
     {
+        // Cache to avoid repeated searches for the same type
+        if (_nuGetSearchCache.TryGetValue(typeName, out var cached))
+            return cached;
+
         var fixes = new List<QuickFixSuggestion>();
-        foreach (var kv in NamespaceToNuGet)
+
+        try
         {
-            // Match if type name contains the namespace root
-            var parts = kv.Key.Split('.');
-            if (typeName.StartsWith(parts[0], StringComparison.OrdinalIgnoreCase) ||
-                message.Contains(parts[0], StringComparison.OrdinalIgnoreCase))
+            // Use the existing NuGet search service to query nuget.org
+            var results = await _nuGetService.Value.SearchPackagesAsync(
+                typeName, skip: 0, take: 5, includePrerelease: false, ct);
+
+            foreach (var pkg in results)
             {
-                foreach (var pkg in kv.Value)
+                ct.ThrowIfCancellationRequested();
+
+                // Only suggest packages whose ID or title closely matches
+                // the type name — avoid irrelevant results
+                if (!IsRelevantPackageForType(pkg.Id, pkg.Title, typeName))
+                    continue;
+
+                fixes.Add(new QuickFixSuggestion
                 {
-                    fixes.Add(new QuickFixSuggestion
-                    {
-                        Title          = $"Install NuGet package '{pkg}' + using {kv.Key}",
-                        Kind           = QuickFixKind.InstallNuGet,
-                        NuGetPackage   = pkg,
-                        NamespaceName  = kv.Key,
-                        DiagnosticCode = "CS0246",
-                    });
-                }
+                    Title          = $"Install NuGet package '{pkg.Id}' ({pkg.Version})",
+                    Kind           = QuickFixKind.InstallNuGet,
+                    NuGetPackage   = pkg.Id,
+                    NamespaceName  = pkg.Id, // best guess: package ID ≈ root namespace
+                    DiagnosticCode = "CS0246",
+                });
             }
         }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[QuickFix] NuGet search: {ex.Message}");
+        }
+
+        _nuGetSearchCache[typeName] = fixes;
         return fixes;
     }
+
+    /// <summary>
+    /// Check whether the found NuGet package is likely relevant to the
+    /// missing type. Avoids suggesting unrelated packages.
+    /// </summary>
+    private static bool IsRelevantPackageForType(string packageId, string title, string typeName)
+    {
+        // Direct match: package ID contains the type name
+        if (packageId.Contains(typeName, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // The type name starts with a namespace root that matches the package
+        var pkgParts = packageId.Split('.');
+        if (pkgParts.Length > 0 &&
+            typeName.StartsWith(pkgParts[0], StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // Title contains the type name
+        if (!string.IsNullOrEmpty(title) &&
+            title.Contains(typeName, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  Roslyn built-in CodeFix providers
+    // ═══════════════════════════════════════════════════════════════════════
 
     private async Task<List<QuickFixSuggestion>> GetRoslynCodeFixesAsync(
         Document document,
@@ -316,14 +342,12 @@ public sealed class QuickFixService : IDisposable
             var semanticModel = await document.GetSemanticModelAsync(ct);
             if (semanticModel == null) return fixes;
 
-            // Find the matching Roslyn diagnostic
             var diagnostics = semanticModel.GetDiagnostics(span, ct)
                 .Where(d => d.Id == diagnosticCode && d.Location.IsInSource)
                 .ToImmutableArray();
 
             if (diagnostics.IsEmpty) return fixes;
 
-            // Discover CodeFix providers
             foreach (var provider in _cachedCodeFixProviders.Value)
             {
                 ct.ThrowIfCancellationRequested();
@@ -338,9 +362,10 @@ public sealed class QuickFixService : IDisposable
                             document, diag,
                             (action, _) =>
                             {
-                                // Skip actions that create new files or generate members
-                                // — replaced by our template-based approach
                                 var title = action.Title;
+
+                                // Skip "generate type / move type / in new file" —
+                                // replaced by our template-based approach
                                 if (title.Contains("Generate type", StringComparison.OrdinalIgnoreCase) ||
                                     title.Contains("Generate class", StringComparison.OrdinalIgnoreCase) ||
                                     title.Contains("Generate new type", StringComparison.OrdinalIgnoreCase) ||
@@ -351,10 +376,28 @@ public sealed class QuickFixService : IDisposable
                                     title.Contains("Move type", StringComparison.OrdinalIgnoreCase))
                                     return;
 
+                                // Classify "using …" suggestions from Roslyn's
+                                // CSharpAddImportCodeFixProvider as AddUsing kind
+                                // so they get the box highlight naturally
+                                var kind = QuickFixKind.RoslynFix;
+                                if (title.StartsWith("using ", StringComparison.Ordinal) &&
+                                    title.EndsWith(";", StringComparison.Ordinal))
+                                {
+                                    kind = QuickFixKind.AddUsing;
+                                }
+
+                                // Detect NuGet package install suggestions from Roslyn
+                                // (title contains "package" and "Install")
+                                if (title.Contains("Install package", StringComparison.OrdinalIgnoreCase) ||
+                                    title.Contains("NuGet", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    kind = QuickFixKind.InstallNuGet;
+                                }
+
                                 fixes.Add(new QuickFixSuggestion
                                 {
                                     Title          = title,
-                                    Kind           = QuickFixKind.RoslynFix,
+                                    Kind           = kind,
                                     DiagnosticCode = diagnosticCode,
                                     RoslynAction   = action,
                                 });
@@ -405,7 +448,7 @@ public sealed class QuickFixService : IDisposable
         return providers;
     }
 
-    // ── Workspace sync (same pattern as RoslynCompletionEngine) ───────────
+    // ── Workspace sync ───────────────────────────────────────────────────
 
     private Document SyncDocument(string filePath, string sourceCode)
     {
@@ -420,14 +463,10 @@ public sealed class QuickFixService : IDisposable
             {
                 var updated = doc.WithText(SourceText.From(sourceCode));
                 if (!_workspace.TryApplyChanges(updated.Project.Solution))
-                {
-                    // Workspace desynchronized — rebuild from scratch
                     RebuildProject(filePath, sourceCode);
-                }
             }
             else
             {
-                // Document was lost — rebuild
                 RebuildProject(filePath, sourceCode);
             }
         }
@@ -448,7 +487,6 @@ public sealed class QuickFixService : IDisposable
         _documentId      = build.ActiveDocumentId;
         _trackedFilePath = filePath;
     }
-
 
     private static IEnumerable<Assembly> BuildMefAssemblies()
     {
@@ -483,7 +521,7 @@ public sealed class QuickFixService : IDisposable
             var operations = await fix.RoslynAction.GetOperationsAsync(ct);
             foreach (var op in operations)
             {
-                if (op is Microsoft.CodeAnalysis.CodeActions.ApplyChangesOperation applyOp)
+                if (op is ApplyChangesOperation applyOp)
                 {
                     var changedDoc = applyOp.ChangedSolution.GetDocument(_documentId!);
                     if (changedDoc != null)

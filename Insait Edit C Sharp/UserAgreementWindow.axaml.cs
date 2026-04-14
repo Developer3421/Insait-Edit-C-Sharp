@@ -28,11 +28,14 @@ public partial class UserAgreementWindow : Window
 
         2. RESTRICTIONS
         ─────────────────
+        Insait Edit is non-commercial, free software. You may use it to create any
+        projects free of charge, including commercial ones.
+
         You may not:
+          • Create applications that copy or closely replicate the graphical style,
+            visual design, or user interface appearance of Insait Edit.
           • Reverse-engineer, decompile, or disassemble the Software except to the
             extent permitted by applicable law.
-          • Sell, rent, lease, sublicense, or redistribute the Software without
-            written permission.
           • Remove or alter any proprietary notices or labels on the Software.
 
         3. INTELLECTUAL PROPERTY

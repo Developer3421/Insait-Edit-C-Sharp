@@ -55,7 +55,7 @@
         <PackageReference Include="NuGet.Protocol" Version="7.3.0" />
         <PackageReference Include="Octokit" Version="14.0.0" />
         <PackageReference Include="System.Drawing.Common" Version="11.0.0-preview.1.26104.118" />
-        <PackageReference Include="Terminal.Gui" Version="2.0.0-develop.5261" />
+        <PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
     </ItemGroup>
 
     <ItemGroup>

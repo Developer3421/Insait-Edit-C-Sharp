@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -24,6 +25,8 @@ public sealed class DiagnosticTooltipPopup : Popup
     private static readonly Color DimFg      = Color.Parse("#FF9E90B0");
     private static readonly Color FixHover   = Color.Parse("#FF3E3050");
     private static readonly Color CodeFg     = Color.Parse("#FFDCC4FF");
+    private static readonly Color NuGetAccent = Color.Parse("#FFDCC4FF");
+    private static readonly Color NuGetBg     = Color.Parse("#20DCC4FF");
 
     public event EventHandler<QuickFixEventArgs>? FixRequested;
 
@@ -87,6 +90,54 @@ public sealed class DiagnosticTooltipPopup : Popup
 
         header.Children.Add(msgStack);
         stack.Children.Add(header);
+
+        // ── NuGet / Using resolvable section ────────────────────────────
+        // Prominently show "Install package" / "Add using" for diagnostics
+        // that Roslyn can resolve from a known NuGet package.
+        if (span.HasResolvablePackageFix)
+        {
+            var nugetFixes = span.Fixes.Where(f =>
+                f.Kind == QuickFixKind.InstallNuGet || f.Kind == QuickFixKind.AddUsing).ToList();
+
+            if (nugetFixes.Count > 0)
+            {
+                stack.Children.Add(new Border
+                {
+                    Height = 1,
+                    Background = new SolidColorBrush(NuGetAccent) { Opacity = 0.3 },
+                    Margin = new Thickness(0, 4, 0, 0),
+                });
+
+                var nugetHeader = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing     = 6,
+                    Margin      = new Thickness(10, 4, 10, 2),
+                };
+                nugetHeader.Children.Add(new TextBlock
+                {
+                    Text       = "📦",
+                    FontSize   = 12,
+                    VerticalAlignment = VerticalAlignment.Center,
+                });
+                nugetHeader.Children.Add(new TextBlock
+                {
+                    Text       = LocalizationService.Get("Diag.ResolvablePackage"),
+                    FontSize   = 10,
+                    FontWeight = FontWeight.SemiBold,
+                    FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"),
+                    Foreground = new SolidColorBrush(NuGetAccent),
+                    VerticalAlignment = VerticalAlignment.Center,
+                });
+                stack.Children.Add(nugetHeader);
+
+                foreach (var nugetFix in nugetFixes)
+                {
+                    var nugetRow = BuildNuGetFixRow(nugetFix, span);
+                    stack.Children.Add(nugetRow);
+                }
+            }
+        }
 
         if (span.Fixes.Count > 0)
         {
@@ -157,6 +208,71 @@ public sealed class DiagnosticTooltipPopup : Popup
                 e.Handled = true;
             }
         };
+        return row;
+    }
+
+    /// <summary>
+    /// Builds a prominent NuGet fix row with accent background — visually
+    /// distinct from generic fixes so the user immediately sees the "install package" option.
+    /// </summary>
+    private Border BuildNuGetFixRow(QuickFixSuggestion fix, DiagnosticSpan span)
+    {
+        var icon = fix.Kind == QuickFixKind.InstallNuGet ? "⬇ " : "→ ";
+
+        var contentStack = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing     = 6,
+        };
+        contentStack.Children.Add(new TextBlock
+        {
+            Text              = icon,
+            FontSize          = 13,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        contentStack.Children.Add(new TextBlock
+        {
+            Text         = fix.Title,
+            FontSize     = 12,
+            FontFamily   = new FontFamily("Cascadia Code, Consolas, monospace"),
+            Foreground   = new SolidColorBrush(TextFg),
+            TextWrapping = TextWrapping.Wrap,
+            MaxWidth     = 420,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+
+        var row = new Border
+        {
+            Child           = contentStack,
+            Padding         = new Thickness(10, 5, 10, 5),
+            Margin          = new Thickness(6, 1, 6, 1),
+            CornerRadius    = new CornerRadius(4),
+            Background      = new SolidColorBrush(NuGetBg),
+            BorderBrush     = new SolidColorBrush(NuGetAccent) { Opacity = 0.4 },
+            BorderThickness = new Thickness(1),
+            Cursor          = new Cursor(StandardCursorType.Hand),
+        };
+
+        row.PointerEntered += (_, _) =>
+        {
+            row.Background  = new SolidColorBrush(NuGetAccent) { Opacity = 0.15 };
+            row.BorderBrush = new SolidColorBrush(NuGetAccent) { Opacity = 0.7 };
+        };
+        row.PointerExited += (_, _) =>
+        {
+            row.Background  = new SolidColorBrush(NuGetBg);
+            row.BorderBrush = new SolidColorBrush(NuGetAccent) { Opacity = 0.4 };
+        };
+        row.PointerPressed += (_, e) =>
+        {
+            if (e.GetCurrentPoint(row).Properties.IsLeftButtonPressed)
+            {
+                IsOpen = false;
+                FixRequested?.Invoke(this, new QuickFixEventArgs(fix, span));
+                e.Handled = true;
+            }
+        };
+
         return row;
     }
 }

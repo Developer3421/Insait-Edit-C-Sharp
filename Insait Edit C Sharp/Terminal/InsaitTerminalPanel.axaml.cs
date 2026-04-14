@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Insait_Edit_C_Sharp.Services;
 
 namespace Insait_Edit_C_Sharp.Terminal;
 
@@ -65,82 +66,131 @@ public partial class InsaitTerminalPanel : UserControl
         @"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1B\\))",
         RegexOptions.Compiled);
 
-    // ── Welcome banner ───────────────────────────────────────
-    private static string GetWelcomeBanner() =>
-        """
-        ╔══════════════════════════════════════════════════════════════╗
-        ║           ✦  Insait Edit — Integrated Terminal  ✦          ║
-        ╠══════════════════════════════════════════════════════════════╣
-        ║  Type 'insait help' to see available commands & shortcuts.  ║
-        ║  Ready for dotnet, git, cmd and any CLI tools.             ║
-        ╚══════════════════════════════════════════════════════════════╝
+    // ── Localization helper ──────────────────────────────────
+    private static string L(string key) => LocalizationService.Get(key);
 
-        """;
+    // ── Box-drawing helpers ──────────────────────────────────
+    private const int BoxW = 62;
 
-    // ── Built-in 'insait help' command output ────────────────
-    private static string GetInsaitHelp() =>
-        """
-        
-        ╔══════════════════════════════════════════════════════════════╗
-        ║                   Insait Terminal — Help                    ║
-        ╠══════════════════════════════════════════════════════════════╣
-        ║                                                             ║
-        ║  BUILT-IN COMMANDS:                                         ║
-        ║    insait help          Show this help message               ║
-        ║    insait clear         Clear terminal output                ║
-        ║    insait restart       Restart the shell session            ║
-        ║    insait version       Show Insait Edit version             ║
-        ║    insait welcome       Show welcome banner                  ║
-        ║                                                             ║
-        ║  KEYBOARD SHORTCUTS:                                        ║
-        ║    Enter                Execute command                      ║
-        ║    ↑ / ↓                Navigate command history             ║
-        ║    Ctrl+C               Stop running process                 ║
-        ║    Ctrl+L               Clear terminal                      ║
-        ║                                                             ║
-        ║  DOTNET CLI — AUTO PROJECT DISCOVERY:                       ║
-        ║  ┌──────────────────────────────────────────────────────┐    ║
-        ║  │ dotnet run / build / publish / test / clean / watch  │    ║
-        ║  │ → auto-finds *.csproj / *.fsproj in working dir     │    ║
-        ║  │ → 1 project: runs immediately                       │    ║
-        ║  │ → 2+ projects: shows numbered menu to choose        │    ║
-        ║  └──────────────────────────────────────────────────────┘    ║
-        ║                                                             ║
-        ║  DOTNET CLI COMMANDS:                                       ║
-        ║    dotnet new <template>       Create a new project          ║
-        ║    dotnet build                Build the project             ║
-        ║    dotnet build -c Release     Build in Release mode         ║
-        ║    dotnet run                  Run the project               ║
-        ║    dotnet test                 Run unit tests                ║
-        ║    dotnet publish              Publish the application       ║
-        ║    dotnet clean                Clean build output            ║
-        ║    dotnet restore              Restore NuGet packages        ║
-        ║    dotnet watch                Watch mode (hot-reload)       ║
-        ║    dotnet --info               Show .NET SDK information     ║
-        ║    dotnet ef                   Entity Framework CLI          ║
-        ║                                                             ║
-        ║  NUGET PACKAGE MANAGEMENT — AUTO PROJECT SELECTION:         ║
-        ║  ┌──────────────────────────────────────────────────────┐    ║
-        ║  │ dotnet add package <Name>                            │    ║
-        ║  │ → auto-selects project if only one found             │    ║
-        ║  │ → shows menu if multiple projects in workspace       │    ║
-        ║  └──────────────────────────────────────────────────────┘    ║
-        ║    dotnet list package         List installed packages       ║
-        ║    dotnet remove package <n>   Remove a NuGet package       ║
-        ║    dotnet new list             List available templates      ║
-        ║    dotnet nuget locals all -c  Clear NuGet cache            ║
-        ║                                                             ║
-        ║  GIT COMMANDS:                                              ║
-        ║    git status                  Show working tree status      ║
-        ║    git add .                   Stage all changes             ║
-        ║    git commit -m "msg"         Commit staged changes         ║
-        ║    git push                    Push to remote                ║
-        ║    git pull                    Pull from remote              ║
-        ║    git log --oneline -10       Show recent commits           ║
-        ║                                                             ║
-        ╚══════════════════════════════════════════════════════════════╝
+    private static string BoxCenter(string text)
+    {
+        if (text.Length >= BoxW) return $"║{text[..BoxW]}║";
+        int left = (BoxW - text.Length) / 2;
+        return $"║{new string(' ', left)}{text}{new string(' ', BoxW - left - text.Length)}║";
+    }
 
-        """;
+    private static string Fit(string text, int width)
+        => text.Length <= width ? text.PadRight(width) : text[..(width - 1)] + "…";
+
+    // ── Welcome banner (localized) ───────────────────────────
+    private static string GetWelcomeBanner()
+    {
+        var title = L("InsaitTerminal.Welcome.BannerTitle");
+        var hint  = L("InsaitTerminal.Welcome.HelpHint");
+        var ready = L("InsaitTerminal.Welcome.Ready");
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"╔{new string('═', BoxW)}╗");
+        sb.AppendLine(BoxCenter(title));
+        sb.AppendLine($"╠{new string('═', BoxW)}╣");
+        sb.AppendLine($"║  {Fit(hint, BoxW - 2)}║");
+        sb.AppendLine($"║  {Fit(ready, BoxW - 2)}║");
+        sb.AppendLine($"╚{new string('═', BoxW)}╝");
+        sb.AppendLine();
+        return sb.ToString();
+    }
+
+    // ── Built-in 'insait help' command output (localized) ────
+    private static string GetInsaitHelp()
+    {
+        var top   = $"╔{new string('═', BoxW)}╗";
+        var sep   = $"╠{new string('═', BoxW)}╣";
+        var bot   = $"╚{new string('═', BoxW)}╝";
+        var empty = $"║{new string(' ', BoxW)}║";
+
+        string Row(string text)  => $"║  {Fit(text, BoxW - 2)}║";
+        string Cmd(string cmd, string desc)  => $"║    {Fit(cmd, 22)}{Fit(desc, 36)}║";
+        string Cmd2(string cmd, string desc) => $"║    {Fit(cmd, 29)}{Fit(desc, 29)}║";
+        string SubTop() => $"║  ┌{new string('─', 54)}┐    ║";
+        string SubBot() => $"║  └{new string('─', 54)}┘    ║";
+        string SubRow(string text) => $"║  │ {Fit(text, 52)} │    ║";
+
+        var sb = new StringBuilder();
+        sb.AppendLine();
+        sb.AppendLine(top);
+        sb.AppendLine(BoxCenter(L("InsaitTerminal.Help.Title")));
+        sb.AppendLine(sep);
+        sb.AppendLine(empty);
+
+        // ── Built-in commands ──
+        sb.AppendLine(Row(L("InsaitTerminal.Help.BuiltinCommands")));
+        sb.AppendLine(Cmd("insait help",    L("InsaitTerminal.Help.Cmd.Help")));
+        sb.AppendLine(Cmd("insait clear",   L("InsaitTerminal.Help.Cmd.Clear")));
+        sb.AppendLine(Cmd("insait restart", L("InsaitTerminal.Help.Cmd.Restart")));
+        sb.AppendLine(Cmd("insait version", L("InsaitTerminal.Help.Cmd.Version")));
+        sb.AppendLine(Cmd("insait welcome", L("InsaitTerminal.Help.Cmd.Welcome")));
+        sb.AppendLine(empty);
+
+        // ── Keyboard shortcuts ──
+        sb.AppendLine(Row(L("InsaitTerminal.Help.KeyboardShortcuts")));
+        sb.AppendLine(Cmd("Enter",  L("InsaitTerminal.Help.Key.Enter")));
+        sb.AppendLine(Cmd("↑ / ↓",  L("InsaitTerminal.Help.Key.UpDown")));
+        sb.AppendLine(Cmd("Ctrl+C", L("InsaitTerminal.Help.Key.CtrlC")));
+        sb.AppendLine(Cmd("Ctrl+L", L("InsaitTerminal.Help.Key.CtrlL")));
+        sb.AppendLine(empty);
+
+        // ── Dotnet auto-discovery ──
+        sb.AppendLine(Row(L("InsaitTerminal.Help.DotnetDiscovery")));
+        sb.AppendLine(SubTop());
+        sb.AppendLine(SubRow("dotnet run / build / publish / test / clean / watch"));
+        sb.AppendLine(SubRow(L("InsaitTerminal.Help.DotnetDiscovery.AutoFind")));
+        sb.AppendLine(SubRow(L("InsaitTerminal.Help.DotnetDiscovery.Single")));
+        sb.AppendLine(SubRow(L("InsaitTerminal.Help.DotnetDiscovery.Multiple")));
+        sb.AppendLine(SubBot());
+        sb.AppendLine(empty);
+
+        // ── Dotnet CLI commands ──
+        sb.AppendLine(Row(L("InsaitTerminal.Help.DotnetCommands")));
+        sb.AppendLine(Cmd2("dotnet new <template>",      L("InsaitTerminal.Help.Dotnet.New")));
+        sb.AppendLine(Cmd2("dotnet build",                L("InsaitTerminal.Help.Dotnet.Build")));
+        sb.AppendLine(Cmd2("dotnet build -c Release",     L("InsaitTerminal.Help.Dotnet.BuildRelease")));
+        sb.AppendLine(Cmd2("dotnet run",                  L("InsaitTerminal.Help.Dotnet.Run")));
+        sb.AppendLine(Cmd2("dotnet test",                 L("InsaitTerminal.Help.Dotnet.Test")));
+        sb.AppendLine(Cmd2("dotnet publish",              L("InsaitTerminal.Help.Dotnet.Publish")));
+        sb.AppendLine(Cmd2("dotnet clean",                L("InsaitTerminal.Help.Dotnet.Clean")));
+        sb.AppendLine(Cmd2("dotnet restore",              L("InsaitTerminal.Help.Dotnet.Restore")));
+        sb.AppendLine(Cmd2("dotnet watch",                L("InsaitTerminal.Help.Dotnet.Watch")));
+        sb.AppendLine(Cmd2("dotnet --info",               L("InsaitTerminal.Help.Dotnet.Info")));
+        sb.AppendLine(Cmd2("dotnet ef",                   L("InsaitTerminal.Help.Dotnet.Ef")));
+        sb.AppendLine(empty);
+
+        // ── NuGet package management ──
+        sb.AppendLine(Row(L("InsaitTerminal.Help.NuGetManagement")));
+        sb.AppendLine(SubTop());
+        sb.AppendLine(SubRow("dotnet add package <Name>"));
+        sb.AppendLine(SubRow(L("InsaitTerminal.Help.NuGet.AutoSelect")));
+        sb.AppendLine(SubRow(L("InsaitTerminal.Help.NuGet.Menu")));
+        sb.AppendLine(SubBot());
+        sb.AppendLine(Cmd2("dotnet list package",         L("InsaitTerminal.Help.Dotnet.ListPackage")));
+        sb.AppendLine(Cmd2("dotnet remove package <n>",   L("InsaitTerminal.Help.Dotnet.RemovePackage")));
+        sb.AppendLine(Cmd2("dotnet new list",             L("InsaitTerminal.Help.Dotnet.NewList")));
+        sb.AppendLine(Cmd2("dotnet nuget locals all -c",  L("InsaitTerminal.Help.Dotnet.ClearCache")));
+        sb.AppendLine(empty);
+
+        // ── Git commands ──
+        sb.AppendLine(Row(L("InsaitTerminal.Help.GitCommands")));
+        sb.AppendLine(Cmd2("git status",            L("InsaitTerminal.Help.Git.Status")));
+        sb.AppendLine(Cmd2("git add .",              L("InsaitTerminal.Help.Git.Add")));
+        sb.AppendLine(Cmd2("git commit -m \"msg\"",  L("InsaitTerminal.Help.Git.Commit")));
+        sb.AppendLine(Cmd2("git push",               L("InsaitTerminal.Help.Git.Push")));
+        sb.AppendLine(Cmd2("git pull",               L("InsaitTerminal.Help.Git.Pull")));
+        sb.AppendLine(Cmd2("git log --oneline -10",  L("InsaitTerminal.Help.Git.Log")));
+        sb.AppendLine(empty);
+
+        sb.AppendLine(bot);
+        sb.AppendLine();
+        return sb.ToString();
+    }
 
     // ═════════════════════════════════════════════════════════
     //  Construction

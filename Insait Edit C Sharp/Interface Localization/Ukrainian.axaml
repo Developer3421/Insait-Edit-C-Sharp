@@ -755,9 +755,11 @@
 
 2. ОБМЕЖЕННЯ
 ─────────────
+Insait Edit є некомерційним, безкоштовним програмним забезпеченням. Ви можете використовувати його для створення будь-яких проєктів безкоштовно, включно з комерційними.
+
 Вам забороняється:
+  • Створювати додатки, що копіюють або близько повторюють графічний стиль, візуальний дизайн або зовнішній вигляд інтерфейсу Insait Edit.
   • Виконувати зворотне проєктування, декомпіляцію або дизасемблювання Програмного забезпечення, окрім випадків, прямо дозволених чинним законодавством.
-  • Продавати, здавати в оренду, передавати в субліцензію або розповсюджувати Програмне забезпечення без письмового дозволу.
   • Видаляти або змінювати будь-які повідомлення про права власності чи позначення на Програмному забезпеченні.
 
 3. ІНТЕЛЕКТУАЛЬНА ВЛАСНІСТЬ
@@ -1143,6 +1145,8 @@
     <!-- ── 21. Diagnostic / Editor ───────────────────────────────── -->
     <x:String x:Key="Diag.QuickFixes">Швидкі виправлення:</x:String>
     <x:String x:Key="Diag.LineCol">Рядок {0}, Стовпець {1}</x:String>
+    <x:String x:Key="Diag.ResolvablePackage">Встановити NuGet пакет</x:String>
+    <x:String x:Key="Diag.AddUsingSuggestion">Додати відсутню директиву using</x:String>
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn готовий</x:String>
 
     <!-- LED Panel Designer -->
@@ -1424,5 +1428,54 @@
     <x:String x:Key="Terminal.Help.ShortcutsSection">Комбінації клавіш:</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip">💡 dotnet run/build/publish/test автоматично знаходить *.csproj / *.fsproj</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip2">   Якщо знайдено кілька проєктів — ви обираєте потрібний.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Банер вітання ────────────────── -->
+    <x:String x:Key="InsaitTerminal.Welcome.BannerTitle">✦  Insait Edit — Інтегрований термінал  ✦</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.HelpHint">Введіть 'insait help' для перегляду команд та скорочень.</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.Ready">Готовий до dotnet, git, cmd та будь-яких CLI-інструментів.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Довідка ──────────────────────── -->
+    <x:String x:Key="InsaitTerminal.Help.Title">Insait Термінал — Довідка</x:String>
+    <x:String x:Key="InsaitTerminal.Help.BuiltinCommands">ВБУДОВАНІ КОМАНДИ:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Help">Показати цю довідку</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Clear">Очистити вивід терміналу</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Restart">Перезапустити оболонку</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Version">Показати версію Insait Edit</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Welcome">Показати банер вітання</x:String>
+    <x:String x:Key="InsaitTerminal.Help.KeyboardShortcuts">КОМБІНАЦІЇ КЛАВІШ:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.Enter">Виконати команду</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.UpDown">Навігація по історії команд</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlC">Зупинити процес</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlL">Очистити термінал</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery">DOTNET CLI — АВТОПОШУК ПРОЄКТУ:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.AutoFind">→ автопошук *.csproj / *.fsproj у робочій теці</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Single">→ 1 проєкт: запускається одразу</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Multiple">→ 2+ проєкти: показує нумерований список</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetCommands">КОМАНДИ DOTNET CLI:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.New">Створити новий проєкт</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Build">Зібрати проєкт</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.BuildRelease">Зібрати у режимі Release</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Run">Запустити проєкт</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Test">Запустити юніт-тести</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Publish">Опублікувати застосунок</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Clean">Очистити результати збірки</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Restore">Відновити NuGet-пакети</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Watch">Режим спостереження (hot-reload)</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Info">Інформація про .NET SDK</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Ef">Entity Framework CLI</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGetManagement">КЕРУВАННЯ NUGET-ПАКЕТАМИ — АВТОВИБІР ПРОЄКТУ:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.AutoSelect">→ автовибір проєкту, якщо знайдено один</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.Menu">→ меню вибору, якщо кілька проєктів</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ListPackage">Переглянути встановлені пакети</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.RemovePackage">Видалити NuGet-пакет</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.NewList">Переглянути доступні шаблони</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ClearCache">Очистити кеш NuGet</x:String>
+    <x:String x:Key="InsaitTerminal.Help.GitCommands">КОМАНДИ GIT:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Status">Показати стан робочого дерева</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Add">Додати всі зміни до індексу</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Commit">Зафіксувати зміни</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Push">Надіслати до віддаленого сховища</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Pull">Отримати з віддаленого сховища</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Log">Показати нещодавні коміти</x:String>
 
 </ResourceDictionary>

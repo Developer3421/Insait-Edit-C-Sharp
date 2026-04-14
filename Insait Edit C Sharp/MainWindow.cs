@@ -1474,7 +1474,7 @@ public partial class MainWindow
             command: null);
         _viewModel.StatusText = LocalizationService.Get("Menu.NewTerminal");
     }
-    private void ClearTerminal_Click(object? sender, RoutedEventArgs e) => _terminalControl?.ExecuteCommand("cls");
+    private void ClearTerminal_Click(object? sender, RoutedEventArgs e) => _terminalControl?.ClearTerminal();
     private void MinimizePanel_Click(object? sender, RoutedEventArgs e)
     {
         SnapshotSizes();

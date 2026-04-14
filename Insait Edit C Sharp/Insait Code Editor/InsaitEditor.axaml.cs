@@ -355,6 +355,16 @@ public partial class InsaitEditor : UserControl
                                 diag.Code, diag.Message, ct);
                             if (ct.IsCancellationRequested) return;
                             diag.Fixes.AddRange(fixes);
+
+                            // Update the resolvable-package flag so the box
+                            // highlight appears after hover-loading
+                            if (!diag.HasResolvablePackageFix &&
+                                fixes.Any(f => f.Kind == QuickFixKind.InstallNuGet ||
+                                               f.Kind == QuickFixKind.AddUsing))
+                            {
+                                diag.HasResolvablePackageFix = true;
+                                _surface.InvalidateVisual();
+                            }
                         }
                         catch (OperationCanceledException) { return; }
                         catch { /* best-effort */ }
@@ -381,6 +391,22 @@ public partial class InsaitEditor : UserControl
                         Title = $"{sevIcon} {diag.Code}: {diag.Message}",
                         Kind  = QuickFixKind.Other,
                     });
+
+                    // If this diagnostic is resolvable from a known package,
+                    // add a prominent "📦 Install package" badge header
+                    if (diag.HasResolvablePackageFix)
+                    {
+                        var pkgFixes = diag.Fixes.Where(f =>
+                            f.Kind == QuickFixKind.InstallNuGet).ToList();
+                        if (pkgFixes.Count > 0)
+                        {
+                            items.Add(new QuickFixSuggestion
+                            {
+                                Title = $"📦 {LocalizationService.Get("Diag.ResolvablePackage")}",
+                                Kind  = QuickFixKind.Other,
+                            });
+                        }
+                    }
 
                     // Add all fixes
                     items.AddRange(diag.Fixes);
@@ -726,6 +752,10 @@ public partial class InsaitEditor : UserControl
 
         switch (fix.Kind)
         {
+            case QuickFixKind.AddUsing when fix.RoslynAction != null:
+                // Roslyn's own AddImport action — applies the using precisely
+                _ = ApplyRoslynFixAsync(fix);
+                return;
             case QuickFixKind.AddUsing when !string.IsNullOrEmpty(fix.NamespaceName):
                 var usingLine = $"using {fix.NamespaceName};";
                 if (!_surface.Text.Contains(usingLine, StringComparison.Ordinal))

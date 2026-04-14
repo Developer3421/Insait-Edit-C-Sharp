@@ -751,9 +751,11 @@ Bu Sözleşme'nin şartlarına tabi olarak, yalnızca kişisel veya kurum içi i
 
 2. KISITLAMALAR
 ───────────────
+Insait Edit ticari olmayan, ücretsiz bir yazılımdır. Ticari projeler dahil olmak üzere, her türlü projeyi ücretsiz olarak oluşturmak için kullanabilirsiniz.
+
 Şunları yapamazsınız:
+  • Insait Edit'in grafik stilini, görsel tasarımını veya kullanıcı arayüzü görünümünü kopyalayan ya da yakından taklit eden uygulamalar oluşturmak.
   • Yürürlükteki kanunların açıkça izin verdiği durumlar dışında Yazılım üzerinde tersine mühendislik yapmak, derlemekten geri çevirmek veya parçalara ayırmak.
-  • Yazılımı yazılı izin olmadan satmak, kiralamak, leasing yoluyla vermek, alt lisanslamak veya yeniden dağıtmak.
   • Yazılım üzerindeki mülkiyet bildirimlerini veya etiketleri kaldırmak ya da değiştirmek.
 
 3. FİKRÎ MÜLKİYET
@@ -1139,6 +1141,8 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <!-- Diagnostic / Editor -->
     <x:String x:Key="Diag.QuickFixes">Hızlı Düzeltmeler:</x:String>
     <x:String x:Key="Diag.LineCol">Satır {0}, Sütun {1}</x:String>
+    <x:String x:Key="Diag.ResolvablePackage">NuGet Paketini Yükle</x:String>
+    <x:String x:Key="Diag.AddUsingSuggestion">Eksik using yönergesini ekle</x:String>
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn hazır</x:String>
 
     <!-- LED Panel Designer -->
@@ -1424,5 +1428,54 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="Terminal.Help.ShortcutsSection">Klavye Kısayolları:</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip">💡 dotnet run/build/publish/test otomatik olarak *.csproj / *.fsproj bulur</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip2">   Birden fazla proje bulunursa — hangisini kullanacağınızı siz seçersiniz.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Karşılama Bannerı ────────────── -->
+    <x:String x:Key="InsaitTerminal.Welcome.BannerTitle">✦  Insait Edit — Entegre Terminal  ✦</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.HelpHint">Komutları ve kısayolları görmek için 'insait help' yazın.</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.Ready">dotnet, git, cmd ve tüm CLI araçları için hazır.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Yardım ───────────────────────── -->
+    <x:String x:Key="InsaitTerminal.Help.Title">Insait Terminal — Yardım</x:String>
+    <x:String x:Key="InsaitTerminal.Help.BuiltinCommands">DAHİLİ KOMUTLAR:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Help">Bu yardım mesajını göster</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Clear">Terminal çıktısını temizle</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Restart">Kabuk oturumunu yeniden başlat</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Version">Insait Edit sürümünü göster</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Welcome">Karşılama bannerını göster</x:String>
+    <x:String x:Key="InsaitTerminal.Help.KeyboardShortcuts">KLAVYE KISAYOLLARI:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.Enter">Komutu çalıştır</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.UpDown">Komut geçmişinde gezin</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlC">Çalışan işlemi durdur</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlL">Terminali temizle</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery">DOTNET CLI — OTOMATİK PROJE BULMA:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.AutoFind">→ *.csproj / *.fsproj otomatik bulur</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Single">→ 1 proje: hemen çalıştırılır</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Multiple">→ 2+ proje: seçim için numaralı menü</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetCommands">DOTNET CLI KOMUTLARI:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.New">Yeni proje oluştur</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Build">Projeyi derle</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.BuildRelease">Release modunda derle</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Run">Projeyi çalıştır</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Test">Birim testlerini çalıştır</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Publish">Uygulamayı yayımla</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Clean">Derleme çıktısını temizle</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Restore">NuGet paketlerini geri yükle</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Watch">İzleme modu (hot-reload)</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Info">.NET SDK bilgilerini göster</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Ef">Entity Framework CLI</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGetManagement">NUGET PAKET YÖNETİMİ — OTOMATİK PROJE SEÇİMİ:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.AutoSelect">→ yalnızca biri bulunursa otomatik seçer</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.Menu">→ birden fazla proje varsa menü gösterir</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ListPackage">Yüklü paketleri listele</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.RemovePackage">NuGet paketini kaldır</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.NewList">Kullanılabilir şablonları listele</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ClearCache">NuGet önbelleğini temizle</x:String>
+    <x:String x:Key="InsaitTerminal.Help.GitCommands">GIT KOMUTLARI:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Status">Çalışma ağacı durumunu göster</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Add">Tüm değişiklikleri hazırla</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Commit">Hazırlanan değişiklikleri kaydet</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Push">Uzak depoya gönder</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Pull">Uzak depodan çek</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Log">Son kayıtları göster</x:String>
 
 </ResourceDictionary>

@@ -18,6 +18,7 @@ public partial class RoslynQuickFixWindow : Window
 {
     private static readonly Color BgSel = Color.Parse("#FF5B3A8A");
     private static readonly Color FgPri = Color.Parse("#FFF0E8F4");
+    private static readonly Color NuGetAccent = Color.Parse("#FFDCC4FF");
 
     private readonly TextBlock _headerText;
     private readonly ListBox   _fixList;
@@ -125,6 +126,15 @@ public partial class RoslynQuickFixWindow : Window
             Tag = fix,
             Child = grid,
         };
+
+        // Visually highlight NuGet/using-related fixes with a left accent border
+        if (fix.Kind is QuickFixKind.InstallNuGet or QuickFixKind.AddUsing)
+        {
+            row.BorderBrush     = new SolidColorBrush(NuGetAccent);
+            row.BorderThickness = new Thickness(3, 0, 0, 0);
+            row.CornerRadius    = new CornerRadius(2);
+            row.Margin          = new Thickness(2, 1);
+        }
 
         row.PointerEntered += (s, _) =>
         {

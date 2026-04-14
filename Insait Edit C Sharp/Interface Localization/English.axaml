@@ -755,9 +755,11 @@ Subject to the terms of this Agreement, you are granted a limited, non-exclusive
 
 2. RESTRICTIONS
 ─────────────────
+Insait Edit is non-commercial, free software. You may use it to create any projects free of charge, including commercial ones.
+
 You may not:
+  • Create applications that copy or closely replicate the graphical style, visual design, or user interface appearance of Insait Edit.
   • Reverse-engineer, decompile, or disassemble the Software except to the extent permitted by applicable law.
-  • Sell, rent, lease, sublicense, or redistribute the Software without written permission.
   • Remove or alter any proprietary notices or labels on the Software.
 
 3. INTELLECTUAL PROPERTY
@@ -1143,6 +1145,8 @@ Thank you for using Insait Edit!]]></x:String>
     <!-- ── 21. Diagnostic / Editor ───────────────────────────────── -->
     <x:String x:Key="Diag.QuickFixes">Quick Fixes:</x:String>
     <x:String x:Key="Diag.LineCol">Line {0}, Col {1}</x:String>
+    <x:String x:Key="Diag.ResolvablePackage">Install NuGet Package</x:String>
+    <x:String x:Key="Diag.AddUsingSuggestion">Add missing using directive</x:String>
     <x:String x:Key="Editor.RoslynReady">✦ Insait Code Editor · Roslyn ready</x:String>
 
     <!-- LED Panel Designer -->
@@ -1424,5 +1428,54 @@ Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="Terminal.Help.ShortcutsSection">Keyboard Shortcuts:</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip">💡 dotnet run/build/publish/test auto-find *.csproj / *.fsproj</x:String>
     <x:String x:Key="Terminal.Help.DotnetTip2">   If multiple projects found — you choose which one.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Welcome Banner ───────────────── -->
+    <x:String x:Key="InsaitTerminal.Welcome.BannerTitle">✦  Insait Edit — Integrated Terminal  ✦</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.HelpHint">Type 'insait help' to see available commands &amp; shortcuts.</x:String>
+    <x:String x:Key="InsaitTerminal.Welcome.Ready">Ready for dotnet, git, cmd and any CLI tools.</x:String>
+
+    <!-- ── InsaitTerminalPanel — Help Banner ───────────────────── -->
+    <x:String x:Key="InsaitTerminal.Help.Title">Insait Terminal — Help</x:String>
+    <x:String x:Key="InsaitTerminal.Help.BuiltinCommands">BUILT-IN COMMANDS:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Help">Show this help message</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Clear">Clear terminal output</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Restart">Restart the shell session</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Version">Show Insait Edit version</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Cmd.Welcome">Show welcome banner</x:String>
+    <x:String x:Key="InsaitTerminal.Help.KeyboardShortcuts">KEYBOARD SHORTCUTS:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.Enter">Execute command</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.UpDown">Navigate command history</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlC">Stop running process</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Key.CtrlL">Clear terminal</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery">DOTNET CLI — AUTO PROJECT DISCOVERY:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.AutoFind">→ auto-finds *.csproj / *.fsproj in working dir</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Single">→ 1 project: runs immediately</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetDiscovery.Multiple">→ 2+ projects: shows numbered menu to choose</x:String>
+    <x:String x:Key="InsaitTerminal.Help.DotnetCommands">DOTNET CLI COMMANDS:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.New">Create a new project</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Build">Build the project</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.BuildRelease">Build in Release mode</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Run">Run the project</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Test">Run unit tests</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Publish">Publish the application</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Clean">Clean build output</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Restore">Restore NuGet packages</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Watch">Watch mode (hot-reload)</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Info">Show .NET SDK information</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.Ef">Entity Framework CLI</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGetManagement">NUGET PACKAGE MANAGEMENT — AUTO PROJECT SELECTION:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.AutoSelect">→ auto-selects project if only one found</x:String>
+    <x:String x:Key="InsaitTerminal.Help.NuGet.Menu">→ shows menu if multiple projects in workspace</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ListPackage">List installed packages</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.RemovePackage">Remove a NuGet package</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.NewList">List available templates</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Dotnet.ClearCache">Clear NuGet cache</x:String>
+    <x:String x:Key="InsaitTerminal.Help.GitCommands">GIT COMMANDS:</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Status">Show working tree status</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Add">Stage all changes</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Commit">Commit staged changes</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Push">Push to remote</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Pull">Pull from remote</x:String>
+    <x:String x:Key="InsaitTerminal.Help.Git.Log">Show recent commits</x:String>
 
 </ResourceDictionary>
