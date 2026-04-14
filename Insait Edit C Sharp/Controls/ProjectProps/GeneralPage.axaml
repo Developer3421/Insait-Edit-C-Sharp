@@ -4,7 +4,7 @@
     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                   VerticalScrollBarVisibility="Auto"
                   Padding="28,16,28,28">
-        <StackPanel Spacing="0">
+        <StackPanel Spacing="0" HorizontalAlignment="Stretch" MaxWidth="720">
 
             <!-- Application Icon -->
             <Border Background="#FF1C1530" BorderBrush="#FF3A2E52" BorderThickness="1"

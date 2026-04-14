@@ -974,7 +974,7 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="ProjectProps.DefaultNamespace">Простір імен за замовчуванням</x:String>
     <x:String x:Key="ProjectProps.TargetFramework">Цільовий фреймворк</x:String>
     <x:String x:Key="ProjectProps.OutputType">Тип виводу</x:String>
-=
+
     <x:String x:Key="ProjectProps.LangVersion">Версія мови C#</x:String>
     <x:String x:Key="ProjectProps.Nullable">Типи з підтримкою null</x:String>
     <x:String x:Key="ProjectProps.ImplicitUsings">Увімкнути неявні using</x:String>
