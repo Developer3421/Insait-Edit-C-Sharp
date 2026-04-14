@@ -307,13 +307,13 @@
                                         <StackPanel Grid.Column="1" Spacing="5">
                                             <TextBlock Name="BuildEntryClassLabel" Text="Entry Point Class" Classes="fl"/>
                                             <ComboBox Name="BuildEntryPointCombo" HorizontalAlignment="Stretch" IsEditable="True">
-                                                <ComboBoxItem Content="Windows.FullTrustApplication" IsSelected="True"/>
+                                                <ComboBoxItem Content="App" IsSelected="True"/>
+                                                <ComboBoxItem Content="Windows.FullTrustApplication"/>
                                                 <ComboBoxItem Content="Microsoft.UI.Xaml.Application"/>
-                                                <ComboBoxItem Content="App"/>
                                             </ComboBox>
                                         </StackPanel>
                                     </Grid>
-                                    <TextBlock Name="BuildEntryHint" Text="💡 Use 'Windows.FullTrustApplication' for standard .NET apps (WinForms, WPF, Avalonia, Console)."
+                                    <TextBlock Name="BuildEntryHint" Text="💡 Use 'App' for Microsoft Store packages. Use 'Windows.FullTrustApplication' only for sideload desktop bridge apps."
                                                FontSize="11" Foreground="#FF9E90B0" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
@@ -333,6 +333,12 @@
                                         <CheckBox Name="BuildCleanOutputCheck" IsChecked="True"
                                                   Content="🗑 Clean before publish" Margin="0,0,20,8"
                                                   ToolTip.Tip="Delete all files in the publish folder before building"/>
+                                        <CheckBox Name="BuildFullTrustCheck"
+                                                  Content="🔓 runFullTrust" Margin="0,0,20,8"
+                                                  ToolTip.Tip="Include runFullTrust restricted capability (required for desktop bridge sideload apps, NOT needed for Microsoft Store)"/>
+                                        <CheckBox Name="BuildNoPdbCheck"
+                                                  Content="🚫 No PDB" Margin="0,0,20,8"
+                                                  ToolTip.Tip="Exclude debug symbol files (.pdb) — sets DebugType=none"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
@@ -544,9 +550,9 @@
                                     <StackPanel Spacing="5">
                                         <TextBlock Name="EntryClassLabel" Text="Entry Point Class" Classes="fl"/>
                                         <ComboBox Name="EntryPointClassCombo" HorizontalAlignment="Stretch" IsEditable="True">
-                                            <ComboBoxItem Content="Windows.FullTrustApplication" IsSelected="True"/>
+                                            <ComboBoxItem Content="App" IsSelected="True"/>
+                                            <ComboBoxItem Content="Windows.FullTrustApplication"/>
                                             <ComboBoxItem Content="Microsoft.UI.Xaml.Application"/>
-                                            <ComboBoxItem Content="App"/>
                                         </ComboBox>
                                     </StackPanel>
                                     <Button Content="💾 Save Entry Point to MSIX" Classes="primary-btn" Name="SaveEntryBtn" HorizontalAlignment="Left"/>
@@ -556,8 +562,10 @@
                                     BorderBrush="#FF2A5040" BorderThickness="1">
                                 <StackPanel Spacing="6">
                                     <TextBlock Name="EntryRefTitle" Text="ℹ️  Entry Point Reference" FontSize="12" Foreground="#FFA6E3A1" FontWeight="SemiBold"/>
+                                    <TextBlock Name="EntryRefApp" TextWrapping="Wrap" FontSize="11" Foreground="#FF9E90B0"
+                                               Text="App — recommended for Microsoft Store packages (.NET, Avalonia, WPF, WinForms, Console)."/>
                                     <TextBlock Name="EntryRefFullTrust" TextWrapping="Wrap" FontSize="11" Foreground="#FF9E90B0"
-                                               Text="Windows.FullTrustApplication — standard .NET apps (WPF, WinForms, Avalonia, Console)."/>
+                                               Text="Windows.FullTrustApplication — sideload desktop bridge apps (legacy, requires runFullTrust capability)."/>
                                     <TextBlock Name="EntryRefWinUI" TextWrapping="Wrap" FontSize="11" Foreground="#FF9E90B0"
                                                Text="Microsoft.UI.Xaml.Application — WinUI 3 apps packaged with Windows App SDK."/>
                                 </StackPanel>

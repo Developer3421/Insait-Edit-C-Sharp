@@ -1017,6 +1017,8 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Обрізка збірок</x:String>
     <x:String x:Key="Msix.CleanBeforePublish">🗑 Очистити перед публікацією</x:String>
+    <x:String x:Key="Msix.RunFullTrust">🔓 runFullTrust (повний доступ)</x:String>
+    <x:String x:Key="Msix.NoPdb">🚫 Без PDB (DebugType=none)</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Вивід</x:String>
     <x:String x:Key="Msix.MsixOutputPath">Шлях виводу MSIX (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Проміжна папка публікації (порожньо = авто-тимчасова)</x:String>

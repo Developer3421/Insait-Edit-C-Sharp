@@ -1013,6 +1013,8 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Derlemeleri kırp</x:String>
     <x:String x:Key="Msix.CleanBeforePublish">🗑 Yayınlamadan önce temizle</x:String>
+    <x:String x:Key="Msix.RunFullTrust">🔓 runFullTrust (tam güven)</x:String>
+    <x:String x:Key="Msix.NoPdb">🚫 PDB yok (DebugType=none)</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Çıktı</x:String>
     <x:String x:Key="Msix.MsixOutputPath">MSIX Çıktı Yolu (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Ara yayımlama klasörü (boş = otomatik-geçici)</x:String>

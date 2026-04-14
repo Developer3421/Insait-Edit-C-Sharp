@@ -286,6 +286,11 @@ public class PublishService
             args.Append(" -p:IncludeNativeLibrariesForSelfExtract=true");
         }
 
+        if (profile.ExcludeDebugSymbols)
+        {
+            args.Append(" -p:DebugType=none -p:DebugSymbols=false");
+        }
+
         if (!string.IsNullOrEmpty(profile.PublishProfileName))
         {
             args.Append($" -p:PublishProfile=\"{profile.PublishProfileName}\"");
@@ -617,6 +622,7 @@ public class PublishProfile
     public bool EnableCompressionInSingleFile { get; set; }
     public bool IncludeNativeLibrariesForSelfExtract { get; set; }
     public bool CleanOutputFolder { get; set; }
+    public bool ExcludeDebugSymbols { get; set; }
     public string? ApplicationIcon { get; set; }
     public Dictionary<string, string> AdditionalProperties { get; set; } = new();
 }

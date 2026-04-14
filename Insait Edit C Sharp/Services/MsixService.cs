@@ -740,6 +740,8 @@ public class MsixService
             sb.Append(" -p:PublishReadyToRun=true");
         if (opts.TrimUnusedAssemblies)
             sb.Append(" -p:PublishTrimmed=true");
+        if (opts.ExcludeDebugSymbols)
+            sb.Append(" -p:DebugType=none -p:DebugSymbols=false");
 
         Log($"dotnet {sb}");
         return await RunProcessAsync(SettingsPanelControl.ResolveDotNetExe(), sb.ToString(),
@@ -824,10 +826,18 @@ public class MsixService
         var makeAppx = FindMakeAppx();
         if (makeAppx == null)
         {
-            // Fallback: create a ZIP with .msix extension (works for sideloading)
-            Log("⚠️  MakeAppx.exe not found — creating ZIP-based MSIX (unsigned).");
-            await CreateZipMsixAsync(contentDir, msixPath);
-            return new ProcessRunResult { Success = true };
+            Log("❌  MakeAppx.exe not found!");
+            Log("");
+            Log("MakeAppx.exe is required to create valid MSIX packages.");
+            Log("A plain ZIP file renamed to .msix will NOT work — Windows requires");
+            Log("AppxBlockMap.xml and [Content_Types].xml that only MakeAppx can generate.");
+            Log("");
+            Log("To fix this, install the Windows SDK:");
+            Log("  • Visual Studio Installer → Individual Components → \"Windows 10 SDK\" or \"Windows 11 SDK\"");
+            Log("  • Or download from: https://developer.microsoft.com/windows/downloads/windows-sdk/");
+            Log("");
+            Log("Expected location: C:\\Program Files (x86)\\Windows Kits\\10\\bin\\<version>\\x64\\MakeAppx.exe");
+            return new ProcessRunResult { Success = false, ExitCode = -1 };
         }
 
         var args = $"pack /d \"{contentDir}\" /p \"{msixPath}\" /o";
@@ -915,15 +925,6 @@ public class MsixService
             : new Version(0, 0);
     }
 
-    private static Task CreateZipMsixAsync(string sourceDir, string msixPath)
-    {
-        return Task.Run(() =>
-        {
-            if (File.Exists(msixPath)) File.Delete(msixPath);
-            ZipFile.CreateFromDirectory(sourceDir, msixPath,
-                CompressionLevel.Optimal, includeBaseDirectory: false);
-        });
-    }
 
     private void GenerateAppxManifest(MsixPackageOptions opts, string publishDir)
     {
@@ -1011,19 +1012,33 @@ public class MsixService
 
         var entryPoint = opts.EntryPoint;
         if (string.IsNullOrWhiteSpace(entryPoint))
-            entryPoint = "Windows.FullTrustApplication";
+            entryPoint = "App";
 
         // ── Resolve logo: must be relative path + .png/.jpg/.jpeg (not .ico) ──
         var logoRelative = ResolveLogo(opts.LogoRelativePath, publishDir);
 
+        // Build capabilities section based on options
+        var capabilitiesXml = new StringBuilder();
+        capabilitiesXml.AppendLine("  <Capabilities>");
+        if (opts.IncludeRunFullTrust)
+            capabilitiesXml.AppendLine("    <rescap:Capability Name=\"runFullTrust\" />");
+        capabilitiesXml.AppendLine("    <Capability Name=\"internetClient\" />");
+        capabilitiesXml.AppendLine("  </Capabilities>");
+
+        // Build namespace declarations
+        var nsDeclarations = new StringBuilder();
+        nsDeclarations.AppendLine("  xmlns=\"http://schemas.microsoft.com/appx/manifest/foundation/windows10\"");
+        nsDeclarations.AppendLine("  xmlns:uap=\"http://schemas.microsoft.com/appx/manifest/uap/windows10\"");
+        if (opts.IncludeRunFullTrust)
+            nsDeclarations.AppendLine("  xmlns:rescap=\"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities\"");
+
+        var ignorableNs = "uap" + (opts.IncludeRunFullTrust ? " rescap" : "");
+
         var xml = $"""
 <?xml version="1.0" encoding="utf-8"?>
 <Package
-  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  IgnorableNamespaces="uap rescap desktop">
+{nsDeclarations.ToString().TrimEnd()}
+  IgnorableNamespaces="{ignorableNs}">
 
   <Identity
     Name="{EscapeXml(opts.PackageIdentityName)}"
@@ -1058,15 +1073,10 @@ public class MsixService
         Square44x44Logo="{EscapeXml(logoRelative)}">
         <uap:DefaultTile Wide310x150Logo="{EscapeXml(logoRelative)}" />
       </uap:VisualElements>
-      <Extensions>
-        <desktop:Extension Category="windows.fullTrustProcess" Executable="{EscapeXml(exe)}" />
-      </Extensions>
     </Application>
   </Applications>
 
-  <Capabilities>
-    <rescap:Capability Name="runFullTrust" />
-  </Capabilities>
+{capabilitiesXml.ToString().TrimEnd()}
 
 </Package>
 """;
@@ -1338,6 +1348,12 @@ public class MsixPackageOptions
     // Entry point
     public string? EntryExecutable  { get; set; }   // e.g. "MyApp.exe"
     public string? EntryPoint       { get; set; }   // e.g. "Windows.FullTrustApplication"
+
+    // Debug symbols
+    public bool ExcludeDebugSymbols { get; set; }    // Publish with DebugType=none (no .pdb files)
+
+    // Store compatibility
+    public bool IncludeRunFullTrust { get; set; }    // Include runFullTrust restricted capability
 
     // Output
     public string? OutputMsixPath   { get; set; }

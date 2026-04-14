@@ -106,6 +106,8 @@ public partial class MsixManagerWindow : Window
         SetCheckBox("BuildReadyToRunCheck", L("Msix.ReadyToRun"));
         SetCheckBox("BuildTrimCheck",       L("Msix.TrimAssemblies"));
         SetCheckBox("BuildCleanOutputCheck", L("Msix.CleanBeforePublish"));
+        SetCheckBox("BuildFullTrustCheck",  L("Msix.RunFullTrust"));
+        SetCheckBox("BuildNoPdbCheck",       L("Msix.NoPdb"));
         SetText("BuildOutputHeader",   L("Msix.OutputHeader"));
         SetText("BuildOutputPathLabel", L("Msix.MsixOutputPath"));
         SetBtn("BrowseMsixOutputBtn",  L("Msix.Browse"));
@@ -462,6 +464,7 @@ public partial class MsixManagerWindow : Window
             ReadyToRun        = opts.ReadyToRun,
             TrimUnusedAssemblies = opts.TrimUnusedAssemblies,
             CleanOutputFolder = opts.CleanOutputFolder,
+            ExcludeDebugSymbols = opts.ExcludeDebugSymbols,
         };
 
         var progressWindow = new PublishProgressWindow(_pubService, profile);
@@ -550,12 +553,14 @@ public partial class MsixManagerWindow : Window
         var ep = epCombo?.SelectionBoxItem?.ToString()
               ?? (epCombo?.SelectedItem as ComboBoxItem)?.Content?.ToString()
               ?? epCombo?.Text
-              ?? "Windows.FullTrustApplication";
+              ?? "App";
 
         var singleFile = this.FindControl<CheckBox>("BuildSingleFileCheck")?.IsChecked == true;
         var r2r        = this.FindControl<CheckBox>("BuildReadyToRunCheck")?.IsChecked  != false;
         var trim       = this.FindControl<CheckBox>("BuildTrimCheck")?.IsChecked         == true;
         var cleanOut   = this.FindControl<CheckBox>("BuildCleanOutputCheck")?.IsChecked  != false;
+        var fullTrust  = this.FindControl<CheckBox>("BuildFullTrustCheck")?.IsChecked    == true;
+        var noPdb      = this.FindControl<CheckBox>("BuildNoPdbCheck")?.IsChecked        == true;
 
         var msixOutput = GetText("BuildOutputPathBox")?.Trim();
         var publishDir = GetText("BuildPublishDirBox")?.Trim();
@@ -586,6 +591,8 @@ public partial class MsixManagerWindow : Window
             LogoRelativePath      = GetText("BuildLogoBox")?.Trim() ?? @"Assets\Square150x150Logo.png",
             EntryExecutable       = exe,
             EntryPoint            = ep,
+            IncludeRunFullTrust   = fullTrust,
+            ExcludeDebugSymbols   = noPdb,
             OutputMsixPath        = msixOutput,
         };
     }

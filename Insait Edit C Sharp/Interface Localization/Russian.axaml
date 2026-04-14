@@ -1017,6 +1017,8 @@ Insait Edit является некоммерческим, бесплатным 
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Обрезка сборок</x:String>
     <x:String x:Key="Msix.CleanBeforePublish">🗑 Очистить перед публикацией</x:String>
+    <x:String x:Key="Msix.RunFullTrust">🔓 runFullTrust (полный доступ)</x:String>
+    <x:String x:Key="Msix.NoPdb">🚫 Без PDB (DebugType=none)</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Вывод</x:String>
     <x:String x:Key="Msix.MsixOutputPath">Путь вывода MSIX (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Промежуточная папка публикации (пусто = авто-временная)</x:String>

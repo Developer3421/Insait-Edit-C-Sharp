@@ -1017,6 +1017,8 @@ Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Trim assemblies</x:String>
     <x:String x:Key="Msix.CleanBeforePublish">🗑 Clean before publish</x:String>
+    <x:String x:Key="Msix.RunFullTrust">🔓 runFullTrust</x:String>
+    <x:String x:Key="Msix.NoPdb">🚫 No PDB (DebugType=none)</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Output</x:String>
     <x:String x:Key="Msix.MsixOutputPath">MSIX Output Path (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Intermediate publish folder (blank = auto-temp)</x:String>

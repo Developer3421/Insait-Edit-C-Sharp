@@ -1017,6 +1017,8 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="Msix.ReadyToRun">ReadyToRun</x:String>
     <x:String x:Key="Msix.TrimAssemblies">Assemblies trimmen</x:String>
     <x:String x:Key="Msix.CleanBeforePublish">🗑 Vor Veröffentlichung bereinigen</x:String>
+    <x:String x:Key="Msix.RunFullTrust">🔓 runFullTrust (Vollzugriff)</x:String>
+    <x:String x:Key="Msix.NoPdb">🚫 Ohne PDB (DebugType=none)</x:String>
     <x:String x:Key="Msix.OutputHeader">📂  Ausgabe</x:String>
     <x:String x:Key="Msix.MsixOutputPath">MSIX-Ausgabepfad (.msix)</x:String>
     <x:String x:Key="Msix.IntermediateFolder">Zwischenveröffentlichungsordner (leer = auto-temp)</x:String>
