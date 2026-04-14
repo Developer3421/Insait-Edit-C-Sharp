@@ -975,7 +975,6 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="ProjectProps.TargetFramework">Zielframework</x:String>
     <x:String x:Key="ProjectProps.OutputType">Ausgabetyp</x:String>
     <x:String x:Key="ProjectProps.LangVersion">C#-Sprachversion</x:String>
-    <x:String x:Key="ProjectProps.LangVersion">C#-Sprachversion</x:String>
     <x:String x:Key="ProjectProps.Nullable">Nullable-Verweistypen</x:String>
     <x:String x:Key="ProjectProps.ImplicitUsings">Implizite Usings aktivieren</x:String>
     <x:String x:Key="ProjectProps.AllowUnsafe">Unsafe-Code erlauben</x:String>

@@ -971,7 +971,6 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="ProjectProps.TargetFramework">Hedef çerçeve</x:String>
     <x:String x:Key="ProjectProps.OutputType">Çıktı türü</x:String>
     <x:String x:Key="ProjectProps.LangVersion">C# dil sürümü</x:String>
-    <x:String x:Key="ProjectProps.LangVersion">C# dil sürümü</x:String>
     <x:String x:Key="ProjectProps.Nullable">Nullable başvuru türleri</x:String>
     <x:String x:Key="ProjectProps.ImplicitUsings">Örtük using'leri etkinleştir</x:String>
     <x:String x:Key="ProjectProps.AllowUnsafe">Güvenli olmayan koda izin ver</x:String>

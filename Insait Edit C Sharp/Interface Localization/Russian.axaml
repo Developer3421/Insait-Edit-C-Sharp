@@ -975,7 +975,6 @@ Insait Edit является некоммерческим, бесплатным 
     <x:String x:Key="ProjectProps.TargetFramework">Целевой фреймворк</x:String>
     <x:String x:Key="ProjectProps.OutputType">Тип вывода</x:String>
     <x:String x:Key="ProjectProps.LangVersion">Версия языка C#</x:String>
-    <x:String x:Key="ProjectProps.LangVersion">Версия языка C#</x:String>
     <x:String x:Key="ProjectProps.Nullable">Nullable-ссылочные типы</x:String>
     <x:String x:Key="ProjectProps.ImplicitUsings">Включить неявные using</x:String>
     <x:String x:Key="ProjectProps.AllowUnsafe">Разрешить unsafe-код</x:String>

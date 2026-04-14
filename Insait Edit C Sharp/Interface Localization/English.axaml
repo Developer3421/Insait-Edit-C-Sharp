@@ -974,7 +974,7 @@ Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="ProjectProps.DefaultNamespace">Default namespace</x:String>
     <x:String x:Key="ProjectProps.TargetFramework">Target framework</x:String>
     <x:String x:Key="ProjectProps.OutputType">Output type</x:String>
-    <x:String x:Key="ProjectProps.LangVersion">C# language version</x:String>
+
     <x:String x:Key="ProjectProps.LangVersion">C# language version</x:String>
     <x:String x:Key="ProjectProps.Nullable">Nullable reference types</x:String>
     <x:String x:Key="ProjectProps.ImplicitUsings">Enable implicit usings</x:String>
