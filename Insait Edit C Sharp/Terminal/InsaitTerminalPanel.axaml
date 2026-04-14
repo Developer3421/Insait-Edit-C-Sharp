@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+             x:Class="Insait_Edit_C_Sharp.Terminal.InsaitTerminalPanel">
+
+    <UserControl.Styles>
+        <!-- Override Fluent theme TextBox states for the OUTPUT area -->
+        <Style Selector="TextBox#OutputTextBox">
+            <Setter Property="Background" Value="#FF120E22"/>
+            <Setter Property="Foreground" Value="#FFE0D8F0"/>
+            <Setter Property="SelectionBrush" Value="#60DCC4FF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="0"/>
+        </Style>
+        <Style Selector="TextBox#OutputTextBox:pointerover">
+            <Setter Property="Background" Value="#FF120E22"/>
+            <Setter Property="Foreground" Value="#FFE0D8F0"/>
+        </Style>
+        <Style Selector="TextBox#OutputTextBox:focus">
+            <Setter Property="Background" Value="#FF120E22"/>
+            <Setter Property="Foreground" Value="#FFE0D8F0"/>
+        </Style>
+        <Style Selector="TextBox#OutputTextBox:focus-within">
+            <Setter Property="Background" Value="#FF120E22"/>
+            <Setter Property="Foreground" Value="#FFE0D8F0"/>
+        </Style>
+        <!-- Kill inner Border that Fluent paints white -->
+        <Style Selector="TextBox#OutputTextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF120E22"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="TextBox#OutputTextBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF120E22"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="TextBox#OutputTextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#FF120E22"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- Override Fluent theme TextBox states for the INPUT area -->
+        <Style Selector="TextBox#InputTextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFE0D8F0"/>
+            <Setter Property="CaretBrush" Value="#FFE0D8F0"/>
+            <Setter Property="SelectionBrush" Value="#60DCC4FF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="0"/>
+        </Style>
+        <Style Selector="TextBox#InputTextBox:pointerover">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFE0D8F0"/>
+        </Style>
+        <Style Selector="TextBox#InputTextBox:focus">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFE0D8F0"/>
+        </Style>
+        <Style Selector="TextBox#InputTextBox:focus-within">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFE0D8F0"/>
+        </Style>
+        <Style Selector="TextBox#InputTextBox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="TextBox#InputTextBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="TextBox#InputTextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- Stop button hover -->
+        <Style Selector="Button#StopButton:pointerover">
+            <Setter Property="Background" Value="#30FF6E6E"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="*,Auto" Background="#FF120E22">
+        <!-- Output area -->
+        <ScrollViewer x:Name="OutputScrollViewer"
+                      Grid.Row="0"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto">
+            <TextBox x:Name="OutputTextBox"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                     FontSize="14"
+                     Padding="6,4"/>
+        </ScrollViewer>
+
+        <!-- Input bar -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto"
+              Background="#FF1A1730" MinHeight="32">
+            <TextBlock x:Name="PromptLabel"
+                       Grid.Column="0"
+                       Text="❯"
+                       Foreground="#FF9580FF"
+                       FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                       FontSize="14"
+                       VerticalAlignment="Center"
+                       Margin="8,0,4,0"/>
+            <TextBox x:Name="InputTextBox"
+                     Grid.Column="1"
+                     FontFamily="Cascadia Mono, Consolas, Courier New, monospace"
+                     FontSize="14"
+                     VerticalAlignment="Center"
+                     PlaceholderText="Type command..."
+                     KeyDown="InputTextBox_KeyDown"/>
+            <Button x:Name="StopButton"
+                    Grid.Column="2"
+                    Content="⏹"
+                    FontSize="14"
+                    Width="32" Height="28"
+                    Foreground="#FFFF6E6E"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    VerticalAlignment="Center"
+                    Margin="2,0,6,0"
+                    Click="StopButton_Click"
+                    ToolTip.Tip="Stop process (Ctrl+C)"/>
+        </Grid>
+    </Grid>
+</UserControl>

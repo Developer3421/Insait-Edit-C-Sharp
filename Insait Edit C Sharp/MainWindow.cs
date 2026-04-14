@@ -12,6 +12,7 @@ using Avalonia.Threading;
 using Insait_Edit_C_Sharp.Services;
 using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.Models;
+using Insait_Edit_C_Sharp.Terminal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -118,9 +119,12 @@ public partial class MainWindow
     {
         var container = this.FindControl<Border>("TerminalContainer");
         if (container == null) return;
-        _terminalControl = new TerminalControl();
+        _terminalControl = new InsaitTerminalPanel();
         container.Child = _terminalControl;
         _terminalControl.WorkingDirectory = _projectPath ?? Environment.CurrentDirectory;
+
+        // Register with session manager
+        TerminalSessionManager.Instance.ActivePanel = _terminalControl;
     }
 
     // ═══════════════════════════════════════════════════════════

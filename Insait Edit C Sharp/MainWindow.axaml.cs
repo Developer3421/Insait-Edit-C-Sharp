@@ -10,6 +10,7 @@ using Insait_Edit_C_Sharp.Services;
 using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.InsaitCodeEditor;
 using Insait_Edit_C_Sharp.Models;
+using Insait_Edit_C_Sharp.Terminal;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -38,7 +39,7 @@ public partial class MainWindow : Window
     private readonly CopilotCliService _copilotCliService;
     private string? _projectPath;
     private InsaitEditor? _insaitEditor;
-    private TerminalControl? _terminalControl;
+    private InsaitTerminalPanel? _terminalControl;
     private bool _isBuildInProgress;
     private bool _isAnalysisInProgress;
     private readonly StringBuilder _buildOutput = new();

@@ -17,7 +17,7 @@
         <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.0" />
         <PackageReference Include="FSharp.Compiler.Service" Version="43.12.201" />
         <PackageReference Include="GitForWindows" Version="2.54.0-rc1" />
-        <PackageReference Include="Iciclecreek.Avalonia.Terminal" Version="1.0.9" />
+        <!-- Iciclecreek.Avalonia.Terminal removed — replaced by Process-based InsaitTerminalPanel -->
         <PackageReference Include="LiteDB" Version="6.0.0-prerelease.77" />
         <PackageReference Include="Microsoft.Build" Version="18.4.0" />
         <PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" />
@@ -55,6 +55,7 @@
         <PackageReference Include="NuGet.Protocol" Version="7.3.0" />
         <PackageReference Include="Octokit" Version="14.0.0" />
         <PackageReference Include="System.Drawing.Common" Version="11.0.0-preview.1.26104.118" />
+        <PackageReference Include="Terminal.Gui" Version="2.0.0-develop.5261" />
     </ItemGroup>
 
     <ItemGroup>
@@ -120,6 +121,9 @@
       </Compile>
       <Compile Update="GeminiModelWindow.axaml.cs">
         <DependentUpon>GeminiModelWindow.axaml</DependentUpon>
+      </Compile>
+      <Compile Update="Terminal\InsaitTerminalPanel.axaml.cs">
+        <DependentUpon>InsaitTerminalPanel.axaml</DependentUpon>
       </Compile>
     </ItemGroup>
 </Project>
