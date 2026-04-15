@@ -448,6 +448,9 @@
     <x:String x:Key="Menu.Save">💾 Сохранить</x:String>
     <x:String x:Key="Menu.SaveAs">💾 Сохранить как...</x:String>
     <x:String x:Key="Menu.SaveAll">💾 Сохранить всё</x:String>
+    <x:String x:Key="Menu.FileAssociations">⚙️ Ассоциации файлов</x:String>
+    <x:String x:Key="Menu.SetDefault">🔗 Установить по умолчанию для поддерживаемых файлов</x:String>
+    <x:String x:Key="Menu.OpenDefaultApps">⚙️ Открыть настройки приложений по умолчанию</x:String>
     <x:String x:Key="Menu.Exit">🚪 Выход</x:String>
     <!-- Edit menu -->
     <x:String x:Key="Menu.UndoRedo">↩️ Отменить/Повторить</x:String>

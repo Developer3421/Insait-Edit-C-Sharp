@@ -444,6 +444,9 @@
     <x:String x:Key="Menu.Save">💾 Kaydet</x:String>
     <x:String x:Key="Menu.SaveAs">💾 Farklı Kaydet...</x:String>
     <x:String x:Key="Menu.SaveAll">💾 Tümünü Kaydet</x:String>
+    <x:String x:Key="Menu.FileAssociations">⚙️ Dosya İlişkilendirmeleri</x:String>
+    <x:String x:Key="Menu.SetDefault">🔗 Desteklenen dosyalar için varsayılan olarak ayarla</x:String>
+    <x:String x:Key="Menu.OpenDefaultApps">⚙️ Varsayılan uygulama ayarlarını aç</x:String>
     <x:String x:Key="Menu.Exit">🚪 Çıkış</x:String>
     <!-- Edit menu -->
     <x:String x:Key="Menu.UndoRedo">↩️ Geri Al/Yinele</x:String>

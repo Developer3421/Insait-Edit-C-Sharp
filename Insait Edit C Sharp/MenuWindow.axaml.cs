@@ -164,6 +164,13 @@ public partial class MenuWindow : Window
         AddMenuItem(panel, LocalizationService.Get("Menu.SaveAs"), "", () => _mainWindow.ExecuteMenuAction("SaveAs"));
         AddMenuItem(panel, LocalizationService.Get("Menu.SaveAll"), "Ctrl+Shift+S", () => _mainWindow.ExecuteMenuAction("SaveAll"));
 
+        if (SetStandard.SetDefaultManager.IsSupported)
+        {
+            AddSeparator(panel);
+            AddHeader(panel, LocalizationService.Get("Menu.FileAssociations"));
+            AddMenuItem(panel, LocalizationService.Get("Menu.SetDefault"), "", () => _mainWindow.ExecuteMenuAction("SetDefaultForFiles"));
+            AddMenuItem(panel, LocalizationService.Get("Menu.OpenDefaultApps"), "", () => _mainWindow.ExecuteMenuAction("OpenDefaultApps"));
+        }
     }
 
     private void CreateEditContent(StackPanel panel)

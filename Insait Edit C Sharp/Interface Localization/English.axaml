@@ -448,6 +448,9 @@
     <x:String x:Key="Menu.Save">💾 Save</x:String>
     <x:String x:Key="Menu.SaveAs">💾 Save As...</x:String>
     <x:String x:Key="Menu.SaveAll">💾 Save All</x:String>
+    <x:String x:Key="Menu.FileAssociations">⚙️ File Associations</x:String>
+    <x:String x:Key="Menu.SetDefault">🔗 Set as Default for Supported Files</x:String>
+    <x:String x:Key="Menu.OpenDefaultApps">⚙️ Open Default Apps Settings</x:String>
     <x:String x:Key="Menu.Exit">🚪 Exit</x:String>
     <!-- Edit menu -->
     <x:String x:Key="Menu.UndoRedo">↩️ Undo/Redo</x:String>

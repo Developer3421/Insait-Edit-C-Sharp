@@ -448,6 +448,9 @@
     <x:String x:Key="Menu.Save">💾 Speichern</x:String>
     <x:String x:Key="Menu.SaveAs">💾 Speichern unter...</x:String>
     <x:String x:Key="Menu.SaveAll">💾 Alles speichern</x:String>
+    <x:String x:Key="Menu.FileAssociations">⚙️ Dateizuordnungen</x:String>
+    <x:String x:Key="Menu.SetDefault">🔗 Als Standard für unterstützte Dateien festlegen</x:String>
+    <x:String x:Key="Menu.OpenDefaultApps">⚙️ Standard-Apps-Einstellungen öffnen</x:String>
     <x:String x:Key="Menu.Exit">🚪 Beenden</x:String>
     <!-- Edit menu -->
     <x:String x:Key="Menu.UndoRedo">↩️ Rückgängig/Wiederholen</x:String>

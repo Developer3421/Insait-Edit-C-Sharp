@@ -1659,6 +1659,17 @@ ExecuteMenuAction(string action)
                 Close();
                 break;
 
+            // File-association actions
+            case "SetDefaultForFiles":
+                var setResult = SetStandard.SetDefaultManager.RegisterAll();
+                _viewModel.StatusText = setResult.Success
+                    ? $"✅ {setResult.Message}"
+                    : $"⚠️ {setResult.Message}";
+                break;
+            case "OpenDefaultApps":
+                SetStandard.SetDefaultManager.OpenSystemSettings();
+                break;
+
             // Edit actions
             case "Undo":
                 _insaitEditor?.Undo();
