@@ -278,12 +278,12 @@ public partial class WelcomeWindow : Window
 
     private void Documentation_Click(object? sender, RoutedEventArgs e)
     {
-        OpenUrl("https://github.com/insait-edit/docs");
+        OpenUrl("https://github.com/Developer3421/InsaitIDECScharpDocumentation");
     }
 
     private void GitHub_Click(object? sender, RoutedEventArgs e)
     {
-        OpenUrl("https://github.com/insait-edit/insait-edit-csharp");
+        OpenUrl("https://github.com/Developer3421/Insait-Edit-C-Sharp");
     }
 
 
