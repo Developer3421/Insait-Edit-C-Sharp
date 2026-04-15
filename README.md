@@ -26,6 +26,12 @@
 
 ## English
 
+## ⚠️ System Requirements
+For the IDE to function correctly, ensure your environment meets these criteria:
+* **Git for Windows:** Must be installed and added to your system `PATH`. It is required for source control, repository cloning, and GitHub Copilot CLI features.
+* **System Drive:** The Windows installation and application workspace must reside on the **C:** drive for internal path resolution.
+* **Windows SDK:** Required for MSIX packaging, metadata signing, and application deployment.
+  
 ## Overview
 
 **Insait Edit** is a Windows desktop IDE focused on C# and .NET desktop development. The application combines a custom editor, Roslyn-based analysis, project creation tools, build and publish workflows, Git integration, a built-in terminal, and MSIX packaging tools in one interface.
@@ -236,9 +242,14 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ## Deutsch
 
-## Überblick
-
+## ⚠️ Systemanforderungen
+Damit die IDE ordnungsgemäß funktioniert, stellen Sie sicher, dass Ihre Umgebung die folgenden Kriterien erfüllt:
+* **Git für Windows:** Muss installiert und zum System-`PATH` hinzugefügt sein. Erforderlich für die Quellcodeverwaltung, das Klonen von Repositories und GitHub Copilot CLI-Funktionen.
+* **Systemlaufwerk:** Die Windows-Installation und der Anwendungs-Workspace müssen sich auf dem Laufwerk **C:** befinden, um die interne Pfadauflösung zu gewährleisten.
+* **Windows SDK:** Erforderlich für MSIX-Paketierung, Signierung von Metadaten und Deployment.
 **Insait Edit** ist eine Windows-Desktop-IDE mit Fokus auf C#- und .NET-Desktopentwicklung. Die Anwendung kombiniert einen eigenen Editor, Roslyn-basierte Analyse, Werkzeuge zum Erstellen von Projekten, Build- und Publish-Workflows, Git-Integration, ein integriertes Terminal und MSIX-Paketierung in einer Oberfläche.
+
+## Überblick
 
 Die aktuelle Codebasis konzentriert sich auf Desktop-Anwendungen. Enthalten sind integrierte Projektvorlagen für **Avalonia**, **Windows Forms**, Standardvorlagen für **Konsole/Klassenbibliothek** sowie **F#-Startvorlagen**. Die Build- und Run-Pipeline erkennt außerdem **WPF**, **WinForms** und **Avalonia** als GUI-Projekte.
 
