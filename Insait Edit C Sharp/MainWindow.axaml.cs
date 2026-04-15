@@ -44,12 +44,13 @@ public partial class MainWindow : Window
     private bool _isAnalysisInProgress;
     private readonly StringBuilder _buildOutput = new();
     private DispatcherTimer? _autoSaveTimer;
+    private string? _singleFilePath; // file passed via "Open With" — opens in Zen mode
 
     public MainWindow() : this(null)
     {
     }
 
-    public MainWindow(string? projectPath)
+    public MainWindow(string? projectPath, string? singleFilePath = null)
     {
         InitializeComponent();
 
@@ -146,6 +147,19 @@ public partial class MainWindow : Window
         // Apply localization and subscribe to language changes
         ApplyLocalization();
         LocalizationService.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(ApplyLocalization);
+
+        // If a single file was passed (e.g. via Windows "Open With"),
+        // open it in Zen mode once the window is fully rendered.
+        _singleFilePath = singleFilePath;
+        if (!string.IsNullOrEmpty(_singleFilePath))
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                OpenFileInEditor(_singleFilePath);
+                if (!_isZenMode) ToggleZenMode();
+                UpdateTitle();
+            }, DispatcherPriority.Loaded);
+        }
     }
 
     private void SetupColumnConstraints()
