@@ -299,22 +299,10 @@
                                         <Button Grid.Column="1" Name="DetectExeBtn" Content="🔍 Auto-detect"
                                                 Classes="action-btn" FontSize="11"/>
                                     </Grid>
-                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                                        <StackPanel Grid.Column="0" Spacing="5">
-                                            <TextBlock Name="BuildExeLabel" Text="Executable (.exe)" Classes="fl"/>
-                                            <ComboBox Name="BuildExeCombo" HorizontalAlignment="Stretch" IsEditable="True"/>
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Spacing="5">
-                                            <TextBlock Name="BuildEntryClassLabel" Text="Entry Point Class" Classes="fl"/>
-                                            <ComboBox Name="BuildEntryPointCombo" HorizontalAlignment="Stretch" IsEditable="True">
-                                                <ComboBoxItem Content="App" IsSelected="True"/>
-                                                <ComboBoxItem Content="Windows.FullTrustApplication"/>
-                                                <ComboBoxItem Content="Microsoft.UI.Xaml.Application"/>
-                                            </ComboBox>
-                                        </StackPanel>
-                                    </Grid>
-                                    <TextBlock Name="BuildEntryHint" Text="💡 Use 'App' for Microsoft Store packages. Use 'Windows.FullTrustApplication' only for sideload desktop bridge apps."
-                                               FontSize="11" Foreground="#FF9E90B0" TextWrapping="Wrap"/>
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Name="BuildExeLabel" Text="Executable (.exe)" Classes="fl"/>
+                                        <ComboBox Name="BuildExeCombo" HorizontalAlignment="Stretch" IsEditable="True"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
 

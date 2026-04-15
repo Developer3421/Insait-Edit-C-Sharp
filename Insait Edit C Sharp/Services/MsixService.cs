@@ -1347,7 +1347,7 @@ public class MsixPackageOptions
 
     // Entry point
     public string? EntryExecutable  { get; set; }   // e.g. "MyApp.exe"
-    public string? EntryPoint       { get; set; }   // e.g. "Windows.FullTrustApplication"
+    public string? EntryPoint       { get; set; }   // e.g. "App" (default for Microsoft Store)
 
     // Debug symbols
     public bool ExcludeDebugSymbols { get; set; }    // Publish with DebugType=none (no .pdb files)

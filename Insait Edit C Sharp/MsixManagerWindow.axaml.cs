@@ -99,8 +99,6 @@ public partial class MsixManagerWindow : Window
         SetText("BuildEntryHeader",    L("Msix.EntryPointHeader"));
         SetBtn("DetectExeBtn",         L("Msix.AutoDetect"));
         SetText("BuildExeLabel",       L("Msix.Executable"));
-        SetText("BuildEntryClassLabel", L("Msix.EntryPointClass"));
-        SetText("BuildEntryHint",      L("Msix.EntryPointHint"));
         SetText("BuildPublishHeader",  L("Msix.PublishOptions"));
         SetCheckBox("BuildSingleFileCheck", L("Msix.SingleFile"));
         SetCheckBox("BuildReadyToRunCheck", L("Msix.ReadyToRun"));
@@ -549,11 +547,6 @@ public partial class MsixManagerWindow : Window
                ?? (exeCombo?.SelectedItem as ComboBoxItem)?.Content?.ToString()
                ?? exeCombo?.Text;
 
-        var epCombo = this.FindControl<ComboBox>("BuildEntryPointCombo");
-        var ep = epCombo?.SelectionBoxItem?.ToString()
-              ?? (epCombo?.SelectedItem as ComboBoxItem)?.Content?.ToString()
-              ?? epCombo?.Text
-              ?? "App";
 
         var singleFile = this.FindControl<CheckBox>("BuildSingleFileCheck")?.IsChecked == true;
         var r2r        = this.FindControl<CheckBox>("BuildReadyToRunCheck")?.IsChecked  != false;
@@ -590,7 +583,7 @@ public partial class MsixManagerWindow : Window
             Description           = GetText("BuildDescriptionBox")?.Trim() ?? "",
             LogoRelativePath      = GetText("BuildLogoBox")?.Trim() ?? @"Assets\Square150x150Logo.png",
             EntryExecutable       = exe,
-            EntryPoint            = ep,
+            EntryPoint            = null,
             IncludeRunFullTrust   = fullTrust,
             ExcludeDebugSymbols   = noPdb,
             OutputMsixPath        = msixOutput,
