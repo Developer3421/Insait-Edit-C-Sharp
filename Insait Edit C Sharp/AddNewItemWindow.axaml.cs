@@ -43,12 +43,8 @@ public partial class AddNewItemWindow : Window
         if (csHeader != null) csHeader.Text = L("AddItem.CSharpTypes");
         var fsHeader = this.FindControl<TextBlock>("FSharpTypesHeader");
         if (fsHeader != null) fsHeader.Text = L("AddItem.FSharpTypes");
-        var aspHeader = this.FindControl<TextBlock>("AspNetHeader");
-        if (aspHeader != null) aspHeader.Text = L("AddItem.AspNet");
         var avHeader = this.FindControl<TextBlock>("AvaloniaUIHeader");
         if (avHeader != null) avHeader.Text = L("AddItem.AvaloniaUI");
-        var webHeader = this.FindControl<TextBlock>("WebFilesHeader");
-        if (webHeader != null) webHeader.Text = L("AddItem.WebFiles");
         var cfgHeader = this.FindControl<TextBlock>("ConfigDataHeader");
         if (cfgHeader != null) cfgHeader.Text = L("AddItem.ConfigData");
         var dotNetHeader = this.FindControl<TextBlock>("DotNetConfigHeader");
@@ -151,12 +147,8 @@ public partial class AddNewItemWindow : Window
                 // F# Types
                 "FsModuleItem", "FsClassItem", "FsRecordItem", "FsUnionItem",
                 "FsInterfaceItem", "FsScriptItem", "FsSignatureItem",
-                // ASP.NET
-                "RazorItem", "RazorPageItem", "RazorViewItem", "ControllerItem", "ApiControllerItem", "MinimalApiItem",
                 // Avalonia
                 "AxamlItem", "UserControlItem", "TemplatedControlItem", "StylesItem", "ResourceDictItem",
-                // Web
-                "HtmlItem", "CssItem", "ScssItem", "JavaScriptItem", "TypeScriptItem",
                 // Config/Data
                 "JsonItem", "XmlItem", "YamlItem", "MarkdownItem", "TextItem",
                 // .NET Config
@@ -204,25 +196,12 @@ public partial class AddNewItemWindow : Window
             "fsinterface" => "IMyInterface",
             "fsscript" => "Script",
             "fssignature" => "Module",
-            // ASP.NET
-            "razor" => "NewComponent",
-            "razorpage" => "NewPage",
-            "razorview" => "Index",
-            "controller" => "HomeController",
-            "apicontroller" => "ApiController",
-            "minimalapi" => "Endpoints",
             // Avalonia
             "axaml" => "NewWindow",
             "usercontrol" => "NewControl",
             "templatedcontrol" => "NewTemplatedControl",
             "avaloniastyles" => "Styles",
             "resourcedictionary" => "Resources",
-            // Web
-            "html" => "index",
-            "css" => "styles",
-            "scss" => "styles",
-            "javascript" => "script",
-            "typescript" => "script",
             // Config/Data
             "json" => "settings",
             "xml" => "config",
@@ -286,25 +265,12 @@ public partial class AddNewItemWindow : Window
             "fsinterface" => ".fs",
             "fsscript" => ".fsx",
             "fssignature" => ".fsi",
-            // ASP.NET
-            "razor" => ".razor",
-            "razorpage" => ".cshtml",
-            "razorview" => ".cshtml",
-            "controller" => ".cs",
-            "apicontroller" => ".cs",
-            "minimalapi" => ".cs",
             // Avalonia
             "axaml" => ".axaml",
             "usercontrol" => ".axaml",
             "templatedcontrol" => ".cs",
             "avaloniastyles" => ".axaml",
             "resourcedictionary" => ".axaml",
-            // Web
-            "html" => ".html",
-            "css" => ".css",
-            "scss" => ".scss",
-            "javascript" => ".js",
-            "typescript" => ".ts",
             // Config/Data
             "json" => ".json",
             "xml" => ".xml",
@@ -370,13 +336,6 @@ public partial class AddNewItemWindow : Window
                 File.WriteAllText(codeFilePath, codeContent);
             }
 
-            // For Razor Pages, also create the .cshtml.cs file
-            if (_selectedItemType == "razorpage")
-            {
-                var codeFilePath = filePath + ".cs";
-                var codeContent = GenerateRazorPageCodeBehind(name);
-                File.WriteAllText(codeFilePath, codeContent);
-            }
 
             CreatedFilePath = filePath;
             Close(CreatedFilePath);
@@ -410,25 +369,12 @@ public partial class AddNewItemWindow : Window
             "fsinterface" => GenerateFsInterface(name),
             "fsscript" => GenerateFsScript(name),
             "fssignature" => GenerateFsSignature(name),
-            // ASP.NET
-            "razor" => GenerateRazorComponent(name),
-            "razorpage" => GenerateRazorPage(name),
-            "razorview" => GenerateRazorView(name),
-            "controller" => GenerateController(name, ns),
-            "apicontroller" => GenerateApiController(name, ns),
-            "minimalapi" => GenerateMinimalApi(name, ns),
             // Avalonia
             "axaml" => GenerateAvaloniaWindow(name, ns),
             "usercontrol" => GenerateAvaloniaUserControl(name, ns),
             "templatedcontrol" => GenerateTemplatedControl(name, ns),
             "avaloniastyles" => GenerateAvaloniaStyles(ns),
             "resourcedictionary" => GenerateResourceDictionary(ns),
-            // Web
-            "html" => GenerateHtml(name),
-            "css" => GenerateCss(name),
-            "scss" => GenerateScss(name),
-            "javascript" => GenerateJavaScript(name),
-            "typescript" => GenerateTypeScript(name),
             // Config/Data
             "json" => "{\n  \n}",
             "xml" => "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<root>\n  \n</root>",
@@ -519,20 +465,6 @@ public enum {name}
 ";
     }
 
-    private string GenerateRazorComponent(string name)
-    {
-        return $@"@namespace MyNamespace
-
-<div class=""{name.ToLower()}"">
-    <h3>{name}</h3>
-</div>
-
-@code {{
-    [Parameter]
-    public string Title {{ get; set; }} = ""{name}"";
-}}
-";
-    }
 
     private string GenerateAvaloniaWindow(string name, string ns)
     {
@@ -640,155 +572,6 @@ global using System.Threading.Tasks;
 ";
     }
 
-    // ASP.NET Types
-    private string GenerateRazorPage(string name)
-    {
-        return $@"@page
-@model {name}Model
-
-<div class=""text-center"">
-    <h1>{name}</h1>
-</div>
-";
-    }
-
-    private string GenerateRazorPageCodeBehind(string name)
-    {
-        var ns = _namespace?.Replace("-", "_") ?? "MyNamespace";
-        return $@"using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-
-namespace {ns};
-
-public class {name}Model : PageModel
-{{
-    public void OnGet()
-    {{
-    }}
-
-    public IActionResult OnPost()
-    {{
-        return Page();
-    }}
-}}
-";
-    }
-
-    private string GenerateRazorView(string name)
-    {
-        return $@"@{{
-    ViewData[""Title""] = ""{name}"";
-}}
-
-<div class=""container"">
-    <h1>@ViewData[""Title""]</h1>
-</div>
-";
-    }
-
-    private string GenerateController(string name, string ns)
-    {
-        return $@"using Microsoft.AspNetCore.Mvc;
-
-namespace {ns};
-
-public class {name} : Controller
-{{
-    public IActionResult Index()
-    {{
-        return View();
-    }}
-}}
-";
-    }
-
-    private string GenerateApiController(string name, string ns)
-    {
-        return $@"using Microsoft.AspNetCore.Mvc;
-
-namespace {ns};
-
-[ApiController]
-[Route(""api/[controller]"")]
-public class {name} : ControllerBase
-{{
-    [HttpGet]
-    public IActionResult Get()
-    {{
-        return Ok();
-    }}
-
-    [HttpGet(""{{id}}"")]
-    public IActionResult Get(int id)
-    {{
-        return Ok();
-    }}
-
-    [HttpPost]
-    public IActionResult Post([FromBody] object value)
-    {{
-        return CreatedAtAction(nameof(Get), new {{ id = 1 }}, value);
-    }}
-
-    [HttpPut(""{{id}}"")]
-    public IActionResult Put(int id, [FromBody] object value)
-    {{
-        return NoContent();
-    }}
-
-    [HttpDelete(""{{id}}"")]
-    public IActionResult Delete(int id)
-    {{
-        return NoContent();
-    }}
-}}
-";
-    }
-
-    private string GenerateMinimalApi(string name, string ns)
-    {
-        return $@"namespace {ns};
-
-public static class {name}
-{{
-    public static void Map{name}(this WebApplication app)
-    {{
-        var group = app.MapGroup(""api/{name.ToLower()}"");
-        
-        group.MapGet(""/"", GetAll);
-        group.MapGet(""/{{id}}"", GetById);
-        group.MapPost(""/"", Create);
-        group.MapPut(""/{{id}}"", Update);
-        group.MapDelete(""/{{id}}"", Delete);
-    }}
-
-    private static IResult GetAll()
-    {{
-        return Results.Ok();
-    }}
-
-    private static IResult GetById(int id)
-    {{
-        return Results.Ok();
-    }}
-
-    private static IResult Create(object item)
-    {{
-        return Results.Created($""/api/{name.ToLower()}/1"", item);
-    }}
-
-    private static IResult Update(int id, object item)
-    {{
-        return Results.NoContent();
-    }}
-
-    private static IResult Delete(int id)
-    {{
-        return Results.NoContent();
-    }}
-}}
-";
-    }
 
     // Avalonia Types
     private string GenerateTemplatedControl(string name, string ns)
@@ -844,81 +627,6 @@ public class {name} : TemplatedControl
 ";
     }
 
-    // Web Files
-    private string GenerateHtml(string name)
-    {
-        return $@"<!DOCTYPE html>
-<html lang=""en"">
-<head>
-    <meta charset=""UTF-8"">
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <title>{name}</title>
-</head>
-<body>
-    
-</body>
-</html>
-";
-    }
-
-    private string GenerateCss(string name)
-    {
-        return $@"/* {name} stylesheet */
-
-* {{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}}
-
-body {{
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-}}
-";
-    }
-
-    private string GenerateScss(string name)
-    {
-        return $@"// {name} SCSS stylesheet
-
-$primary-color: #007bff;
-$secondary-color: #6c757d;
-
-* {{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}}
-
-body {{
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-}}
-";
-    }
-
-    private string GenerateJavaScript(string name)
-    {
-        return $@"// {name}.js
-
-'use strict';
-
-document.addEventListener('DOMContentLoaded', () => {{
-    // Your code here
-}});
-";
-    }
-
-    private string GenerateTypeScript(string name)
-    {
-        return $@"// {name}.ts
-
-export class {char.ToUpper(name[0])}{name[1..]} {{
-    constructor() {{
-        // Initialize
-    }}
-}}
-";
-    }
 
     // .NET Config Files
     private string GenerateEditorConfig()

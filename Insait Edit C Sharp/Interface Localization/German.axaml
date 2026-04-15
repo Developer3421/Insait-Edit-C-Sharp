@@ -567,9 +567,7 @@
     <x:String x:Key="AddItem.Exception">Ausnahme</x:String>
     <x:String x:Key="AddItem.GlobalUsings">Globale Usings</x:String>
     <x:String x:Key="AddItem.FSharpTypes">F#-Typen</x:String>
-    <x:String x:Key="AddItem.AspNet">ASP.NET</x:String>
     <x:String x:Key="AddItem.AvaloniaUI">Avalonia UI</x:String>
-    <x:String x:Key="AddItem.WebFiles">Webdateien</x:String>
     <x:String x:Key="AddItem.ConfigData">Konfiguration / Daten</x:String>
     <x:String x:Key="AddItem.DotNetConfig">.NET-Konfiguration</x:String>
     <x:String x:Key="AddItem.Git">Git</x:String>

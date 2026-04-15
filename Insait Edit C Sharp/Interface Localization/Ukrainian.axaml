@@ -567,9 +567,7 @@
     <x:String x:Key="AddItem.Exception">Виключення</x:String>
     <x:String x:Key="AddItem.GlobalUsings">Глобальні using</x:String>
     <x:String x:Key="AddItem.FSharpTypes">Типи F#</x:String>
-    <x:String x:Key="AddItem.AspNet">ASP.NET</x:String>
     <x:String x:Key="AddItem.AvaloniaUI">Avalonia UI</x:String>
-    <x:String x:Key="AddItem.WebFiles">Веб-файли</x:String>
     <x:String x:Key="AddItem.ConfigData">Конфігурація / Дані</x:String>
     <x:String x:Key="AddItem.DotNetConfig">Конфігурація .NET</x:String>
     <x:String x:Key="AddItem.Git">Git</x:String>

@@ -247,48 +247,6 @@
                             
                             <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
                             
-                            <!-- ASP.NET -->
-                            <TextBlock Name="AspNetHeader" Text="ASP.NET" FontSize="11" FontWeight="SemiBold" 
-                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
-                            <Button Classes="item-btn" Name="RazorItem" Tag="razor" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="⚡" FontSize="16"/>
-                                    <TextBlock Text="Razor Component" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="RazorPageItem" Tag="razorpage" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="📑" FontSize="16"/>
-                                    <TextBlock Text="Razor Page" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="RazorViewItem" Tag="razorview" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="👁️" FontSize="16"/>
-                                    <TextBlock Text="Razor View (MVC)" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="ControllerItem" Tag="controller" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="🎮" FontSize="16"/>
-                                    <TextBlock Text="MVC Controller" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="ApiControllerItem" Tag="apicontroller" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="🔌" FontSize="16"/>
-                                    <TextBlock Text="API Controller" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="MinimalApiItem" Tag="minimalapi" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="⚙️" FontSize="16"/>
-                                    <TextBlock Text="Minimal API Endpoints" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-
-                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
-                            
                             <!-- Avalonia UI -->
                             <TextBlock Name="AvaloniaUIHeader" Text="Avalonia UI" FontSize="11" FontWeight="SemiBold" 
                                        Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
@@ -320,42 +278,6 @@
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="📚" FontSize="16"/>
                                     <TextBlock Text="Resource Dictionary" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            
-                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
-                            
-                            <!-- Web Files -->
-                            <TextBlock Name="WebFilesHeader" Text="Web Files" FontSize="11" FontWeight="SemiBold" 
-                                       Foreground="{StaticResource TextSecondaryBrush}" Margin="8,4,0,4"/>
-                            <Button Classes="item-btn" Name="HtmlItem" Tag="html" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="🌐" FontSize="16"/>
-                                    <TextBlock Text="HTML File" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="CssItem" Tag="css" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="🎨" FontSize="16"/>
-                                    <TextBlock Text="CSS Stylesheet" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="ScssItem" Tag="scss" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="💅" FontSize="16"/>
-                                    <TextBlock Text="SCSS Stylesheet" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="JavaScriptItem" Tag="javascript" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="📜" FontSize="16"/>
-                                    <TextBlock Text="JavaScript File" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Classes="item-btn" Name="TypeScriptItem" Tag="typescript" Click="ItemType_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBlock Text="📘" FontSize="16"/>
-                                    <TextBlock Text="TypeScript File" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                             

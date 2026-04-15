@@ -5,451 +5,438 @@
 <h1 align="center">Insait Edit — C# IDE</h1>
 
 <p align="center">
-  <b>A modern, cross-platform C# IDE built with Avalonia UI and Roslyn</b><br/>
-  <b>Eine moderne, plattformübergreifende C#-IDE auf Basis von Avalonia UI und Roslyn</b>
+  <b>A full-cycle desktop IDE for creating, editing, building, publishing, and packaging .NET desktop applications.</b>
 </p>
 
 <p align="center">
   <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white"/>
-  <img alt="Avalonia UI" src="https://img.shields.io/badge/Avalonia_UI-11.3-8B44AC?logo=avalonia&logoColor=white"/>
+  <img alt="Avalonia UI" src="https://img.shields.io/badge/Avalonia_UI-12.0-8B44AC?logo=avalonia&logoColor=white"/>
   <img alt="Roslyn" src="https://img.shields.io/badge/Roslyn-5.0-blue"/>
   <img alt="Platform" src="https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white"/>
   <img alt="License" src="https://img.shields.io/badge/License-MIT%20(with%20exclusions)-yellow"/>
 </p>
 
 <p align="center">
-  <a href="#-overview">🇬🇧 English</a> · <a href="#-überblick-deutsch">🇩🇪 Deutsch</a>
+  <a href="#english">🇬🇧 English</a> · <a href="#deutsch">🇩🇪 Deutsch</a>
 </p>
 
 ---
 
-# 🇬🇧 English
+<a id="english"></a>
 
-## 📖 Overview
+## English
 
-**Insait Edit** is a lightweight yet powerful integrated development environment (IDE) designed specifically for C# and .NET development. Built on top of [Avalonia UI](https://avaloniaui.net/) with the [Roslyn](https://github.com/dotnet/roslyn) compiler platform, it provides a rich coding experience with IntelliSense, diagnostics, refactoring, and a beautiful fluent orange-purple theme.
+## Overview
 
----
+**Insait Edit** is a Windows desktop IDE focused on C# and .NET desktop development. The application combines a custom editor, Roslyn-based analysis, project creation tools, build and publish workflows, Git integration, a built-in terminal, and MSIX packaging tools in one interface.
 
-## ✨ Features
-
-### 🖊️ Code Editor
-- **Insait Editor** — a custom-built code editor with syntax highlighting, line numbering, and a modern UI
-- **Roslyn-powered IntelliSense** — smart code completion, signature help, and parameter info for C#
-- **F# support** — completion engine for F# projects
-- **AXAML completion** — IntelliSense for Avalonia XAML files
-- **Syntax highlighting**
-- **Code snippets** — built-in C# snippet provider
-
-### 🔍 Code Analysis & Refactoring
-- **Real-time diagnostics** — errors, warnings, and suggestions powered by Roslyn analyzers
-- **Inline diagnostics** — see issues directly in the editor
-- **Quick fixes** — apply Roslyn code fixes with one click
-- **Rename symbol** — safe project-wide symbol renaming
-- **Go to Definition** — navigate to symbol declarations instantly
-
-### 🔨 Build & Run
-- **MSBuild integration** — build .NET solutions and projects directly from the IDE
-- **Run configurations** — manage multiple launch profiles
-- **Compound run** — run several configurations simultaneously
-- **Debug support** — start with or without the debugger
-- **Publish** — publish projects with a visual progress window
-
-### 📦 Package Management
-- **NuGet panel** — search, install, update, and remove NuGet packages
-- **MSIX Manager** — create and manage MSIX application packages
-
-### 🔗 Git & GitHub Integration
-- **Git panel** — stage, commit, push, pull, and view change diffs
-- **Clone repository** — clone repos from URL or GitHub
-- **GitHub account** — sign in with GitHub OAuth, view repositories
-- **GitHub Copilot CLI** — integrated Copilot CLI assistant (path detection now handles both `gh-copilot` extension and standalone `copilot.exe`; configure path under Settings)
-
-### 🖥️ Terminal
-- **Built-in terminal** — a full ConPTY-based terminal emulator with ANSI rendering
-- **ANSI grid terminal** — advanced terminal control with grid-based buffer
-
-### 🌐 Localization
-- **5 languages** — English, Ukrainian, German, Russian, Turkish
-- **Gemini AI translation** — generate translations for custom language names via Google Gemini
-
-### 🤖 AI Integration
-- **Gemini API** — AI-powered code assistance and translation
-- **Configurable models** — choose Gemini model and language settings
-
-### 🔌 ESP32 / nanoFramework Support
-- **nanoFramework projects** — create and build projects for ESP32 microcontrollers
-- **Device panel** — detect and manage connected serial devices
-- **LED panel designer** — visual designer for LED panel layouts
-
-### 🎨 UI & Design
-- **Fluent Orange-Purple theme** — custom dark theme with warm accent colors
-- **AXAML live preview** — preview Avalonia UI files in real time
-- **Image viewer** — built-in image viewer for project assets
-- **Custom title bar** — frameless window with custom minimize / maximize / close buttons
+The current codebase is centered on desktop application workflows. It includes built-in project creation for **Avalonia**, **Windows Forms**, standard **console/class library** templates, and **F#** starter templates. The build and run pipeline also recognizes **WPF**, **WinForms**, and **Avalonia** GUI projects.
 
 ---
 
-## 🛠️ Tech Stack
+## Feature Highlights
+
+### Full-cycle desktop workflow
+- Create new solutions and projects from the IDE
+- Add projects and items to an existing solution
+- Work with C#, F#, AXAML, XAML, images, and project assets
+- Build, rebuild, run, stop, publish, and package desktop applications
+
+### Supported project workflows
+- **Avalonia applications** with AXAML editing and preview support
+- **Windows Forms applications** via project templates and GUI project detection
+- **WPF projects** in the build/run pipeline
+- **Console apps**, **class libraries**, **empty C# projects**, and **F# starter projects**
+
+### Editor and code intelligence
+- Custom `Insait Editor` with syntax highlighting and editor surface rendering
+- Roslyn-backed C# completion, quick info, symbol lookup, and refactoring helpers
+- F# completion and tooltip support through `FSharp.Compiler.Service`
+- AXAML/XAML completion for Avalonia elements, properties, events, markup extensions, and namespaces
+- Inline diagnostics, quick-fix suggestions, and auto-fix workflows inside the editor
+
+### Build, run, and publish
+- MSBuild / `dotnet` integration for project build operations
+- Run configurations and compound run support
+- GUI-aware run pipeline for desktop app projects
+- Publish window with visual progress reporting
+
+### Package management and deployment
+- NuGet panel for browsing, installing, updating, and removing packages
+- MSIX manager for packaging, metadata editing, icon replacement, and signing
+
+### Source control and GitHub tooling
+- Git panel for repository status, staged/unstaged changes, branch info, history, commit, push, and pull operations
+- Repository cloning workflows
+- GitHub integration through Octokit-based services
+- Integrated **GitHub Copilot CLI** panel and command workflow
+
+### Terminal and workspace utilities
+- Built-in terminal panel with process control and command history
+- File explorer, search in files, image viewer, notifications, encoding tools, and project property windows
+- AXAML preview windows and live-host style preview tooling
+
+### Localization
+- Built-in UI dictionaries for **English, Ukrainian, German, Russian, and Turkish**
+- Custom AXAML-based language dictionaries loaded at runtime
+- Import of external `.axaml` translation files from the language menu
+- Translation workspace folder for manual editing or GitHub Copilot CLI-assisted translation
+
+---
+
+## Roslyn Analysis and Completion System
+
+The core coding experience is based on **Microsoft Roslyn** and several dedicated services in the project.
+
+### What is implemented
+- `RoslynAutoCompleteFactory` delegates C# completion directly to Roslyn `CompletionService`
+- Signature help is resolved from Roslyn semantic data
+- Hover information uses Roslyn `QuickInfoService`
+- `InlineDiagnosticService` runs debounced background analysis and updates inline squiggles
+- Quick-fix suggestions are attached to diagnostics and shown in the editor
+- `RoslynAutoFixService` discovers built-in Roslyn `CodeFixProvider` and `CodeRefactoringProvider` implementations
+- `CSharpCompletionService` supports rename operations and document highlights
+
+### Practical result in the IDE
+- smart completion lists
+- parameter and overload help
+- hover descriptions
+- real-time error/warning reporting
+- one-step quick fixes
+- go to definition
+- rename symbol
+
+For AXAML files, the IDE uses a separate completion engine that reflects real Avalonia assemblies and suggests valid controls, properties, attached properties, events, and markup extensions.
+
+---
+
+## MSIX Packaging Notes
+
+The MSIX subsystem supports both **full packaging** and **packaging from an already published output**.
+
+### What the MSIX tools can do
+- publish a project and pack it into MSIX in one flow
+- generate `AppxManifest.xml`
+- pack content with `MakeAppx.exe`
+- open an existing MSIX and read package metadata
+- edit package metadata and repack the package
+- replace icons inside an existing MSIX
+- sign an MSIX with `SignTool.exe` and a certificate from `CurrentUser\My`
+
+### Important requirements
+- **Windows SDK is required** for MSIX packaging because `MakeAppx.exe` and `SignTool.exe` are used
+- the **package Publisher must match the certificate subject exactly**
+- in practice this means the **`CN=...` publisher name must be identical to the certificate subject distinguished name**
+- package icons for MSIX must be **PNG-based**
+- if no valid logo is supplied, the service can fall back to a placeholder image
+
+### Recommended usage notes
+- set your own package icon explicitly; the default fallback is only a placeholder/mock value
+- verify the package identity, publisher, version, executable, and entry point before signing
+- if signing fails because of a publisher mismatch, align the manifest publisher with the certificate subject
+
+---
+
+## Localization and Custom Translation Workflow
+
+Custom translations are handled through plain AXAML dictionaries.
+
+### Built-in behavior
+- Standard interface languages are loaded from `Insait Edit C Sharp/Interface Localization/`
+- Custom dictionaries are stored in `%AppData%\InsaitEdit\GitHubTranslations\`
+- The service ensures that a copy of `English.axaml` is available as the base template
+
+### Custom translation rules
+- a custom language file must be a plain `.axaml` dictionary
+- it should keep the **same `x:String` key structure** as the English dictionary
+- values can be translated, but keys and structure should remain identical to `English.axaml`
+
+### How custom translations are used in the app
+- import an external AXAML file from the language menu
+- open the translations folder and edit the files manually
+- launch **GitHub Copilot CLI** in that folder to assist with translation work
+- load the custom dictionary directly from the language menu at runtime
+
+---
+
+## Keyboard Shortcuts
+
+Below is the shortcut list confirmed by the current code.
+
+### Main window
+| Shortcut | Action |
+|---|---|
+| `Ctrl+S` | Save current file |
+| `Ctrl+Shift+S` | Save all files |
+| `Ctrl+O` | Open file |
+| `Ctrl+N` | Create a new file |
+| `Ctrl+Shift+N` | Create a new project |
+| `Ctrl+B` | Build project |
+| `Ctrl+Shift+B` | Rebuild project |
+| `Ctrl+Shift+A` | Analyze project |
+| `F5` | Run project |
+| `Shift+F5` | Stop running project |
+| `Ctrl+W` | Close current tab |
+| `Ctrl+Shift+F` | Find in files |
+| `Ctrl+P` | Find file by name |
+| `Ctrl+Shift+Z` | Toggle Zen Mode |
+| `Ctrl+Shift+P` | Open AXAML preview |
+| `Ctrl+Shift+E` | Toggle Explorer panel |
+| `Ctrl+Shift+I` | Toggle AI / right panel |
+| `Ctrl+\`` | Toggle bottom panel / terminal area |
+| `Esc` | Exit Zen Mode |
+
+### Editor
+| Shortcut | Action |
+|---|---|
+| `Alt+Enter` | Show quick fix at cursor |
+| `Ctrl+.` | Show quick fix at cursor |
+| `Ctrl+Shift+I` | Format document |
+| `Ctrl+Shift+A` | Open Auto Fix window |
+| `F12` | Go to definition |
+| `F2` | Rename symbol |
+| `Ctrl+R` | Rename symbol |
+| `Ctrl+Shift+H` | Show hover info |
+| `Tab` / `Enter` | Commit selected completion item |
+| `Esc` | Close completion or quick-fix popup |
+
+### Terminal panel
+| Shortcut | Action |
+|---|---|
+| `Ctrl+C` | Stop the current terminal process |
+| `Ctrl+L` | Clear terminal output |
+| `Up / Down` | Navigate terminal history |
+
+---
+
+## Technology Summary
 
 | Component | Technology |
 |---|---|
-| **Framework** | .NET 10.0 (Windows) |
-| **UI Framework** | Avalonia UI 11.3 |
-| **Code Analysis** | Microsoft Roslyn 5.0 |
-| **Build System** | MSBuild 18.3 |
-| **Version Control** | LibGit2 / Git for Windows |
-| **Package Manager** | NuGet.Protocol 7.3 |
-| **GitHub API** | Octokit 14.0 |
-| **Database** | LiteDB 6.0 |
-| **IoT** | nanoFramework |
-| **Templating** | Microsoft.TemplateEngine |
+| Target framework | `.NET 10.0` (`net10.0-windows`) |
+| UI framework | `Avalonia 12.0.0` |
+| Code analysis | Roslyn 5.x |
+| F# support | `FSharp.Compiler.Service` 43.x |
+| Build layer | `Microsoft.Build` 18.4 |
+| NuGet integration | `NuGet.Protocol` 7.3 |
+| GitHub integration | `Octokit` 14.0 |
+| Local storage | `LiteDB` 6 prerelease |
 
 ---
 
-## 📁 Project Structure
-
-```
-Insait Edit C Sharp/
-├── Controls/               # Reusable UI controls
-│   ├── DiagnosticsPanel     # Error/warning list panel
-│   ├── GitPanelControl      # Git source control panel
-│   ├── NuGetPanelControl    # NuGet package manager panel
-│   ├── RoslynCompletion*    # IntelliSense windows
-│   ├── TerminalControl      # Built-in terminal emulator
-│   └── ...
-├── Esp/                    # ESP32 / nanoFramework support
-│   ├── Controls/            # Device panel
-│   ├── Models/              # ESP project models
-│   ├── Services/            # nanoFramework build service
-│   ├── Tools/               # Firmware tools
-│   └── Windows/             # LED designer, nano project wizard
-├── Icons/                  # Application icons
-├── Insait Code Editor/     # Custom code editor component
-│   ├── InsaitEditor.axaml   # Editor UI
-│   ├── InsaitEditorSurface  # Rendering surface
-│   └── InsaitEditorColors   # Color definitions
-├── Interface Localization/ # Language resource files
-│   ├── English.axaml
-│   ├── Ukrainian.axaml
-│   ├── German.axaml
-│   ├── Russian.axaml
-│   └── Turkish.axaml
-├── Models/                 # Data models
-├── Services/               # Business logic services
-│   ├── BuildService         # MSBuild integration
-│   ├── CodeAnalysisService  # Roslyn analysis
-│   ├── GitService           # Git operations
-│   ├── NuGetService         # Package management
-│   ├── RoslynWorkspace*     # Roslyn workspace management
-│   └── ...
-├── ViewModels/             # MVVM view models
-├── MainWindow.axaml        # Main IDE window
-├── WelcomeWindow.axaml     # Start screen
-└── Program.cs              # Application entry point
-```
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
-- Windows 10/11 (x64)
-- Git for Windows (optional, for version control features)
-
-### Build & Run
-
-```bash
-# Clone the repository
-git clone https://github.com/YourUsername/Insait-Edit-CSharp.git
-cd Insait-Edit-CSharp
-
-# Restore dependencies
-dotnet restore
-
-# Build the project
-dotnet build
-
-# Run the IDE
-dotnet run --project "Insait Edit C Sharp"
-```
-
-### Publish
-
-```bash
-# Publish a self-contained release
-dotnet publish -c Release -r win-x64 --self-contained
-```
-
----
-
-## 📸 Screenshots
-
-<p align="center">
-  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English1.png" alt="Insait Edit Screenshot 1" width="100%"/>
-</p>
-<p align="center">
-  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English2.png" alt="Insait Edit Screenshot 2" width="100%"/>
-</p>
-<p align="center">
-  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English3.png" alt="Insait Edit Screenshot 3" width="100%"/>
-</p>
-<p align="center">
-  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English4.png" alt="Insait Edit Screenshot 4" width="100%"/>
-</p>
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Linux & macOS support
-- [ ] Plugin / extension system
-- [ ] Integrated debugger with breakpoints & variable inspection
-- [ ] Multi-project solution explorer
-
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please open an issue to discuss proposed changes before submitting a pull request.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
+## License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
-> **Note:** The application's UI styles, icons, and visual assets are **excluded** from the MIT License and remain All Rights Reserved. See the [LICENSE](LICENSE) file for the full exclusion list.
+> **Note:** the application's UI styles, icons, and visual assets are excluded from the MIT License and remain All Rights Reserved. See [LICENSE](LICENSE) for the full exclusion list.
 
 ---
 
-<p align="center">
-  Made with ❤️ using <b>Avalonia UI</b> and <b>Roslyn</b>
-</p>
+<a id="deutsch"></a>
+
+## Deutsch
+
+## Überblick
+
+**Insait Edit** ist eine Windows-Desktop-IDE mit Fokus auf C#- und .NET-Desktopentwicklung. Die Anwendung kombiniert einen eigenen Editor, Roslyn-basierte Analyse, Werkzeuge zum Erstellen von Projekten, Build- und Publish-Workflows, Git-Integration, ein integriertes Terminal und MSIX-Paketierung in einer Oberfläche.
+
+Die aktuelle Codebasis konzentriert sich auf Desktop-Anwendungen. Enthalten sind integrierte Projektvorlagen für **Avalonia**, **Windows Forms**, Standardvorlagen für **Konsole/Klassenbibliothek** sowie **F#-Startvorlagen**. Die Build- und Run-Pipeline erkennt außerdem **WPF**, **WinForms** und **Avalonia** als GUI-Projekte.
 
 ---
 
-# 🇩🇪 Deutsch
+## Funktionsübersicht
+
+### Vollständiger Desktop-Workflow
+- Neue Lösungen und Projekte direkt in der IDE erstellen
+- Projekte und Elemente zu bestehenden Lösungen hinzufügen
+- Mit C#, F#, AXAML, XAML, Bildern und Projektressourcen arbeiten
+- Desktopanwendungen bauen, neu bauen, starten, stoppen, veröffentlichen und als Paket erstellen
+
+### Unterstützte Projekt-Workflows
+- **Avalonia-Anwendungen** mit AXAML-Bearbeitung und Vorschau
+- **Windows-Forms-Anwendungen** über Projektvorlagen und GUI-Erkennung
+- **WPF-Projekte** in der Build-/Run-Pipeline
+- **Konsolenanwendungen**, **Klassenbibliotheken**, **leere C#-Projekte** und **F#-Startprojekte**
+
+### Editor und Code-Intelligenz
+- Eigenentwickelter `Insait Editor` mit Syntaxhervorhebung und eigener Rendering-Oberfläche
+- Roslyn-basierte C#-Vervollständigung, Quick Info, Symbolsuche und Refactoring-Helfer
+- F#-Vervollständigung und Tooltip-Unterstützung über `FSharp.Compiler.Service`
+- AXAML/XAML-Vervollständigung für Avalonia-Elemente, Eigenschaften, Events, Markup Extensions und Namespaces
+- Inline-Diagnosen, Quick-Fix-Vorschläge und Auto-Fix-Workflows direkt im Editor
+
+### Build, Run und Publish
+- Integration von MSBuild / `dotnet` für Build-Vorgänge
+- Run-Konfigurationen und Compound-Run-Unterstützung
+- GUI-bewusste Startlogik für Desktopprojekte
+- Publish-Fenster mit visueller Fortschrittsanzeige
+
+### Paketverwaltung und Deployment
+- NuGet-Panel zum Suchen, Installieren, Aktualisieren und Entfernen von Paketen
+- MSIX-Manager für Paketierung, Metadatenbearbeitung, Icon-Austausch und Signierung
+
+### Quellcodeverwaltung und GitHub-Werkzeuge
+- Git-Panel für Repository-Status, gestagte/nicht gestagte Änderungen, Branch-Infos, Verlauf, Commit, Push und Pull
+- Workflows zum Klonen von Repositories
+- GitHub-Integration über Octokit-basierte Dienste
+- Integriertes **GitHub Copilot CLI**-Panel und Befehlsworkflow
+
+### Terminal und Workspace-Werkzeuge
+- Eingebautes Terminal mit Prozesssteuerung und Befehlsverlauf
+- Datei-Explorer, Suche in Dateien, Bildbetrachter, Benachrichtigungen, Encoding-Werkzeuge und Eigenschaftsfenster
+- AXAML-Vorschaufenster und Live-Host-ähnliche Vorschauwerkzeuge
+
+### Lokalisierung
+- Eingebaute UI-Wörterbücher für **Englisch, Ukrainisch, Deutsch, Russisch und Türkisch**
+- Benutzerdefinierte AXAML-Sprachdateien, die zur Laufzeit geladen werden können
+- Import externer `.axaml`-Übersetzungsdateien über das Sprachmenü
+- Übersetzungsordner für manuelle Bearbeitung oder Übersetzungen mit Unterstützung durch GitHub Copilot CLI
 
 ---
 
-## 📖 Überblick (Deutsch)
+## Roslyn-Analyse- und Vervollständigungssystem
 
-**Insait Edit** ist eine leichtgewichtige und dennoch leistungsstarke integrierte Entwicklungsumgebung (IDE), die speziell für die C#- und .NET-Entwicklung konzipiert wurde. Aufgebaut auf [Avalonia UI](https://avaloniaui.net/) mit der [Roslyn](https://github.com/dotnet/roslyn)-Compiler-Plattform bietet sie eine umfangreiche Entwicklungserfahrung mit IntelliSense, Diagnose, Refactoring und einem ansprechenden Fluent-Design in Orange-Violett.
+Das Coding-Erlebnis basiert im Kern auf **Microsoft Roslyn** und mehreren spezialisierten Diensten im Projekt.
 
----
+### Implementierte Bausteine
+- `RoslynAutoCompleteFactory` delegiert die C#-Vervollständigung direkt an Roslyn `CompletionService`
+- Signaturhilfe wird aus semantischen Roslyn-Daten aufgelöst
+- Hover-Informationen verwenden Roslyn `QuickInfoService`
+- `InlineDiagnosticService` führt entprellte Hintergrundsanalyse aus und aktualisiert Inline-Markierungen
+- Quick-Fix-Vorschläge werden an Diagnosen angehängt und im Editor angezeigt
+- `RoslynAutoFixService` entdeckt eingebaute Roslyn-`CodeFixProvider`- und `CodeRefactoringProvider`-Implementierungen
+- `CSharpCompletionService` unterstützt Symbolumbenennung und Dokument-Highlights
 
-## ✨ Funktionen
+### Ergebnis in der Praxis
+- intelligente Vervollständigungslisten
+- Parameter- und Überladungshilfe
+- Hover-Beschreibungen
+- Echtzeit-Fehler- und Warnmeldungen
+- Quick Fix mit einem Schritt
+- Gehe zu Definition
+- Symbol umbenennen
 
-### 🖊️ Code-Editor
-- **Insait Editor** — ein maßgeschneiderter Code-Editor mit Syntaxhervorhebung, Zeilennummerierung und modernem UI
-- **Roslyn-basiertes IntelliSense** — intelligente Codevervollständigung, Signaturhilfe und Parameterinformationen für C#
-- **F#-Unterstützung** — Vervollständigungs-Engine für F#-Projekte
-- **AXAML-Vervollständigung** — IntelliSense für Avalonia-XAML-Dateien
-- **Code-Snippets** — integrierter C#-Snippet-Anbieter
-
-### 🔍 Codeanalyse & Refactoring
-- **Echtzeit-Diagnose** — Fehler, Warnungen und Vorschläge durch Roslyn-Analyzer
-- **Inline-Diagnose** — Probleme direkt im Editor sehen
-- **Quick Fixes** — Roslyn-Korrekturen mit einem Klick anwenden
-- **Symbol umbenennen** — sicheres projektweites Umbenennen von Symbolen
-- **Gehe zur Definition** — sofortiges Navigieren zu Symboldeklarationen
-
-### 🔨 Erstellen & Ausführen
-- **MSBuild-Integration** — .NET-Lösungen und -Projekte direkt aus der IDE erstellen
-- **Ausführungskonfigurationen** — mehrere Startprofile verwalten
-- **Verbundstart** — mehrere Konfigurationen gleichzeitig ausführen
-- **Debug-Unterstützung** — mit oder ohne Debugger starten
-- **Veröffentlichen** — Projekte mit einem visuellen Fortschrittsfenster veröffentlichen
-
-### 📦 Paketverwaltung
-- **NuGet-Panel** — NuGet-Pakete suchen, installieren, aktualisieren und entfernen
-- **MSIX-Manager** — MSIX-Anwendungspakete erstellen und verwalten
-
-### 🔗 Git- & GitHub-Integration
-- **Git-Panel** — Dateien stagen, committen, pushen, pullen und Änderungen vergleichen
-- **Repository klonen** — Repos per URL oder von GitHub klonen
-- **GitHub-Konto** — mit GitHub OAuth anmelden, Repositories anzeigen
-- **GitHub Copilot CLI** — integrierter Copilot-CLI-Assistent
-
-### 🖥️ Terminal
-- **Integriertes Terminal** — vollwertiger ConPTY-basierter Terminal-Emulator mit ANSI-Rendering
-- **ANSI-Grid-Terminal** — erweiterte Terminal-Steuerung mit gitterbasiertem Puffer
-
-### 🌐 Lokalisierung
-- **5 Sprachen** — Englisch, Ukrainisch, Deutsch, Russisch, Türkisch
-- **Gemini-KI-Übersetzung** — Übersetzungen für benutzerdefinierte Sprachnamen über Google Gemini generieren
-
-### 🤖 KI-Integration
-- **Gemini API** — KI-gestützte Code-Assistenz und Übersetzung
-- **Konfigurierbare Modelle** — Gemini-Modell und Spracheinstellungen auswählen
-
-### 🔌 ESP32- / nanoFramework-Unterstützung
-- **nanoFramework-Projekte** — Projekte für ESP32-Mikrocontroller erstellen und kompilieren
-- **Geräte-Panel** — angeschlossene serielle Geräte erkennen und verwalten
-- **LED-Panel-Designer** — visueller Designer für LED-Panel-Layouts
-
-### 🎨 Benutzeroberfläche & Design
-- **Fluent-Orange-Violett-Theme** — benutzerdefiniertes dunkles Thema mit warmen Akzentfarben
-- **AXAML-Livevorschau** — Avalonia-UI-Dateien in Echtzeit anzeigen
-- **Bildbetrachter** — integrierter Bildbetrachter für Projektdateien
-- **Benutzerdefinierte Titelleiste** — rahmenloses Fenster mit eigenen Minimieren-/Maximieren-/Schließen-Schaltflächen
+Für AXAML-Dateien verwendet die IDE zusätzlich eine eigene Vervollständigungs-Engine, die reale Avalonia-Assemblies reflektiert und gültige Controls, Eigenschaften, Attached Properties, Events und Markup Extensions vorschlägt.
 
 ---
 
-## 🛠️ Technologie-Stack
+## Hinweise zur MSIX-Paketierung
+
+Das MSIX-Subsystem unterstützt sowohl die **vollständige Paketierung** als auch die **Paketierung aus einem bereits veröffentlichten Output**.
+
+### Was die MSIX-Werkzeuge können
+- ein Projekt veröffentlichen und in einem Durchlauf als MSIX paketieren
+- `AppxManifest.xml` erzeugen
+- Inhalte mit `MakeAppx.exe` packen
+- ein vorhandenes MSIX öffnen und Paketmetadaten lesen
+- Paketmetadaten bearbeiten und das Paket neu packen
+- Icons innerhalb eines vorhandenen MSIX ersetzen
+- ein MSIX mit `SignTool.exe` und einem Zertifikat aus `CurrentUser\My` signieren
+
+### Wichtige Anforderungen
+- für die MSIX-Paketierung wird das **Windows SDK** benötigt, da `MakeAppx.exe` und `SignTool.exe` verwendet werden
+- der **Publisher** des Pakets muss exakt mit dem Zertifikatssubjekt übereinstimmen
+- praktisch bedeutet das: der **`CN=...`-Name des Herstellers muss identisch mit dem Distinguished Name des Zertifikats** sein
+- Paketicons für MSIX müssen **PNG-basiert** sein
+- wenn kein gültiges Logo angegeben wird, kann der Dienst ein Platzhalterbild einsetzen
+
+### Empfohlene Hinweise für die Nutzung
+- setzen Sie Ihr eigenes Paketicon explizit; der Standardwert ist nur ein Platzhalter/Mock-Wert
+- prüfen Sie vor dem Signieren Paketidentität, Publisher, Version, Executable und EntryPoint
+- wenn das Signieren wegen eines Publisher-Mismatches fehlschlägt, muss der Manifest-Publisher auf das Zertifikatssubjekt angepasst werden
+
+---
+
+## Lokalisierung und benutzerdefinierte Übersetzungen
+
+Benutzerdefinierte Übersetzungen werden über einfache AXAML-Wörterbücher verwaltet.
+
+### Eingebautes Verhalten
+- Standardsprachen werden aus `Insait Edit C Sharp/Interface Localization/` geladen
+- Benutzerdefinierte Wörterbücher werden in `%AppData%\InsaitEdit\GitHubTranslations\` gespeichert
+- der Dienst stellt sicher, dass `English.axaml` als Basistemplate verfügbar ist
+
+### Regeln für benutzerdefinierte Übersetzungen
+- eine benutzerdefinierte Sprachdatei muss ein einfaches `.axaml`-Wörterbuch sein
+- sie sollte die **gleiche `x:String`-Schlüsselstruktur** wie das englische Wörterbuch besitzen
+- Werte dürfen übersetzt werden, Schlüssel und Struktur sollten jedoch identisch zu `English.axaml` bleiben
+
+### Nutzung im Programm
+- externe AXAML-Datei über das Sprachmenü importieren
+- den Übersetzungsordner öffnen und Dateien manuell bearbeiten
+- **GitHub Copilot CLI** in diesem Ordner starten, um bei der Übersetzung zu helfen
+- das benutzerdefinierte Wörterbuch direkt zur Laufzeit über das Sprachmenü laden
+
+---
+
+## Tastenkombinationen
+
+Die folgende Liste basiert auf den aktuell im Code bestätigten Shortcuts.
+
+### Hauptfenster
+| Tastenkombination | Aktion |
+|---|---|
+| `Strg+S` | Aktuelle Datei speichern |
+| `Strg+Umschalt+S` | Alle Dateien speichern |
+| `Strg+O` | Datei öffnen |
+| `Strg+N` | Neue Datei erstellen |
+| `Strg+Umschalt+N` | Neues Projekt erstellen |
+| `Strg+B` | Projekt bauen |
+| `Strg+Umschalt+B` | Projekt neu bauen |
+| `Strg+Umschalt+A` | Projekt analysieren |
+| `F5` | Projekt starten |
+| `Umschalt+F5` | Laufendes Projekt stoppen |
+| `Strg+W` | Aktuellen Tab schließen |
+| `Strg+Umschalt+F` | In Dateien suchen |
+| `Strg+P` | Datei nach Namen suchen |
+| `Strg+Umschalt+Z` | Zen-Modus umschalten |
+| `Strg+Umschalt+P` | AXAML-Vorschau öffnen |
+| `Strg+Umschalt+E` | Explorer umschalten |
+| `Strg+Umschalt+I` | KI-/rechte Seitenleiste umschalten |
+| `Strg+\`` | Unteres Panel / Terminalbereich umschalten |
+| `Esc` | Zen-Modus verlassen |
+
+### Editor
+| Tastenkombination | Aktion |
+|---|---|
+| `Alt+Enter` | Quick Fix an der Cursorposition anzeigen |
+| `Strg+.` | Quick Fix an der Cursorposition anzeigen |
+| `Strg+Umschalt+I` | Dokument formatieren |
+| `Strg+Umschalt+A` | Auto-Fix-Fenster öffnen |
+| `F12` | Gehe zu Definition |
+| `F2` | Symbol umbenennen |
+| `Strg+R` | Symbol umbenennen |
+| `Strg+Umschalt+H` | Hover-Information anzeigen |
+| `Tab` / `Enter` | Ausgewählten Completion-Eintrag übernehmen |
+| `Esc` | Completion- oder Quick-Fix-Popup schließen |
+
+### Terminal-Panel
+| Tastenkombination | Aktion |
+|---|---|
+| `Strg+C` | Aktuellen Terminalprozess stoppen |
+| `Strg+L` | Terminalausgabe leeren |
+| `Pfeil hoch / runter` | Terminalverlauf durchsuchen |
+
+---
+
+## Technologieübersicht
 
 | Komponente | Technologie |
 |---|---|
-| **Framework** | .NET 10.0 (Windows) |
-| **UI-Framework** | Avalonia UI 11.3 |
-| **Codeanalyse** | Microsoft Roslyn 5.0 |
-| **Build-System** | MSBuild 18.3 |
-| **Versionskontrolle** | LibGit2 / Git für Windows |
-| **Paketmanager** | NuGet.Protocol 7.3 |
-| **GitHub API** | Octokit 14.0 |
-| **Datenbank** | LiteDB 6.0 |
-| **IoT** | nanoFramework |
-| **Vorlagen** | Microsoft.TemplateEngine |
+| Zielframework | `.NET 10.0` (`net10.0-windows`) |
+| UI-Framework | `Avalonia 12.0.0` |
+| Codeanalyse | Roslyn 5.x |
+| F#-Unterstützung | `FSharp.Compiler.Service` 43.x |
+| Build-Layer | `Microsoft.Build` 18.4 |
+| NuGet-Integration | `NuGet.Protocol` 7.3 |
+| GitHub-Integration | `Octokit` 14.0 |
+| Lokaler Speicher | `LiteDB` 6 Prerelease |
 
 ---
 
-## 📁 Projektstruktur
-
-```
-Insait Edit C Sharp/
-├── Controls/               # Wiederverwendbare UI-Steuerelemente
-│   ├── DiagnosticsPanel     # Fehler-/Warnungslisten-Panel
-│   ├── GitPanelControl      # Git-Quellcodeverwaltungs-Panel
-│   ├── NuGetPanelControl    # NuGet-Paketverwaltungs-Panel
-│   ├── RoslynCompletion*    # IntelliSense-Fenster
-│   ├── TerminalControl      # Integrierter Terminal-Emulator
-│   └── ...
-├── Esp/                    # ESP32- / nanoFramework-Unterstützung
-│   ├── Controls/            # Geräte-Panel
-│   ├── Models/              # ESP-Projektmodelle
-│   ├── Services/            # nanoFramework-Build-Dienst
-│   ├── Tools/               # Firmware-Tools
-│   └── Windows/             # LED-Designer, Nano-Projektassistent
-├── Icons/                  # Anwendungssymbole
-├── Insait Code Editor/     # Benutzerdefinierte Editor-Komponente
-│   ├── InsaitEditor.axaml   # Editor-Benutzeroberfläche
-│   ├── InsaitEditorSurface  # Rendering-Oberfläche
-│   └── InsaitEditorColors   # Farbdefinitionen
-├── Interface Localization/ # Sprach-Ressourcendateien
-│   ├── English.axaml
-│   ├── Ukrainian.axaml
-│   ├── German.axaml
-│   ├── Russian.axaml
-│   └── Turkish.axaml
-├── Models/                 # Datenmodelle
-├── Services/               # Geschäftslogik-Dienste
-│   ├── BuildService         # MSBuild-Integration
-│   ├── CodeAnalysisService  # Roslyn-Analyse
-│   ├── GitService           # Git-Operationen
-│   ├── NuGetService         # Paketverwaltung
-│   ├── RoslynWorkspace*     # Roslyn-Workspace-Verwaltung
-│   └── ...
-├── ViewModels/             # MVVM-ViewModels
-├── MainWindow.axaml        # Haupt-IDE-Fenster
-├── WelcomeWindow.axaml     # Startbildschirm
-└── Program.cs              # Anwendungseinstiegspunkt
-```
-
----
-
-## 🚀 Erste Schritte
-
-### Voraussetzungen
-
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) oder höher
-- Windows 10/11 (x64)
-- Git für Windows (optional, für Versionskontrollfunktionen)
-
-### Erstellen & Ausführen
-
-```bash
-# Repository klonen
-git clone https://github.com/IhrBenutzername/Insait-Edit-CSharp.git
-cd Insait-Edit-CSharp
-
-# Abhängigkeiten wiederherstellen
-dotnet restore
-
-# Projekt erstellen
-dotnet build
-
-# IDE starten
-dotnet run --project "Insait Edit C Sharp"
-```
-
-### Veröffentlichen
-
-```bash
-# Eigenständige Release-Version veröffentlichen
-dotnet publish -c Release -r win-x64 --self-contained
-```
-
----
-
-## 📸 Screenshots
-
-<p align="center">
-  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English1.png" alt="Insait Edit Screenshot 1" width="100%"/>
-</p>
-<p align="center">
-  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English2.png" alt="Insait Edit Screenshot 2" width="100%"/>
-</p>
-<p align="center">
-  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English3.png" alt="Insait Edit Screenshot 3" width="100%"/>
-</p>
-<p align="center">
-  <img src="Insait%20Edit%20C%20Sharp/Screenshots/English4.png" alt="Insait Edit Screenshot 4" width="100%"/>
-</p>
-
----
-
-## 🗺️ Fahrplan
-
-- [ ] Linux- & macOS-Unterstützung
-- [ ] Plugin- / Erweiterungssystem
-- [ ] Integrierter Debugger mit Haltepunkten & Variableninspektion
-- [ ] Multi-Projekt-Projektmappen-Explorer
-- [ ] Themes-Marktplatz
-- [ ] VB.NET- & C++-Sprachunterstützung
-
----
-
-## 🤝 Mitwirken
-
-Beiträge sind willkommen! Bitte eröffnen Sie ein Issue, um vorgeschlagene Änderungen zu besprechen, bevor Sie einen Pull-Request einreichen.
-
-1. Repository forken
-2. Feature-Branch erstellen (`git checkout -b feature/tolles-feature`)
-3. Änderungen committen (`git commit -m 'Tolles Feature hinzufügen'`)
-4. Branch pushen (`git push origin feature/tolles-feature`)
-5. Pull-Request öffnen
-
----
-
-## 📄 Lizenz
+## Lizenz
 
 Dieses Projekt steht unter der **MIT-Lizenz** — Details finden Sie in der Datei [LICENSE](LICENSE).
 
-> **Hinweis:** Die UI-Stile, Icons und visuellen Assets der Anwendung sind von der MIT-Lizenz **ausgenommen** und bleiben Alle Rechte vorbehalten. Siehe die Datei [LICENSE](LICENSE) für die vollständige Ausschlussliste.
-
----
-
-<p align="center">
-  Mit ❤️ entwickelt mit <b>Avalonia UI</b> und <b>Roslyn</b>
-</p>
+> **Hinweis:** Die UI-Stile, Icons und visuellen Assets der Anwendung sind von der MIT-Lizenz ausgenommen und bleiben All Rights Reserved. Die vollständige Ausschlussliste steht in [LICENSE](LICENSE).
 
