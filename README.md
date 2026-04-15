@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="#english">🇬🇧 English</a> · <a href="#deutsch">🇩🇪 Deutsch</a> · <a href="#ukrainian">🇺🇦 Українська</a>
+  <a href="#english">🇬🇧 English</a> · <a href="#deutsch">🇩🇪 Deutsch</a> · <a href="#ukrainian">🇺🇦 Українська</a> · <a href="#russian">🇷🇺 Русский</a> · <a href="#turkish">🇹🇷 Türkçe</a>
 </p>
 
 ---
@@ -168,3 +168,107 @@ Insait Edit постачається з інтерфейсом **англійс�
 Цей проєкт ліцензовано на умовах **MIT License** — деталі у файлі [LICENSE](LICENSE).
 
 > **Примітка:** Стилі UI, іконки та візуальні елементи застосунку виключені з ліцензії MIT і залишаються All Rights Reserved. Повний список виключень — у [LICENSE](LICENSE).
+
+---
+
+<a id="russian"></a>
+
+## Русский
+
+**Insait Edit** — современная IDE для Windows, созданная для разработчиков на C# и .NET. Здесь есть всё необходимое, чтобы пройти путь от идеи до готового упакованного приложения — без переключения между инструментами и лишних настроек.
+
+---
+
+### Пишите лучший код, быстрее
+
+Insait Edit поставляется с собственным редактором, который понимает ваш код. По мере ввода IDE предлагает умные подсказки, объясняет, что делает каждый метод, находит ошибки ещё до запуска проекта и предлагает исправления в один клик. C#, F# или Avalonia XAML — редактор не отстаёт от вас ни на шаг.
+
+---
+
+### Всё в одном окне
+
+Открыть проект, просмотреть файлы, выполнить поиск по всей кодовой базе, управлять пакетами NuGet, проверить историю Git, запустить приложение и увидеть вывод — всё без выхода из IDE. Встроенный терминал всегда доступен по одному сочетанию клавиш.
+
+---
+
+### От кода до упакованного приложения за минуты
+
+Insait Edit охватывает полный жизненный цикл настольного приложения. Создайте новый проект, собирайте и запускайте его в процессе разработки, опубликуйте релизную сборку и упакуйте её в подписанный MSIX-установщик — всё в одном интерфейсе, без ручного ввода команд.
+
+---
+
+### GitHub прямо в IDE
+
+Коммит, пуш, пул, просмотр веток и истории — Git-панель содержит всё необходимое для повседневной работы с версиями. GitHub Copilot CLI также интегрирован, чтобы вы могли получать помощь ИИ, не открывая браузер.
+
+---
+
+### Говорите на своём языке
+
+Insait Edit поставляется со встроенным интерфейсом на **английском, украинском, немецком, русском и турецком** языках. Нужен другой язык? Собственный перевод можно импортировать за секунды.
+
+---
+
+### Создан для Avalonia, WPF, WinForms и других
+
+Начните новый проект Avalonia, Windows Forms, WPF, консольный или библиотеку классов из готового шаблона и сразу приступайте к работе. IDE распознаёт тип проекта и адаптирует процесс сборки и запуска соответствующим образом.
+
+---
+
+## Лицензия
+
+Этот проект распространяется под лицензией **MIT** — подробности в файле [LICENSE](LICENSE).
+
+> **Примечание:** Стили UI, иконки и визуальные элементы приложения исключены из лицензии MIT и остаются All Rights Reserved. Полный список исключений — в файле [LICENSE](LICENSE).
+
+---
+
+<a id="turkish"></a>
+
+## Türkçe
+
+**Insait Edit**, C# ve .NET geliştiricileri için tasarlanmış modern bir Windows masaüstü IDE'sidir. Fikirden tamamlanmış, paketlenmiş bir uygulamaya kadar ihtiyacınız olan her şey burada — araçlar arasında geçiş yok, yapılandırma karmaşası yok.
+
+---
+
+### Daha iyi kod yazın, daha hızlı
+
+Insait Edit, kodunuzu anlayan özenle geliştirilmiş bir editörle birlikte gelir. Siz yazarken IDE akıllı tamamlamalar önerir, her yöntemin ne işe yaradığını açıklar, projeyi çalıştırmadan önce hataları yakalar ve tek tıkla düzeltmeler önerir. C#, F# veya Avalonia XAML — editör her adımda sizinle ayak uydurur.
+
+---
+
+### Her şey tek pencerede
+
+Bir proje açın, dosyaları gezin, tüm kod tabanında arama yapın, NuGet paketlerini yönetin, Git geçmişinizi kontrol edin, uygulamayı çalıştırın ve çıktıyı okuyun — hepsi IDE'den çıkmadan. İhtiyaç duyduğunuzda yerleşik terminal her zaman bir klavye kısayoluyla erişilebilir.
+
+---
+
+### Koddan paketlenmiş uygulamaya dakikalar içinde
+
+Insait Edit, bir masaüstü uygulamasının tam yaşam döngüsünü yönetir. Yeni bir proje oluşturun, geliştirme sırasında derleyin ve çalıştırın, bir yayın derlemesi yayımlayın ve imzalı bir MSIX yükleyicisine sarın — hepsi aynı arayüzden, manuel komut satırı gerekmeden.
+
+---
+
+### GitHub, doğrudan IDE içinde
+
+Commit, push, pull, branch'lara ve geçmişe göz atın — Git paneli günlük kaynak kontrolü için ihtiyacınız olan her şeye sahiptir. GitHub Copilot CLI de entegre edilmiştir, böylece tarayıcı açmadan yapay zeka yardımı alabilirsiniz.
+
+---
+
+### Kendi dilinizde konuşun
+
+Insait Edit, **İngilizce, Ukraynaca, Almanca, Rusça ve Türkçe** olmak üzere yerleşik bir kullanıcı arayüzüyle birlikte gelir. Başka bir dile mi ihtiyacınız var? Özel bir çeviriyi saniyeler içinde içe aktarabilirsiniz.
+
+---
+
+### Avalonia, WPF, WinForms ve daha fazlası için tasarlandı
+
+Temiz bir şablondan yeni bir Avalonia, Windows Forms, WPF, konsol veya sınıf kütüphanesi projesi başlatın ve hemen çalışmaya başlayın. IDE, proje türleri arasındaki farkları anlar ve derleme ve çalıştırma deneyimini buna göre uyarlar.
+
+---
+
+## Lisans
+
+Bu proje **MIT Lisansı** kapsamında lisanslanmıştır — ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
+
+> **Not:** Uygulamanın UI stilleri, simgeleri ve görsel varlıkları MIT Lisansı'nın dışında tutulmuş olup Tüm Hakları Saklıdır. Tam hariç tutma listesi için [LICENSE](LICENSE) dosyasına bakın.
