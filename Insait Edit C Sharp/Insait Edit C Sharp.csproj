@@ -6,7 +6,12 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <ApplicationIcon>Icons\AppIconIDE.ico</ApplicationIcon>
+    </PropertyGroup>
 
+    <!-- Publish: no PDB files -->
+    <PropertyGroup Condition="'$(PublishSingleFile)' == 'true' Or '$(Configuration)' == 'Release'">
+        <DebugType>none</DebugType>
+        <DebugSymbols>false</DebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>
