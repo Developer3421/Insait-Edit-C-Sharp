@@ -1427,9 +1427,9 @@ public partial class MainWindow : Window
 
     private void NewWindowButton_Click(object? sender, RoutedEventArgs e)
     {
-        // Open a fresh instance of the IDE in a new window
-        var newWindow = new MainWindow();
-        newWindow.Show();
+        // Open a new Welcome window so the user can choose a project
+        var welcome = new WelcomeWindow();
+        welcome.Show();
     }
 
     private void RestartButton_Click(object? sender, RoutedEventArgs e)

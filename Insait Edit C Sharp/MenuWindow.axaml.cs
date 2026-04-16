@@ -351,7 +351,7 @@ public partial class MenuWindow : Window
 
         AddMenuItem(panel, $"🚀  {LocalizationService.Get("GitHub.LaunchCopilot")}", "", async () =>
         {
-            await GitHubCopilotService.EnsureEnglishDictionaryAsync();
+            try { await GitHubCopilotService.EnsureEnglishDictionaryAsync(); } catch { /* non-fatal */ }
             GitHubCopilotService.LaunchCopilotCli();
             Close();
         });
@@ -359,7 +359,7 @@ public partial class MenuWindow : Window
 
         AddMenuItem(panel, $"📂  {LocalizationService.Get("GitHub.OpenTranslationsFolder")}", "", async () =>
         {
-            await GitHubCopilotService.EnsureEnglishDictionaryAsync();
+            try { await GitHubCopilotService.EnsureEnglishDictionaryAsync(); } catch { /* non-fatal */ }
             GitHubCopilotService.OpenTranslationsFolder();
             Close();
         });
