@@ -1052,7 +1052,7 @@
                                     
                                     <!-- Manage NuGet (for projects) -->
                                     <MenuItem Header="📦 Manage NuGet Packages..." Name="ContextMenuNuGet" Click="ContextMenu_ManageNuGet_Click"/>
-                                    <MenuItem Header="🔗 Add Reference..." Name="ContextMenuAddReference" Click="ContextMenu_AddReference_Click"/>
+
                                     <Separator Name="ContextMenuNuGetSeparator"/>
                                     
                                     <!-- Edit group -->
