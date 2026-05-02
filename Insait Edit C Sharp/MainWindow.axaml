@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -450,7 +450,7 @@
                             Height="28"
                             Cursor="Hand">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="☰" FontSize="14" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="?" FontSize="14" FontFamily="Segoe UI Emoji"/>
                             <TextBlock Text="Menu" FontSize="12" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
@@ -470,7 +470,7 @@
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand">
-                        <TextBlock Text="🔨" FontSize="15" FontFamily="Segoe UI Emoji"
+                        <TextBlock Text="??" FontSize="15" FontFamily="Segoe UI Emoji"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
@@ -487,7 +487,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <TextBlock Text="🔍" FontSize="15" FontFamily="Segoe UI Emoji"
+                        <TextBlock Text="??" FontSize="15" FontFamily="Segoe UI Emoji"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
@@ -508,9 +508,9 @@
                                     Height="26"
                                     Cursor="Hand">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <TextBlock Text="▶" FontSize="9" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
+                                    <TextBlock Text="?" FontSize="9" Foreground="#FFA6E3A1" VerticalAlignment="Center"/>
                                     <TextBlock Name="RunConfigNameText" Text="Default" FontSize="11" VerticalAlignment="Center" MaxWidth="130" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="▾" FontSize="11" Foreground="#FFFFC09F" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                    <TextBlock Text="?" FontSize="11" Foreground="#FFFFC09F" VerticalAlignment="Center" Margin="2,0,0,0"/>
                                 </StackPanel>
                             </Button>
                             
@@ -529,7 +529,7 @@
                                     HorizontalContentAlignment="Center"
                                     VerticalContentAlignment="Center"
                                     Cursor="Hand">
-                                <TextBlock Text="⚙" FontSize="13" FontFamily="Segoe UI Emoji"
+                                <TextBlock Text="?" FontSize="13" FontFamily="Segoe UI Emoji"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Button>
                         </Grid>
@@ -548,7 +548,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <TextBlock Text="▶" FontSize="14" Foreground="#FFA6E3A1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <TextBlock Text="?" FontSize="14" Foreground="#FFA6E3A1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
                     
                     <!-- Debug Run Button -->
@@ -564,7 +564,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="2,0,0,0">
-                        <TextBlock Text="🐛" FontSize="15" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <TextBlock Text="??" FontSize="15" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
                     
                     <!-- Stop Project Button -->
@@ -580,7 +580,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="2,0,0,0">
-                        <TextBlock Text="⏹" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <TextBlock Text="?" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
                     
                     <!-- Restart Project Button -->
@@ -596,7 +596,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="2,0,0,0">
-                        <TextBlock Text="🔄" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <TextBlock Text="??" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
                     
                     <!-- Stop Button (hidden by default) -->
@@ -611,7 +611,7 @@
                             IsVisible="False"
                             Margin="2,0,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="⏹" FontSize="12" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="?" FontSize="12" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                             <TextBlock Text="Stop" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
@@ -631,7 +631,7 @@
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Cursor="Hand">
-                        <TextBlock Text="📦" FontSize="14" FontFamily="Segoe UI Emoji"
+                        <TextBlock Text="??" FontSize="14" FontFamily="Segoe UI Emoji"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
@@ -648,7 +648,7 @@
                             Cursor="Hand"
                             Margin="2,0,0,0">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="📦" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                             <TextBlock Text="MSIX" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
@@ -670,7 +670,7 @@
                             Cursor="Hand"
                             IsEnabled="False"
                             Opacity="0.5">
-                        <TextBlock Text="↩" FontSize="16"
+                        <TextBlock Text="?" FontSize="16"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
@@ -689,7 +689,7 @@
                             IsEnabled="False"
                             Opacity="0.5"
                             Margin="2,0,0,0">
-                        <TextBlock Text="↪" FontSize="16"
+                        <TextBlock Text="?" FontSize="16"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
@@ -711,11 +711,11 @@
                             BorderBrush="#FF4A4060"
                             BorderThickness="1">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="🕐" FontSize="13" FontFamily="Segoe UI Emoji"
+                            <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji"
                                        VerticalAlignment="Center"/>
                             <TextBlock Text="Recent" FontSize="11" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
-                            <TextBlock Text="▾" FontSize="10" Foreground="#FFFFC09F"
+                            <TextBlock Text="?" FontSize="10" Foreground="#FFFFC09F"
                                        VerticalAlignment="Center" Margin="2,0,0,0"/>
                         </StackPanel>
                     </Button>
@@ -739,7 +739,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="0,0,4,0">
-                        <TextBlock Text="📜" FontSize="14" FontFamily="Segoe UI Emoji"
+                        <TextBlock Text="??" FontSize="14" FontFamily="Segoe UI Emoji"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
 
@@ -758,7 +758,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="4,0,0,0">
-                        <TextBlock Text="🗗" FontSize="14" FontFamily="Segoe UI Emoji"
+                        <TextBlock Text="??" FontSize="14" FontFamily="Segoe UI Emoji"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
 
@@ -774,7 +774,7 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand"
                             Margin="2,0,0,0">
-                        <TextBlock Text="↺" FontSize="16"
+                        <TextBlock Text="?" FontSize="16"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
 
@@ -809,13 +809,13 @@
             <Border Grid.Column="0" Background="{StaticResource SidebarGradient}" Padding="2,8">
                 <StackPanel Spacing="4">
                     <Button Classes="sidebar-button active" Name="ExplorerButton" ToolTip.Tip="Explorer (Ctrl+Shift+E)" Click="Explorer_Click">
-                        <TextBlock Text="📁" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="??" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     <Button Classes="sidebar-button" Name="GitButton" ToolTip.Tip="Source Control (Ctrl+Shift+G)" Click="Git_Click">
-                        <TextBlock Text="🔀" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="??" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     <Button Classes="sidebar-button" Name="NuGetButton" ToolTip.Tip="NuGet Packages (Ctrl+Shift+N)" Click="NuGet_Click">
-                        <TextBlock Text="📦" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="??" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     
                     <!-- Spacer -->
@@ -823,10 +823,10 @@
                     
                     <!-- Bottom buttons -->
                     <Button Classes="sidebar-button" Name="AccountButton" ToolTip.Tip="Account" Click="Account_Click">
-                        <TextBlock Text="👤" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="??" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     <Button Classes="sidebar-button" Name="SettingsButton" ToolTip.Tip="Settings (Ctrl+,)" Click="Settings_Click">
-                        <TextBlock Text="⚙️" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="??" FontSize="20" FontFamily="Segoe UI Emoji" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
             </Border>
@@ -845,19 +845,19 @@
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Name="ExplorerHeaderActions">
                                     <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New File" 
                                             Name="NewFileButton" Click="ExplorerNewFile_Click">
-                                        <TextBlock Text="📄" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                        <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji"/>
                                     </Button>
                                     <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Folder"
                                             Name="NewFolderButton" Click="ExplorerNewFolder_Click">
-                                        <TextBlock Text="📁" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                        <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji"/>
                                     </Button>
                                     <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Refresh"
                                             Name="RefreshTreeButton" Click="RefreshTree_Click">
-                                        <TextBlock Text="🔄" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                        <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji"/>
                                     </Button>
                                     <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Toggle Search (Ctrl+Shift+F)"
                                             Name="ExplorerSearchToggleButton" Click="ExplorerSearchToggle_Click">
-                                        <TextBlock Text="🔍" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                        <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji"/>
                                     </Button>
                                 </StackPanel>
                             </Grid>
@@ -870,19 +870,19 @@
                             <StackPanel Spacing="6">
                                 <!-- Tab toggle -->
                                 <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                                    <TextBlock Grid.Column="0" Text="🔍" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Grid.Column="0" Text="??" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                     <TextBlock Grid.Column="1" Text="SEARCH" FontSize="10" FontWeight="SemiBold"
                                                Foreground="{StaticResource AccentOrangeBrush}" VerticalAlignment="Center"
                                                LetterSpacing="1"/>
                                     <Button Grid.Column="2" Name="SearchTabFilesBtn" Classes="icon-button"
                                             Width="26" Height="26" ToolTip.Tip="Find Files by Name" Margin="0,0,2,0"
                                             CornerRadius="6">
-                                        <TextBlock Text="📄" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="??" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Button>
                                     <Button Grid.Column="3" Name="SearchTabContentBtn" Classes="icon-button"
                                             Width="26" Height="26" ToolTip.Tip="Find in Files (content)"
                                             CornerRadius="6">
-                                        <TextBlock Text="📝" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="??" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                     </Button>
                                 </Grid>
 
@@ -892,13 +892,13 @@
                                             BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1"
                                             Padding="2">
                                         <Grid ColumnDefinitions="*,Auto">
-                                            <TextBox Grid.Column="0" Name="SearchInputBox" Watermark="File name (*.cs, Program…)"
+                                            <TextBox Grid.Column="0" Name="SearchInputBox" Watermark="File name (*.cs, Program�)"
                                                      BorderThickness="0"
                                                      Padding="8,6" FontSize="12"/>
                                             <Button Grid.Column="1" Classes="icon-button" Width="28" Height="28"
                                                     Margin="2,0,2,0" ToolTip.Tip="Search" Name="SearchFileNamesButton"
                                                     CornerRadius="5">
-                                                <TextBlock Text="↵" FontSize="14" FontWeight="Bold"
+                                                <TextBlock Text="?" FontSize="14" FontWeight="Bold"
                                                            Foreground="{StaticResource AccentOrangeBrush}"/>
                                             </Button>
                                         </Grid>
@@ -924,13 +924,13 @@
                                             BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1"
                                             Padding="2">
                                         <Grid ColumnDefinitions="*,Auto">
-                                            <TextBox Grid.Column="0" Name="ContentSearchInputBox" Watermark="Search text…"
+                                            <TextBox Grid.Column="0" Name="ContentSearchInputBox" Watermark="Search text�"
                                                      BorderThickness="0"
                                                      Padding="8,6" FontSize="12"/>
                                             <Button Grid.Column="1" Classes="icon-button" Width="28" Height="28"
                                                     Margin="2,0,2,0" ToolTip.Tip="Search in Files" Name="SearchContentButton"
                                                     CornerRadius="5">
-                                                <TextBlock Text="↵" FontSize="14" FontWeight="Bold"
+                                                <TextBlock Text="?" FontSize="14" FontWeight="Bold"
                                                            Foreground="{StaticResource AccentOrangeBrush}"/>
                                             </Button>
                                         </Grid>
@@ -1003,9 +1003,9 @@
                                     <Separator Name="ContextMenuMultiInfoSeparator" IsVisible="False"/>
 
                                     <!-- Run/Debug group (for projects) -->
-                                    <MenuItem Header="▶ Run" Name="ContextMenuRun" Click="ContextMenu_RunProject_Click">
+                                    <MenuItem Header="? Run" Name="ContextMenuRun" Click="ContextMenu_RunProject_Click">
                                         <MenuItem.Icon>
-                                            <TextBlock Text="▶" FontSize="10" Foreground="#4CAF50"/>
+                                            <TextBlock Text="?" FontSize="10" Foreground="#4CAF50"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
                                     <Separator Name="ContextMenuRunSeparator"/>
@@ -1015,16 +1015,16 @@
                                         <MenuItem.Icon>
                                             <TextBlock Text="+" FontSize="12" FontWeight="Bold" Foreground="#4CAF50"/>
                                         </MenuItem.Icon>
-                                        <MenuItem Header="📄 Class..." Click="ContextMenu_NewClass_Click"/>
-                                        <MenuItem Header="📄 Interface..." Click="ContextMenu_NewInterface_Click"/>
-                                        <MenuItem Header="📄 Record..." Click="ContextMenu_NewRecord_Click"/>
-                                        <MenuItem Header="📄 Enum..." Click="ContextMenu_NewEnum_Click"/>
+                                        <MenuItem Header="?? Class..." Click="ContextMenu_NewClass_Click"/>
+                                        <MenuItem Header="?? Interface..." Click="ContextMenu_NewInterface_Click"/>
+                                        <MenuItem Header="?? Record..." Click="ContextMenu_NewRecord_Click"/>
+                                        <MenuItem Header="?? Enum..." Click="ContextMenu_NewEnum_Click"/>
                                         <Separator/>
-                                        <MenuItem Header="🪟 Avalonia Window..." Click="ContextMenu_NewAvaloniaWindow_Click"/>
-                                        <MenuItem Header="🎛️ Avalonia UserControl..." Click="ContextMenu_NewAvaloniaUserControl_Click"/>
+                                        <MenuItem Header="?? Avalonia Window..." Click="ContextMenu_NewAvaloniaWindow_Click"/>
+                                        <MenuItem Header="??? Avalonia UserControl..." Click="ContextMenu_NewAvaloniaUserControl_Click"/>
                                         <Separator/>
-                                        <MenuItem Header="📄 File..." Click="AddNewItem_Click"/>
-                                        <MenuItem Header="📁 Directory" Click="AddNewFolder_Click"/>
+                                        <MenuItem Header="?? File..." Click="AddNewItem_Click"/>
+                                        <MenuItem Header="?? Directory" Click="AddNewFolder_Click"/>
                                     </MenuItem>
                                     
                                     <!-- Add submenu (for solutions/projects) -->
@@ -1032,55 +1032,55 @@
                                         <MenuItem.Icon>
                                             <TextBlock Text="+" FontSize="12" FontWeight="Bold"/>
                                         </MenuItem.Icon>
-                                        <MenuItem Header="📦 New Project..." Name="ContextMenuAddProject" Click="AddNewProject_Click"/>
-                                        <MenuItem Header="📦 Existing Project..." Name="ContextMenuAddExistingProject" Click="ContextMenu_AddExistingProject_Click"/>
+                                        <MenuItem Header="?? New Project..." Name="ContextMenuAddProject" Click="AddNewProject_Click"/>
+                                        <MenuItem Header="?? Existing Project..." Name="ContextMenuAddExistingProject" Click="ContextMenu_AddExistingProject_Click"/>
                                         <Separator/>
-                                        <MenuItem Header="📄 New Item..." Click="AddNewItem_Click"/>
-                                        <MenuItem Header="📄 Existing Item..." Click="ContextMenu_AddExistingItem_Click"/>
+                                        <MenuItem Header="?? New Item..." Click="AddNewItem_Click"/>
+                                        <MenuItem Header="?? Existing Item..." Click="ContextMenu_AddExistingItem_Click"/>
                                     </MenuItem>
                                     <Separator Name="ContextMenuAddSeparator"/>
                                     
                                     <!-- Build group (for projects) -->
-                                    <MenuItem Header="🔨 Build" Name="ContextMenuBuild" Click="ContextMenu_BuildProject_Click">
+                                    <MenuItem Header="?? Build" Name="ContextMenuBuild" Click="ContextMenu_BuildProject_Click">
                                         <MenuItem.Icon>
-                                            <TextBlock Text="🔨" FontSize="10"/>
+                                            <TextBlock Text="??" FontSize="10"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
-                                    <MenuItem Header="🔄 Rebuild" Name="ContextMenuRebuild" Click="ContextMenu_RebuildProject_Click"/>
-                                    <MenuItem Header="🧹 Clean" Name="ContextMenuClean" Click="ContextMenu_CleanProject_Click"/>
+                                    <MenuItem Header="?? Rebuild" Name="ContextMenuRebuild" Click="ContextMenu_RebuildProject_Click"/>
+                                    <MenuItem Header="?? Clean" Name="ContextMenuClean" Click="ContextMenu_CleanProject_Click"/>
                                     <Separator Name="ContextMenuBuildSeparator"/>
                                     
                                     <!-- Manage NuGet (for projects) -->
-                                    <MenuItem Header="📦 Manage NuGet Packages..." Name="ContextMenuNuGet" Click="ContextMenu_ManageNuGet_Click"/>
+                                    <MenuItem Header="?? Manage NuGet Packages..." Name="ContextMenuNuGet" Click="ContextMenu_ManageNuGet_Click"/>
 
                                     <Separator Name="ContextMenuNuGetSeparator"/>
                                     
                                     <!-- Edit group -->
-                                    <MenuItem Header="✂️ Cut" Name="ContextMenuCut" Click="ContextMenu_Cut_Click" InputGesture="Ctrl+X"/>
-                                    <MenuItem Header="📋 Copy" Name="ContextMenuCopy" Click="ContextMenu_Copy_Click" InputGesture="Ctrl+C"/>
-                                    <MenuItem Header="📄 Paste" Name="ContextMenuPaste" Click="ContextMenu_Paste_Click" InputGesture="Ctrl+V"/>
+                                    <MenuItem Header="?? Cut" Name="ContextMenuCut" Click="ContextMenu_Cut_Click" InputGesture="Ctrl+X"/>
+                                    <MenuItem Header="?? Copy" Name="ContextMenuCopy" Click="ContextMenu_Copy_Click" InputGesture="Ctrl+C"/>
+                                    <MenuItem Header="?? Paste" Name="ContextMenuPaste" Click="ContextMenu_Paste_Click" InputGesture="Ctrl+V"/>
                                     <Separator/>
                                     
                                     <!-- Rename/Delete -->
-                                    <MenuItem Header="✏️ Rename" Name="ContextMenuRename" Click="RenameItem_Click" InputGesture="F2"/>
-                                    <MenuItem Header="🗑️ Safe Delete..." Name="ContextMenuDelete" Click="DeleteItem_Click" InputGesture="Delete"/>
+                                    <MenuItem Header="?? Rename" Name="ContextMenuRename" Click="RenameItem_Click" InputGesture="F2"/>
+                                    <MenuItem Header="??? Safe Delete..." Name="ContextMenuDelete" Click="DeleteItem_Click" InputGesture="Delete"/>
                                     <Separator/>
                                     
                                     <!-- Copy Path submenu -->
                                     <MenuItem Header="Copy Path" Name="ContextMenuCopyPath">
-                                        <MenuItem Header="📋 Absolute Path" Click="CopyPath_Click"/>
-                                        <MenuItem Header="📋 Relative Path" Click="ContextMenu_CopyRelativePath_Click"/>
-                                        <MenuItem Header="📋 File Name" Click="ContextMenu_CopyFileName_Click"/>
+                                        <MenuItem Header="?? Absolute Path" Click="CopyPath_Click"/>
+                                        <MenuItem Header="?? Relative Path" Click="ContextMenu_CopyRelativePath_Click"/>
+                                        <MenuItem Header="?? File Name" Click="ContextMenu_CopyFileName_Click"/>
                                     </MenuItem>
                                     
                                     <!-- Open/Show -->
-                                    <MenuItem Header="📂 Open in Explorer" Name="ContextMenuOpenExplorer" Click="OpenInExplorer_Click"/>
-                                    <MenuItem Header="💻 Open in Terminal" Name="ContextMenuOpenTerminal" Click="OpenInTerminal_Click"/>
+                                    <MenuItem Header="?? Open in Explorer" Name="ContextMenuOpenExplorer" Click="OpenInExplorer_Click"/>
+                                    <MenuItem Header="?? Open in Terminal" Name="ContextMenuOpenTerminal" Click="OpenInTerminal_Click"/>
                                     <Separator/>
                                     
                                     <!-- Remove from solution (for projects) -->
-                                    <MenuItem Header="🗑️ Remove from Solution" Name="ContextMenuRemoveFromSolution" Click="ContextMenu_RemoveFromSolution_Click"/>
-                                    <MenuItem Header="⬇️ Unload Project" Name="ContextMenuUnloadProject" Click="ContextMenu_UnloadProject_Click"/>
+                                    <MenuItem Header="??? Remove from Solution" Name="ContextMenuRemoveFromSolution" Click="ContextMenu_RemoveFromSolution_Click"/>
+                                    <MenuItem Header="?? Unload Project" Name="ContextMenuUnloadProject" Click="ContextMenu_UnloadProject_Click"/>
                                     <Separator Name="ContextMenuRemoveSeparator"/>
                                     
                                     <!-- Git submenu -->
@@ -1088,16 +1088,16 @@
                                         <MenuItem.Icon>
                                             <TextBlock Text="" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
                                         </MenuItem.Icon>
-                                        <MenuItem Header="📝 Commit..." Click="ContextMenu_GitCommit_Click"/>
-                                        <MenuItem Header="📜 Show History" Click="ContextMenu_GitHistory_Click"/>
+                                        <MenuItem Header="?? Commit..." Click="ContextMenu_GitCommit_Click"/>
+                                        <MenuItem Header="?? Show History" Click="ContextMenu_GitHistory_Click"/>
                                         <Separator/>
-                                        <MenuItem Header="↩️ Revert..." Click="ContextMenu_GitRevert_Click"/>
+                                        <MenuItem Header="?? Revert..." Click="ContextMenu_GitRevert_Click"/>
                                     </MenuItem>
                                     <Separator/>
                                     
                                     <!-- Properties/Refresh -->
-                                    <MenuItem Header="🔄 Reload from Disk" Click="RefreshTree_Click"/>
-                                    <MenuItem Header="⚙️ Properties" Name="ContextMenuProperties" Click="ContextMenu_Properties_Click"/>
+                                    <MenuItem Header="?? Reload from Disk" Click="RefreshTree_Click"/>
+                                    <MenuItem Header="?? Properties" Name="ContextMenuProperties" Click="ContextMenu_Properties_Click"/>
                                 </ContextMenu>
                             </TreeView.ContextMenu>
                             <TreeView.ItemTemplate>
@@ -1201,7 +1201,7 @@
                                             <GradientStop Color="#FF5A8FE0" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <TextBlock Text="📂" FontSize="26"
+                                    <TextBlock Text="??" FontSize="26"
                                                FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
@@ -1247,7 +1247,7 @@
                                         <SolidColorBrush Color="#FFF0E8F4"/>
                                     </Button.Foreground>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Text="📄" FontSize="13"
+                                        <TextBlock Text="??" FontSize="13"
                                                    FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock Text="Add New File"
@@ -1335,7 +1335,7 @@
                                             Click="TabButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <!-- Home icon shown only for the Start/Welcome tab -->
-                                            <TextBlock Text="🏠" FontSize="12"
+                                            <TextBlock Text="??" FontSize="12"
                                                        FontFamily="Segoe UI Emoji, Segoe UI"
                                                        VerticalAlignment="Center"
                                                        IsVisible="{Binding IsWelcomeTab}"/>
@@ -1359,7 +1359,7 @@
                                                     CornerRadius="3"
                                                     Tag="{Binding}"
                                                     Click="CloseTabButton_Click">
-                                                <TextBlock Text="✕" FontSize="11" 
+                                                <TextBlock Text="?" FontSize="11" 
                                                            Foreground="{StaticResource AppTextMutedBrush}"
                                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Button>
@@ -1386,21 +1386,21 @@
                             VerticalContentAlignment="Center"
                             Cursor="Hand">
                         <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                            <TextBlock Text="🎨" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                            <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                             <TextBlock Text="Preview" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     </Grid>
                 </Border>
                 
-                <!-- Editor container — заповнюється InsaitEditor з code-behind -->
+                <!-- Editor container � ???????????? InsaitEditor ? code-behind -->
                 <Border Grid.Row="1"
                         x:Name="EditorContainer"
                         Background="Transparent"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"/>
 
-                <!-- Welcome Screen — shown when no file is open -->
+                <!-- Welcome Screen � shown when no file is open -->
                 <Border Grid.Row="1"
                         x:Name="WelcomeScreenPanel"
                         IsVisible="True"
@@ -1456,7 +1456,7 @@
                                         </TextBlock.Foreground>
                                     </TextBlock>
                                     <TextBlock x:Name="WelcomeMainSubtitle"
-                                               Text="C# IDE · Powered by Insait Code Engine"
+                                               Text="C# IDE � Powered by Insait Code Engine"
                                                FontSize="14"
                                                Foreground="{StaticResource AppTextMutedBrush}"
                                                HorizontalAlignment="Center"/>
@@ -1485,7 +1485,7 @@
                                             </LinearGradientBrush>
                                         </Border.Background>
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                            <TextBlock Text="➕" FontSize="28"
+                                            <TextBlock Text="?" FontSize="28"
                                                        FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                                        HorizontalAlignment="Center"/>
                                             <TextBlock x:Name="WelcomeCardNewProject"
@@ -1517,7 +1517,7 @@
                                             </LinearGradientBrush>
                                         </Border.Background>
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                            <TextBlock Text="📂" FontSize="28"
+                                            <TextBlock Text="??" FontSize="28"
                                                        FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                                        HorizontalAlignment="Center"/>
                                             <TextBlock x:Name="WelcomeCardOpen"
@@ -1549,7 +1549,7 @@
                                             </LinearGradientBrush>
                                         </Border.Background>
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                            <TextBlock Text="🔀" FontSize="28"
+                                            <TextBlock Text="??" FontSize="28"
                                                        FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                                        HorizontalAlignment="Center"/>
                                             <TextBlock x:Name="WelcomeCardClone"
@@ -1589,7 +1589,7 @@
                     </Grid>
                 </Border>
 
-                <!-- Empty Project Panel — shown when a project is loaded but no files exist -->
+                <!-- Empty Project Panel � shown when a project is loaded but no files exist -->
                 <Border Grid.Row="1"
                         x:Name="EmptyProjectPanel"
                         IsVisible="False"
@@ -1627,7 +1627,7 @@
                                         <GradientStop Color="#FF5A8FE0" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Border.Background>
-                                <TextBlock Text="📂" FontSize="40"
+                                <TextBlock Text="??" FontSize="40"
                                            FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
@@ -1687,7 +1687,7 @@
                                             </LinearGradientBrush>
                                         </Border.Background>
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                            <TextBlock Text="📄" FontSize="28"
+                                            <TextBlock Text="??" FontSize="28"
                                                        FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                                        HorizontalAlignment="Center"/>
                                             <TextBlock x:Name="EmptyProjectAddFileText"
@@ -1719,7 +1719,7 @@
                                             </LinearGradientBrush>
                                         </Border.Background>
                                         <StackPanel Spacing="8" HorizontalAlignment="Center">
-                                            <TextBlock Text="📁" FontSize="28"
+                                            <TextBlock Text="??" FontSize="28"
                                                        FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                                        HorizontalAlignment="Center"/>
                                             <TextBlock x:Name="EmptyProjectExplorerText"
@@ -1783,7 +1783,7 @@
                                     <Button Classes="tool-window-tab" Name="ProblemsTabButton" Click="ProblemsTab_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <Border Background="#30FFD080" CornerRadius="4" Padding="3,1">
-                                                <TextBlock Text="⚠️" FontSize="11" FontFamily="Segoe UI Emoji" Foreground="#FFFFD080"/>
+                                                <TextBlock Text="??" FontSize="11" FontFamily="Segoe UI Emoji" Foreground="#FFFFD080"/>
                                             </Border>
                                             <TextBlock Text="Problems" FontSize="12"/>
                                             <Border Background="#50F38BA8" CornerRadius="8" Padding="5,1" x:CompileBindings="False" IsVisible="{Binding HasProblems}">
@@ -1795,7 +1795,7 @@
                                     <!-- Build Tab -->
                                     <Button Classes="tool-window-tab" Name="BuildTabButton" Click="BuildTab_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="🔨" FontSize="13" FontFamily="Segoe UI Emoji"/>
+                                            <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                             <TextBlock Text="Build" FontSize="12"/>
                                         </StackPanel>
                                     </Button>
@@ -1804,7 +1804,7 @@
                                     <Button Classes="tool-window-tab" Name="RunTabButton" Click="RunTab_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <Border Background="#3078FF98" CornerRadius="4" Padding="4,1">
-                                                <TextBlock Text="▶" FontSize="10" Foreground="#FF78FF98" FontWeight="Bold"/>
+                                                <TextBlock Text="?" FontSize="10" Foreground="#FF78FF98" FontWeight="Bold"/>
                                             </Border>
                                             <TextBlock Text="Run" FontSize="12"/>
                                         </StackPanel>
@@ -1813,7 +1813,7 @@
                                     <!-- Terminal Tab (Active by default) -->
                                     <Button Classes="tool-window-tab active" Name="TerminalTabButton" Click="TerminalTab_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="💻" FontSize="13" FontFamily="Segoe UI Emoji"/>
+                                            <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                             <TextBlock Text="Terminal" FontSize="12"/>
                                         </StackPanel>
                                     </Button>
@@ -1827,18 +1827,18 @@
                                 <!-- Right: Tool Actions -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" Margin="0,0,4,0" VerticalAlignment="Center">
                                     <Button Classes="tool-action-button" ToolTip.Tip="New External Terminal" Name="NewTerminalButton" Click="NewTerminal_Click">
-                                        <TextBlock Text="＋" FontSize="13" FontWeight="Bold" Foreground="#FF78FFD6"/>
+                                        <TextBlock Text="+" FontSize="13" FontWeight="Bold" Foreground="#FF78FFD6"/>
                                     </Button>
                                     <Border Width="1" Height="16" Background="#FF5A4580" Margin="4,0"/>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Clear" Name="ClearTerminalButton" Click="ClearTerminal_Click">
-                                        <TextBlock Text="🗑️" FontSize="12" FontFamily="Segoe UI Emoji"/>
+                                        <TextBlock Text="???" FontSize="12" FontFamily="Segoe UI Emoji"/>
                                     </Button>
                                     <Border Width="1" Height="16" Background="#FF5A4580" Margin="4,0"/>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Minimize Panel" Name="MinimizePanelButton" Click="MinimizePanel_Click">
-                                        <TextBlock Text="⬇" FontSize="11" Foreground="#FFDCC4FF"/>
+                                        <TextBlock Text="?" FontSize="11" Foreground="#FFDCC4FF"/>
                                     </Button>
                                     <Button Classes="tool-action-button" ToolTip.Tip="Hide Panel (Esc)" Name="HidePanelButton" Click="HidePanel_Click">
-                                        <TextBlock Text="✕" FontSize="11" Foreground="#FFF38BA8"/>
+                                        <TextBlock Text="?" FontSize="11" Foreground="#FFF38BA8"/>
                                     </Button>
                                 </StackPanel>
                             </Grid>
@@ -1853,7 +1853,7 @@
                             <!-- Problems Panel (hidden by default) -->
                             <Border Name="ProblemsPanel" Background="#FF16122A" IsVisible="False">
                                 <Grid RowDefinitions="Auto,Auto,*">
-                                    <!-- Header row with counts and actions — styled colored badges -->
+                                    <!-- Header row with counts and actions � styled colored badges -->
                                     <Border Grid.Row="0" Padding="10,6"
                                             BorderBrush="#FF4A3878" BorderThickness="0,0,0,1">
                                         <Border.Background>
@@ -1869,7 +1869,7 @@
                                                 <Border Background="#1FF38BA8" CornerRadius="6" Padding="8,4"
                                                         BorderBrush="#55F38BA8" BorderThickness="1">
                                                     <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                                        <TextBlock Text="🔴" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                                                         <TextBlock x:CompileBindings="False"
                                                                    Text="{Binding ErrorsCount}"
                                                                    FontSize="14" FontWeight="Bold"
@@ -1883,7 +1883,7 @@
                                                 <Border Background="#1FF5A623" CornerRadius="6" Padding="8,4"
                                                         BorderBrush="#55F5A623" BorderThickness="1">
                                                     <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                                        <TextBlock Text="🟡" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                                                         <TextBlock x:CompileBindings="False"
                                                                    Text="{Binding WarningsCount}"
                                                                    FontSize="14" FontWeight="Bold"
@@ -1897,7 +1897,7 @@
                                                 <Border Background="#1F89B4FA" CornerRadius="6" Padding="8,4"
                                                         BorderBrush="#5589B4FA" BorderThickness="1">
                                                     <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                                        <TextBlock Text="🔵" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                                                         <TextBlock x:CompileBindings="False"
                                                                    Text="{Binding MessagesCount}"
                                                                    FontSize="14" FontWeight="Bold"
@@ -1911,19 +1911,19 @@
                                             <!-- Action buttons -->
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                                 <Button Classes="tool-action-button" ToolTip.Tip="{DynamicResource Tooltip.CopyProblems}" Name="CopyProblemsButton" Click="CopyProblems_Click">
-                                                    <TextBlock Text="📋" FontSize="13" FontFamily="Segoe UI Emoji"/>
+                                                    <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
                                                 <Button Classes="tool-action-button" ToolTip.Tip="{DynamicResource Tooltip.RefreshAnalysis}" Name="RefreshAnalysisButton" Click="RefreshAnalysis_Click">
-                                                    <TextBlock Text="🔄" FontSize="13" FontFamily="Segoe UI Emoji"/>
+                                                    <TextBlock Text="??" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
                                                 <Button Classes="tool-action-button" ToolTip.Tip="{DynamicResource Tooltip.ClearProblems}" Name="ClearProblemsButton" Click="ClearProblems_Click">
-                                                    <TextBlock Text="🗑️" FontSize="13" FontFamily="Segoe UI Emoji"/>
+                                                    <TextBlock Text="???" FontSize="13" FontFamily="Segoe UI Emoji"/>
                                                 </Button>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
 
-                                    <!-- Tab bar: All / Current File — with colored emoji + localized labels -->
+                                    <!-- Tab bar: All / Current File � with colored emoji + localized labels -->
                                     <Border Grid.Row="1" Padding="8,4"
                                             BorderBrush="#FF4A3878" BorderThickness="0,0,0,1">
                                         <Border.Background>
@@ -1944,7 +1944,7 @@
                                                     Cursor="Hand"
                                                     Click="ProblemsTabAll_Click">
                                                 <StackPanel Orientation="Horizontal" Spacing="5">
-                                                    <TextBlock Text="📋" FontSize="12"
+                                                    <TextBlock Text="??" FontSize="12"
                                                                FontFamily="Segoe UI Emoji"
                                                                VerticalAlignment="Center"/>
                                                     <TextBlock Name="ProblemsTabAllText"
@@ -1963,7 +1963,7 @@
                                                     Cursor="Hand"
                                                     Click="ProblemsTabCurrentFile_Click">
                                                 <StackPanel Orientation="Horizontal" Spacing="5">
-                                                    <TextBlock Text="📄" FontSize="12"
+                                                    <TextBlock Text="??" FontSize="12"
                                                                FontFamily="Segoe UI Emoji"
                                                                VerticalAlignment="Center"/>
                                                     <TextBlock Name="ProblemsTabCurrentFileText"
@@ -2029,7 +2029,7 @@
                                                                 Background="Transparent" BorderThickness="0" CornerRadius="3"
                                                                 ToolTip.Tip="Copy error"
                                                                 Click="CopySingleProblem_Click">
-                                                            <TextBlock Text="📋" FontSize="10" FontFamily="Segoe UI Emoji"/>
+                                                            <TextBlock Text="??" FontSize="10" FontFamily="Segoe UI Emoji"/>
                                                         </Button>
                                                     </Grid>
                                                 </Border>
@@ -2053,7 +2053,7 @@
                                             </Style>
                                         </ListBox.Styles>
                                     </ListBox>
-                                    <!-- Empty state — styled centered placeholder -->
+                                    <!-- Empty state � styled centered placeholder -->
                                     <Border Grid.Row="2"
                                             IsVisible="{Binding !HasProblems, FallbackValue=True}"
                                             x:CompileBindings="False"
@@ -2068,7 +2068,7 @@
                                                         <GradientStop Color="#FF1E1838" Offset="1"/>
                                                     </LinearGradientBrush>
                                                 </Border.Background>
-                                                <TextBlock Text="✅" FontSize="24"
+                                                <TextBlock Text="?" FontSize="24"
                                                            FontFamily="Segoe UI Emoji, Segoe UI, Arial"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"/>
@@ -2147,12 +2147,12 @@
                     <Border Grid.Row="0" Padding="12,10" Background="#20000000">
                         <Grid ColumnDefinitions="*,Auto">
                             <Grid ColumnDefinitions="Auto,*">
-                                <TextBlock Grid.Column="0" Text="🐙" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Grid.Column="0" Text="??" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                 <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="0" VerticalAlignment="Center">
-                                    <TextBlock Name="AIPanelTitle" Text="CONTROL PANEL" FontSize="8" FontWeight="SemiBold"
+                                    <TextBlock Name="AIPanelTitle" Text="AI AGENTS PANEL" FontSize="8" FontWeight="SemiBold"
                                                Foreground="{StaticResource AccentPurpleBrush}"
                                                LetterSpacing="1" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="GITHUB COPILOT" FontSize="10" FontWeight="Bold"
+                                    <TextBlock Text="AI AGENTS" FontSize="10" FontWeight="Bold"
                                                Foreground="{StaticResource AccentPurpleBrush}"
                                                LetterSpacing="0.5"/>
                                 </StackPanel>
@@ -2161,20 +2161,20 @@
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Open GitHub Copilot TUI in Terminal"
                                         Name="GitHubTuiButton" Click="GitHubTui_Click"
                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                                    <TextBlock Text="🐙" FontSize="12" FontFamily="Segoe UI Emoji"
+                                    <TextBlock Text="??" FontSize="12" FontFamily="Segoe UI Emoji"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Button>
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat"
                                         Name="ClearAIChatButton" Click="ClearAIChat_Click"
                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                                    <TextBlock Text="🗑️" FontSize="10" FontFamily="Segoe UI Emoji"
+                                    <TextBlock Text="???" FontSize="10" FontFamily="Segoe UI Emoji"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Button>
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Close Panel"
                                         Name="CloseAIPanelButton" Click="CloseAIPanel_Click"
                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                         Background="#20DCC4FF">
-                                    <TextBlock Text="✕" FontSize="12"
+                                    <TextBlock Text="?" FontSize="12"
                                                Foreground="{StaticResource AccentPurpleBrush}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Button>
@@ -2189,20 +2189,20 @@
                             <!-- CLI Welcome -->
                             <Border Name="CliWelcomeBanner" Background="#40DCC4FF" CornerRadius="8" Padding="12" IsVisible="True">
                                 <StackPanel Spacing="8">
-                                    <TextBlock Name="AiWelcomeTitle" Text="🚀 Copilot CLI Ready!" FontWeight="SemiBold" Foreground="#FFFFFF" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                    <TextBlock Name="AiWelcomeTitle" Text="?? Copilot CLI Ready!" FontWeight="SemiBold" Foreground="#FFFFFF" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     <TextBlock Name="AiWelcomeManageFiles" Text="Manage your project files with commands:"
                                                Foreground="#E0E0E0" TextWrapping="Wrap" FontSize="12"/>
                                     <StackPanel Spacing="4" Margin="8,4,0,0">
-                                        <TextBlock Text="📁 create, delete, rename" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                        <TextBlock Text="📂 ls, tree, cd, pwd" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                        <TextBlock Text="🔍 find, search" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                        <TextBlock Text="📝 template, touch, write" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                        <TextBlock Text="?? create, delete, rename" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                        <TextBlock Text="?? ls, tree, cd, pwd" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                        <TextBlock Text="?? find, search" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                        <TextBlock Text="?? template, touch, write" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     </StackPanel>
                                     <TextBlock Name="AiWelcomeGitHubCommands" Text="GitHub CLI Commands:"
                                                Foreground="#FFFFC09F" FontSize="12" FontWeight="SemiBold" Margin="0,8,0,0"/>
                                     <StackPanel Spacing="4" Margin="8,4,0,0">
-                                        <TextBlock Text="🐙 gh-status, gh-install" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
-                                        <TextBlock Text="🔑 gh-auth login/logout" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                        <TextBlock Text="?? gh-status, gh-install" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                        <TextBlock Text="?? gh-auth login/logout" Foreground="#FFFFFF" FontSize="11" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     </StackPanel>
                                     <TextBlock Name="AiWelcomeTypeHelp" Text="Type 'help' for full command list"
                                                Foreground="#FFFFC09F" FontSize="11" FontStyle="Italic" Margin="0,4,0,0"/>
@@ -2233,7 +2233,7 @@
                             <Button Grid.Column="1" Classes="icon-button" Margin="8,0,0,0"
                                     Background="{StaticResource AccentPurpleBrush}"
                                     ToolTip.Tip="Send" Name="SendAIButton" Click="SendAI_Click">
-                                <TextBlock Text="➤" FontSize="16" Foreground="#FF1F1A24"/>
+                                <TextBlock Text="?" FontSize="16" Foreground="#FF1F1A24"/>
                             </Button>
                         </Grid>
                     </Border>
@@ -2263,7 +2263,7 @@
                     <!-- Git Branch -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Git Branch" Name="GitBranchButton" Click="GitBranch_Click">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="🌿" FontSize="11" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="??" FontSize="11" FontFamily="Segoe UI Emoji"/>
                             <TextBlock Text="main" FontSize="11" Foreground="#FFA6E3A1" Name="GitBranchText"/>
                         </StackPanel>
                     </Button>
@@ -2271,8 +2271,8 @@
                     <!-- Sync status -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Synchronize Changes">
                         <StackPanel Orientation="Horizontal" Spacing="3">
-                            <TextBlock Text="↓0" FontSize="10" Foreground="#FF89B4FA"/>
-                            <TextBlock Text="↑0" FontSize="10" Foreground="#FFA6E3A1"/>
+                            <TextBlock Text="?0" FontSize="10" Foreground="#FF89B4FA"/>
+                            <TextBlock Text="?0" FontSize="10" Foreground="#FFA6E3A1"/>
                         </StackPanel>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
@@ -2280,11 +2280,11 @@
                     <Button Classes="status-bar-button" ToolTip.Tip="View Problems" Name="StatusProblemsButton" Click="StatusProblems_Click">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <StackPanel Orientation="Horizontal" Spacing="2">
-                                <TextBlock Text="🔴" FontSize="11" FontFamily="Segoe UI Emoji"/>
+                                <TextBlock Text="??" FontSize="11" FontFamily="Segoe UI Emoji"/>
                                 <TextBlock x:CompileBindings="False" Text="{Binding ErrorsCount}" FontSize="11" Foreground="#FFF38BA8" Name="StatusErrorsCount"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="2">
-                                <TextBlock Text="🟡" FontSize="11" FontFamily="Segoe UI Emoji"/>
+                                <TextBlock Text="??" FontSize="11" FontFamily="Segoe UI Emoji"/>
                                 <TextBlock x:CompileBindings="False" Text="{Binding WarningsCount}" FontSize="11" Foreground="#FFF5A623" Name="StatusWarningsCount"/>
                             </StackPanel>
                         </StackPanel>
@@ -2314,16 +2314,18 @@
                     </Button>
                     <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Cursor Position / Selection Info -->
-                    <Button Classes="status-bar-button" ToolTip.Tip="Go to Line · Shows selected chars and lines" Name="CursorPositionButton" Click="CursorPositionButton_Click">
+                    <Button Classes="status-bar-button" ToolTip.Tip="Go to Line � Shows selected chars and lines" Name="CursorPositionButton" Click="CursorPositionButton_Click">
                         <TextBlock Text="Ln 1, Col 1" FontSize="11" Foreground="#FFB8A8D8" Name="CursorPositionText"/>
                     </Button>
                     <Border Width="1" Height="14" Background="#FF5A4080" Margin="4,0"/>
                     <!-- Notifications -->
                     <Button Classes="status-bar-button" ToolTip.Tip="Notifications" Name="NotificationsButton" Click="NotificationsButton_Click">
-                        <TextBlock Text="🔔" FontSize="13" Foreground="#FFFFC09F" FontFamily="Segoe UI Emoji" Name="NotificationsButtonText"/>
+                        <TextBlock Text="??" FontSize="13" Foreground="#FFFFC09F" FontFamily="Segoe UI Emoji" Name="NotificationsButtonText"/>
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
     </Grid>
 </Window>
+
+
