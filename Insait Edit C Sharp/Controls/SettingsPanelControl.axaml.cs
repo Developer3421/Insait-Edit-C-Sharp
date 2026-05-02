@@ -17,6 +17,7 @@ public partial class SettingsPanelControl : UserControl
     private const string KeyDotNetSdk = "path_dotnet_sdk";
     private const string KeyGitHubCli = "path_github_cli";
     private const string KeyCopilotCli = "path_copilot_cli";
+    private const string KeyKiloCli = "path_kilo_cli";
     private const string KeySignTool = "path_signtool";
     private const string KeyMSBuild = "path_msbuild";
 
@@ -48,6 +49,7 @@ public partial class SettingsPanelControl : UserControl
         SetBox("DotNetSdkPathBox", SettingsDbService.LoadSetting(KeyDotNetSdk) ?? "");
         SetBox("GitHubCliPathBox", SettingsDbService.LoadSetting(KeyGitHubCli) ?? "");
         SetBox("CopilotCliPathBox", SettingsDbService.LoadSetting(KeyCopilotCli) ?? "");
+        SetBox("KiloCliPathBox", SettingsDbService.LoadSetting(KeyKiloCli) ?? "");
         SetBox("SignToolPathBox", SettingsDbService.LoadSetting(KeySignTool) ?? "");
         SetBox("MSBuildPathBox", SettingsDbService.LoadSetting(KeyMSBuild) ?? "");
 
@@ -64,6 +66,7 @@ public partial class SettingsPanelControl : UserControl
     /// </summary>
     public static string GetGitHubCliPath() => SettingsDbService.LoadSetting(KeyGitHubCli) ?? "";
     public static string GetCopilotCliPath() => SettingsDbService.LoadSetting(KeyCopilotCli) ?? "";
+    public static string GetKiloCliPath() => SettingsDbService.LoadSetting(KeyKiloCli) ?? "";
     /// <summary>
     /// Returns the saved SignTool path (or empty string).
     /// </summary>
@@ -115,6 +118,22 @@ public partial class SettingsPanelControl : UserControl
     }
 
     /// <summary>
+    /// Resolves kilo.exe from saved settings. Falls back to "kilo" (PATH lookup).
+    /// </summary>
+    public static string ResolveKiloExe()
+    {
+        var kilo = FindExecutableFromConfiguredPath(GetKiloCliPath(), "kilo.exe");
+        if (!string.IsNullOrWhiteSpace(kilo))
+            return kilo;
+
+        var autoDetected = AutoDetectKiloCli();
+        if (!string.IsNullOrWhiteSpace(autoDetected))
+            return autoDetected;
+
+        return "kilo";
+    }
+
+    /// <summary>
     /// Resolves signtool.exe from saved settings. Falls back to null (auto-detect).
     /// </summary>
     public static string? ResolveSignToolExe()
@@ -141,12 +160,14 @@ public partial class SettingsPanelControl : UserControl
         var dotnet = GetBox("DotNetSdkPathBox");
         var gh = GetBox("GitHubCliPathBox");
         var copilot = GetBox("CopilotCliPathBox");
+        var kilo = GetBox("KiloCliPathBox");
         var sign = GetBox("SignToolPathBox");
         var msbuild = GetBox("MSBuildPathBox");
 
         SettingsDbService.SaveSetting(KeyDotNetSdk, dotnet);
         SettingsDbService.SaveSetting(KeyGitHubCli, gh);
         SettingsDbService.SaveSetting(KeyCopilotCli, copilot);
+        SettingsDbService.SaveSetting(KeyKiloCli, kilo);
         SettingsDbService.SaveSetting(KeySignTool, sign);
         SettingsDbService.SaveSetting(KeyMSBuild, msbuild);
 
@@ -161,6 +182,7 @@ public partial class SettingsPanelControl : UserControl
         SetBox("DotNetSdkPathBox", "");
         SetBox("GitHubCliPathBox", "");
         SetBox("CopilotCliPathBox", "");
+        SetBox("KiloCliPathBox", "");
         SetBox("SignToolPathBox", "");
         SetBox("MSBuildPathBox", "");
 
@@ -193,6 +215,12 @@ public partial class SettingsPanelControl : UserControl
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 if (!string.IsNullOrEmpty(cop)) SetBox("CopilotCliPathBox", cop);
+            });
+
+            var kilo = AutoDetectKiloCli();
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                if (!string.IsNullOrEmpty(kilo)) SetBox("KiloCliPathBox", kilo);
             });
 
             // SignTool
@@ -245,6 +273,16 @@ public partial class SettingsPanelControl : UserControl
         }
     }
 
+    private async void BrowseKiloCli_Click(object? sender, RoutedEventArgs e)
+    {
+        var path = await BrowseForFileAsync("Select kilo.exe", "kilo.exe", "*.exe");
+        if (!string.IsNullOrEmpty(path))
+        {
+            SetBox("KiloCliPathBox", path);
+            ValidatePath("KiloCliPathBox", "KiloCliStatus", isDirectory: false, expectedName: "kilo.exe");
+        }
+    }
+
     private async void BrowseSignTool_Click(object? sender, RoutedEventArgs e)
     {
         var path = await BrowseForFileAsync("Select signtool.exe", "signtool.exe", "*.exe");
@@ -274,6 +312,7 @@ public partial class SettingsPanelControl : UserControl
         ValidatePath("DotNetSdkPathBox", "DotNetSdkStatus", isDirectory: true);
         ValidatePath("GitHubCliPathBox", "GitHubCliStatus", isDirectory: false, expectedName: "gh.exe");
         ValidatePath("CopilotCliPathBox", "CopilotCliStatus", isDirectory: false, expectedName: "copilot.exe");
+        ValidatePath("KiloCliPathBox", "KiloCliStatus", isDirectory: false, expectedName: "kilo.exe");
         ValidatePath("SignToolPathBox", "SignToolStatus", isDirectory: false, expectedName: "signtool.exe");
         ValidatePath("MSBuildPathBox", "MSBuildStatus", isDirectory: false, expectedName: "MSBuild.exe");
     }
@@ -310,7 +349,7 @@ public partial class SettingsPanelControl : UserControl
 
     private void ClearAllStatuses()
     {
-        foreach (var name in new[] { "DotNetSdkStatus", "GitHubCliStatus", "CopilotCliStatus", "SignToolStatus", "MSBuildStatus" })
+        foreach (var name in new[] { "DotNetSdkStatus", "GitHubCliStatus", "CopilotCliStatus", "KiloCliStatus", "SignToolStatus", "MSBuildStatus" })
         {
             SetStatus(name, string.Empty, string.Empty, "SettingsTextMutedBrush");
         }
@@ -414,6 +453,26 @@ public partial class SettingsPanelControl : UserControl
         }
 
         return FindInPath("copilot.exe");
+    }
+
+    private static string? AutoDetectKiloCli()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var candidates = GetProgramFilesRoots()
+            .Select(root => Path.Combine(root, "Kilo", "kilo.exe"))
+            .Concat(new[]
+            {
+                Path.Combine(localAppData, "Programs", "kilo", "kilo.exe"),
+                Path.Combine(localAppData, "Programs", "Kilo", "kilo.exe")
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var path in candidates)
+        {
+            if (File.Exists(path)) return path;
+        }
+
+        return FindInPath("kilo.exe");
     }
 
     private static string? AutoDetectSignTool()

@@ -1364,6 +1364,8 @@ Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="Settings.GitHubCliDesc">Path to the GitHub CLI executable for terminal &amp; GitHub Copilot integration</x:String>
     <x:String x:Key="Settings.CopilotCliTitle">🤖 Copilot CLI</x:String>
     <x:String x:Key="Settings.CopilotCliDesc">Path to the standalone GitHub Copilot CLI executable</x:String>
+    <x:String x:Key="Settings.KiloCliTitle">⚡ Kilo CLI</x:String>
+    <x:String x:Key="Settings.KiloCliDesc">Path to the Kilo CLI executable for AI-powered code assistance</x:String>
     <x:String x:Key="Settings.SignToolTitle">🔏 SignTool</x:String>
     <x:String x:Key="Settings.SignToolDesc">Path to signtool.exe for signing packages (MSIX, ClickOnce, etc.)</x:String>
     <x:String x:Key="Settings.MSBuildTitle">🔨 MSBuild</x:String>
@@ -1371,8 +1373,8 @@ Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="Settings.AutoDetect">🔍  Auto-detect all paths</x:String>
     <x:String x:Key="Settings.Save">💾  Save Settings</x:String>
 
-    <!-- ── GitHub Copilot Control Panel ────────────────────────────── -->
-    <x:String x:Key="GitHub.ControlPanel">GitHub Copilot Control Panel</x:String>
+    <!-- ── AI Agents Control Panel ────────────────────────────── -->
+    <x:String x:Key="GitHub.ControlPanel">AI Agents Control Panel</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">Launch GitHub Copilot CLI</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Open Translations Folder</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Custom Languages</x:String>

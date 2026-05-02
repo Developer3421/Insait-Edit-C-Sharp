@@ -337,6 +337,12 @@ public class TerminalControl : UserControl
                 var copilotArgs = parts.Length > 1 ? parts[1] : null;
                 OpenGitHubCopilotTerminal(copilotArgs);
                 return true;
+
+            case "kilo":
+                // Open Kilo CLI in external terminal (requires real TTY)
+                var kiloArgs = parts.Length > 1 ? parts[1] : null;
+                OpenKiloTerminal(kiloArgs);
+                return true;
             
             case "terminal":
             case "wt":
@@ -773,6 +779,68 @@ public class TerminalControl : UserControl
             AppendOutput($"❌ Error opening GitHub Copilot: {ex.Message}{Environment.NewLine}", Color.Parse("#F44747"));
         }
     }
+
+    /// <summary>
+    /// Opens Kilo CLI in an external terminal for interactive TUI commands.
+    /// </summary>
+    public void OpenKiloTerminal(string? kiloArgs = null)
+    {
+        try
+        {
+            // Find the full path to kilo.exe
+            var kiloPath = FindKiloExecutable();
+            
+            // If kilo.exe is just the name (in PATH), try to resolve full path
+            if (kiloPath == "kilo.exe" || kiloPath == "kilo")
+            {
+                kiloPath = ResolveFullKiloPath() ?? "kilo";
+            }
+            
+            // Build the kilo command with full path
+            var kiloCommand = string.IsNullOrEmpty(kiloArgs) 
+                ? $"\"{kiloPath}\"" 
+                : $"\"{kiloPath}\" {kiloArgs}";
+            
+            ProcessStartInfo startInfo;
+            
+            // Try Windows Terminal first for best TUI experience
+            var wtPath = FindWindowsTerminal();
+            
+            if (!string.IsNullOrEmpty(wtPath))
+            {
+                // Windows Terminal - provides best TTY support for interactive CLIs
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = wtPath,
+                    Arguments = $"-d \"{_workingDirectory}\" --title \"Kilo CLI\" cmd /k {kiloCommand}",
+                    UseShellExecute = true,
+                    WorkingDirectory = _workingDirectory
+                };
+            }
+            else
+            {
+                // Fallback to cmd.exe 
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/k {kiloCommand}",
+                    UseShellExecute = true,
+                    WorkingDirectory = _workingDirectory
+                };
+            }
+            
+            Process.Start(startInfo);
+            
+            var terminalName = !string.IsNullOrEmpty(wtPath) ? "Windows Terminal" : "Command Prompt";
+            AppendOutput(string.Concat("🤖 Opened Kilo CLI in ", terminalName, Environment.NewLine), Color.Parse("#4EC9B0"));
+            AppendOutput(string.Concat("   Command: ", kiloCommand, Environment.NewLine), Color.Parse("#858585"));
+            AppendOutput(string.Concat("   Working directory: ", _workingDirectory, Environment.NewLine), Color.Parse("#858585"));
+        }
+        catch (Exception ex)
+        {
+            AppendOutput(string.Concat("❌ Error opening Kilo: ", ex.Message, Environment.NewLine), Color.Parse("#F44747"));
+        }
+    }
     
     /// <summary>
     /// Resolves the full path to gh.exe by searching PATH and common locations
@@ -1111,6 +1179,29 @@ public class TerminalControl : UserControl
             return fullPath;
 
         return "gh.exe";
+    }
+    
+    private string FindKiloExecutable()
+    {
+        var fullPath = ResolveFullKiloPath();
+        if (!string.IsNullOrWhiteSpace(fullPath))
+            return fullPath;
+
+        return "kilo.exe";
+    }
+    
+    private static string? ResolveFullKiloPath()
+    {
+        var fromSettings = SettingsPanelControl.ResolveKiloExe();
+        if (!string.IsNullOrWhiteSpace(fromSettings) &&
+            !string.Equals(fromSettings, "kilo", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(fromSettings, "kilo.exe", StringComparison.OrdinalIgnoreCase) &&
+            File.Exists(fromSettings))
+        {
+            return fromSettings;
+        }
+
+        return FindExecutableInPath("kilo.exe");
     }
     
     private string GetShellArguments(string command)

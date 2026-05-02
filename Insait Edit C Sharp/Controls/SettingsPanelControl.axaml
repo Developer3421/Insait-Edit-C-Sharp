@@ -180,6 +180,25 @@
                                Foreground="{StaticResource SettingsTextMutedBrush}"/>
                 </StackPanel>
                 
+                <!-- Kilo CLI Path -->
+                <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
+                <TextBlock Text="{DynamicResource Settings.KiloCliTitle}" FontSize="13" FontWeight="SemiBold" 
+                           Foreground="{StaticResource SettingsTextBrush}" Margin="0,8,0,2"/>
+                <TextBlock Text="{DynamicResource Settings.KiloCliDesc}" 
+                           FontSize="11" Foreground="{StaticResource SettingsTextMutedBrush}" Margin="0,0,0,6"
+                           TextWrapping="Wrap"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Name="KiloCliPathBox" Watermark="C:\Program Files\Kilo\kilo.exe" 
+                             ToolTip.Tip="Path to kilo.exe"/>
+                    <Button Grid.Column="1" Classes="settings-browse" Content="..." 
+                            Click="BrowseKiloCli_Click" ToolTip.Tip="Browse for kilo.exe"/>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4,0,0">
+                    <TextBlock Name="KiloCliStatusIcon" Text="" FontSize="11" Classes="settings-emoji"/>
+                    <TextBlock Name="KiloCliStatusText" Text="" FontSize="10"
+                               Foreground="{StaticResource SettingsTextMutedBrush}"/>
+                </StackPanel>
+                
                 <Separator Background="{StaticResource SettingsBorderBrush}" Height="1" Margin="0,12"/>
                 
                 <!-- SignTool Path -->

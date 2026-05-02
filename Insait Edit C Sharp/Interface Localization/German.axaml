@@ -1363,6 +1363,8 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="Settings.GitHubCliDesc">Pfad zur GitHub CLI-Datei für Terminal- und GitHub Copilot-Integration</x:String>
     <x:String x:Key="Settings.CopilotCliTitle">🤖 Copilot CLI</x:String>
     <x:String x:Key="Settings.CopilotCliDesc">Pfad zur eigenständigen GitHub Copilot CLI-Datei</x:String>
+    <x:String x:Key="Settings.KiloCliTitle">⚡ Kilo CLI</x:String>
+    <x:String x:Key="Settings.KiloCliDesc">Pfad zur Kilo CLI-Datei für KI-gestützte Code-Assistenz</x:String>
     <x:String x:Key="Settings.SignToolTitle">🔏 SignTool</x:String>
     <x:String x:Key="Settings.SignToolDesc">Pfad zu signtool.exe zum Signieren von Paketen (MSIX, ClickOnce usw.)</x:String>
     <x:String x:Key="Settings.MSBuildTitle">🔨 MSBuild</x:String>
@@ -1370,8 +1372,8 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="Settings.AutoDetect">🔍  Alle Pfade automatisch erkennen</x:String>
     <x:String x:Key="Settings.Save">💾  Einstellungen speichern</x:String>
 
-    <!-- ── GitHub Copilot Control Panel ────────────────────────────── -->
-    <x:String x:Key="GitHub.ControlPanel">GitHub Copilot Systemsteuerung</x:String>
+    <!-- ── AI Agents Control Panel ────────────────────────────── -->
+    <x:String x:Key="GitHub.ControlPanel">AI Agents Control Panel</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">GitHub Copilot CLI starten</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Übersetzungsordner öffnen</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Benutzerdefinierte Sprachen</x:String>

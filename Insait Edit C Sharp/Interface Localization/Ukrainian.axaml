@@ -1364,6 +1364,8 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="Settings.GitHubCliDesc">Шлях до виконуваного файлу GitHub CLI для термінала та інтеграції з GitHub Copilot</x:String>
     <x:String x:Key="Settings.CopilotCliTitle">🤖 Copilot CLI</x:String>
     <x:String x:Key="Settings.CopilotCliDesc">Шлях до окремого виконуваного файлу GitHub Copilot CLI</x:String>
+    <x:String x:Key="Settings.KiloCliTitle">⚡ Kilo CLI</x:String>
+    <x:String x:Key="Settings.KiloCliDesc">Шлях до виконуваного файлу Kilo CLI для AI-допомоги у програмуванні</x:String>
     <x:String x:Key="Settings.SignToolTitle">🔏 SignTool</x:String>
     <x:String x:Key="Settings.SignToolDesc">Шлях до signtool.exe для підпису пакетів (MSIX, ClickOnce тощо)</x:String>
     <x:String x:Key="Settings.MSBuildTitle">🔨 MSBuild</x:String>
@@ -1371,8 +1373,8 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="Settings.AutoDetect">🔍  Автовизначення всіх шляхів</x:String>
     <x:String x:Key="Settings.Save">💾  Зберегти налаштування</x:String>
 
-    <!-- ── GitHub Copilot Control Panel ────────────────────────────── -->
-    <x:String x:Key="GitHub.ControlPanel">Панель керування GitHub Copilot</x:String>
+    <!-- ── AI Agents Control Panel ────────────────────────────── -->
+    <x:String x:Key="GitHub.ControlPanel">Панель керування AI Agents</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">Запустити GitHub Copilot CLI</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Відкрити папку перекладів</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Кастомні мови</x:String>

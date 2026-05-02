@@ -1363,6 +1363,8 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="Settings.GitHubCliDesc">Terminal ve GitHub Copilot entegrasyonu için GitHub CLI yürütülebilir dosyasının yolu</x:String>
     <x:String x:Key="Settings.CopilotCliTitle">🤖 Copilot CLI</x:String>
     <x:String x:Key="Settings.CopilotCliDesc">Bağımsız GitHub Copilot CLI yürütülebilir dosyasının yolu</x:String>
+    <x:String x:Key="Settings.KiloCliTitle">⚡ Kilo CLI</x:String>
+    <x:String x:Key="Settings.KiloCliDesc">AI destekli kod yardımı için Kilo CLI yürütülebilir dosyasının yolu</x:String>
     <x:String x:Key="Settings.SignToolTitle">🔏 SignTool</x:String>
     <x:String x:Key="Settings.SignToolDesc">Paketleri imzalamak için signtool.exe yolu (MSIX, ClickOnce, vb.)</x:String>
     <x:String x:Key="Settings.MSBuildTitle">🔨 MSBuild</x:String>
@@ -1370,8 +1372,8 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="Settings.AutoDetect">🔍  Tüm yolları otomatik algıla</x:String>
     <x:String x:Key="Settings.Save">💾  Ayarları Kaydet</x:String>
 
-    <!-- ── GitHub Copilot Control Panel ────────────────────────────── -->
-    <x:String x:Key="GitHub.ControlPanel">GitHub Copilot Kontrol Paneli</x:String>
+    <!-- ── AI Agents Control Panel ────────────────────────────── -->
+    <x:String x:Key="GitHub.ControlPanel">AI Agents Control Panel</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">GitHub Copilot CLI'yi Başlat</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Çeviri Klasörünü Aç</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Özel Diller</x:String>
