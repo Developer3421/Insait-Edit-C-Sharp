@@ -108,7 +108,7 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <Panel Grid.Column="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed">
                         <StackPanel Orientation="Horizontal" Margin="16,0" VerticalAlignment="Center" Spacing="8">
-                            <TextBlock Text="??" FontSize="14"/>
+                            <TextBlock Text="🗂️" FontSize="14" FontFamily="Segoe UI Emoji, Segoe UI"/>
                             <TextBlock Name="TitleBarText" Text="New Solution" FontSize="12" FontWeight="SemiBold"
                                        Foreground="{StaticResource AccentOrangeBrush}"/>
                         </StackPanel>
@@ -160,16 +160,16 @@
                         <StackPanel Orientation="Horizontal" Spacing="16">
                             <RadioButton Name="SlnxFormat" GroupName="SolutionFormat" IsChecked="True"
                                          Foreground="{StaticResource TextPrimaryBrush}">
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="?? .slnx" FontWeight="SemiBold"/>
-                                    <TextBlock Text="(Modern XML format)" 
-                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
-                                </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="📄 .slnx" FontWeight="SemiBold" FontFamily="Segoe UI Emoji, Segoe UI"/>
+                                        <TextBlock Text="(Modern XML format)" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+                                    </StackPanel>
                             </RadioButton>
                             <RadioButton Name="SlnFormat" GroupName="SolutionFormat"
                                          Foreground="{StaticResource TextPrimaryBrush}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="?? .sln" FontWeight="SemiBold"/>
+                                    <TextBlock Text="📄 .sln" FontWeight="SemiBold" FontFamily="Segoe UI Emoji, Segoe UI"/>
                                     <TextBlock Text="(Legacy format)" 
                                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
                                 </StackPanel>

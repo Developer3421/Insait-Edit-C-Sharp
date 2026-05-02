@@ -1,5 +1,6 @@
 {
     "chat.tools.terminal.autoApprove": {
         "dotnet build": true
-    }
+    },
+    "CodeGPT.apiKey": "LM Studio"
 }

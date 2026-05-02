@@ -998,32 +998,9 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         _fileWatcher?.Dispose();
         _refreshDebounceTimer?.Dispose();
 
-        try
-        {
-            _fileWatcher = new FileSystemWatcher(folderPath)
-            {
-                IncludeSubdirectories = true,
-                NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName |
-                               NotifyFilters.LastWrite | NotifyFilters.CreationTime
-            };
-
-            // Setup debounce timer (500ms delay to batch multiple changes)
-            _refreshDebounceTimer = new Timer(500);
-            _refreshDebounceTimer.AutoReset = false;
-            _refreshDebounceTimer.Elapsed += OnRefreshDebounceTimerElapsed;
-
-            // Subscribe to events
-            _fileWatcher.Changed += OnFileSystemChanged;
-            _fileWatcher.Created += OnFileSystemChanged;
-            _fileWatcher.Deleted += OnFileSystemChanged;
-            _fileWatcher.Renamed += OnFileSystemRenamed;
-
-            _fileWatcher.EnableRaisingEvents = true;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error initializing file watcher: {ex.Message}");
-        }
+        // File watcher is disabled by default to prevent automatic reloads
+        // User can manually reload the project if needed
+        System.Diagnostics.Debug.WriteLine("File watcher is disabled. Project will not reload automatically.");
     }
 
     public void StopFileWatcher()

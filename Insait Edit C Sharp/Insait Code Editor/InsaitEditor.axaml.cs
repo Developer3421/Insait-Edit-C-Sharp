@@ -268,7 +268,9 @@ public partial class InsaitEditor : UserControl
     // ═══════════════════════════════════════════════════════════════════════
     private void ScheduleDiagnostics()
     {
-        if (!_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        // Don't schedule diagnostics if completion window is visible
+        // or if the file is not a C# file
+        if (_completionWin != null || !_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
             return;
         _diagService.ScheduleAnalysis(_currentFilePath, _surface.Text);
     }
@@ -468,12 +470,23 @@ public partial class InsaitEditor : UserControl
     //  Completion — independent window via Roslyn factory, live-update
     // ═══════════════════════════════════════════════════════════════════════
     private int _completionTriggerCol; // column where completion was first triggered
+    private DateTime _lastCompletionUpdate = DateTime.MinValue;
+    private const int CompletionUpdateThrottleMs = 0; // No throttle - invoke autocomplete as quickly as possible
+    private DateTime _lastKeystrokeTime = DateTime.MinValue; // Track when user last typed
 
     private async Task ShowCompletionAsync()
     {
         bool isCSharp = IsCSharpFile();
         bool isAxaml  = IsAxamlFile();
         if (!isCSharp && !isAxaml) return;
+
+        // Throttle completion updates to prevent excessive flickering during rapid typing
+        var now = DateTime.Now;
+        if ((now - _lastCompletionUpdate).TotalMilliseconds < CompletionUpdateThrottleMs)
+        {
+            // Skip this update if too soon since last one
+            return;
+        }
 
         _completionCts?.Cancel();
         _completionCts = new CancellationTokenSource();
@@ -533,6 +546,8 @@ public partial class InsaitEditor : UserControl
             }
             if (ct.IsCancellationRequested) return;
 
+            _lastCompletionUpdate = DateTime.Now;
+
             // If the window is already open, update items and refilter
             if (_completionWin != null && _completionWin.IsVisible)
             {
@@ -541,10 +556,15 @@ public partial class InsaitEditor : UserControl
                     if (freshItems.Any())
                     {
                         _completionWin.SetItems(freshItems, typingPrefix);
-                        // Reposition
+                        // Only reposition if the cursor has moved significantly to prevent flickering
                         var r = _surface.GetCursorRect();
                         var pos = _surface.PointToScreen(new Point(r.X, r.Bottom + 4));
-                        _completionWin.Position = new PixelPoint(pos.X, pos.Y);
+                        var currentPos = _completionWin.Position;
+                        // Only update position if it's moved more than 10 pixels
+                        if (Math.Abs(pos.X - currentPos.X) > 10 || Math.Abs(pos.Y - currentPos.Y) > 10)
+                        {
+                            _completionWin.Position = pos;
+                        }
 
                         if (!_completionWin.HasItems)
                             HideCompletionWindow();
@@ -1244,8 +1264,7 @@ public partial class InsaitEditor : UserControl
     //  Helpers
     // ═══════════════════════════════════════════════════════════════════════
     private bool IsCSharpFile() =>
-        _currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) &&
-        !_currentFilePath.EndsWith(".axaml.cs", StringComparison.OrdinalIgnoreCase);
+        _currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase);
 
     private bool IsAxamlFile() =>
         _currentFilePath.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase) ||

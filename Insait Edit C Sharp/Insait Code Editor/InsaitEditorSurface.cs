@@ -112,6 +112,10 @@ internal sealed class InsaitEditorSurface : Control
     private readonly DispatcherTimer _cursorTimer;
     private bool _cursorVisible = true;
 
+    // ── Completion throttling ────────────────────────────────────────────
+    private DateTime _lastKeystrokeTime = DateTime.MinValue;
+    private CancellationTokenSource? _completionCts;
+
     // ── Events ───────────────────────────────────────────────────────────
     public event EventHandler?                 TextChanged;
     public event EventHandler<(int, int)>?     CursorMoved;
@@ -915,9 +919,24 @@ internal sealed class InsaitEditorSurface : Control
             char next = _cursorCol < line.Length ? line[_cursorCol] : '\0';
             if (next != paired) InsertTextAtCursorNoCursor(paired.ToString());
         }
-        if (char.IsLetter(ch) || ch == '.' || ch == '_') RequestCompletion?.Invoke(this, EventArgs.Empty);
-        else if (IsAxamlFile(FilePath) && (ch == '<' || ch == '{' || ch == ' ' || ch == ':' || ch == '/'))
+        // Track keystroke time for completion throttling
+        _lastKeystrokeTime = DateTime.Now;
+        
+        // Trigger completion for word characters and specific symbols
+        // The completion window itself has throttling to prevent excessive updates
+        if (IsAxamlFile(FilePath))
+        {
+            // For AXAML files: trigger on letters and special symbols
+            if (char.IsLetter(ch) || ch == '.' || ch == '_' || ch == '<' || ch == '{' || ch == ' ' || ch == ':' || ch == '/')
+            {
+                RequestCompletion?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        else if (char.IsLetter(ch) || ch == '.' || ch == '_')
+        {
+            // For C# files: trigger on letters, dots, and underscores
             RequestCompletion?.Invoke(this, EventArgs.Empty);
+        }
         else if (!char.IsDigit(ch)) CompletionDismissChar?.Invoke(this, EventArgs.Empty);
         if (ch is '(' or ',') RequestSignature?.Invoke(this, EventArgs.Empty);
         base.OnTextInput(e);
@@ -1501,7 +1520,8 @@ internal sealed class InsaitEditorSurface : Control
         var text = _fullText;
         var path = FilePath ?? "untitled.cs";
 
-        Task.Delay(120, ct).ContinueWith((Action<Task>)(async _ =>
+        // Increased delay to 300ms to reduce excessive highlighting during rapid typing
+        Task.Delay(300, ct).ContinueWith((Action<Task>)(async _ =>
         {
             if (ct.IsCancellationRequested) return;
             try

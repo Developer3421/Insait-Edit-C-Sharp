@@ -56,7 +56,7 @@ public sealed class InlineDiagnosticService : IDisposable
     /// Schedules a diagnostic run for the given file+source after a short delay.
     /// Any previously scheduled run is cancelled.
     /// </summary>
-    public void ScheduleAnalysis(string filePath, string sourceCode, int delayMs = 600)
+    public void ScheduleAnalysis(string filePath, string sourceCode, int delayMs = 1000)
     {
         _cts?.Cancel();
         _cts = new CancellationTokenSource();

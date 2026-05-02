@@ -255,6 +255,21 @@ Die aktuelle Codebasis konzentriert sich auf Desktop-Anwendungen. Enthalten sind
 
 ---
 
+## Voraussetzungen
+
+Stellen Sie sicher, dass folgende Tools installiert sind, bevor Sie Insait Edit starten:
+
+| Voraussetzung | Hinweise |
+|---|---|
+| **Windows 10 / 11** | Erforderlich. Die Anwendung zielt auf `net10.0-windows`. |
+| **.NET 10 SDK** | Muss installiert und über `PATH` erreichbar sein. Download unter [dot.net](https://dotnet.microsoft.com/download). |
+| **Git** | **Erforderlich** für alle Git-Integrationsfunktionen (Commit, Push, Pull, Klonen, Branch-Verwaltung). Installieren Sie Git von [git-scm.com](https://git-scm.com/). Git muss über `PATH` erreichbar sein (wird normalerweise auf dem Systemlaufwerk `C:\Program Files\Git` installiert). |
+| **Windows SDK** *(optional)* | Nur für die MSIX-Paketierung erforderlich (`MakeAppx.exe`, `SignTool.exe`). Befindet sich gewöhnlich auf dem Systemlaufwerk unter `C:\Program Files (x86)\Windows Kits\10\bin\`. |
+
+> **Hinweis:** Git wird in der Regel auf dem Systemlaufwerk (Laufwerk **C:**) installiert. Falls Git auf einem anderen Laufwerk installiert ist, muss dessen `bin`-Ordner zur `PATH`-Systemvariable hinzugefügt werden, damit die IDE es finden kann.
+
+---
+
 ## Funktionsübersicht
 
 ### Vollständiger Desktop-Workflow
