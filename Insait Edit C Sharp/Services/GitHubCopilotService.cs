@@ -252,6 +252,39 @@ public static class GitHubCopilotService
     }
 
     /// <summary>
+    /// Opens the English.axaml localization file in the default text editor
+    /// (using the system's file-open mechanism, e.g., Kilo EXE or default editor).
+    /// This allows users to edit the base English localization as a starting point
+    /// for creating custom languages.
+    /// </summary>
+    public static void OpenEnglishLocalizationFile()
+    {
+        try
+        {
+            var path = EnglishDictionaryPath;
+            if (!File.Exists(path))
+            {
+                // Ensure it exists first
+                _ = EnsureEnglishDictionaryAsync().GetAwaiter().GetResult();
+            }
+
+            if (File.Exists(path))
+            {
+                // Use shell execute to open with default editor (Kilo, Notepad, VS Code, etc.)
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = path,
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[GitHubCopilot] OpenEnglishLocalizationFile failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Launches the GitHub Copilot CLI in a new terminal window
     /// with the working directory set to the translations folder.
     /// The translations folder and the English.axaml template are

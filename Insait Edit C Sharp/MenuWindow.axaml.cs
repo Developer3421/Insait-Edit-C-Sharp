@@ -363,6 +363,13 @@ public partial class MenuWindow : Window
             GitHubCopilotService.OpenTranslationsFolder();
             Close();
         });
+
+        AddMenuItem(panel, $"📄  {LocalizationService.Get("GitHub.OpenEnglishLocalization")}", "", async () =>
+        {
+            try { await GitHubCopilotService.EnsureEnglishDictionaryAsync(); } catch { /* non-fatal */ }
+            GitHubCopilotService.OpenEnglishLocalizationFile();
+            Close();
+        });
     }
 
     private void AddHeader(StackPanel panel, string text)

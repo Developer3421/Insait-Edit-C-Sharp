@@ -1377,6 +1377,7 @@ Thank you for using Insait Edit!]]></x:String>
     <x:String x:Key="GitHub.ControlPanel">AI Agents Control Panel</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">Launch GitHub Copilot CLI</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Open Translations Folder</x:String>
+    <x:String x:Key="GitHub.OpenEnglishLocalization">Open English Localization File</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Custom Languages</x:String>
     <x:String x:Key="GitHub.AddCustomLanguage">Add Custom Language from AXAML…</x:String>
     <x:String x:Key="GitHub.SelectAxamlFile">Select AXAML Translation File</x:String>

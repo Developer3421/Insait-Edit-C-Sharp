@@ -123,4 +123,13 @@
         <DependentUpon>InsaitTerminalPanel.axaml</DependentUpon>
       </Compile>
     </ItemGroup>
+    <ItemGroup>
+      <None Remove="Icons\KiloCodeIcon.png" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Icons\kilocode (1).png" />
+      <AvaloniaResource Include="Icons\KiloCodeIcon.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </AvaloniaResource>
+    </ItemGroup>
 </Project>

@@ -1376,6 +1376,7 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="GitHub.ControlPanel">AI Agents Control Panel</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">GitHub Copilot CLI'yi Başlat</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Çeviri Klasörünü Aç</x:String>
+    <x:String x:Key="GitHub.OpenEnglishLocalization">İngilizce Yerelleştirme Dosyasını Aç</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Özel Diller</x:String>
     <x:String x:Key="GitHub.AddCustomLanguage">AXAML'den Özel Dil Ekle…</x:String>
     <x:String x:Key="GitHub.SelectAxamlFile">AXAML Çeviri Dosyası Seçin</x:String>

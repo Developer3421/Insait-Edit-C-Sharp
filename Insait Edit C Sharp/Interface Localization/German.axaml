@@ -1376,6 +1376,7 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="GitHub.ControlPanel">AI Agents Control Panel</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">GitHub Copilot CLI starten</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Übersetzungsordner öffnen</x:String>
+    <x:String x:Key="GitHub.OpenEnglishLocalization">Englische Lokalisierungsdatei öffnen</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Benutzerdefinierte Sprachen</x:String>
     <x:String x:Key="GitHub.AddCustomLanguage">Benutzerdefinierte Sprache aus AXAML hinzufügen…</x:String>
     <x:String x:Key="GitHub.SelectAxamlFile">AXAML-Übersetzungsdatei auswählen</x:String>

@@ -1827,6 +1827,9 @@ ExecuteMenuAction(string action)
             case "OpenDocumentation":
                 // TODO: Implement documentation
                 break;
+            case "OpenEnglishLocalization":
+                GitHubCopilotService.OpenEnglishLocalizationFile();
+                break;
             case "GettingStarted":
                 // TODO: Implement getting started
                 break;

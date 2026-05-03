@@ -1377,6 +1377,7 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="GitHub.ControlPanel">Панель керування AI Agents</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">Запустити GitHub Copilot CLI</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Відкрити папку перекладів</x:String>
+    <x:String x:Key="GitHub.OpenEnglishLocalization">Відкрити файл англійської локалізації</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Кастомні мови</x:String>
     <x:String x:Key="GitHub.AddCustomLanguage">Додати кастомну мову з AXAML…</x:String>
     <x:String x:Key="GitHub.SelectAxamlFile">Виберіть AXAML-файл перекладу</x:String>

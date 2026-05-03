@@ -15,6 +15,7 @@ using Insait_Edit_C_Sharp.Models;
 using Insait_Edit_C_Sharp.Terminal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1522,6 +1523,29 @@ public partial class MainWindow
 
     // AI Chat
     private void GitHubTui_Click(object? sender, RoutedEventArgs e) { _terminalControl?.OpenGitHubCopilotTerminal(); SwitchToolWindowPanel("terminal"); }
+    private void KiloCli_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var kiloPath = Controls.SettingsPanelControl.ResolveKiloExe();
+            var workingDir = _viewModel?.CurrentProject?.Path ?? Environment.CurrentDirectory;
+            
+            var psi = new ProcessStartInfo
+            {
+                FileName = kiloPath,
+                WorkingDirectory = workingDir,
+                UseShellExecute = true,
+                CreateNoWindow = false
+            };
+            Process.Start(psi);
+            SwitchToolWindowPanel("terminal");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[Kilo CLI] Error: {ex.Message}");
+            _viewModel.StatusText = "❌ Failed to launch Kilo CLI";
+        }
+    }
     private void ClearAIChat_Click(object? sender, RoutedEventArgs e)
     {
         var m = this.FindControl<StackPanel>("AIChatMessages");

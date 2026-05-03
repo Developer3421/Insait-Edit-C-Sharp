@@ -2149,21 +2149,28 @@
                             <Grid ColumnDefinitions="Auto,*">
                                 <TextBlock Grid.Column="0" Text="🐙" FontSize="14" FontFamily="Segoe UI Emoji" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                 <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="0" VerticalAlignment="Center">
-                                    <TextBlock Name="AIPanelTitle" Text="CONTROL PANEL" FontSize="8" FontWeight="SemiBold"
-                                               Foreground="{StaticResource AccentPurpleBrush}"
-                                               LetterSpacing="1" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="GITHUB COPILOT" FontSize="10" FontWeight="Bold"
-                                               Foreground="{StaticResource AccentPurpleBrush}"
-                                               LetterSpacing="0.5"/>
+                                     <TextBlock Name="AIPanelTitle" Text="AI AGENTS CONTROL PANEL" FontSize="8" FontWeight="SemiBold"
+                                                Foreground="{StaticResource AccentPurpleBrush}"
+                                                LetterSpacing="1" TextTrimming="CharacterEllipsis"/>
+                                     <TextBlock Text="GITHUB COPILOT" FontSize="10" FontWeight="Bold"
+                                                Foreground="{StaticResource AccentPurpleBrush}"
+                                                LetterSpacing="0.5"/>
                                 </StackPanel>
                             </Grid>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                                <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Open GitHub Copilot TUI in Terminal"
-                                        Name="GitHubTuiButton" Click="GitHubTui_Click"
-                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                                    <TextBlock Text="🐙" FontSize="12" FontFamily="Segoe UI Emoji"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Button>
+                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                  <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Open Kilo CLI in Terminal"
+                                          Name="KiloCliButton" Click="KiloCli_Click"
+                                          HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                      <Image Source="avares://Insait Edit C Sharp/Icons/KiloCodeIcon.png"
+                                             Width="16" Height="16"
+                                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                  </Button>
+                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="Open GitHub Copilot TUI in Terminal"
+                                         Name="GitHubTuiButton" Click="GitHubTui_Click"
+                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                                     <TextBlock Text="🐙" FontSize="12" FontFamily="Segoe UI Emoji"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                 </Button>
                                 <Button Classes="icon-button" Width="24" Height="24" ToolTip.Tip="New Chat"
                                         Name="ClearAIChatButton" Click="ClearAIChat_Click"
                                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
