@@ -1866,8 +1866,11 @@
                                             <!-- Colored stat badges -->
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                                 <!-- Errors badge -->
-                                                <Border Background="#1FF38BA8" CornerRadius="6" Padding="8,4"
-                                                        BorderBrush="#55F38BA8" BorderThickness="1">
+                                                <Border Name="ProblemsErrorsBadge"
+                                                        Background="#1FF38BA8" CornerRadius="6" Padding="8,4"
+                                                        BorderBrush="#55F38BA8" BorderThickness="1"
+                                                        Cursor="Hand"
+                                                        PointerPressed="ProblemsErrorsBadge_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                                         <TextBlock Text="🔴" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                                                         <TextBlock x:CompileBindings="False"
@@ -1880,8 +1883,11 @@
                                                     </StackPanel>
                                                 </Border>
                                                 <!-- Warnings badge -->
-                                                <Border Background="#1FF5A623" CornerRadius="6" Padding="8,4"
-                                                        BorderBrush="#55F5A623" BorderThickness="1">
+                                                <Border Name="ProblemsWarningsBadge"
+                                                        Background="#1FF5A623" CornerRadius="6" Padding="8,4"
+                                                        BorderBrush="#55F5A623" BorderThickness="1"
+                                                        Cursor="Hand"
+                                                        PointerPressed="ProblemsWarningsBadge_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                                         <TextBlock Text="🟡" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                                                         <TextBlock x:CompileBindings="False"
@@ -1894,8 +1900,11 @@
                                                     </StackPanel>
                                                 </Border>
                                                 <!-- Messages badge -->
-                                                <Border Background="#1F89B4FA" CornerRadius="6" Padding="8,4"
-                                                        BorderBrush="#5589B4FA" BorderThickness="1">
+                                                <Border Name="ProblemsMessagesBadge"
+                                                        Background="#1F89B4FA" CornerRadius="6" Padding="8,4"
+                                                        BorderBrush="#5589B4FA" BorderThickness="1"
+                                                        Cursor="Hand"
+                                                        PointerPressed="ProblemsMessagesBadge_Click">
                                                     <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                                         <TextBlock Text="🔵" FontSize="13" FontFamily="Segoe UI Emoji" VerticalAlignment="Center"/>
                                                         <TextBlock x:CompileBindings="False"

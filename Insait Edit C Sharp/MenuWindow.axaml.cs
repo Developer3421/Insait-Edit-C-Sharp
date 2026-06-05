@@ -1,11 +1,18 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Insait_Edit_C_Sharp.Services;
+using Color = Avalonia.Media.Color;
+using FontFamily = Avalonia.Media.FontFamily;
+using Image = Avalonia.Controls.Image;
 
 namespace Insait_Edit_C_Sharp;
 
@@ -364,12 +371,42 @@ public partial class MenuWindow : Window
             Close();
         });
 
-        AddMenuItem(panel, $"📄  {LocalizationService.Get("GitHub.OpenEnglishLocalization")}", "", async () =>
+        // Kilo Editor button with custom icon
+        var kiloBtn = new Button
         {
-            try { await GitHubCopilotService.EnsureEnglishDictionaryAsync(); } catch { /* non-fatal */ }
-            GitHubCopilotService.OpenEnglishLocalizationFile();
+            Classes = { "menu-item" }
+        };
+        ToolTip.SetTip(kiloBtn, "Open translations folder with Kilo Editor");
+        var kiloGrid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto") };
+        
+        var kiloIcon = new Image
+        {
+            Source = new Avalonia.Media.Imaging.Bitmap(AssetLoader.Open(new Uri("avares://Insait Edit C Sharp/Icons/KiloCodeIcon.png"))),
+            Width = 16,
+            Height = 16,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        Grid.SetColumn(kiloIcon, 0);
+        kiloGrid.Children.Add(kiloIcon);
+        
+        var kiloText = new TextBlock
+        {
+            Text = "  " + LocalizationService.Get("GitHub.OpenEnglishLocalization"),
+            FontSize = 13,
+            Foreground = new SolidColorBrush(Color.Parse("#FFCDD6F4")),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        Grid.SetColumn(kiloText, 1);
+        kiloGrid.Children.Add(kiloText);
+        
+        kiloBtn.Content = kiloGrid;
+        kiloBtn.Click += async (s, e) =>
+        {
+            try { await GitHubCopilotService.EnsureEnglishDictionaryAsync(true); } catch { /* non-fatal */ }
+            await GitHubCopilotService.LaunchKiloInTranslationsFolderAsync();
             Close();
-        });
+        };
+        panel.Children.Add(kiloBtn);
     }
 
     private void AddHeader(StackPanel panel, string text)

@@ -114,6 +114,9 @@ public partial class MainWindow : Window
         // Initialize Code Analysis Service events
         InitializeCodeAnalysisService();
 
+        // Initialize Windows 11 toast notification service
+        NotificationWindows.WindowsNotificationService.Initialize();
+
         // Initialize Search panel
         InitializeSearchPanel();
 
@@ -1828,7 +1831,7 @@ ExecuteMenuAction(string action)
                 // TODO: Implement documentation
                 break;
             case "OpenEnglishLocalization":
-                GitHubCopilotService.OpenEnglishLocalizationFile();
+                await GitHubCopilotService.LaunchKiloInTranslationsFolderAsync();
                 break;
             case "GettingStarted":
                 // TODO: Implement getting started
@@ -4161,6 +4164,9 @@ ExecuteMenuAction(string action)
     /// <summary>Whether the Problems tab shows all errors (true) or only current file (false).</summary>
     private bool _problemsShowAll = true;
 
+    /// <summary>When non-null, filter the Problems list to only this severity.</summary>
+    private DiagnosticSeverity? _problemsSeverityFilter;
+
     private async void CopyProblems_Click(object? sender, RoutedEventArgs e)
     {
         var items = GetFilteredProblems();
@@ -4228,7 +4234,36 @@ ExecuteMenuAction(string action)
     private void ProblemsTabCurrentFile_Click(object? sender, RoutedEventArgs e)
     {
         _problemsShowAll = false;
+        _problemsSeverityFilter = null;
         UpdateProblemsTabStyles();
+        UpdateProblemsSeverityFilterStyles();
+        ApplyProblemsFilter();
+    }
+
+    private void ProblemsErrorsBadge_Click(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    {
+        _problemsSeverityFilter = _problemsSeverityFilter == DiagnosticSeverity.Error
+            ? null : DiagnosticSeverity.Error;
+        UpdateProblemsSeverityFilterStyles();
+        ApplyProblemsFilter();
+    }
+
+    private void ProblemsWarningsBadge_Click(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    {
+        _problemsSeverityFilter = _problemsSeverityFilter == DiagnosticSeverity.Warning
+            ? null : DiagnosticSeverity.Warning;
+        UpdateProblemsSeverityFilterStyles();
+        ApplyProblemsFilter();
+    }
+
+    private void ProblemsMessagesBadge_Click(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    {
+        if (_problemsSeverityFilter == DiagnosticSeverity.Info
+            || _problemsSeverityFilter == DiagnosticSeverity.Hint)
+            _problemsSeverityFilter = null;
+        else
+            _problemsSeverityFilter = DiagnosticSeverity.Info;
+        UpdateProblemsSeverityFilterStyles();
         ApplyProblemsFilter();
     }
 
@@ -4274,18 +4309,53 @@ ExecuteMenuAction(string action)
         }
     }
 
+    private void UpdateProblemsSeverityFilterStyles()
+    {
+        var colors = new Dictionary<DiagnosticSeverity, string[]>
+        {
+            [DiagnosticSeverity.Error]   = ["ProblemsErrorsBadge",    "#FFF38BA8", "#55F38BA8"],
+            [DiagnosticSeverity.Warning] = ["ProblemsWarningsBadge",  "#FFF5A623", "#55F5A623"],
+            [DiagnosticSeverity.Info]    = ["ProblemsMessagesBadge",  "#FF89B4FA", "#5589B4FA"],
+        };
+
+        foreach (var (sev, data) in colors)
+        {
+            var border = this.FindControl<Border>(data[0]);
+            if (border == null) continue;
+            if (_problemsSeverityFilter == sev)
+            {
+                var activeColor = Color.Parse(data[1]);
+                border.BorderBrush = new SolidColorBrush(activeColor);
+                border.BorderThickness = new Thickness(2);
+            }
+            else
+            {
+                var inactiveColor = Color.Parse(data[2]);
+                border.BorderBrush = new SolidColorBrush(inactiveColor);
+                border.BorderThickness = new Thickness(1);
+            }
+        }
+    }
+
     private List<DiagnosticItem> GetFilteredProblems()
     {
-        if (_problemsShowAll)
-            return _viewModel.Problems.ToList();
+        var filtered = _problemsShowAll
+            ? _viewModel.Problems.ToList()
+            : _viewModel.Problems
+                .Where(p => string.Equals(p.FilePath, _viewModel.ActiveTab?.FilePath,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
-        var currentPath = _viewModel.ActiveTab?.FilePath;
-        if (string.IsNullOrEmpty(currentPath))
-            return _viewModel.Problems.ToList();
+        if (_problemsSeverityFilter is { } sev)
+        {
+            if (sev == DiagnosticSeverity.Info)
+                filtered = filtered.Where(p => p.Severity == DiagnosticSeverity.Info
+                                            || p.Severity == DiagnosticSeverity.Hint).ToList();
+            else
+                filtered = filtered.Where(p => p.Severity == sev).ToList();
+        }
 
-        return _viewModel.Problems
-            .Where(p => string.Equals(p.FilePath, currentPath, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        return filtered;
     }
 
     private void ApplyProblemsFilter()
@@ -4293,25 +4363,7 @@ ExecuteMenuAction(string action)
         var listBox = this.FindControl<ListBox>("ProblemsListBox");
         if (listBox == null) return;
 
-        if (_problemsShowAll)
-        {
-            listBox.ItemsSource = _viewModel.Problems;
-        }
-        else
-        {
-            var currentPath = _viewModel.ActiveTab?.FilePath;
-            if (string.IsNullOrEmpty(currentPath))
-            {
-                listBox.ItemsSource = _viewModel.Problems;
-            }
-            else
-            {
-                var filtered = _viewModel.Problems
-                    .Where(p => string.Equals(p.FilePath, currentPath, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-                listBox.ItemsSource = filtered;
-            }
-        }
+        listBox.ItemsSource = GetFilteredProblems();
     }
 
     private void ProblemsListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)

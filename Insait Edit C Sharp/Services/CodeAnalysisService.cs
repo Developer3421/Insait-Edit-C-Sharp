@@ -1,476 +1,346 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Analyzer;
+using Insait_Edit_C_Sharp.Controls;
 using Insait_Edit_C_Sharp.ViewModels;
-
-// Alias to avoid ambiguity with Microsoft.CodeAnalysis.DiagnosticSeverity
+using Microsoft.CodeAnalysis;
 using AppDiagnosticSeverity = Insait_Edit_C_Sharp.ViewModels.DiagnosticSeverity;
 
 namespace Insait_Edit_C_Sharp.Services;
 
-/// <summary>
-/// Service for analyzing C# code using Roslyn
-/// </summary>
 public class CodeAnalysisService
 {
     public event EventHandler<AnalysisCompletedEventArgs>? AnalysisCompleted;
     public event EventHandler<AnalysisProgressEventArgs>? AnalysisProgress;
 
     private CancellationTokenSource? _analysisCts;
-    private readonly List<MetadataReference> _defaultReferences;
-    private readonly NuGetReferenceResolver _nugetResolver = new();
-
-    public CodeAnalysisService()
-    {
-        _defaultReferences = GetDefaultReferences();
-    }
-
-    // All severity resolution is delegated to DiagnosticSeverityMatrix so that
-    // both InlineDiagnosticService and CodeAnalysisService stay in sync.
+    private readonly object _lock = new();
+    private readonly ProjectAnalysisService _analyzer = new();
 
     /// <summary>
-    /// Get default assembly references for compilation
+    /// Full project analysis. Runs on thread pool; fully async.
     /// </summary>
-    private List<MetadataReference> GetDefaultReferences()
+    public Task<List<DiagnosticItem>> AnalyzeProjectAsync(
+        string projectPath,
+        CancellationToken ct = default)
     {
-        return RoslynCompletionEngine.CollectPublicDefaultReferences();
-    }
-    
-    /// <summary>
-    /// Analyze a single C# file
-    /// </summary>
-    public async Task<List<DiagnosticItem>> AnalyzeFileAsync(string filePath, string? content = null)
-    {
-        var diagnostics = new List<DiagnosticItem>();
+        var targets = ResolveTargets(projectPath);
+        if (targets.Count == 0)
+            return Task.FromResult(new List<DiagnosticItem>());
 
-        // Only analyze .cs files
-        if (!filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
-            return diagnostics;
+        return Task.Run(() => AnalyzeAllCoreAsync(targets, ct), ct);
+    }
+
+    // ── Core analysis ───────────────────────────────────────────────────────
+
+    private async Task<List<DiagnosticItem>> AnalyzeAllCoreAsync(
+        List<string> targets, CancellationToken ct)
+    {
+        var results = new List<DiagnosticItem>();
+        var sdkRoot = GetSdkRoot();
+        var isMultiTarget = targets.Count > 1;
+
+        for (var i = 0; i < targets.Count; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var label = Path.GetFileName(targets[i]);
+            ReportProgress($"Analysing {label}...", i, targets.Count);
+
+            List<DiagnosticItem> items;
+            if (string.Equals(Path.GetExtension(targets[i]), ".cs", StringComparison.OrdinalIgnoreCase))
+            {
+                items = await AnalyzeOneFileAsync(targets[i], ct).ConfigureAwait(false);
+            }
+            else
+            {
+                items = await AnalyzeOneProjectAsync(targets[i], sdkRoot, ct).ConfigureAwait(false);
+            }
+
+            results.AddRange(items);
+        }
+
+        ReportProgress(isMultiTarget ? "Multi-target analysis complete" : "Code analysis complete",
+            targets.Count, targets.Count);
+
+        results = results
+            .OrderBy(d => d.Severity == AppDiagnosticSeverity.Error ? 0
+                       : d.Severity == AppDiagnosticSeverity.Warning ? 1 : 2)
+            .ThenBy(d => d.FilePath)
+            .ThenBy(d => d.Line)
+            .ToList();
+        return results;
+    }
+
+    private async Task<List<DiagnosticItem>> AnalyzeOneProjectAsync(
+        string targetPath, string? sdkRoot, CancellationToken ct)
+    {
+        var projectDir = NuGetReferenceResolver.ResolveProjectDirectory(targetPath);
+        if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
+            return new List<DiagnosticItem>();
 
         try
         {
-            content ??= await File.ReadAllTextAsync(filePath);
-            var build = RoslynProjectFactory.CreateBuild(Path.GetDirectoryName(filePath), _defaultReferences, filePath, content);
-
-            using var workspace = new AdhocWorkspace(RoslynWorkspaceService.Instance.Host);
-            var solution = workspace.CurrentSolution.AddProject(build.ProjectInfo);
-            if (!workspace.TryApplyChanges(solution))
-                throw new InvalidOperationException("Failed to initialize Roslyn workspace for file analysis.");
-
-            var project = workspace.CurrentSolution.GetProject(build.ProjectInfo.Id);
-            if (project == null)
-                return diagnostics;
-
-            var roslynDiagnostics = await CollectProjectDiagnosticsAsync(project, CancellationToken.None);
-
-            foreach (var diagnostic in roslynDiagnostics)
+            ProjectAnalysisService.AnalysisProgressHandler? onProgress = null;
+            if (AnalysisProgress != null)
             {
-                if (!build.BelongsToFile(diagnostic, filePath))
-                    continue;
-
-                // Resolve effective severity via the central matrix (null = suppress)
-                var severity = DiagnosticSeverityMatrix.ResolveApp(
-                    diagnostic.Id, diagnostic.Severity, build.HasProjectMetadataReferences);
-                if (severity is null)
-                    continue;
-                    
-                var lineSpan = diagnostic.Location.GetLineSpan();
-                diagnostics.Add(new DiagnosticItem
-                {
-                    Severity = severity.Value,
-                    Message = diagnostic.GetMessage(),
-                    FilePath = filePath,
-                    FileName = Path.GetFileName(filePath),
-                    Line = lineSpan.StartLinePosition.Line + 1,
-                    Column = lineSpan.StartLinePosition.Character + 1,
-                    Code = diagnostic.Id
-                });
+                var label = Path.GetFileName(targetPath);
+                onProgress = (msg, cur, total) =>
+                    AnalysisProgress?.Invoke(this,
+                        new AnalysisProgressEventArgs($"{label}: {msg}", cur, total));
             }
+
+            // Full analysis (build + compile + analyzers) delegated to Analyzer project
+            var result = await _analyzer
+                .AnalyzeProjectAsync(projectDir, sdkRoot, onProgress, ct)
+                .ConfigureAwait(false);
+
+            ct.ThrowIfCancellationRequested();
+
+            var mapped = new List<DiagnosticItem>(
+                result.CompilationDiagnostics.Length + result.AnalyzerDiagnostics.Count);
+            mapped.AddRange(MapDiags(result.CompilationDiagnostics, result.HasProjectReferences));
+            mapped.AddRange(MapDiags(result.AnalyzerDiagnostics, result.HasProjectReferences));
+            return mapped;
         }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            diagnostics.Add(new DiagnosticItem
+            return new List<DiagnosticItem>
             {
-                Severity = AppDiagnosticSeverity.Error,
-                Message = $"Analysis failed: {ex.Message}",
-                FilePath = filePath,
-                FileName = Path.GetFileName(filePath),
-                Line = 1,
-                Column = 1,
-                Code = "ANALYSIS_ERROR"
-            });
+                new()
+                {
+                    Severity = AppDiagnosticSeverity.Error,
+                    Message = ex.Message,
+                    FilePath = targetPath,
+                    FileName = Path.GetFileName(targetPath),
+                    Line = 1, Column = 1, Code = "ANALYSIS_ERROR"
+                }
+            };
         }
-
-        return diagnostics;
     }
 
-    /// <summary>
-    /// Analyze all C# files in a project folder
-    /// </summary>
-    public async Task<List<DiagnosticItem>> AnalyzeProjectAsync(string projectPath, CancellationToken cancellationToken = default)
+    // ── File-level analysis ─────────────────────────────────────────────────
+
+    private async Task<List<DiagnosticItem>> AnalyzeOneFileAsync(
+        string filePath, CancellationToken ct)
     {
-        var allDiagnostics = new List<DiagnosticItem>();
+        if (!filePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+            return new List<DiagnosticItem>();
 
         try
         {
-            var targets = ResolveAnalysisTargets(projectPath);
-            if (targets.Count == 0)
-                return allDiagnostics;
+            var projectDir = NuGetReferenceResolver.ResolveProjectDirectory(filePath)
+                             ?? Path.GetDirectoryName(filePath);
+            if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
+                return new List<DiagnosticItem> { MakeError(filePath, "No project directory found") };
 
-            var targetIndex = 0;
-            foreach (var target in targets)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                targetIndex++;
+            var result = await _analyzer
+                .AnalyzeProjectAsync(projectDir, GetSdkRoot(), null, ct)
+                .ConfigureAwait(false);
 
-                OnProgress($"Analysing {Path.GetFileName(target)}...", targetIndex - 1, targets.Count);
+            ct.ThrowIfCancellationRequested();
 
-                if (string.Equals(Path.GetExtension(target), ".cs", StringComparison.OrdinalIgnoreCase))
-                {
-                    allDiagnostics.AddRange(await AnalyzeFileAsync(target));
-                    continue;
-                }
-
-                allDiagnostics.AddRange(await AnalyzeProjectTargetAsync(target, cancellationToken));
-            }
-
-            OnProgress("Code analysis complete", targets.Count, targets.Count);
-
-            // Sort by severity (errors first), then by file, then by line
-            allDiagnostics = allDiagnostics
-                .OrderBy(d => d.Severity == AppDiagnosticSeverity.Error ? 0 : d.Severity == AppDiagnosticSeverity.Warning ? 1 : 2)
-                .ThenBy(d => d.FilePath)
-                .ThenBy(d => d.Line)
+            return MapDiags(result.CompilationDiagnostics, result.HasProjectReferences)
+                .Concat(MapDiags(result.AnalyzerDiagnostics, result.HasProjectReferences))
+                .Where(d => string.Equals(d.FilePath, filePath, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
+        catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            allDiagnostics.Add(new DiagnosticItem
-            {
-                Severity = AppDiagnosticSeverity.Error,
-                Message = $"Project analysis failed: {ex.Message}",
-                FilePath = projectPath,
-                FileName = Path.GetFileName(projectPath),
-                Line = 1,
-                Column = 1,
-                Code = "ANALYSIS_ERROR"
-            });
+            return new List<DiagnosticItem> { MakeError(filePath, $"Analysis failed: {ex.Message}") };
         }
-
-        return allDiagnostics;
     }
 
-    private List<string> ResolveAnalysisTargets(string projectPath)
+    public async Task<List<DiagnosticItem>> AnalyzeFileAsync(string filePath)
+    {
+        return await AnalyzeOneFileAsync(filePath, CancellationToken.None)
+            .ConfigureAwait(false);
+    }
+
+    // ── Mapping ─────────────────────────────────────────────────────────────
+
+    private static List<DiagnosticItem> MapDiags(
+        IEnumerable<Diagnostic> source, bool hasProjectRefs)
+    {
+        return source
+            .Select(d =>
+            {
+                string path;
+                int line = 1, column = 1;
+                if (d.Location.IsInSource)
+                {
+                    var span = d.Location.GetLineSpan();
+                    path = d.Location.SourceTree?.FilePath ?? span.Path ?? string.Empty;
+                    line = span.StartLinePosition.Line + 1;
+                    column = span.StartLinePosition.Character + 1;
+                }
+                else
+                {
+                    path = string.Empty;
+                }
+
+                var sev = DiagnosticSeverityMatrix.ResolveApp(d.Id, d.Severity, hasProjectRefs);
+                if (sev is null) return null;
+                return new DiagnosticItem
+                {
+                    Severity = sev.Value,
+                    Message = d.GetMessage(),
+                    FilePath = path,
+                    FileName = string.IsNullOrEmpty(path) ? "" : Path.GetFileName(path),
+                    Line = line,
+                    Column = column,
+                    Code = d.Id,
+                };
+            })
+            .Where(d => d is not null)
+            .Cast<DiagnosticItem>()
+            .DistinctBy(d => (d.Code, d.FilePath, d.Line, d.Column, d.Message))
+            .ToList();
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────────────────
+
+    private static List<string> ResolveTargets(string projectPath)
     {
         var targets = new List<string>();
-
         if (File.Exists(projectPath))
         {
             var ext = Path.GetExtension(projectPath).ToLowerInvariant();
             switch (ext)
             {
-                case ".cs":
-                    targets.Add(projectPath);
-                    break;
-                case ".csproj":
-                    targets.Add(projectPath);
-                    break;
-                case ".sln":
-                case ".slnx":
-                    targets.AddRange(NuGetReferenceResolver.FindProjectFiles(Path.GetDirectoryName(projectPath)));
-                    break;
+                case ".cs":     targets.Add(projectPath); return targets;
+                case ".csproj": targets.Add(projectPath); return targets;
+                case ".sln": case ".slnx":
+                    targets.AddRange(NuGetReferenceResolver.FindProjectFiles(
+                        Path.GetDirectoryName(projectPath)));
+                    return targets;
+                default: return targets;
             }
         }
-        else if (Directory.Exists(projectPath))
+        if (Directory.Exists(projectPath))
         {
             targets.AddRange(NuGetReferenceResolver.FindProjectFiles(projectPath));
-            if (targets.Count == 0)
-                targets.Add(projectPath);
+            if (targets.Count == 0) targets.Add(projectPath);
         }
-
         return targets.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
     }
 
-    private async Task<List<DiagnosticItem>> AnalyzeProjectTargetAsync(string targetPath, CancellationToken cancellationToken)
-    {
-        var diagnostics = new List<DiagnosticItem>();
+    private static string? GetSdkRoot()
+        => SettingsPanelControl.GetDotNetSdkPath();
 
-        var projectDir = NuGetReferenceResolver.ResolveProjectDirectory(targetPath);
-        if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
-            return diagnostics;
-
-        string? activeFilePath;
-        string activeSource;
-        try
+    private static DiagnosticItem MakeError(string path, string msg)
+        => new()
         {
-            activeFilePath = Directory.GetFiles(projectDir, "*.cs", SearchOption.AllDirectories)
-                .FirstOrDefault(f => !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
-                            !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
-                            !f.Contains(Path.DirectorySeparatorChar + ".vs" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
-            if (activeFilePath == null)
-                return diagnostics;
-            activeSource = await File.ReadAllTextAsync(activeFilePath, cancellationToken);
-        }
-        catch
-        {
-            return diagnostics;
-        }
+            Severity = AppDiagnosticSeverity.Error,
+            Message = msg,
+            FilePath = path,
+            FileName = Path.GetFileName(path),
+            Line = 1, Column = 1, Code = "ANALYSIS_ERROR"
+        };
 
-        var build = RoslynProjectFactory.CreateBuild(projectDir, _defaultReferences, activeFilePath, activeSource);
-        using var workspace = new AdhocWorkspace(RoslynWorkspaceService.Instance.Host);
-        var solution = workspace.CurrentSolution.AddProject(build.ProjectInfo);
-        if (!workspace.TryApplyChanges(solution))
-        {
-            diagnostics.Add(new DiagnosticItem
-            {
-                Severity = AppDiagnosticSeverity.Error,
-                Message = "Failed to initialize Roslyn workspace for project analysis.",
-                FilePath = targetPath,
-                FileName = Path.GetFileName(targetPath),
-                Line = 1,
-                Column = 1,
-                Code = "ANALYSIS_ERROR"
-            });
-            return diagnostics;
-        }
+    private void ReportProgress(string msg, int cur, int total)
+        => AnalysisProgress?.Invoke(this, new AnalysisProgressEventArgs(msg, cur, total));
 
-        var project = workspace.CurrentSolution.GetProject(build.ProjectInfo.Id);
-        if (project == null)
-            return diagnostics;
+    // ── Public API: callback-based analysis (called from UI button) ─────────
 
-        foreach (var diagnostic in await CollectProjectDiagnosticsAsync(project, cancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (!build.ShouldIncludeDiagnostic(diagnostic))
-                continue;
-
-            // Resolve effective severity via the central matrix (null = suppress)
-            var severity = DiagnosticSeverityMatrix.ResolveApp(
-                diagnostic.Id, diagnostic.Severity, build.HasProjectMetadataReferences);
-            if (severity is null)
-                continue;
-
-            var location = diagnostic.Location;
-            var filePath = location.SourceTree?.FilePath ?? location.GetLineSpan().Path;
-            var lineSpan = location.GetLineSpan();
-            diagnostics.Add(new DiagnosticItem
-            {
-                Severity = severity.Value,
-                Message = diagnostic.GetMessage(),
-                FilePath = filePath,
-                FileName = Path.GetFileName(filePath),
-                Line = lineSpan.StartLinePosition.Line + 1,
-                Column = lineSpan.StartLinePosition.Character + 1,
-                Code = diagnostic.Id
-            });
-        }
-
-        return diagnostics;
-    }
-
-    private static async Task<List<Diagnostic>> CollectProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken)
-    {
-        var compilation = await project.GetCompilationAsync(cancellationToken);
-        if (compilation == null)
-            return new List<Diagnostic>();
-
-        var diagnostics = compilation.GetDiagnostics(cancellationToken).ToList();
-
-        // Merge project NuGet analyzers with built-in IDE analyzers (IDE0001…IDE1006)
-        var projectAnalyzers = project.AnalyzerReferences
-            .SelectMany(reference => SafeGetAnalyzers(reference, project.Language));
-        var analyzers = BuiltInAnalyzerProvider.Merge(projectAnalyzers);
-
-        if (analyzers.Length == 0)
-            return diagnostics;
-
-        var options = new CompilationWithAnalyzersOptions(
-            new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty),
-            onAnalyzerException: null,
-            concurrentAnalysis: true,
-            logAnalyzerExecutionTime: false,
-            reportSuppressedDiagnostics: false);
-
-        try
-        {
-            var analyzerDiagnostics = await compilation
-                .WithAnalyzers(analyzers, options)
-                .GetAnalyzerDiagnosticsAsync(cancellationToken);
-            diagnostics.AddRange(analyzerDiagnostics);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[CodeAnalysis] Analyzer run failed: {ex.Message}");
-        }
-
-        return diagnostics
-            .GroupBy(static diagnostic => new
-            {
-                diagnostic.Id,
-                FilePath = diagnostic.Location.SourceTree?.FilePath ?? diagnostic.Location.GetLineSpan().Path,
-                diagnostic.Location.SourceSpan.Start,
-                diagnostic.Location.SourceSpan.Length,
-                Message = diagnostic.GetMessage(),
-                diagnostic.Severity,
-            })
-            .Select(static group => group.First())
-            .ToList();
-    }
-
-    private static IEnumerable<DiagnosticAnalyzer> SafeGetAnalyzers(AnalyzerReference reference, string language)
-    {
-        try
-        {
-            return reference.GetAnalyzers(language);
-        }
-        catch
-        {
-            return Enumerable.Empty<DiagnosticAnalyzer>();
-        }
-    }
-
-    /// <summary>
-    /// Analyze project and fire completion event
-    /// </summary>
     public async Task AnalyzeProjectWithCallbackAsync(string projectPath)
     {
-        // Cancel any previous analysis
-        _analysisCts?.Cancel();
-        _analysisCts = new CancellationTokenSource();
+        CancellationToken token;
+        lock (_lock)
+        {
+            _analysisCts?.Cancel();
+            _analysisCts = new CancellationTokenSource();
+            token = _analysisCts.Token;
+        }
 
         try
         {
-            var diagnostics = await AnalyzeProjectAsync(projectPath, _analysisCts.Token);
-            AnalysisCompleted?.Invoke(this, new AnalysisCompletedEventArgs(diagnostics, true, null));
+            var diagnostics = await AnalyzeProjectAsync(projectPath, token)
+                .ConfigureAwait(false);
+            AnalysisCompleted?.Invoke(this,
+                new AnalysisCompletedEventArgs(diagnostics, true, null));
         }
         catch (OperationCanceledException)
         {
-            AnalysisCompleted?.Invoke(this, new AnalysisCompletedEventArgs(new List<DiagnosticItem>(), false, "Analysis cancelled"));
+            AnalysisCompleted?.Invoke(this,
+                new AnalysisCompletedEventArgs(
+                    new List<DiagnosticItem>(), false, "Analysis cancelled"));
         }
         catch (Exception ex)
         {
-            AnalysisCompleted?.Invoke(this, new AnalysisCompletedEventArgs(new List<DiagnosticItem>(), false, ex.Message));
+            AnalysisCompleted?.Invoke(this,
+                new AnalysisCompletedEventArgs(
+                    new List<DiagnosticItem>(), false, ex.Message));
         }
     }
 
-    /// <summary>
-    /// Cancel any running analysis
-    /// </summary>
     public void CancelAnalysis()
     {
-        _analysisCts?.Cancel();
+        lock (_lock) { _analysisCts?.Cancel(); }
     }
 
-    /// <summary>
-    /// Parse build output and extract errors/warnings
-    /// </summary>
+    // ── Build output parser ─────────────────────────────────────────────────
+
     public List<DiagnosticItem> ParseBuildOutput(string buildOutput)
     {
         var diagnostics = new List<DiagnosticItem>();
+        if (string.IsNullOrEmpty(buildOutput)) return diagnostics;
 
-        if (string.IsNullOrEmpty(buildOutput))
-            return diagnostics;
-
-        var lines = buildOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var line in lines)
+        foreach (var line in buildOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
-            var trimmedLine = line.Trim();
-            
-            // Match patterns like:
-            // C:\path\file.cs(10,5): error CS1002: ; expected
-            // C:\path\file.cs(10,5): warning CS0168: The variable 'x' is declared but never used
-            
-            var errorMatch = System.Text.RegularExpressions.Regex.Match(
-                trimmedLine,
+            var m = Regex.Match(
+                line.Trim(),
                 @"^(.+?)\((\d+),(\d+)\):\s*(error|warning|info)\s+(\w+):\s*(.+)$",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                RegexOptions.IgnoreCase);
+            if (!m.Success) continue;
 
-            if (errorMatch.Success)
+            var native = m.Groups[4].Value.ToLower() switch
             {
-                var filePath = errorMatch.Groups[1].Value;
-                var line_num = int.Parse(errorMatch.Groups[2].Value);
-                var column = int.Parse(errorMatch.Groups[3].Value);
-                var severityStr = errorMatch.Groups[4].Value.ToLower();
-                var code = errorMatch.Groups[5].Value;
-                var message = errorMatch.Groups[6].Value;
+                "error" => Microsoft.CodeAnalysis.DiagnosticSeverity.Error,
+                "warning" => Microsoft.CodeAnalysis.DiagnosticSeverity.Warning,
+                _ => Microsoft.CodeAnalysis.DiagnosticSeverity.Info,
+            };
+            var severity = DiagnosticSeverityMatrix.ResolveApp(
+                m.Groups[5].Value, native, hasNuGetRefs: true)
+                           ?? AppDiagnosticSeverity.Info;
 
-                // Apply matrix reclassification for build output too
-                // (e.g. CS8019 from build output → Info, not Warning)
-                var nativeRoslyn = severityStr switch
-                {
-                    "error"   => Microsoft.CodeAnalysis.DiagnosticSeverity.Error,
-                    "warning" => Microsoft.CodeAnalysis.DiagnosticSeverity.Warning,
-                    _         => Microsoft.CodeAnalysis.DiagnosticSeverity.Info,
-                };
-                var severity = DiagnosticSeverityMatrix.ResolveApp(code, nativeRoslyn, hasNuGetRefs: true)
-                               ?? AppDiagnosticSeverity.Info;
-
-                diagnostics.Add(new DiagnosticItem
-                {
-                    Severity = severity,
-                    Message = message,
-                    FilePath = filePath,
-                    FileName = Path.GetFileName(filePath),
-                    Line = line_num,
-                    Column = column,
-                    Code = code
-                });
-            }
+            diagnostics.Add(new DiagnosticItem
+            {
+                Severity = severity,
+                Message = m.Groups[6].Value,
+                FilePath = m.Groups[1].Value,
+                FileName = Path.GetFileName(m.Groups[1].Value),
+                Line = int.Parse(m.Groups[2].Value),
+                Column = int.Parse(m.Groups[3].Value),
+                Code = m.Groups[5].Value,
+            });
         }
-
         return diagnostics;
-    }
-
-
-    private void OnProgress(string message, int current, int total)
-    {
-        AnalysisProgress?.Invoke(this, new AnalysisProgressEventArgs(message, current, total));
     }
 }
 
-/// <summary>
-/// Event args for analysis completion
-/// </summary>
 public class AnalysisCompletedEventArgs : EventArgs
 {
     public List<DiagnosticItem> Diagnostics { get; }
     public bool Success { get; }
     public string? ErrorMessage { get; }
-
-    public AnalysisCompletedEventArgs(List<DiagnosticItem> diagnostics, bool success, string? errorMessage)
-    {
-        Diagnostics = diagnostics;
-        Success = success;
-        ErrorMessage = errorMessage;
-    }
+    public AnalysisCompletedEventArgs(List<DiagnosticItem> d, bool s, string? e)
+    { Diagnostics = d; Success = s; ErrorMessage = e; }
 }
 
-/// <summary>
-/// Event args for analysis progress
-/// </summary>
 public class AnalysisProgressEventArgs : EventArgs
 {
     public string Message { get; }
     public int Current { get; }
     public int Total { get; }
     public double Progress => Total > 0 ? (double)Current / Total * 100 : 0;
-
-    public AnalysisProgressEventArgs(string message, int current, int total)
-    {
-        Message = message;
-        Current = current;
-        Total = total;
-    }
+    public AnalysisProgressEventArgs(string msg, int cur, int total)
+    { Message = msg; Current = cur; Total = total; }
 }

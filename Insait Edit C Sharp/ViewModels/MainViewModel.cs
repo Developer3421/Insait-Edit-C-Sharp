@@ -127,8 +127,22 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     public ObservableCollection<string> OutputLines { get; }
     public ObservableCollection<FileTreeItem> FileTreeItems { get; }
 
+    private int _suppressProblemUpdates;
+
+    public void ReplaceProblems(IEnumerable<DiagnosticItem> items)
+    {
+        _suppressProblemUpdates++;
+        Problems.Clear();
+        foreach (var item in items)
+            Problems.Add(item);
+        _suppressProblemUpdates--;
+        if (_suppressProblemUpdates == 0)
+            UpdateProblemsCounts();
+    }
+
     private void UpdateProblemsCounts()
     {
+        if (_suppressProblemUpdates > 0) return;
         ErrorsCount = 0;
         WarningsCount = 0;
         MessagesCount = 0;

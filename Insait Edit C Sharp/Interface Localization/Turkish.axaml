@@ -389,7 +389,7 @@
     <x:String x:Key="Welcome.WindowLabel">Hoş Geldiniz Penceresi</x:String>
     <x:String x:Key="Welcome.Title">Insait Edit'e Hoş Geldiniz</x:String>
     <x:String x:Key="Welcome.Subtitle">Insait Code Editor tabanlı C# IDE</x:String>
-    <x:String x:Key="Welcome.Version">Sürüm 1.0.0 Önizleme</x:String>
+    <x:String x:Key="Welcome.Version">Sürüm 1.0.1 Önizleme</x:String>
     <x:String x:Key="Welcome.NewSolution">Yeni Çözüm</x:String>
     <x:String x:Key="Welcome.NewSolutionDesc">Yeni bir .sln çözümü oluştur</x:String>
     <x:String x:Key="Welcome.NewProject">Yeni Proje</x:String>
@@ -1376,7 +1376,7 @@ Insait Edit'i kullandığınız için teşekkür ederiz!]]></x:String>
     <x:String x:Key="GitHub.ControlPanel">AI Agents Control Panel</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">GitHub Copilot CLI'yi Başlat</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Çeviri Klasörünü Aç</x:String>
-    <x:String x:Key="GitHub.OpenEnglishLocalization">İngilizce Yerelleştirme Dosyasını Aç</x:String>
+    <x:String x:Key="GitHub.OpenEnglishLocalization">Kilo Editörü ile Aç</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Özel Diller</x:String>
     <x:String x:Key="GitHub.AddCustomLanguage">AXAML'den Özel Dil Ekle…</x:String>
     <x:String x:Key="GitHub.SelectAxamlFile">AXAML Çeviri Dosyası Seçin</x:String>

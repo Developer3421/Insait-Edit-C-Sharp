@@ -390,7 +390,7 @@
     <x:String x:Key="Welcome.WindowLabel">Willkommen-Fenster</x:String>
     <x:String x:Key="Welcome.Title">Willkommen bei Insait Edit</x:String>
     <x:String x:Key="Welcome.Subtitle">C# IDE mit Insait Code Editor</x:String>
-    <x:String x:Key="Welcome.Version">Version 1.0.0 Vorschau</x:String>
+    <x:String x:Key="Welcome.Version">Version 1.0.1 Vorschau</x:String>
     <x:String x:Key="Welcome.NewSolution">Neue Projektmappe</x:String>
     <x:String x:Key="Welcome.NewSolutionDesc">Neue .sln Projektmappe erstellen</x:String>
     <x:String x:Key="Welcome.NewProject">Neues Projekt</x:String>
@@ -1376,7 +1376,7 @@ Vielen Dank, dass Sie Insait Edit verwenden!]]></x:String>
     <x:String x:Key="GitHub.ControlPanel">AI Agents Control Panel</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">GitHub Copilot CLI starten</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Übersetzungsordner öffnen</x:String>
-    <x:String x:Key="GitHub.OpenEnglishLocalization">Englische Lokalisierungsdatei öffnen</x:String>
+    <x:String x:Key="GitHub.OpenEnglishLocalization">Mit Kilo Editor öffnen</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Benutzerdefinierte Sprachen</x:String>
     <x:String x:Key="GitHub.AddCustomLanguage">Benutzerdefinierte Sprache aus AXAML hinzufügen…</x:String>
     <x:String x:Key="GitHub.SelectAxamlFile">AXAML-Übersetzungsdatei auswählen</x:String>

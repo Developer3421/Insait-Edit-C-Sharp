@@ -390,7 +390,7 @@
     <x:String x:Key="Welcome.WindowLabel">Вікно вітання</x:String>
     <x:String x:Key="Welcome.Title">Ласкаво просимо до Insait Edit</x:String>
     <x:String x:Key="Welcome.Subtitle">C# IDE на базі Insait Code Editor</x:String>
-    <x:String x:Key="Welcome.Version">Версія 1.0.0 Попередній перегляд</x:String>
+    <x:String x:Key="Welcome.Version">Версія 1.0.1 Попередній перегляд</x:String>
     <x:String x:Key="Welcome.NewSolution">Нове рішення</x:String>
     <x:String x:Key="Welcome.NewSolutionDesc">Створити нове .sln рішення</x:String>
     <x:String x:Key="Welcome.NewProject">Новий проєкт</x:String>
@@ -1377,7 +1377,7 @@ Insait Edit є некомерційним, безкоштовним програ
     <x:String x:Key="GitHub.ControlPanel">Панель керування AI Agents</x:String>
     <x:String x:Key="GitHub.LaunchCopilot">Запустити GitHub Copilot CLI</x:String>
     <x:String x:Key="GitHub.OpenTranslationsFolder">Відкрити папку перекладів</x:String>
-    <x:String x:Key="GitHub.OpenEnglishLocalization">Відкрити файл англійської локалізації</x:String>
+    <x:String x:Key="GitHub.OpenEnglishLocalization">Відкрити в Kilo редакторі</x:String>
     <x:String x:Key="GitHub.CustomLanguages">🌐 Кастомні мови</x:String>
     <x:String x:Key="GitHub.AddCustomLanguage">Додати кастомну мову з AXAML…</x:String>
     <x:String x:Key="GitHub.SelectAxamlFile">Виберіть AXAML-файл перекладу</x:String>

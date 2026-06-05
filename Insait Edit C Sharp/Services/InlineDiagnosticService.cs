@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using System.Reflection;
+using Analyzer;
 using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;

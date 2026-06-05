@@ -218,7 +218,7 @@
                                     <TextBlock Text="Insait Edit" FontSize="26" FontWeight="Bold"
                                                Foreground="{StaticResource AccentOrangeBrush}"/>
                                     <TextBlock Name="WelcomeSubtitleText"
-                                               Text="C# IDE with GitHub Copilot"
+                                               Text="C# IDE "
                                                FontSize="12"
                                                Foreground="{StaticResource TextSecondaryBrush}"/>
                                 </StackPanel>
@@ -226,9 +226,9 @@
                                         Padding="10,5" HorizontalAlignment="Left"
                                         BorderBrush="#30DCC4FF" BorderThickness="1">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <TextBlock Name="WelcomeVersionText" Text="Version 1.0.0 Preview"
-                                                   FontSize="11" Foreground="{StaticResource AccentPurpleBrush}"
-                                                   VerticalAlignment="Center"/>
+                                         <TextBlock Name="WelcomeVersionText" Text="Version 1.0.1 Preview"
+                                                    FontSize="11" Foreground="{StaticResource AccentPurpleBrush}"
+                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>

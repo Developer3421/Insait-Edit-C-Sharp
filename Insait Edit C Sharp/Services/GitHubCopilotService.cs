@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Insait_Edit_C_Sharp.Controls;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -252,39 +253,6 @@ public static class GitHubCopilotService
     }
 
     /// <summary>
-    /// Opens the English.axaml localization file in the default text editor
-    /// (using the system's file-open mechanism, e.g., Kilo EXE or default editor).
-    /// This allows users to edit the base English localization as a starting point
-    /// for creating custom languages.
-    /// </summary>
-    public static void OpenEnglishLocalizationFile()
-    {
-        try
-        {
-            var path = EnglishDictionaryPath;
-            if (!File.Exists(path))
-            {
-                // Ensure it exists first
-                _ = EnsureEnglishDictionaryAsync().GetAwaiter().GetResult();
-            }
-
-            if (File.Exists(path))
-            {
-                // Use shell execute to open with default editor (Kilo, Notepad, VS Code, etc.)
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = path,
-                    UseShellExecute = true
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[GitHubCopilot] OpenEnglishLocalizationFile failed: {ex.Message}");
-        }
-    }
-
-    /// <summary>
     /// Launches the GitHub Copilot CLI in a new terminal window
     /// with the working directory set to the translations folder.
     /// The translations folder and the English.axaml template are
@@ -299,7 +267,7 @@ public static class GitHubCopilotService
 
             // Ensure English.axaml template is present so the user always has a
             // reference file to work from when the CLI opens in that folder.
-            await EnsureEnglishDictionaryAsync(overwrite: false, ct);
+            await EnsureEnglishDictionaryAsync(overwrite: true, ct);
 
             var psi = new ProcessStartInfo
             {
@@ -323,6 +291,43 @@ public static class GitHubCopilotService
             Debug.WriteLine($"[GitHubCopilot] LaunchCopilotCliAsync failed: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// Launches Kilo EXE in the translations folder where localization files are stored.
+    /// This allows users to edit localization files directly with Kilo.
+    /// </summary>
+    public static async Task LaunchKiloInTranslationsFolderAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            // Ensure the folder exists and English.axaml template is present
+            Directory.CreateDirectory(_translationsDir);
+            await EnsureEnglishDictionaryAsync(true, ct);
+
+            // Resolve kilo.exe path (from settings or auto-detect)
+            var kiloPath = Controls.SettingsPanelControl.ResolveKiloExe();
+            
+            var psi = new ProcessStartInfo
+            {
+                FileName = kiloPath,
+                WorkingDirectory = _translationsDir,
+                UseShellExecute = true,
+                CreateNoWindow = false
+            };
+
+            Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[GitHubCopilot] LaunchKiloInTranslationsFolder failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Synchronous wrapper for backwards compatibility.
+    /// </summary>
+    public static void LaunchKiloInTranslationsFolder()
+        => _ = LaunchKiloInTranslationsFolderAsync();
 
     /// <summary>
     /// Synchronous wrapper around <see cref="LaunchCopilotCliAsync"/> kept for

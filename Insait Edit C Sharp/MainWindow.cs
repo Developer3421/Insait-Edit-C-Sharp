@@ -52,9 +52,15 @@ public partial class MainWindow
                 UpdateBuildButtons();
                 _viewModel.StatusText = e.Result.Success ? "Build succeeded" : "Build failed — see Build output";
                 if (e.Result.Success)
+                {
                     NotificationService.Instance.AddSuccess("Build succeeded", Path.GetFileName(GetCurrentProjectPath() ?? "project"), "Build");
+                    NotificationWindows.WindowsNotificationService.Show("Build Succeeded", $"{Path.GetFileName(GetCurrentProjectPath() ?? "project")} built successfully");
+                }
                 else
+                {
                     NotificationService.Instance.AddError("Build failed", e.Result.ErrorMessage ?? "See Build output for details.", "Build");
+                    NotificationWindows.WindowsNotificationService.Show("Build Failed", e.Result.ErrorMessage ?? "See Build output for details");
+                }
             });
 
         // Publish service wiring — output goes to the Build panel
@@ -75,9 +81,15 @@ public partial class MainWindow
                 UpdateBuildButtons();
                 _viewModel.StatusText = e.Result.Success ? "Publish succeeded" : "Publish failed — see Build output";
                 if (e.Result.Success)
+                {
                     NotificationService.Instance.AddSuccess("Publish succeeded", e.Result.OutputPath ?? "Output folder is ready.", "Publish");
+                    NotificationWindows.WindowsNotificationService.Show("Publish Succeeded", e.Result.OutputPath ?? "Output folder is ready");
+                }
                 else
+                {
                     NotificationService.Instance.AddError("Publish failed", e.Result.ErrorMessage ?? "See Build output for details.", "Publish");
+                    NotificationWindows.WindowsNotificationService.Show("Publish Failed", e.Result.ErrorMessage ?? "See Build output for details");
+                }
             });
     }
 

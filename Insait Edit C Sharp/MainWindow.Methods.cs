@@ -29,24 +29,43 @@ public partial class MainWindow
         {
             Dispatcher.UIThread.Post(() =>
             {
-                _isAnalysisInProgress = false;
-                _viewModel.Problems.Clear();
-                foreach (var d in e.Diagnostics)
-                    _viewModel.Problems.Add(d);
+                try
+                {
+                    _isAnalysisInProgress = false;
 
-                if (e.Success)
-                    _viewModel.StatusText = $"Analysis complete: {e.Diagnostics.Count} issue(s)";
-                else
-                    _viewModel.StatusText = $"Analysis failed: {e.ErrorMessage}";
+                    _viewModel.ReplaceProblems(e.Diagnostics);
 
-                UpdateTabDiagnosticIndicators();
+                    if (e.Success)
+                        _viewModel.StatusText = $"Analysis complete: {e.Diagnostics.Count} issue(s)";
+                    else
+                        _viewModel.StatusText = $"Analysis failed: {e.ErrorMessage}";
+
+                    ApplyProblemsFilter();
+                    UpdateTabDiagnosticIndicators();
+
+                    // Windows notification
+                    if (e.Success)
+                        NotificationWindows.WindowsNotificationService.Show(
+                            "Analysis Complete",
+                            $"{e.Diagnostics.Count} issue(s) found in project");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[CodeAnalysis] UI handler error: {ex}");
+                    _isAnalysisInProgress = false;
+                    _viewModel.StatusText = $"Analysis UI error: {ex.Message}";
+                }
             });
         };
 
         _codeAnalysisService.AnalysisProgress += (_, e) =>
         {
             Dispatcher.UIThread.Post(() =>
-                _viewModel.StatusText = $"Analysing… {e.Message} ({e.Current}/{e.Total})");
+            {
+                var pct = e.Total > 0 ? (int)((double)e.Current / e.Total * 100) : 0;
+                _viewModel.StatusText = $"Analysing… {pct}% — {e.Message} ({e.Current}/{e.Total})";
+            }, DispatcherPriority.Normal);
         };
     }
 
