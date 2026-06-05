@@ -1786,8 +1786,8 @@
                                                 <TextBlock Text="⚠️" FontSize="11" FontFamily="Segoe UI Emoji" Foreground="#FFFFD080"/>
                                             </Border>
                                             <TextBlock Text="Problems" FontSize="12"/>
-                                            <Border Background="#50F38BA8" CornerRadius="8" Padding="5,1" x:CompileBindings="False" IsVisible="{Binding HasProblems}">
-                                                <TextBlock Text="{Binding ProblemsCount}" FontSize="10" Foreground="#FFF38BA8" FontWeight="SemiBold"/>
+                                            <Border Background="#50F38BA8" CornerRadius="8" Padding="5,1" x:CompileBindings="False" IsVisible="{Binding HasErrors}">
+                                                <TextBlock Text="{Binding ErrorsCount}" FontSize="10" Foreground="#FFF38BA8" FontWeight="SemiBold"/>
                                             </Border>
                                         </StackPanel>
                                     </Button>

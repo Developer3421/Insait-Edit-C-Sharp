@@ -121,6 +121,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     public int ProblemsCount => ErrorsCount + WarningsCount + MessagesCount;
 
     public bool HasProblems => ProblemsCount > 0;
+    public bool HasErrors => ErrorsCount > 0;
 
     public ObservableCollection<string> RecentFiles { get; }
     public ObservableCollection<DiagnosticItem> Problems { get; }
@@ -157,6 +158,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         }
         OnPropertyChanged(nameof(ProblemsCount));
         OnPropertyChanged(nameof(HasProblems));
+        OnPropertyChanged(nameof(HasErrors));
     }
 
     #endregion
