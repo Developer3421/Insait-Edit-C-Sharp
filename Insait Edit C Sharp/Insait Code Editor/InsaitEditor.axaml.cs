@@ -69,6 +69,7 @@ public partial class InsaitEditor : UserControl
     public event EventHandler<NuGetInstallRequestedEventArgs>? NuGetInstallRequested;
     public event EventHandler<GoToDefinitionRequestedEventArgs>? GoToDefinitionRequested;
     public event EventHandler<RenameCompletedEventArgs>?       RenameCompleted;
+    public event EventHandler<InlineDiagnosticsUpdatedEventArgs>? DiagnosticsUpdated;
 
     // ── Public properties ────────────────────────────────────────────────
     public bool   IsDirty        => _isDirty;
@@ -283,6 +284,7 @@ public partial class InsaitEditor : UserControl
         {
             _diagnosticSpans = e.Diagnostics;
             _surface.SetDiagnostics(_diagnosticSpans);
+            DiagnosticsUpdated?.Invoke(this, e);
         });
     }
 
@@ -470,9 +472,7 @@ public partial class InsaitEditor : UserControl
     //  Completion — independent window via Roslyn factory, live-update
     // ═══════════════════════════════════════════════════════════════════════
     private int _completionTriggerCol; // column where completion was first triggered
-    private DateTime _lastCompletionUpdate = DateTime.MinValue;
-    private const int CompletionUpdateThrottleMs = 0; // No throttle - invoke autocomplete as quickly as possible
-    private DateTime _lastKeystrokeTime = DateTime.MinValue; // Track when user last typed
+    private int _completionVersion;    // incremented on each trigger to detect stale completions
 
     private async Task ShowCompletionAsync()
     {
@@ -480,19 +480,20 @@ public partial class InsaitEditor : UserControl
         bool isAxaml  = IsAxamlFile();
         if (!isCSharp && !isAxaml) return;
 
-        // Throttle completion updates to prevent excessive flickering during rapid typing
-        var now = DateTime.Now;
-        if ((now - _lastCompletionUpdate).TotalMilliseconds < CompletionUpdateThrottleMs)
-        {
-            // Skip this update if too soon since last one
-            return;
-        }
-
+        // Cancel any in-flight completion request and start fresh.
+        var version = Interlocked.Increment(ref _completionVersion);
         _completionCts?.Cancel();
         _completionCts = new CancellationTokenSource();
         var ct = _completionCts.Token;
         try
         {
+            // Small debounce: wait 100ms before starting the Roslyn analysis.
+            // During fast typing, this prevents queuing a new analysis on every keystroke
+            // and avoids UI freezes from synchronous workspace rebuilds.
+            await Task.Delay(100, ct).ConfigureAwait(false);
+            if (ct.IsCancellationRequested) return;
+            if (_completionVersion != version) return;
+
             var (line, col) = _surface.CursorPosition;
 
             // Extract the current typing prefix (word being typed)
@@ -518,11 +519,11 @@ public partial class InsaitEditor : UserControl
             IReadOnlyList<RoslynCompletionItem> freshItems;
             if (isAxaml)
                 freshItems = await _axamlEngine.GetCompletionsAsync(
-                    _currentFilePath, _surface.Text, line, col, ct);
+                    _currentFilePath, _surface.Text, line, col, ct).ConfigureAwait(false);
             else
             {
                 var roslynItems = await _completionEngine.GetCompletionsAsync(
-                    _currentFilePath, _surface.Text, line, col, ct);
+                    _currentFilePath, _surface.Text, line, col, ct).ConfigureAwait(false);
 
                 // Merge live template items for C# files
                 if (!string.IsNullOrEmpty(typingPrefix))
@@ -545,8 +546,7 @@ public partial class InsaitEditor : UserControl
                 }
             }
             if (ct.IsCancellationRequested) return;
-
-            _lastCompletionUpdate = DateTime.Now;
+            if (_completionVersion != version) return; // stale — a newer request already started
 
             // If the window is already open, update items and refilter
             if (_completionWin != null && _completionWin.IsVisible)

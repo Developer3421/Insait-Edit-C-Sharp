@@ -71,7 +71,7 @@ public sealed class RoslynCompletionEngine : IDisposable
         CompletionList? list = null;
         try
         {
-            list = await svc.GetCompletionsAsync(document, position, cancellationToken: ct);
+            list = await svc.GetCompletionsAsync(document, position, cancellationToken: ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException) { throw; }
         catch { return Array.Empty<RoslynCompletionItem>(); }
@@ -82,14 +82,6 @@ public sealed class RoslynCompletionEngine : IDisposable
         foreach (var item in list.ItemsList)
         {
             ct.ThrowIfCancellationRequested();
-            string? detail = null;
-            try
-            {
-                var desc = await svc.GetDescriptionAsync(document, item, ct);
-                if (desc is not null)
-                    detail = string.Concat(desc.TaggedParts.Select(p => p.Text));
-            }
-            catch { }
 
             result.Add(new RoslynCompletionItem
             {
@@ -98,7 +90,7 @@ public sealed class RoslynCompletionEngine : IDisposable
                 FilterText = item.FilterText,
                 SortText   = item.SortText,
                 Kind       = MapKind(item.Tags),
-                Detail     = detail,
+                Detail     = null,
                 RoslynItem = item,
             });
         }
@@ -135,7 +127,7 @@ public sealed class RoslynCompletionEngine : IDisposable
             var svc = CompletionService.GetService(document);
             if (svc is null) return null;
 
-            var change = await svc.GetChangeAsync(document, item.RoslynItem, cancellationToken: ct);
+            var change = await svc.GetChangeAsync(document, item.RoslynItem, cancellationToken: ct).ConfigureAwait(false);
             var tc = change.TextChange;
 
             // Collect additional text changes (e.g. using directive insertions)
@@ -175,8 +167,8 @@ public sealed class RoslynCompletionEngine : IDisposable
     {
         var document = SyncDocument(filePath, sourceCode);
 
-        var semanticModel = await document.GetSemanticModelAsync(ct);
-        var syntaxRoot    = await document.GetSyntaxRootAsync(ct);
+        var semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
+        var syntaxRoot    = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
         if (semanticModel is null || syntaxRoot is null) return null;
 
         var token = syntaxRoot.FindToken(position);
@@ -237,7 +229,7 @@ public sealed class RoslynCompletionEngine : IDisposable
         var qiSvc    = QuickInfoService.GetService(document);
         if (qiSvc is not null)
         {
-            var qi = await qiSvc.GetQuickInfoAsync(document, position, ct);
+            var qi = await qiSvc.GetQuickInfoAsync(document, position, ct).ConfigureAwait(false);
             if (qi is not null)
             {
                 return new QuickInfoResult
@@ -264,8 +256,8 @@ public sealed class RoslynCompletionEngine : IDisposable
         try
         {
             var document  = SyncDocument(filePath, sourceCode);
-            var formatted = await Formatter.FormatAsync(document, cancellationToken: ct);
-            var text      = await formatted.GetTextAsync(ct);
+            var formatted = await Formatter.FormatAsync(document, cancellationToken: ct).ConfigureAwait(false);
+            var text      = await formatted.GetTextAsync(ct).ConfigureAwait(false);
             return text.ToString();
         }
         catch { return null; }

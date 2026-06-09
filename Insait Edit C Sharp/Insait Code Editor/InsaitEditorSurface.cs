@@ -1477,7 +1477,6 @@ internal sealed class InsaitEditorSurface : Control
 
     // ── Project context: paths to additional .cs files to include ────────
     private string? _projectDir;
-    private List<string>? _projectCsFiles;
 
     /// <summary>
     /// Sets the project directory so that all .cs files can be loaded into
@@ -1486,30 +1485,30 @@ internal sealed class InsaitEditorSurface : Control
     public void SetProjectContext(string? projectDir)
     {
         _projectDir = projectDir;
-        _projectCsFiles = null; // force re-scan
+        InvalidateProjectCache();
         _trackedPath = null;    // force workspace rebuild
     }
 
-    private List<string> GetProjectCsFiles()
+    private async Task ScheduleHighlightAsync(CancellationToken ct)
     {
-        if (_projectCsFiles != null) return _projectCsFiles;
-        _projectCsFiles = new List<string>();
-        if (string.IsNullOrEmpty(_projectDir) || !Directory.Exists(_projectDir))
-            return _projectCsFiles;
+        if (ct.IsCancellationRequested) return;
         try
         {
-            var files = Directory.GetFiles(_projectDir, "*.cs", SearchOption.AllDirectories);
-            foreach (var f in files)
-            {
-                // Skip bin/obj/generated
-                if (f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) ||
-                    f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
-                    continue;
-                _projectCsFiles.Add(f);
-            }
+            List<ClassifiedSpan> spans;
+            var text = _fullText;
+            var path = FilePath ?? "untitled.cs";
+
+            if (IsCSharpFile(path))
+                spans = await ClassifyCSharpAsync(path, text, ct).ConfigureAwait(false);
+            else if (IsXmlFile(path))
+                spans = ClassifyXml(text);
+            else
+                spans = new List<ClassifiedSpan>();
+
+            if (ct.IsCancellationRequested) return;
+            Dispatcher.UIThread.Post(() => { _classifiedSpans = spans; InvalidateVisual(); });
         }
-        catch { /* access denied, etc. */ }
-        return _projectCsFiles;
+        catch { }
     }
 
     private void ScheduleHighlight()
@@ -1517,29 +1516,12 @@ internal sealed class InsaitEditorSurface : Control
         _highlightCts?.Cancel();
         _highlightCts = new CancellationTokenSource();
         var ct = _highlightCts.Token;
-        var text = _fullText;
-        var path = FilePath ?? "untitled.cs";
 
-        // Increased delay to 300ms to reduce excessive highlighting during rapid typing
-        Task.Delay(300, ct).ContinueWith((Action<Task>)(async _ =>
+        Task.Delay(300, ct).ContinueWith(_ =>
         {
             if (ct.IsCancellationRequested) return;
-            try
-            {
-                List<ClassifiedSpan> spans;
-
-                if (IsCSharpFile(path))
-                    spans = await ClassifyCSharpAsync(path, text, ct);
-                else if (IsXmlFile(path))
-                    spans = ClassifyXml(text);
-                else
-                    spans = new List<ClassifiedSpan>(); // plaintext — no highlighting
-
-                if (ct.IsCancellationRequested) return;
-                Dispatcher.UIThread.Post(() => { _classifiedSpans = spans; InvalidateVisual(); });
-            }
-            catch { /* swallow */ }
-        }), ct, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
+            _ = ScheduleHighlightAsync(ct);
+        }, ct, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
     }
 
     // ── C# classification (Roslyn) ──────────────────────────────────────
@@ -1599,6 +1581,50 @@ internal sealed class InsaitEditorSurface : Control
         return spans;
     }
 
+    // ── Cache for project .cs file contents ────────────────────────────
+    private readonly Dictionary<string, string> _cachedProjectFileTexts = new(StringComparer.OrdinalIgnoreCase);
+    private List<string>? _cachedProjectFileList;
+    private bool _projectFilesScanned;
+
+    private List<string> GetCachedProjectCsFiles()
+    {
+        if (_projectFilesScanned && _cachedProjectFileList is not null)
+            return _cachedProjectFileList;
+
+        _cachedProjectFileList = new List<string>();
+        _cachedProjectFileTexts.Clear();
+
+        if (string.IsNullOrWhiteSpace(_projectDir) || !Directory.Exists(_projectDir))
+        {
+            _projectFilesScanned = true;
+            return _cachedProjectFileList;
+        }
+
+        try
+        {
+            foreach (var f in Directory.GetFiles(_projectDir, "*.cs", SearchOption.AllDirectories))
+            {
+                if (f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar) ||
+                    f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
+                    continue;
+                _cachedProjectFileList.Add(f);
+                try { _cachedProjectFileTexts[f] = File.ReadAllText(f); }
+                catch { }
+            }
+        }
+        catch { }
+
+        _projectFilesScanned = true;
+        return _cachedProjectFileList;
+    }
+
+    private void InvalidateProjectCache()
+    {
+        _projectFilesScanned = false;
+        _cachedProjectFileList = null;
+        _cachedProjectFileTexts.Clear();
+    }
+
     // ── Roslyn workspace for C# ─────────────────────────────────────────
     private void RebuildWorkspaceDoc(string path, string text)
     {
@@ -1621,21 +1647,19 @@ internal sealed class InsaitEditorSurface : Control
         sol = sol.AddDocument(DocumentInfo.Create(did, path,
             loader: TextLoader.From(TextAndVersion.Create(SourceText.From(text), VersionStamp.Create())), filePath: path));
 
-        // Add other project .cs files as context (for cross-file namespace resolution)
-        var contextFiles = GetProjectCsFiles();
+        // Add other project .cs files as context — using cached contents
+        var contextFiles = GetCachedProjectCsFiles();
         foreach (var csFile in contextFiles)
         {
             if (string.Equals(csFile, path, StringComparison.OrdinalIgnoreCase))
-                continue; // already added as the active document
-            try
+                continue;
+            if (_cachedProjectFileTexts.TryGetValue(csFile, out var auxText))
             {
                 var auxDid = DocumentId.CreateNewId(pid);
-                var auxText = File.ReadAllText(csFile);
                 sol = sol.AddDocument(DocumentInfo.Create(auxDid, csFile,
                     loader: TextLoader.From(TextAndVersion.Create(SourceText.From(auxText), VersionStamp.Create())),
                     filePath: csFile));
             }
-            catch { /* skip unreadable files */ }
         }
 
         _workspace.TryApplyChanges(sol);

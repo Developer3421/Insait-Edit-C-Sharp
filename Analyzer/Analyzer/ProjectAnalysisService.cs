@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +47,35 @@ public sealed class ProjectAnalysisResult
     public IReadOnlyList<Diagnostic> AnalyzerDiagnostics { get; init; } = Array.Empty<Diagnostic>();
     public bool HasProjectReferences { get; init; }
 }
+
+// ─────────────────────────────────────────────────────────────
+//  Project item types (parsed from .csproj ItemGroup elements)
+// ─────────────────────────────────────────────────────────────
+
+public sealed record ProjectItems
+{
+    public IReadOnlyList<ProjectReferenceItem> ProjectReferences { get; init; } = Array.Empty<ProjectReferenceItem>();
+    public IReadOnlyList<PackageReferenceItem> PackageReferences { get; init; } = Array.Empty<PackageReferenceItem>();
+    public IReadOnlyList<ReferenceItem> References { get; init; } = Array.Empty<ReferenceItem>();
+    public IReadOnlyList<ComReferenceItem> ComReferences { get; init; } = Array.Empty<ComReferenceItem>();
+    public IReadOnlyList<AnalyzerItem> AnalyzerItems { get; init; } = Array.Empty<AnalyzerItem>();
+    public IReadOnlyList<AdditionalFileItem> AdditionalFiles { get; init; } = Array.Empty<AdditionalFileItem>();
+    public IReadOnlyList<EmbeddedResourceItem> EmbeddedResources { get; init; } = Array.Empty<EmbeddedResourceItem>();
+    public IReadOnlyList<ResourceItem> Resources { get; init; } = Array.Empty<ResourceItem>();
+    public IReadOnlyList<NoneItem> NoneItems { get; init; } = Array.Empty<NoneItem>();
+    public IReadOnlyList<ContentItem> ContentItems { get; init; } = Array.Empty<ContentItem>();
+}
+
+public sealed record ProjectReferenceItem(string Include);
+public sealed record PackageReferenceItem(string Id, string Version);
+public sealed record ReferenceItem(string Include, string? HintPath);
+public sealed record ComReferenceItem(string Include, string? Guid, int? VersionMajor, int? VersionMinor, int? Lcid, string? WrapperTool);
+public sealed record AnalyzerItem(string Include);
+public sealed record AdditionalFileItem(string Include);
+public sealed record EmbeddedResourceItem(string Include, string? LogicalName);
+public sealed record ResourceItem(string Include);
+public sealed record NoneItem(string Include);
+public sealed record ContentItem(string Include);
 
 /// <summary>
 /// Builds a Roslyn project in-memory on the thread pool. All CPU-heavy work
@@ -256,8 +286,11 @@ public sealed class ProjectAnalysisService
         // Checks code-behind .cs files to avoid generating duplicate members.
         var xamlStubs = GenerateXamlStubs(effectiveDir, projectId, sourceTextsByPath).ToArray();
 
+        // Parse all 10 item types from .csproj
+        var projectItems = ParseProjectItems(csprojFile);
+
         // Add .axaml/.xaml files as additional documents (available to analyzers)
-        var additionalDocs = EnumerateXamlFiles(effectiveDir)
+        var additionalDocList = EnumerateXamlFiles(effectiveDir)
             .Select(xf =>
             {
                 ct.ThrowIfCancellationRequested();
@@ -271,7 +304,67 @@ public sealed class ProjectAnalysisService
                         TextAndVersion.Create(SourceText.From(text), VersionStamp.Create())),
                     filePath: xf);
             })
-            .Where(d => d is not null).Cast<DocumentInfo>().ToImmutableArray();
+            .Where(d => d is not null).Cast<DocumentInfo>().ToList();
+
+        // Add items from <AdditionalFiles> in .csproj as additional documents
+        foreach (var af in projectItems.AdditionalFiles)
+        {
+            ct.ThrowIfCancellationRequested();
+            var fullPath = Path.GetFullPath(Path.Combine(effectiveDir, af.Include));
+            if (!File.Exists(fullPath)) continue;
+            var text = TryReadAllText(fullPath);
+            if (text is null) continue;
+            var docId = DocumentId.CreateNewId(projectId);
+            additionalDocList.Add(DocumentInfo.Create(
+                docId,
+                name: fullPath,
+                loader: TextLoader.From(
+                    TextAndVersion.Create(SourceText.From(text), VersionStamp.Create())),
+                filePath: fullPath));
+        }
+
+        // Also add <None> items that are XAML files (common for Avalonia/WPF)
+        // and <Content> items that are XAML files
+        foreach (var item in projectItems.NoneItems.Concat<object>(projectItems.ContentItems))
+        {
+            ct.ThrowIfCancellationRequested();
+            var include = item is NoneItem n ? n.Include : ((ContentItem)item).Include;
+            if (!include.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase) &&
+                !include.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase))
+                continue;
+            var fullPath = Path.GetFullPath(Path.Combine(effectiveDir, include));
+            if (!File.Exists(fullPath)) continue;
+            if (additionalDocList.Any(d => string.Equals(d.FilePath, fullPath, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            var text = TryReadAllText(fullPath);
+            if (text is null) continue;
+            var docId = DocumentId.CreateNewId(projectId);
+            additionalDocList.Add(DocumentInfo.Create(
+                docId,
+                name: fullPath,
+                loader: TextLoader.From(
+                    TextAndVersion.Create(SourceText.From(text), VersionStamp.Create())),
+                filePath: fullPath));
+        }
+
+        // Add <EmbeddedResource> items as additional documents too
+        foreach (var er in projectItems.EmbeddedResources)
+        {
+            ct.ThrowIfCancellationRequested();
+            var fullPath = Path.GetFullPath(Path.Combine(effectiveDir, er.Include));
+            if (!File.Exists(fullPath)) continue;
+            var text = TryReadAllText(fullPath);
+            if (text is null) continue;
+            var docId = DocumentId.CreateNewId(projectId);
+            additionalDocList.Add(DocumentInfo.Create(
+                docId,
+                name: fullPath,
+                loader: TextLoader.From(
+                    TextAndVersion.Create(SourceText.From(text), VersionStamp.Create())),
+                filePath: fullPath));
+        }
+
+        var additionalDocs = additionalDocList.ToImmutableArray();
 
         // Combine source documents with generated stubs
         var allDocs = documents.Concat(xamlStubs)
@@ -282,6 +375,41 @@ public sealed class ProjectAnalysisService
         // Resolve references (most expensive part after compilation)
         var metadataRefs = ResolveAllReferences(effectiveDir, sdkRoot, csprojFile);
 
+        // Try to resolve <Reference> items (with HintPath) as metadata references
+        var refAddedPaths = new HashSet<string>(metadataRefs
+            .Select(r => r.Display).Where(p => p is not null)!, StringComparer.OrdinalIgnoreCase);
+        foreach (var ri in projectItems.References)
+        {
+            ct.ThrowIfCancellationRequested();
+            // Try HintPath first
+            if (!string.IsNullOrWhiteSpace(ri.HintPath))
+            {
+                var hintFull = Path.GetFullPath(Path.Combine(effectiveDir, ri.HintPath));
+                if (File.Exists(hintFull) && refAddedPaths.Add(hintFull))
+                {
+                    try { metadataRefs.Add(MetadataReference.CreateFromFile(hintFull)); }
+                    catch { }
+                }
+            }
+        }
+
+        // Build analyzer references from <Analyzer> items
+        var analyzerRefs = new List<AnalyzerReference>();
+        var loader = new RoslynAnalyzerAssemblyLoader();
+        foreach (var ai in projectItems.AnalyzerItems)
+        {
+            ct.ThrowIfCancellationRequested();
+            var fullPath = Path.GetFullPath(Path.Combine(effectiveDir, ai.Include));
+            if (!File.Exists(fullPath)) continue;
+            try
+            {
+                analyzerRefs.Add(new AnalyzerFileReference(fullPath, loader));
+            }
+            catch
+            {
+            }
+        }
+
         var projectInfo = ProjectInfo.Create(
             projectId, VersionStamp.Create(),
             name: projectName, assemblyName: projectName,
@@ -291,6 +419,7 @@ public sealed class ProjectAnalysisService
             parseOptions: parseOpts,
             documents: allDocs,
             metadataReferences: metadataRefs,
+            analyzerReferences: analyzerRefs,
             additionalDocuments: additionalDocs);
 
         ct.ThrowIfCancellationRequested();
@@ -662,6 +791,163 @@ public sealed class ProjectAnalysisService
 
         return list;
     }
+
+    private static ProjectItems ParseProjectItems(string csprojPath)
+    {
+        var projectRefs   = new List<ProjectReferenceItem>();
+        var packageRefs   = new List<PackageReferenceItem>();
+        var refs          = new List<ReferenceItem>();
+        var comRefs       = new List<ComReferenceItem>();
+        var analyzers     = new List<AnalyzerItem>();
+        var addFiles      = new List<AdditionalFileItem>();
+        var embeddedRes   = new List<EmbeddedResourceItem>();
+        var resources     = new List<ResourceItem>();
+        var noneItems     = new List<NoneItem>();
+        var contentItems  = new List<ContentItem>();
+
+        if (!File.Exists(csprojPath))
+            return EmptyProjectItems(projectRefs, packageRefs, refs, comRefs, analyzers, addFiles, embeddedRes, resources, noneItems, contentItems);
+
+        try
+        {
+            var doc = XDocument.Load(csprojPath);
+            foreach (var item in doc.Descendants())
+            {
+                var localName = item.Name.LocalName;
+                switch (localName)
+                {
+                    case "ProjectReference":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (!string.IsNullOrWhiteSpace(include))
+                            projectRefs.Add(new ProjectReferenceItem(include));
+                        break;
+                    }
+                    case "PackageReference":
+                    {
+                        var id = item.Attribute("Include")?.Value;
+                        var ver = item.Attribute("Version")?.Value
+                                  ?? item.Elements().FirstOrDefault(e => e.Name.LocalName == "Version")?.Value;
+                        if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(ver))
+                            packageRefs.Add(new PackageReferenceItem(id, ver));
+                        break;
+                    }
+                    case "Reference":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (string.IsNullOrWhiteSpace(include)) break;
+                        var hintPath = item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "HintPath")?.Value;
+                        refs.Add(new ReferenceItem(include, hintPath));
+                        break;
+                    }
+                    case "COMReference":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (string.IsNullOrWhiteSpace(include)) break;
+                        var guid = item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "Guid")?.Value;
+                        var vmaj = TryParseInt(item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "VersionMajor")?.Value);
+                        var vmin = TryParseInt(item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "VersionMinor")?.Value);
+                        var lcid = TryParseInt(item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "Lcid")?.Value);
+                        var wrapper = item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "WrapperTool")?.Value;
+                        comRefs.Add(new ComReferenceItem(include, guid, vmaj, vmin, lcid, wrapper));
+                        break;
+                    }
+                    case "Analyzer":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (!string.IsNullOrWhiteSpace(include))
+                            analyzers.Add(new AnalyzerItem(include));
+                        break;
+                    }
+                    case "AdditionalFiles":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (!string.IsNullOrWhiteSpace(include))
+                            addFiles.Add(new AdditionalFileItem(include));
+                        break;
+                    }
+                    case "EmbeddedResource":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (string.IsNullOrWhiteSpace(include)) break;
+                        var logicalName = item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "LogicalName")?.Value;
+                        embeddedRes.Add(new EmbeddedResourceItem(include, logicalName));
+                        break;
+                    }
+                    case "Resource":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (!string.IsNullOrWhiteSpace(include))
+                            resources.Add(new ResourceItem(include));
+                        break;
+                    }
+                    case "None":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (!string.IsNullOrWhiteSpace(include))
+                            noneItems.Add(new NoneItem(include));
+                        break;
+                    }
+                    case "Content":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (!string.IsNullOrWhiteSpace(include))
+                            contentItems.Add(new ContentItem(include));
+                        break;
+                    }
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        return new ProjectItems
+        {
+            ProjectReferences  = projectRefs,
+            PackageReferences  = packageRefs,
+            References         = refs,
+            ComReferences      = comRefs,
+            AnalyzerItems      = analyzers,
+            AdditionalFiles    = addFiles,
+            EmbeddedResources  = embeddedRes,
+            Resources          = resources,
+            NoneItems          = noneItems,
+            ContentItems       = contentItems,
+        };
+    }
+
+    private static ProjectItems EmptyProjectItems(
+        List<ProjectReferenceItem> projectRefs, List<PackageReferenceItem> packageRefs,
+        List<ReferenceItem> refs, List<ComReferenceItem> comRefs,
+        List<AnalyzerItem> analyzers, List<AdditionalFileItem> addFiles,
+        List<EmbeddedResourceItem> embeddedRes, List<ResourceItem> resources,
+        List<NoneItem> noneItems, List<ContentItem> contentItems)
+    {
+        return new ProjectItems
+        {
+            ProjectReferences  = projectRefs,
+            PackageReferences  = packageRefs,
+            References         = refs,
+            ComReferences      = comRefs,
+            AnalyzerItems      = analyzers,
+            AdditionalFiles    = addFiles,
+            EmbeddedResources  = embeddedRes,
+            Resources          = resources,
+            NoneItems          = noneItems,
+            ContentItems       = contentItems,
+        };
+    }
+
+    private static int? TryParseInt(string? s)
+        => int.TryParse(s, out var v) ? v : null;
 
     private static string GetNuGetCache()
     {
@@ -1225,5 +1511,36 @@ public sealed class ProjectAnalysisService
         }
 
         return elements;
+    }
+}
+
+internal sealed class RoslynAnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
+{
+    private readonly Dictionary<string, Assembly> _loadedAssemblies = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _dependencyLocations = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _sync = new();
+
+    public void AddDependencyLocation(string fullPath)
+    {
+        if (string.IsNullOrWhiteSpace(fullPath) || !File.Exists(fullPath))
+            return;
+
+        lock (_sync)
+            _dependencyLocations.Add(Path.GetFullPath(fullPath));
+    }
+
+    public Assembly LoadFromPath(string fullPath)
+    {
+        var normalizedPath = Path.GetFullPath(fullPath);
+
+        lock (_sync)
+        {
+            if (_loadedAssemblies.TryGetValue(normalizedPath, out var assembly))
+                return assembly;
+
+            var loadedAssembly = Assembly.LoadFrom(normalizedPath);
+            _loadedAssemblies[normalizedPath] = loadedAssembly;
+            return loadedAssembly;
+        }
     }
 }

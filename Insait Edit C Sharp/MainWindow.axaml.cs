@@ -524,6 +524,7 @@ public partial class MainWindow : Window
         _insaitEditor!.GoToDefinitionRequested += OnGoToDefinitionRequested;
         _insaitEditor!.RenameCompleted += OnRenameCompleted;
         _insaitEditor!.NuGetInstallRequested += OnNuGetInstallRequested;
+        _insaitEditor!.DiagnosticsUpdated += OnEditorDiagnosticsUpdated;
     }
 
     /// <summary>
@@ -740,6 +741,47 @@ public partial class MainWindow : Window
         }
         _autoSaveTimer.Stop();
         _autoSaveTimer.Start();
+    }
+
+    private void OnEditorDiagnosticsUpdated(object? sender, InlineDiagnosticsUpdatedEventArgs e)
+    {
+        try
+        {
+            var filePath = e.FilePath;
+            if (string.IsNullOrEmpty(filePath)) return;
+
+            // Remove old diagnostics for the same file
+            var toRemove = _viewModel.Problems
+                .Where(p => string.Equals(p.FilePath, filePath, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            foreach (var r in toRemove)
+                _viewModel.Problems.Remove(r);
+
+            // Add new diagnostics
+            foreach (var span in e.Diagnostics)
+            {
+                _viewModel.Problems.Add(new DiagnosticItem
+                {
+                    FilePath = filePath,
+                    FileName = System.IO.Path.GetFileName(filePath),
+                    Line = span.Line,
+                    Column = span.Column,
+                    Code = span.Code,
+                    Message = span.Message,
+                    Severity = span.Severity switch
+                    {
+                        DiagnosticSeverityKind.Error => DiagnosticSeverity.Error,
+                        DiagnosticSeverityKind.Warning => DiagnosticSeverity.Warning,
+                        DiagnosticSeverityKind.Info => DiagnosticSeverity.Info,
+                        _ => DiagnosticSeverity.Hint,
+                    }
+                });
+            }
+
+            ApplyProblemsFilter();
+            UpdateTabDiagnosticIndicators();
+        }
+        catch { }
     }
 
     /// <summary>

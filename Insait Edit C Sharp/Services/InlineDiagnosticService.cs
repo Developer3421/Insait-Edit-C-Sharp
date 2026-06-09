@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.Text;
 using System.Reflection;
 using Analyzer;
 using Insait_Edit_C_Sharp.Controls;
+using System.Diagnostics;
 
 namespace Insait_Edit_C_Sharp.Services;
 
@@ -41,7 +42,12 @@ public sealed class InlineDiagnosticService : IDisposable
 
     /// <summary>Whether NuGet references were successfully loaded for the current project.</summary>
     private bool _hasNuGetRefs;
-    
+
+    // Secondary full-project analysis pass, runs on a slower cadence
+    // to catch cross-file diagnostics the incremental workspace might miss.
+    private readonly FileSyntaxCheckerService _fileSyntaxChecker = new();
+    private CancellationTokenSource? _fullCheckCts;
+    private readonly object _fullCheckLock = new();
 
     public event EventHandler<InlineDiagnosticsUpdatedEventArgs>? DiagnosticsUpdated;
 
@@ -57,19 +63,17 @@ public sealed class InlineDiagnosticService : IDisposable
     /// Schedules a diagnostic run for the given file+source after a short delay.
     /// Any previously scheduled run is cancelled.
     /// </summary>
-    public void ScheduleAnalysis(string filePath, string sourceCode, int delayMs = 1000)
+    public void ScheduleAnalysis(string filePath, string sourceCode, int delayMs = 600)
     {
         _cts?.Cancel();
         _cts = new CancellationTokenSource();
         var ct = _cts.Token;
 
-        Task.Delay(delayMs, ct).ContinueWith(async _ =>
+        Task.Delay(delayMs, ct).ContinueWith(_ =>
         {
             if (ct.IsCancellationRequested) return;
-            try { await RunAnalysisAsync(filePath, sourceCode, ct); }
-            catch (OperationCanceledException) { }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"InlineDiag: {ex.Message}"); }
-        }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            Task.Run(() => RunAnalysisAsync(filePath, sourceCode, ct), ct);
+        }, ct, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
     }
 
     /// <summary>Immediately run diagnostics (no delay).</summary>
@@ -85,11 +89,90 @@ public sealed class InlineDiagnosticService : IDisposable
         List<DiagnosticSpan> spans;
 
         if (isCsharp)
+        {
             spans = await AnalyzeCSharpAsync(filePath, sourceCode, ct);
+
+            // Schedule a slower full-project check to catch cross-file diagnostics.
+            // This runs at most once every few seconds, not on every keystroke.
+            ScheduleFullCheck(filePath, sourceCode, spans);
+        }
         else
+        {
             spans = new List<DiagnosticSpan>(); // F#/AXAML/etc. — no inline for now
+        }
 
         DiagnosticsUpdated?.Invoke(this, new InlineDiagnosticsUpdatedEventArgs(filePath, spans));
+    }
+
+    /// <summary>
+    /// Schedules the heavy FileSyntaxChecker pass on a slow cadence (4s debounce).
+    /// This catches cross-file diagnostics that the incremental workspace might miss,
+    /// without blocking the fast inline path.
+    /// </summary>
+    private void ScheduleFullCheck(string filePath, string sourceCode, List<DiagnosticSpan> currentSpans)
+    {
+        lock (_fullCheckLock)
+        {
+            _fullCheckCts?.Cancel();
+            _fullCheckCts = new CancellationTokenSource();
+            var ct = _fullCheckCts.Token;
+
+            Task.Delay(4000, ct).ContinueWith(async _ =>
+            {
+                if (ct.IsCancellationRequested) return;
+                try
+                {
+                    var syntaxResult = await _fileSyntaxChecker.CheckTextAsync(
+                        filePath, sourceCode, _projectDir, ct).ConfigureAwait(false);
+
+                    if (syntaxResult.Error is not null || ct.IsCancellationRequested)
+                        return;
+
+                    // Get current spans and merge any additional diagnostics
+                    var extraSpans = new List<DiagnosticSpan>();
+                    foreach (var fd in syntaxResult.Diagnostics)
+                    {
+                        if (ct.IsCancellationRequested) return;
+                        extraSpans.Add(new DiagnosticSpan
+                        {
+                            StartOffset = fd.StartOffset,
+                            EndOffset   = fd.EndOffset,
+                            Line        = fd.Line,
+                            Column      = fd.Column,
+                            Message     = fd.Message,
+                            Code        = fd.Code,
+                            Severity    = fd.Severity == "error"
+                                ? DiagnosticSeverityKind.Error
+                                : fd.Severity == "warning"
+                                    ? DiagnosticSeverityKind.Warning
+                                    : DiagnosticSeverityKind.Info,
+                        });
+                    }
+
+                    if (extraSpans.Count == 0 || ct.IsCancellationRequested)
+                        return;
+
+                    // Merge: keep existing spans, add new ones not already present
+                    var merged = new List<DiagnosticSpan>(currentSpans);
+                    foreach (var es in extraSpans)
+                    {
+                        if (!merged.Any(s => s.Code == es.Code &&
+                            s.StartOffset == es.StartOffset && s.EndOffset == es.EndOffset))
+                        {
+                            merged.Add(es);
+                        }
+                    }
+
+                    DiagnosticsUpdated?.Invoke(this,
+                        new InlineDiagnosticsUpdatedEventArgs(filePath, merged));
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[InlineDiag] Full pass: {ex.Message}");
+                }
+            }, ct, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
+        }
     }
 
     private async Task<List<DiagnosticSpan>> AnalyzeCSharpAsync(
@@ -102,11 +185,11 @@ public sealed class InlineDiagnosticService : IDisposable
         try   { document = SyncDocument(filePath, sourceCode); }
         catch { return spans; }
 
-        var compilation = await document.Project.GetCompilationAsync(ct);
+        var compilation = await document.Project.GetCompilationAsync(ct).ConfigureAwait(false);
         if (compilation == null) return spans;
 
         var build = _currentBuild;
-        var allDiagnostics = (await CollectDiagnosticsAsync(document.Project, compilation, ct))
+        var allDiagnostics = (await CollectDiagnosticsAsync(document.Project, compilation, ct).ConfigureAwait(false))
             .Where(d => build?.BelongsToFile(d, filePath) ?? false)
             .ToList();
 
@@ -132,7 +215,7 @@ public sealed class InlineDiagnosticService : IDisposable
                     filePath, sourceCode,
                     span.Start, span.End,
                     diag.Id, diag.GetMessage(),
-                    ct);
+                    ct).ConfigureAwait(false);
             }
             catch { /* best-effort */ }
 
@@ -231,7 +314,8 @@ public sealed class InlineDiagnosticService : IDisposable
 
     private static async Task<List<Diagnostic>> CollectDiagnosticsAsync(Project project, Compilation compilation, CancellationToken ct)
     {
-        var diagnostics = compilation.GetDiagnostics(ct).ToList();
+        // GetDiagnostics is synchronous CPU-bound work — run on thread pool
+        var diagnostics = await Task.Run(() => compilation.GetDiagnostics(ct).ToList(), ct).ConfigureAwait(false);
 
         // Merge project-level NuGet analyzers with the built-in IDE analyzers
         // so we get IDE0001…IDE1006 diagnostics (Info/Hint level) in addition
@@ -255,7 +339,7 @@ public sealed class InlineDiagnosticService : IDisposable
         {
             var analyzerDiagnostics = await compilation
                 .WithAnalyzers(analyzers, options)
-                .GetAnalyzerDiagnosticsAsync(ct);
+                .GetAnalyzerDiagnosticsAsync(ct).ConfigureAwait(false);
             diagnostics.AddRange(analyzerDiagnostics);
         }
         catch (Exception ex)

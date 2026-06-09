@@ -82,7 +82,33 @@ internal static class RoslynProjectFactory
         var generatedSourceFiles = EnumerateGeneratedSourceFiles(projectDir, generatedEditorConfig).ToList();
         var additionalFiles = EnumerateAdditionalFiles(projectDir).ToList();
         var metadataReferences = MergeMetadataReferences(baseReferences, ResolveProjectMetadataReferences(projectDir));
-        var analyzerReferences = ResolveAnalyzerReferences(projectFilePath);
+
+        // Parse project item types from .csproj (AdditionalFiles, Analyzer, Reference, etc.)
+        var projectItems = !string.IsNullOrWhiteSpace(projectFilePath)
+            ? ParseProjectItems(projectFilePath)
+            : new ParsedProjectItems(Array.Empty<string>(), Array.Empty<string>(), Array.Empty<(string, string?)>());
+
+        // Add <AdditionalFiles> items from .csproj to the additional files list
+        foreach (var af in projectItems.AdditionalFiles)
+        {
+            var fullPath = Path.GetFullPath(Path.Combine(projectDir!, af));
+            if (File.Exists(fullPath) && !additionalFiles.Contains(fullPath, PathComparer))
+                additionalFiles.Add(fullPath);
+        }
+
+        // Resolve <Reference> items with HintPath as metadata references
+        foreach (var (include, hintPath) in projectItems.References)
+        {
+            if (string.IsNullOrWhiteSpace(hintPath)) continue;
+            var fullPath = Path.GetFullPath(Path.Combine(projectDir!, hintPath));
+            if (File.Exists(fullPath))
+            {
+                try { metadataReferences.Add(MetadataReference.CreateFromFile(fullPath)); }
+                catch { }
+            }
+        }
+
+        var analyzerReferences = ResolveAnalyzerReferences(projectFilePath, projectItems);
 
         var projectId = ProjectId.CreateNewId();
         var documentIds = new Dictionary<string, DocumentId>(PathComparer);
@@ -373,48 +399,72 @@ internal static class RoslynProjectFactory
         return allReferences;
     }
 
-    private static List<AnalyzerReference> ResolveAnalyzerReferences(string? projectFilePath)
+    private static List<AnalyzerReference> ResolveAnalyzerReferences(string? projectFilePath, ParsedProjectItems projectItems)
     {
         var references = new List<AnalyzerReference>();
-        if (string.IsNullOrWhiteSpace(projectFilePath) || !File.Exists(projectFilePath))
-            return references;
-
         var loader = RoslynAnalyzerAssemblyLoader.Instance;
         var addedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var globalPackages = GetNuGetGlobalCacheDirectory();
 
-        foreach (var (packageId, version) in ParsePackageReferences(projectFilePath))
+        // 1. Resolve NuGet package analyzers (from <PackageReference> analyzer/ directories)
+        if (!string.IsNullOrWhiteSpace(projectFilePath) && File.Exists(projectFilePath))
         {
-            var packageDir = Path.Combine(globalPackages, packageId.ToLowerInvariant(), version);
-            if (!Directory.Exists(packageDir))
-                continue;
+            var globalPackages = GetNuGetGlobalCacheDirectory();
 
-            IEnumerable<string> analyzerDlls;
-            try
+            foreach (var (packageId, version) in ParsePackageReferences(projectFilePath))
             {
-                analyzerDlls = Directory.EnumerateFiles(Path.Combine(packageDir, "analyzers"), "*.dll", SearchOption.AllDirectories);
-            }
-            catch
-            {
-                continue;
-            }
-
-            foreach (var analyzerDll in analyzerDlls)
-            {
-                if (!addedPaths.Add(analyzerDll))
+                var packageDir = Path.Combine(globalPackages, packageId.ToLowerInvariant(), version);
+                if (!Directory.Exists(packageDir))
                     continue;
 
+                IEnumerable<string> analyzerDlls;
                 try
                 {
-                    foreach (var dependency in Directory.GetFiles(Path.GetDirectoryName(analyzerDll)!, "*.dll", SearchOption.TopDirectoryOnly))
-                        loader.AddDependencyLocation(dependency);
-
-                    references.Add(new AnalyzerFileReference(analyzerDll, loader));
+                    analyzerDlls = Directory.EnumerateFiles(Path.Combine(packageDir, "analyzers"), "*.dll", SearchOption.AllDirectories);
                 }
                 catch
                 {
-                    // Ignore malformed analyzer assemblies.
+                    continue;
                 }
+
+                foreach (var analyzerDll in analyzerDlls)
+                {
+                    if (!addedPaths.Add(analyzerDll))
+                        continue;
+
+                    try
+                    {
+                        foreach (var dependency in Directory.GetFiles(Path.GetDirectoryName(analyzerDll)!, "*.dll", SearchOption.TopDirectoryOnly))
+                            loader.AddDependencyLocation(dependency);
+
+                        references.Add(new AnalyzerFileReference(analyzerDll, loader));
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+        }
+
+        // 2. Add <Analyzer> items from .csproj (direct file paths)
+        var projectDir = !string.IsNullOrWhiteSpace(projectFilePath)
+            ? Path.GetDirectoryName(projectFilePath)
+            : null;
+
+        foreach (var analyzerPath in projectItems.AnalyzerPaths)
+        {
+            var fullPath = projectDir is not null
+                ? Path.GetFullPath(Path.Combine(projectDir, analyzerPath))
+                : Path.GetFullPath(analyzerPath);
+
+            if (!File.Exists(fullPath) || !addedPaths.Add(fullPath))
+                continue;
+
+            try
+            {
+                references.Add(new AnalyzerFileReference(fullPath, loader));
+            }
+            catch
+            {
             }
         }
 
@@ -442,6 +492,62 @@ internal static class RoslynProjectFactory
             if (!string.IsNullOrWhiteSpace(packageId) && !string.IsNullOrWhiteSpace(version))
                 yield return (packageId, version);
         }
+    }
+
+    // ── Project item types (parsed from .csproj ItemGroup elements) ──
+
+    private sealed record ParsedProjectItems(
+        IReadOnlyList<string> AdditionalFiles,
+        IReadOnlyList<string> AnalyzerPaths,
+        IReadOnlyList<(string Include, string? HintPath)> References);
+
+    private static ParsedProjectItems ParseProjectItems(string csprojPath)
+    {
+        var additionalFiles = new List<string>();
+        var analyzerPaths = new List<string>();
+        var references = new List<(string, string?)>();
+
+        if (!File.Exists(csprojPath))
+            return new ParsedProjectItems(additionalFiles, analyzerPaths, references);
+
+        try
+        {
+            var doc = XDocument.Load(csprojPath);
+            foreach (var item in doc.Descendants())
+            {
+                switch (item.Name.LocalName)
+                {
+                    case "AdditionalFiles":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (!string.IsNullOrWhiteSpace(include))
+                            additionalFiles.Add(include);
+                        break;
+                    }
+                    case "Analyzer":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (!string.IsNullOrWhiteSpace(include))
+                            analyzerPaths.Add(include);
+                        break;
+                    }
+                    case "Reference":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (string.IsNullOrWhiteSpace(include)) break;
+                        var hintPath = item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "HintPath")?.Value;
+                        references.Add((include, hintPath));
+                        break;
+                    }
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        return new ParsedProjectItems(additionalFiles, analyzerPaths, references);
     }
 
     private static string GetNuGetGlobalCacheDirectory()
