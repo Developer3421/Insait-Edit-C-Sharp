@@ -16,6 +16,21 @@ namespace Analyzer;
 /// </summary>
 public sealed class FileSyntaxCheckerService
 {
+    // Preprocessor CS diagnostic codes that fall outside the CS1xxx
+    // range but are still syntax-level issues (not semantic).
+    private static readonly HashSet<string> PreprocessorSyntaxCodes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CS8001",  // #nullable only available in C# 8.0+
+        "CS8026",  // Feature not available for #nullable
+        "CS8054",  // Unexpected preprocessor directive (single-line)
+        "CS8632",  // #nullable annotations context
+        "CS9010",  // #pragma warning after first token on line
+        "CS9012",  // #line with file name requires C# 10+
+        "CS9025",  // #pragma warning expects a warning code
+        "CS9042",  // #pragma warning after parameter list
+        "CS9056",  // #pragma warning in invalid context
+    };
+
     private readonly ProjectAnalysisService _service = new();
     private string? _lastProjectDir;
     private ProjectAnalysisResult? _lastResult;
@@ -132,7 +147,7 @@ public sealed class FileSyntaxCheckerService
             var isError = diag.Severity == DiagnosticSeverity.Error;
             var isSyntaxError = diag.Id.StartsWith("CS") &&
                 int.TryParse(diag.Id.AsSpan(2), out var code) &&
-                code is >= 1001 and <= 1999;
+                (code is >= 1001 and <= 1999 || PreprocessorSyntaxCodes.Contains(diag.Id));
 
             target.Add(new FileDiagnostic(
                 diag.Id,

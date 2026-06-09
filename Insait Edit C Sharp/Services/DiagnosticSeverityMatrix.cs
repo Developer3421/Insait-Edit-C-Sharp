@@ -35,6 +35,23 @@ namespace Insait_Edit_C_Sharp.Services;
 /// </summary>
 public static class DiagnosticSeverityMatrix
 {
+    // ─── Preprocessor CS diagnostics ─────────────────────────────────────
+    // The following C# preprocessor directives are validated by the Roslyn
+    // compiler and produce CSxxxx diagnostics:
+    //
+    //   #if / #elif / #else / #endif → CS1028, CS1513, CS8054
+    //   #define / #undef             → CS1032
+    //   #error                       → CS1029  (Error)
+    //   #warning                     → CS1030  (Warning)
+    //   #nullable                    → CS8001, CS8026, CS8632
+    //   #line                        → CS8066, CS9012
+    //   #pragma                      → CS1633, CS1634, CS1635,
+    //                                   CS9010, CS9025, CS9042, CS9056
+    //
+    // All of these flow through to their native Roslyn severity (step ⑤)
+    // since none belong in the override sets below.
+    // ─────────────────────────────────────────────────────────────────────
+
     // ─────────────────────────────────────────────────────────────────────
     // ① Reclassify as INFO  (ℹ blue)
     //    Only C# *compiler* codes that are style/polish, not real bugs.
