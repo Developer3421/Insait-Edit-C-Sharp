@@ -1061,6 +1061,14 @@ public sealed class ProjectAnalysisService
         var outputKind = OutputKind.DynamicallyLinkedLibrary;
         var nullable = NullableContextOptions.Disable;
         var allowUnsafe = false;
+        var treatWarningsAsErrors = false;
+        var warningLevel = 4;
+        var noWarn = new List<string>();
+        var warningsAsErrors = new List<string>();
+        var warningsNotAsErrors = new List<string>();
+        var checkForOverflowUnderflow = false;
+        var deterministic = false;
+        var optimize = false;
 
         if (File.Exists(csprojFile))
         {
@@ -1098,6 +1106,34 @@ public sealed class ProjectAnalysisService
 
                 var us = props.FirstOrDefault(e => e.Name.LocalName == "AllowUnsafeBlocks")?.Value;
                 allowUnsafe = string.Equals(us, "true", StringComparison.OrdinalIgnoreCase);
+
+                var twe = props.FirstOrDefault(e => e.Name.LocalName == "TreatWarningsAsErrors")?.Value;
+                treatWarningsAsErrors = string.Equals(twe, "true", StringComparison.OrdinalIgnoreCase);
+
+                var wl = props.FirstOrDefault(e => e.Name.LocalName == "WarningLevel")?.Value;
+                if (int.TryParse(wl, out var parsedWl) && parsedWl >= 0 && parsedWl <= 4)
+                    warningLevel = parsedWl;
+
+                var nw = props.FirstOrDefault(e => e.Name.LocalName == "NoWarn")?.Value;
+                if (nw is not null)
+                    noWarn.AddRange(nw.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+                var wae = props.FirstOrDefault(e => e.Name.LocalName == "WarningsAsErrors")?.Value;
+                if (wae is not null)
+                    warningsAsErrors.AddRange(wae.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+                var wnae = props.FirstOrDefault(e => e.Name.LocalName == "WarningsNotAsErrors")?.Value;
+                if (wnae is not null)
+                    warningsNotAsErrors.AddRange(wnae.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+                var cou = props.FirstOrDefault(e => e.Name.LocalName == "CheckForOverflowUnderflow")?.Value;
+                checkForOverflowUnderflow = string.Equals(cou, "true", StringComparison.OrdinalIgnoreCase);
+
+                var det = props.FirstOrDefault(e => e.Name.LocalName == "Deterministic")?.Value;
+                deterministic = string.Equals(det, "true", StringComparison.OrdinalIgnoreCase);
+
+                var opt = props.FirstOrDefault(e => e.Name.LocalName == "Optimize")?.Value;
+                optimize = string.Equals(opt, "true", StringComparison.OrdinalIgnoreCase);
             }
             catch
             {
@@ -1108,9 +1144,51 @@ public sealed class ProjectAnalysisService
             .WithDocumentationMode(DocumentationMode.Diagnose)
             .WithPreprocessorSymbols(symbols);
 
+        var specificDiagOptions = new Dictionary<string, ReportDiagnostic>();
+        foreach (var id in noWarn)
+        {
+            var trimmed = id.Trim();
+            if (!string.IsNullOrWhiteSpace(trimmed))
+                specificDiagOptions[trimmed] = ReportDiagnostic.Suppress;
+        }
+
+        ReportDiagnostic generalDiagOption;
+        if (treatWarningsAsErrors)
+        {
+            generalDiagOption = ReportDiagnostic.Error;
+            foreach (var id in warningsNotAsErrors)
+            {
+                var trimmed = id.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed) && !specificDiagOptions.ContainsKey(trimmed))
+                    specificDiagOptions[trimmed] = ReportDiagnostic.Warn;
+            }
+            foreach (var id in warningsAsErrors)
+            {
+                var trimmed = id.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed) && !specificDiagOptions.ContainsKey(trimmed))
+                    specificDiagOptions[trimmed] = ReportDiagnostic.Error;
+            }
+        }
+        else
+        {
+            generalDiagOption = ReportDiagnostic.Default;
+            foreach (var id in warningsAsErrors)
+            {
+                var trimmed = id.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed) && !specificDiagOptions.ContainsKey(trimmed))
+                    specificDiagOptions[trimmed] = ReportDiagnostic.Error;
+            }
+        }
+
         var compOpts = new CSharpCompilationOptions(outputKind)
             .WithNullableContextOptions(nullable)
-            .WithAllowUnsafe(allowUnsafe);
+            .WithAllowUnsafe(allowUnsafe)
+            .WithOverflowChecks(checkForOverflowUnderflow)
+            .WithOptimizationLevel(optimize ? OptimizationLevel.Release : OptimizationLevel.Debug)
+            .WithDeterministic(deterministic)
+            .WithWarningLevel(warningLevel)
+            .WithGeneralDiagnosticOption(generalDiagOption)
+            .WithSpecificDiagnosticOptions(specificDiagOptions);
 
         return (parseOpts, compOpts);
     }

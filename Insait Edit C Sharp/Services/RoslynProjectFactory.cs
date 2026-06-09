@@ -619,6 +619,14 @@ internal static class RoslynProjectFactory
                 properties.DefineConstants = GetProperty(xElements, "DefineConstants") ?? properties.DefineConstants;
                 properties.OutputType = GetProperty(xElements, "OutputType") ?? properties.OutputType;
                 properties.AllowUnsafe = GetProperty(xElements, "AllowUnsafeBlocks") ?? properties.AllowUnsafe;
+                properties.TreatWarningsAsErrors = GetProperty(xElements, "TreatWarningsAsErrors") ?? properties.TreatWarningsAsErrors;
+                properties.WarningLevel = GetProperty(xElements, "WarningLevel") ?? properties.WarningLevel;
+                properties.NoWarn = GetProperty(xElements, "NoWarn") ?? properties.NoWarn;
+                properties.WarningsAsErrors = GetProperty(xElements, "WarningsAsErrors") ?? properties.WarningsAsErrors;
+                properties.WarningsNotAsErrors = GetProperty(xElements, "WarningsNotAsErrors") ?? properties.WarningsNotAsErrors;
+                properties.CheckForOverflowUnderflow = GetProperty(xElements, "CheckForOverflowUnderflow") ?? properties.CheckForOverflowUnderflow;
+                properties.Deterministic = GetProperty(xElements, "Deterministic") ?? properties.Deterministic;
+                properties.Optimize = GetProperty(xElements, "Optimize") ?? properties.Optimize;
             }
             catch
             {
@@ -691,10 +699,72 @@ internal static class RoslynProjectFactory
         };
 
         var allowUnsafe = string.Equals(properties.AllowUnsafe, "true", StringComparison.OrdinalIgnoreCase);
+        var treatWarningsAsErrors = string.Equals(properties.TreatWarningsAsErrors, "true", StringComparison.OrdinalIgnoreCase);
+        var checkForOverflowUnderflow = string.Equals(properties.CheckForOverflowUnderflow, "true", StringComparison.OrdinalIgnoreCase);
+        var deterministic = string.Equals(properties.Deterministic, "true", StringComparison.OrdinalIgnoreCase);
+        var optimize = string.Equals(properties.Optimize, "true", StringComparison.OrdinalIgnoreCase);
+
+        var warningLevel = 4;
+        if (int.TryParse(properties.WarningLevel, out var parsedWl) && parsedWl >= 0 && parsedWl <= 4)
+            warningLevel = parsedWl;
+
+        var specificDiagOptions = new Dictionary<string, ReportDiagnostic>();
+        if (!string.IsNullOrWhiteSpace(properties.NoWarn))
+        {
+            foreach (var id in properties.NoWarn.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmed = id.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                    specificDiagOptions[trimmed] = ReportDiagnostic.Suppress;
+            }
+        }
+
+        ReportDiagnostic generalDiagOption;
+        if (treatWarningsAsErrors)
+        {
+            generalDiagOption = ReportDiagnostic.Error;
+            if (!string.IsNullOrWhiteSpace(properties.WarningsNotAsErrors))
+            {
+                foreach (var id in properties.WarningsNotAsErrors.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var trimmed = id.Trim();
+                    if (!string.IsNullOrWhiteSpace(trimmed) && !specificDiagOptions.ContainsKey(trimmed))
+                        specificDiagOptions[trimmed] = ReportDiagnostic.Warn;
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(properties.WarningsAsErrors))
+            {
+                foreach (var id in properties.WarningsAsErrors.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var trimmed = id.Trim();
+                    if (!string.IsNullOrWhiteSpace(trimmed) && !specificDiagOptions.ContainsKey(trimmed))
+                        specificDiagOptions[trimmed] = ReportDiagnostic.Error;
+                }
+            }
+        }
+        else
+        {
+            generalDiagOption = ReportDiagnostic.Default;
+            if (!string.IsNullOrWhiteSpace(properties.WarningsAsErrors))
+            {
+                foreach (var id in properties.WarningsAsErrors.Split(new[] { ';', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var trimmed = id.Trim();
+                    if (!string.IsNullOrWhiteSpace(trimmed) && !specificDiagOptions.ContainsKey(trimmed))
+                        specificDiagOptions[trimmed] = ReportDiagnostic.Error;
+                }
+            }
+        }
 
         return new CSharpCompilationOptions(outputKind)
             .WithNullableContextOptions(nullableContextOptions)
-            .WithAllowUnsafe(allowUnsafe);
+            .WithAllowUnsafe(allowUnsafe)
+            .WithOverflowChecks(checkForOverflowUnderflow)
+            .WithOptimizationLevel(optimize ? OptimizationLevel.Release : OptimizationLevel.Debug)
+            .WithDeterministic(deterministic)
+            .WithWarningLevel(warningLevel)
+            .WithGeneralDiagnosticOption(generalDiagOption)
+            .WithSpecificDiagnosticOptions(specificDiagOptions);
     }
 
     private static DocumentInfo CreateSourceDocument(DocumentId documentId, string filePath, string text)
@@ -838,6 +908,14 @@ internal static class RoslynProjectFactory
         public string? OutputType { get; set; }
         public string? AllowUnsafe { get; set; }
         public string? TargetFramework { get; set; }
+        public string? TreatWarningsAsErrors { get; set; }
+        public string? WarningLevel { get; set; }
+        public string? NoWarn { get; set; }
+        public string? WarningsAsErrors { get; set; }
+        public string? WarningsNotAsErrors { get; set; }
+        public string? CheckForOverflowUnderflow { get; set; }
+        public string? Deterministic { get; set; }
+        public string? Optimize { get; set; }
     }
 }
 
