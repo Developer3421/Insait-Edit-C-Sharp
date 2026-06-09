@@ -1226,6 +1226,16 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         var index = Tabs.IndexOf(tab);
         Tabs.Remove(tab);
 
+        // Remove diagnostics for the closed file from the Problems panel
+        if (!string.IsNullOrEmpty(tab.FilePath))
+        {
+            var toRemove = Problems
+                .Where(p => string.Equals(p.FilePath, tab.FilePath, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            foreach (var r in toRemove)
+                Problems.Remove(r);
+        }
+
         if (ActiveTab == tab && Tabs.Count > 0)
         {
             ActiveTab = Tabs[System.Math.Max(0, index - 1)];

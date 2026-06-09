@@ -271,7 +271,12 @@ public partial class InsaitEditor : UserControl
     {
         // Don't schedule diagnostics if completion window is visible
         // or if the file is not a C# file
-        if (_completionWin != null || !_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        if (!_currentFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            ClearDiagnostics();
+            return;
+        }
+        if (_completionWin != null)
             return;
         _diagService.ScheduleAnalysis(_currentFilePath, _surface.Text);
     }

@@ -94,7 +94,7 @@ public sealed class InlineDiagnosticService : IDisposable
 
             // Schedule a slower full-project check to catch cross-file diagnostics.
             // This runs at most once every few seconds, not on every keystroke.
-            ScheduleFullCheck(filePath, sourceCode, spans);
+            ScheduleFullCheck(filePath, sourceCode);
         }
         else
         {
@@ -108,8 +108,10 @@ public sealed class InlineDiagnosticService : IDisposable
     /// Schedules the heavy FileSyntaxChecker pass on a slow cadence (4s debounce).
     /// This catches cross-file diagnostics that the incremental workspace might miss,
     /// without blocking the fast inline path.
+    /// Fires diagnostics from the full check directly (no merge) — the full check
+    /// has complete project context and produces the authoritative result.
     /// </summary>
-    private void ScheduleFullCheck(string filePath, string sourceCode, List<DiagnosticSpan> currentSpans)
+    private void ScheduleFullCheck(string filePath, string sourceCode)
     {
         lock (_fullCheckLock)
         {
@@ -128,12 +130,11 @@ public sealed class InlineDiagnosticService : IDisposable
                     if (syntaxResult.Error is not null || ct.IsCancellationRequested)
                         return;
 
-                    // Get current spans and merge any additional diagnostics
-                    var extraSpans = new List<DiagnosticSpan>();
+                    var resultSpans = new List<DiagnosticSpan>(syntaxResult.Diagnostics.Count);
                     foreach (var fd in syntaxResult.Diagnostics)
                     {
                         if (ct.IsCancellationRequested) return;
-                        extraSpans.Add(new DiagnosticSpan
+                        resultSpans.Add(new DiagnosticSpan
                         {
                             StartOffset = fd.StartOffset,
                             EndOffset   = fd.EndOffset,
@@ -149,22 +150,8 @@ public sealed class InlineDiagnosticService : IDisposable
                         });
                     }
 
-                    if (extraSpans.Count == 0 || ct.IsCancellationRequested)
-                        return;
-
-                    // Merge: keep existing spans, add new ones not already present
-                    var merged = new List<DiagnosticSpan>(currentSpans);
-                    foreach (var es in extraSpans)
-                    {
-                        if (!merged.Any(s => s.Code == es.Code &&
-                            s.StartOffset == es.StartOffset && s.EndOffset == es.EndOffset))
-                        {
-                            merged.Add(es);
-                        }
-                    }
-
                     DiagnosticsUpdated?.Invoke(this,
-                        new InlineDiagnosticsUpdatedEventArgs(filePath, merged));
+                        new InlineDiagnosticsUpdatedEventArgs(filePath, resultSpans));
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
