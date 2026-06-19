@@ -4,6 +4,8 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,11 +66,13 @@ public sealed record ProjectItems
     public IReadOnlyList<ResourceItem> Resources { get; init; } = Array.Empty<ResourceItem>();
     public IReadOnlyList<NoneItem> NoneItems { get; init; } = Array.Empty<NoneItem>();
     public IReadOnlyList<ContentItem> ContentItems { get; init; } = Array.Empty<ContentItem>();
+    public IReadOnlyList<LinkedFileItem> LinkedFiles { get; init; } = Array.Empty<LinkedFileItem>();
+    public IReadOnlyList<string> SharedProjectImports { get; init; } = Array.Empty<string>();
 }
 
 public sealed record ProjectReferenceItem(string Include);
 public sealed record PackageReferenceItem(string Id, string Version);
-public sealed record ReferenceItem(string Include, string? HintPath);
+public sealed record ReferenceItem(string Include, string? HintPath, string? Aliases);
 public sealed record ComReferenceItem(string Include, string? Guid, int? VersionMajor, int? VersionMinor, int? Lcid, string? WrapperTool);
 public sealed record AnalyzerItem(string Include);
 public sealed record AdditionalFileItem(string Include);
@@ -76,6 +80,7 @@ public sealed record EmbeddedResourceItem(string Include, string? LogicalName);
 public sealed record ResourceItem(string Include);
 public sealed record NoneItem(string Include);
 public sealed record ContentItem(string Include);
+public sealed record LinkedFileItem(string Include, string? Link);
 
 /// <summary>
 /// Builds a Roslyn project in-memory on the thread pool. All CPU-heavy work
@@ -165,8 +170,9 @@ public sealed class ProjectAnalysisService
         var analyzers = BuiltInAnalyzerProvider.Merge(projectAnalyzers);
         if (analyzers.Length == 0) return new List<Diagnostic>();
 
+        var additionalTexts = GetProjectAdditionalTexts(project);
         var opts = new CompilationWithAnalyzersOptions(
-            new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty),
+            new AnalyzerOptions(additionalTexts),
             onAnalyzerException: null,
             concurrentAnalysis: true,
             logAnalyzerExecutionTime: false,
@@ -220,6 +226,58 @@ public sealed class ProjectAnalysisService
         }).ToList();
     }
 
+    /// <summary>
+    /// Collect additional texts from the project's additional documents so
+    /// analyzers can read them (fixes false positives when analyzers depend
+    /// on <AdditionalFile> contents like .editorconfig or custom config).
+    /// </summary>
+    private static ImmutableArray<AdditionalText> GetProjectAdditionalTexts(Project project)
+    {
+        try
+        {
+            var docs = project.AdditionalDocuments?.ToList();
+            if (docs is null || docs.Count == 0)
+                return ImmutableArray<AdditionalText>.Empty;
+
+            var texts = new List<AdditionalText>(docs.Count);
+            foreach (var doc in docs)
+            {
+                try
+                {
+                    var sourceText = doc.GetTextAsync(CancellationToken.None)
+                        .GetAwaiter().GetResult();
+                    if (sourceText is not null)
+                        texts.Add(new CustomAdditionalText(doc.FilePath ?? doc.Name, sourceText));
+                }
+                catch { }
+            }
+
+            return texts.ToImmutableArray();
+        }
+        catch
+        {
+            return ImmutableArray<AdditionalText>.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Minimal <see cref="AdditionalText"/> implementation wrapping a path and source text.
+    /// </summary>
+    private sealed class CustomAdditionalText : AdditionalText
+    {
+        private readonly string _path;
+        private readonly SourceText _text;
+
+        public CustomAdditionalText(string path, SourceText text)
+        {
+            _path = path;
+            _text = text;
+        }
+
+        public override string Path => _path;
+        public override SourceText GetText(CancellationToken cancellationToken = default) => _text;
+    }
+
     private static IEnumerable<DiagnosticAnalyzer> SafeGetAnalyzers(
         AnalyzerReference r, string lang)
     {
@@ -242,8 +300,54 @@ public sealed class ProjectAnalysisService
                          ?? throw new InvalidOperationException("No .csproj found in " + projectDir);
 
         var effectiveDir = Path.GetDirectoryName(csprojFile)!;
-        var sourceFiles = EnumerateSourceFiles(effectiveDir).ToArray();
-        if (sourceFiles.Length == 0)
+
+        // Parse all item types from .csproj first (needed for shared projects,
+        // linked files, and reference aliases before document creation)
+        var projectItems = ParseProjectItems(csprojFile);
+
+        // Enumerate source files from the project directory, then add linked
+        // files and shared project sources discovered from .csproj items.
+        var sourceFiles = new List<string>(EnumerateSourceFiles(effectiveDir));
+
+        foreach (var linkedFile in projectItems.LinkedFiles)
+        {
+            var fullPath = Path.GetFullPath(Path.Combine(effectiveDir, linkedFile.Include));
+            if (File.Exists(fullPath) && !sourceFiles.Contains(fullPath, PathComparer))
+                sourceFiles.Add(fullPath);
+        }
+
+        foreach (var shprojRel in projectItems.SharedProjectImports)
+        {
+            var shprojPath = Path.GetFullPath(Path.Combine(effectiveDir, shprojRel));
+            if (!File.Exists(shprojPath)) continue;
+            try
+            {
+                var shprojDoc = XDocument.Load(shprojPath);
+                var import = shprojDoc.Descendants()
+                    .FirstOrDefault(e => e.Name.LocalName == "Import");
+                var projitemsRel = import?.Attribute("Project")?.Value;
+                if (string.IsNullOrWhiteSpace(projitemsRel)) continue;
+
+                var projitemsPath = Path.GetFullPath(Path.Combine(
+                    Path.GetDirectoryName(shprojPath)!, projitemsRel));
+                if (!File.Exists(projitemsPath)) continue;
+
+                var itemsDoc = XDocument.Load(projitemsPath);
+                foreach (var compile in itemsDoc.Descendants()
+                    .Where(e => e.Name.LocalName == "Compile"))
+                {
+                    var include = compile.Attribute("Include")?.Value;
+                    if (string.IsNullOrWhiteSpace(include)) continue;
+                    var fullPath = Path.GetFullPath(Path.Combine(
+                        Path.GetDirectoryName(projitemsPath)!, include));
+                    if (File.Exists(fullPath) && !sourceFiles.Contains(fullPath, PathComparer))
+                        sourceFiles.Add(fullPath);
+                }
+            }
+            catch { }
+        }
+
+        if (sourceFiles.Count == 0)
             throw new InvalidOperationException("No .cs source files in " + effectiveDir);
 
         ct.ThrowIfCancellationRequested();
@@ -253,8 +357,8 @@ public sealed class ProjectAnalysisService
         var projectId = ProjectId.CreateNewId();
 
         // Load source documents
-        var documents = new DocumentInfo[sourceFiles.Length];
-        for (var i = 0; i < sourceFiles.Length; i++)
+        var documents = new DocumentInfo[sourceFiles.Count];
+        for (var i = 0; i < sourceFiles.Count; i++)
         {
             ct.ThrowIfCancellationRequested();
             var text = TryReadAllText(sourceFiles[i]);
@@ -285,9 +389,6 @@ public sealed class ProjectAnalysisService
         // (InitializeComponent, named controls, etc.) are visible to Roslyn.
         // Checks code-behind .cs files to avoid generating duplicate members.
         var xamlStubs = GenerateXamlStubs(effectiveDir, projectId, sourceTextsByPath).ToArray();
-
-        // Parse all 10 item types from .csproj
-        var projectItems = ParseProjectItems(csprojFile);
 
         // Add .axaml/.xaml files as additional documents (available to analyzers)
         var additionalDocList = EnumerateXamlFiles(effectiveDir)
@@ -368,28 +469,71 @@ public sealed class ProjectAnalysisService
 
         // Combine source documents with generated stubs
         var allDocs = documents.Concat(xamlStubs)
-            .Where(d => d is not null).Cast<DocumentInfo>().ToArray();
+            .Where(d => d is not null).Cast<DocumentInfo>().ToList();
+
+        // ── Global usings (ImplicitUsings + explicit global using directives) ──
+        var globalUsingDoc = CreateGlobalUsingsDocument(projectId, sourceTextsByPath, csprojFile);
+        if (globalUsingDoc is not null)
+            allDocs.Add(globalUsingDoc);
+
+        // ── Synthetic AssemblyInfo (SDK-generated attributes) ──
+        var assemblyInfoDoc = CreateAssemblyInfoDocument(projectId, projectName);
+        if (assemblyInfoDoc is not null)
+            allDocs.Add(assemblyInfoDoc);
 
         ct.ThrowIfCancellationRequested();
 
         // Resolve references (most expensive part after compilation)
         var metadataRefs = ResolveAllReferences(effectiveDir, sdkRoot, csprojFile);
 
-        // Try to resolve <Reference> items (with HintPath) as metadata references
+        // Try to resolve <Reference> items (with HintPath and aliases) as metadata references
         var refAddedPaths = new HashSet<string>(metadataRefs
             .Select(r => r.Display).Where(p => p is not null)!, StringComparer.OrdinalIgnoreCase);
         foreach (var ri in projectItems.References)
         {
             ct.ThrowIfCancellationRequested();
+
+            string? fullPath = null;
+
             // Try HintPath first
             if (!string.IsNullOrWhiteSpace(ri.HintPath))
             {
-                var hintFull = Path.GetFullPath(Path.Combine(effectiveDir, ri.HintPath));
-                if (File.Exists(hintFull) && refAddedPaths.Add(hintFull))
-                {
-                    try { metadataRefs.Add(MetadataReference.CreateFromFile(hintFull)); }
-                    catch { }
-                }
+                fullPath = Path.GetFullPath(Path.Combine(effectiveDir, ri.HintPath));
+                if (!File.Exists(fullPath))
+                    fullPath = null;
+            }
+
+            // Fallback: try resolving by assembly name from SDK ref packs
+            fullPath ??= ResolveReferenceByAssemblyName(ri.Include, effectiveDir);
+
+            if (string.IsNullOrWhiteSpace(fullPath) || !File.Exists(fullPath) || !refAddedPaths.Add(fullPath))
+                continue;
+
+            try
+            {
+                var properties = string.IsNullOrWhiteSpace(ri.Aliases)
+                    ? default(MetadataReferenceProperties)
+                    : new MetadataReferenceProperties(
+                        aliases: ri.Aliases
+                            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(static a => a.Trim())
+                            .Where(static a => a.Length > 0)
+                            .ToImmutableArray());
+
+                metadataRefs.Add(MetadataReference.CreateFromFile(fullPath, properties));
+            }
+            catch { }
+        }
+
+        // ── COM References ──
+        foreach (var comRef in projectItems.ComReferences)
+        {
+            ct.ThrowIfCancellationRequested();
+            var interopDll = ResolveComReference(comRef, effectiveDir);
+            if (interopDll is not null && refAddedPaths.Add(interopDll))
+            {
+                try { metadataRefs.Add(MetadataReference.CreateFromFile(interopDll)); }
+                catch { }
             }
         }
 
@@ -429,6 +573,29 @@ public sealed class ProjectAnalysisService
         {
             workspace.Dispose();
             throw new InvalidOperationException("Failed to apply workspace changes");
+        }
+
+        // Add .editorconfig as analyzer config document
+        var sol = workspace.CurrentSolution;
+        var editorConfigPath = FindEditorConfig(effectiveDir);
+        if (editorConfigPath is not null)
+        {
+            try
+            {
+                var sourceText = SourceText.From(File.ReadAllText(editorConfigPath), Encoding.UTF8);
+                sol = sol.AddAnalyzerConfigDocument(
+                    DocumentId.CreateNewId(projectId),
+                    name: ".editorconfig",
+                    text: sourceText,
+                    filePath: editorConfigPath);
+            }
+            catch { }
+        }
+
+        if (!workspace.TryApplyChanges(sol))
+        {
+            workspace.Dispose();
+            throw new InvalidOperationException("Failed to apply analyzer config");
         }
 
         var project = workspace.CurrentSolution.GetProject(projectId)!;
@@ -804,9 +971,11 @@ public sealed class ProjectAnalysisService
         var resources     = new List<ResourceItem>();
         var noneItems     = new List<NoneItem>();
         var contentItems  = new List<ContentItem>();
+        var linkedFiles   = new List<LinkedFileItem>();
+        var sharedProjectImports = new List<string>();
 
         if (!File.Exists(csprojPath))
-            return EmptyProjectItems(projectRefs, packageRefs, refs, comRefs, analyzers, addFiles, embeddedRes, resources, noneItems, contentItems);
+            return EmptyProjectItems(projectRefs, packageRefs, refs, comRefs, analyzers, addFiles, embeddedRes, resources, noneItems, contentItems, linkedFiles, sharedProjectImports);
 
         try
         {
@@ -838,7 +1007,8 @@ public sealed class ProjectAnalysisService
                         if (string.IsNullOrWhiteSpace(include)) break;
                         var hintPath = item.Elements()
                             .FirstOrDefault(e => e.Name.LocalName == "HintPath")?.Value;
-                        refs.Add(new ReferenceItem(include, hintPath));
+                        var aliases = item.Attribute("Aliases")?.Value;
+                        refs.Add(new ReferenceItem(include, hintPath, aliases));
                         break;
                     }
                     case "COMReference":
@@ -902,6 +1072,26 @@ public sealed class ProjectAnalysisService
                             contentItems.Add(new ContentItem(include));
                         break;
                     }
+                    case "Compile":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (string.IsNullOrWhiteSpace(include)) break;
+                        var link = item.Element(item.Name.Namespace + "Link")?.Value
+                                   ?? item.Attribute("Link")?.Value;
+                        linkedFiles.Add(new LinkedFileItem(include, link));
+                        break;
+                    }
+                }
+            }
+
+            // Parse <Import> elements to find shared project references (.shproj)
+            foreach (var import in doc.Descendants().Where(e => e.Name.LocalName == "Import"))
+            {
+                var project = import.Attribute("Project")?.Value;
+                if (!string.IsNullOrWhiteSpace(project) &&
+                    project.EndsWith(".shproj", StringComparison.OrdinalIgnoreCase))
+                {
+                    sharedProjectImports.Add(project);
                 }
             }
         }
@@ -911,16 +1101,18 @@ public sealed class ProjectAnalysisService
 
         return new ProjectItems
         {
-            ProjectReferences  = projectRefs,
-            PackageReferences  = packageRefs,
-            References         = refs,
-            ComReferences      = comRefs,
-            AnalyzerItems      = analyzers,
-            AdditionalFiles    = addFiles,
-            EmbeddedResources  = embeddedRes,
-            Resources          = resources,
-            NoneItems          = noneItems,
-            ContentItems       = contentItems,
+            ProjectReferences    = projectRefs,
+            PackageReferences    = packageRefs,
+            References           = refs,
+            ComReferences        = comRefs,
+            AnalyzerItems        = analyzers,
+            AdditionalFiles      = addFiles,
+            EmbeddedResources    = embeddedRes,
+            Resources            = resources,
+            NoneItems            = noneItems,
+            ContentItems         = contentItems,
+            LinkedFiles          = linkedFiles,
+            SharedProjectImports = sharedProjectImports,
         };
     }
 
@@ -929,20 +1121,23 @@ public sealed class ProjectAnalysisService
         List<ReferenceItem> refs, List<ComReferenceItem> comRefs,
         List<AnalyzerItem> analyzers, List<AdditionalFileItem> addFiles,
         List<EmbeddedResourceItem> embeddedRes, List<ResourceItem> resources,
-        List<NoneItem> noneItems, List<ContentItem> contentItems)
+        List<NoneItem> noneItems, List<ContentItem> contentItems,
+        List<LinkedFileItem> linkedFiles, List<string> sharedProjectImports)
     {
         return new ProjectItems
         {
-            ProjectReferences  = projectRefs,
-            PackageReferences  = packageRefs,
-            References         = refs,
-            ComReferences      = comRefs,
-            AnalyzerItems      = analyzers,
-            AdditionalFiles    = addFiles,
-            EmbeddedResources  = embeddedRes,
-            Resources          = resources,
-            NoneItems          = noneItems,
-            ContentItems       = contentItems,
+            ProjectReferences    = projectRefs,
+            PackageReferences    = packageRefs,
+            References           = refs,
+            ComReferences        = comRefs,
+            AnalyzerItems        = analyzers,
+            AdditionalFiles      = addFiles,
+            EmbeddedResources    = embeddedRes,
+            Resources            = resources,
+            NoneItems            = noneItems,
+            ContentItems         = contentItems,
+            LinkedFiles          = linkedFiles,
+            SharedProjectImports = sharedProjectImports,
         };
     }
 
@@ -1193,6 +1388,194 @@ public sealed class ProjectAnalysisService
         return (parseOpts, compOpts);
     }
 
+    // ── Global usings ──────────────────────────────────────────────────────────
+
+    private static readonly Regex GlobalUsingRegex = new(
+        @"^\s*global\s+using\s+(?<ns>[^;]+)\s*;",
+        RegexOptions.Multiline | RegexOptions.Compiled);
+
+    private static readonly IReadOnlySet<string> DefaultImplicitUsings = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "System",
+        "System.Collections.Generic",
+        "System.IO",
+        "System.Linq",
+        "System.Net.Http",
+        "System.Threading",
+        "System.Threading.Tasks",
+    };
+
+    private static readonly IReadOnlySet<string> WebImplicitUsings = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "System.Net.Http.Json",
+        "Microsoft.AspNetCore.Builder",
+        "Microsoft.AspNetCore.Hosting",
+        "Microsoft.AspNetCore.Http",
+        "Microsoft.AspNetCore.Routing",
+        "Microsoft.Extensions.Configuration",
+        "Microsoft.Extensions.DependencyInjection",
+        "Microsoft.Extensions.Hosting",
+        "Microsoft.Extensions.Logging",
+    };
+
+    /// <summary>
+    /// Creates a synthetic source document with all effective global usings:
+    ///   1. Explicit <c>global using</c> directives from all source files.
+    ///   2. Standard implicit usings if <c>&lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;</c> is set.
+    /// Returns <c>null</c> when there are no global usings to add.
+    /// </summary>
+    private static DocumentInfo? CreateGlobalUsingsDocument(
+        ProjectId projectId,
+        IReadOnlyDictionary<string, string> sourceTextsByPath,
+        string csprojFile)
+    {
+        var usings = new HashSet<string>(StringComparer.Ordinal);
+        var (isImplicitUsingsEnabled, targetFramework) = ReadImplicitUsings(csprojFile);
+        var isWebSdk = targetFramework?.Contains("aspnet", StringComparison.OrdinalIgnoreCase) == true;
+
+        // 1. Collect explicit `global using` directives from all source files
+        foreach (var text in sourceTextsByPath.Values)
+        {
+            foreach (Match match in GlobalUsingRegex.Matches(text))
+            {
+                var ns = match.Groups["ns"].Value.Trim();
+                if (!string.IsNullOrWhiteSpace(ns))
+                    usings.Add(ns);
+            }
+        }
+
+        // 2. Add implicit usings if enabled
+        if (isImplicitUsingsEnabled)
+        {
+            foreach (var ns in DefaultImplicitUsings)
+                usings.Add(ns);
+
+            if (isWebSdk)
+            {
+                foreach (var ns in WebImplicitUsings)
+                    usings.Add(ns);
+            }
+        }
+
+        if (usings.Count == 0)
+            return null;
+
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated /> — Global Usings");
+        foreach (var ns in usings.OrderBy(static n => n, StringComparer.Ordinal))
+            sb.Append("global using ").Append(ns).AppendLine(";");
+
+        var sourceText = SourceText.From(sb.ToString(), Encoding.UTF8);
+        return DocumentInfo.Create(
+            DocumentId.CreateNewId(projectId),
+            name: "GlobalUsings.g.cs",
+            loader: TextLoader.From(TextAndVersion.Create(sourceText, VersionStamp.Create())),
+            filePath: Path.Combine(Path.GetTempPath(), "RoslynGlobalUsings.g.cs"));
+    }
+
+    /// <summary>
+    /// Reads <c>&lt;ImplicitUsings&gt;</c> and <c>&lt;TargetFramework&gt;</c> from a .csproj file.
+    /// </summary>
+    private static (bool enabled, string? targetFramework) ReadImplicitUsings(string csprojFile)
+    {
+        if (!File.Exists(csprojFile))
+            return (false, null);
+
+        try
+        {
+            var doc = XDocument.Load(csprojFile);
+            var props = doc.Descendants()
+                .Where(e => e.Parent?.Name.LocalName == "PropertyGroup")
+                .ToList();
+
+            var implicitUsings = props.FirstOrDefault(e => e.Name.LocalName == "ImplicitUsings")?.Value;
+            var targetFramework = props.FirstOrDefault(e => e.Name.LocalName == "TargetFramework")?.Value;
+            var targetFrameworks = props.FirstOrDefault(e => e.Name.LocalName == "TargetFrameworks")?.Value;
+
+            // Resolve effective TFM from <TargetFramework> or first in <TargetFrameworks>
+            var effectiveTfm = targetFramework;
+            if (string.IsNullOrWhiteSpace(effectiveTfm) && !string.IsNullOrWhiteSpace(targetFrameworks))
+            {
+                effectiveTfm = targetFrameworks
+                    .Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(static t => t.Trim())
+                    .FirstOrDefault(static t => !string.IsNullOrWhiteSpace(t));
+            }
+
+            return (string.Equals(implicitUsings, "enable", StringComparison.OrdinalIgnoreCase), effectiveTfm);
+        }
+        catch
+        {
+            return (false, null);
+        }
+    }
+
+    /// <summary>
+    /// Creates a synthetic AssemblyInfo.g.cs document with common assembly-level
+    /// attributes that the .NET SDK normally generates during build.
+    /// </summary>
+    private static DocumentInfo? CreateAssemblyInfoDocument(ProjectId projectId, string projectName)
+    {
+        if (string.IsNullOrWhiteSpace(projectName))
+            return null;
+
+        var guid = GuidFromString(projectName);
+        var source = $@"// <auto-generated />
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+[assembly: AssemblyVersion(""1.0.0.0"")]
+[assembly: AssemblyFileVersion(""1.0.0.0"")]
+[assembly: AssemblyCompany("""")]
+[assembly: AssemblyConfiguration(""Debug"")]
+[assembly: AssemblyCopyright("""")]
+[assembly: AssemblyDescription("""")]
+[assembly: AssemblyProduct(""{projectName}"")]
+[assembly: AssemblyTitle(""{projectName}"")]
+[assembly: AssemblyTrademark("""")]
+[assembly: ComVisible(false)]
+[assembly: Guid(""{guid}"")]
+";
+
+        return DocumentInfo.Create(
+            DocumentId.CreateNewId(projectId),
+            name: "AssemblyInfo.g.cs",
+            loader: TextLoader.From(TextAndVersion.Create(SourceText.From(source, Encoding.UTF8), VersionStamp.Create())),
+            filePath: Path.Combine(Path.GetTempPath(), "RoslynAssemblyInfo.g.cs"));
+    }
+
+    private static string GuidFromString(string input)
+    {
+        using var md5 = System.Security.Cryptography.MD5.Create();
+        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+        return new Guid(hash.Take(16).ToArray()).ToString("D");
+    }
+
+    /// <summary>
+    /// Finds the closest .editorconfig file starting from the given directory
+    /// and walking up. Returns null if none found.
+    /// </summary>
+    private static string? FindEditorConfig(string? projectDir)
+    {
+        if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
+            return null;
+
+        var dir = Path.GetFullPath(projectDir);
+        while (dir is not null)
+        {
+            var candidate = Path.Combine(dir, ".editorconfig");
+            if (File.Exists(candidate))
+                return candidate;
+
+            var parent = Path.GetDirectoryName(dir);
+            if (string.Equals(dir, parent, StringComparison.OrdinalIgnoreCase))
+                break;
+            dir = parent;
+        }
+
+        return null;
+    }
+
     private static string? FindCsproj(string projectDir)
     {
         if (!Directory.Exists(projectDir)) return null;
@@ -1256,6 +1639,128 @@ public sealed class ProjectAnalysisService
         catch
         {
         }
+    }
+
+    /// <summary>
+    /// Attempt to resolve a reference by assembly name. Searches SDK ref pack
+    /// directories and the project's own output directory.
+    /// </summary>
+    private static string? ResolveReferenceByAssemblyName(string assemblyName, string? projectDir)
+    {
+        if (string.IsNullOrWhiteSpace(assemblyName))
+            return null;
+
+        var name = assemblyName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+            ? assemblyName[..^4]
+            : assemblyName;
+
+        var searchDirs = new List<string>();
+        var sdkRefDirs = GetSdkRefDirectories();
+        searchDirs.AddRange(sdkRefDirs);
+
+        if (!string.IsNullOrWhiteSpace(projectDir))
+        {
+            foreach (var config in new[] { "Debug", "Release" })
+            {
+                foreach (var tfm in new[] { "net10.0", "net9.0", "net8.0", "net7.0", "net6.0" })
+                {
+                    var outDir = Path.Combine(projectDir, "bin", config, tfm);
+                    if (Directory.Exists(outDir))
+                        searchDirs.Add(outDir);
+                }
+            }
+        }
+
+        foreach (var dir in searchDirs)
+        {
+            var candidate = Path.Combine(dir, name + ".dll");
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        return null;
+    }
+
+    private static List<string> GetSdkRefDirectories()
+    {
+        var dirs = new List<string>();
+        var dotnetRoots = new[]
+        {
+            Environment.GetEnvironmentVariable("DOTNET_ROOT"),
+            Environment.GetEnvironmentVariable("DOTNET_ROOT(x86)"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+        };
+
+        foreach (var root in dotnetRoots)
+        {
+            if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root)) continue;
+            foreach (var pack in new[] { "Microsoft.NETCore.App.Ref", "Microsoft.WindowsDesktop.App.Ref" })
+            {
+                var packDir = Path.Combine(root, "packs", pack);
+                if (!Directory.Exists(packDir)) continue;
+                try
+                {
+                    var newest = Directory.GetDirectories(packDir)
+                        .OrderByDescending(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+                        .FirstOrDefault();
+                    if (newest is null) continue;
+                    foreach (var tfm in new[] { "net10.0", "net9.0", "net8.0", "net7.0", "net6.0" })
+                    {
+                        var refDir = Path.Combine(newest, "ref", tfm);
+                        if (Directory.Exists(refDir)) { dirs.Add(refDir); break; }
+                    }
+                }
+                catch { }
+            }
+        }
+
+        return dirs;
+    }
+
+    /// <summary>
+    /// Try to resolve a COM reference to its interop assembly.
+    /// Searches project obj/ and bin/ directories, typical interop locations.
+    /// </summary>
+    private static string? ResolveComReference(ComReferenceItem comRef, string? projectDir)
+    {
+        var nameVariants = new List<string> { comRef.Include };
+        if (!comRef.Include.EndsWith("Lib", StringComparison.OrdinalIgnoreCase))
+            nameVariants.Add(comRef.Include + "Lib");
+        nameVariants.Add("Interop." + comRef.Include);
+        nameVariants.Add(comRef.Include + ".Interop");
+
+        foreach (var dir in EnumeratePossibleInteropDirs(projectDir))
+        {
+            foreach (var variant in nameVariants)
+            {
+                var dll = Path.Combine(dir, variant + ".dll");
+                if (File.Exists(dll)) return dll;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnumeratePossibleInteropDirs(string? projectDir)
+    {
+        if (!string.IsNullOrWhiteSpace(projectDir))
+        {
+            foreach (var config in new[] { "Debug", "Release" })
+            {
+                foreach (var tfm in new[] { "net10.0", "net9.0", "net8.0", "net7.0", "net6.0" })
+                {
+                    yield return Path.Combine(projectDir, "bin", config, tfm);
+                    yield return Path.Combine(projectDir, "obj", config, tfm);
+                    yield return Path.Combine(projectDir, "obj", config, tfm, "Interop");
+                    yield return Path.Combine(projectDir, "obj", config, tfm, "TEMP");
+                }
+            }
+        }
+
+        var temp = Path.GetTempPath();
+        if (!string.IsNullOrWhiteSpace(temp))
+            yield return temp;
     }
 
     // ── XAML stub generation ────────────────────────────────────────────────

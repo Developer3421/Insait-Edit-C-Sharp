@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -282,6 +284,21 @@ public sealed class InlineDiagnosticService : IDisposable
         var build = RoslynProjectFactory.CreateBuild(_projectDir, _refs, filePath, sourceCode);
         var sol = _workspace.CurrentSolution.AddProject(build.ProjectInfo);
 
+        // Add .editorconfig files as analyzer config documents
+        foreach (var ecPath in build.EditorConfigPaths)
+        {
+            try
+            {
+                var sourceText = SourceText.From(File.ReadAllText(ecPath), Encoding.UTF8);
+                sol = sol.AddAnalyzerConfigDocument(
+                    DocumentId.CreateNewId(build.ProjectInfo.Id),
+                    name: ".editorconfig",
+                    text: sourceText,
+                    filePath: ecPath);
+            }
+            catch { }
+        }
+
         _workspace.TryApplyChanges(sol);
 
         _currentBuild    = build;
@@ -315,8 +332,9 @@ public sealed class InlineDiagnosticService : IDisposable
         if (analyzers.Length == 0)
             return diagnostics;
 
+        var additionalTexts = GetProjectAdditionalTexts(project);
         var options = new CompilationWithAnalyzersOptions(
-            new AnalyzerOptions(ImmutableArray<AdditionalText>.Empty),
+            new AnalyzerOptions(additionalTexts),
             onAnalyzerException: null,
             concurrentAnalysis: true,
             logAnalyzerExecutionTime: false,
@@ -347,6 +365,58 @@ public sealed class InlineDiagnosticService : IDisposable
             })
             .Select(static g => g.First())
             .ToList();
+    }
+
+    /// <summary>
+    /// Collect additional texts from the project's additional documents so
+    /// analyzers can read them (fixes false positives when analyzers depend
+    /// on <AdditionalFile> contents like .editorconfig or custom config).
+    /// </summary>
+    private static ImmutableArray<AdditionalText> GetProjectAdditionalTexts(Project project)
+    {
+        try
+        {
+            var docs = project.AdditionalDocuments?.ToList();
+            if (docs is null || docs.Count == 0)
+                return ImmutableArray<AdditionalText>.Empty;
+
+            var texts = new List<AdditionalText>(docs.Count);
+            foreach (var doc in docs)
+            {
+                try
+                {
+                    var sourceText = doc.GetTextAsync(CancellationToken.None)
+                        .GetAwaiter().GetResult();
+                    if (sourceText is not null)
+                        texts.Add(new CustomAdditionalText(doc.FilePath ?? doc.Name, sourceText));
+                }
+                catch { }
+            }
+
+            return texts.ToImmutableArray();
+        }
+        catch
+        {
+            return ImmutableArray<AdditionalText>.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Minimal <see cref="AdditionalText"/> implementation wrapping a path and source text.
+    /// </summary>
+    private sealed class CustomAdditionalText : AdditionalText
+    {
+        private readonly string _path;
+        private readonly SourceText _text;
+
+        public CustomAdditionalText(string path, SourceText text)
+        {
+            _path = path;
+            _text = text;
+        }
+
+        public override string Path => _path;
+        public override SourceText GetText(CancellationToken cancellationToken = default) => _text;
     }
 
     private static IEnumerable<DiagnosticAnalyzer> SafeGetAnalyzers(AnalyzerReference reference, string language)

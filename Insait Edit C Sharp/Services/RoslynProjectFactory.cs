@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
@@ -19,19 +21,22 @@ internal sealed class RoslynProjectBuild
     public IReadOnlyDictionary<string, DocumentId> DocumentIds { get; }
     public IReadOnlySet<string> UserSourceFiles { get; }
     public bool HasProjectMetadataReferences { get; }
+    public IReadOnlyList<string> EditorConfigPaths { get; }
 
     public RoslynProjectBuild(
         ProjectInfo projectInfo,
         DocumentId activeDocumentId,
         IReadOnlyDictionary<string, DocumentId> documentIds,
         IReadOnlySet<string> userSourceFiles,
-        bool hasProjectMetadataReferences)
+        bool hasProjectMetadataReferences,
+        IReadOnlyList<string> editorConfigPaths)
     {
         ProjectInfo = projectInfo;
         ActiveDocumentId = activeDocumentId;
         DocumentIds = documentIds;
         UserSourceFiles = userSourceFiles;
         HasProjectMetadataReferences = hasProjectMetadataReferences;
+        EditorConfigPaths = editorConfigPaths;
     }
 
     public bool ShouldIncludeDiagnostic(Diagnostic diagnostic)
@@ -66,6 +71,41 @@ internal static class RoslynProjectFactory
         @"\b(?:public|private|protected|internal|protected\s+internal|private\s+protected)?\s*(?:static\s+)?(?:partial\s+)?void\s+InitializeComponent\s*\(",
         RegexOptions.Compiled);
 
+    // Regex to extract `global using <namespace>;` directives from source text.
+    private static readonly Regex GlobalUsingRegex = new(
+        @"^\s*global\s+using\s+(?<ns>[^;]+)\s*;",
+        RegexOptions.Multiline | RegexOptions.Compiled);
+
+    /// <summary>
+    /// Default implicit usings for Microsoft.NET.Sdk (non-Web) projects per TFM.
+    /// </summary>
+    private static readonly IReadOnlySet<string> DefaultImplicitUsings = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "System",
+        "System.Collections.Generic",
+        "System.IO",
+        "System.Linq",
+        "System.Net.Http",
+        "System.Threading",
+        "System.Threading.Tasks",
+    };
+
+    /// <summary>
+    /// Additional implicit usings for web (Microsoft.NET.Sdk.Web) projects.
+    /// </summary>
+    private static readonly IReadOnlySet<string> WebImplicitUsings = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "System.Net.Http.Json",
+        "Microsoft.AspNetCore.Builder",
+        "Microsoft.AspNetCore.Hosting",
+        "Microsoft.AspNetCore.Http",
+        "Microsoft.AspNetCore.Routing",
+        "Microsoft.Extensions.Configuration",
+        "Microsoft.Extensions.DependencyInjection",
+        "Microsoft.Extensions.Hosting",
+        "Microsoft.Extensions.Logging",
+    };
+
     public static RoslynProjectBuild CreateBuild(
         string? projectContextPath,
         IReadOnlyCollection<MetadataReference> baseReferences,
@@ -86,7 +126,7 @@ internal static class RoslynProjectFactory
         // Parse project item types from .csproj (AdditionalFiles, Analyzer, Reference, etc.)
         var projectItems = !string.IsNullOrWhiteSpace(projectFilePath)
             ? ParseProjectItems(projectFilePath)
-            : new ParsedProjectItems(Array.Empty<string>(), Array.Empty<string>(), Array.Empty<(string, string?)>());
+            : new ParsedProjectItems(Array.Empty<string>(), Array.Empty<string>(), Array.Empty<ReferenceInfo>(), Array.Empty<ComReferenceInfo>(), Array.Empty<LinkedFileInfo>(), Array.Empty<string>());
 
         // Add <AdditionalFiles> items from .csproj to the additional files list
         foreach (var af in projectItems.AdditionalFiles)
@@ -97,13 +137,84 @@ internal static class RoslynProjectFactory
         }
 
         // Resolve <Reference> items with HintPath as metadata references
-        foreach (var (include, hintPath) in projectItems.References)
+        foreach (var reference in projectItems.References)
         {
-            if (string.IsNullOrWhiteSpace(hintPath)) continue;
-            var fullPath = Path.GetFullPath(Path.Combine(projectDir!, hintPath));
-            if (File.Exists(fullPath))
+            var fullPath = !string.IsNullOrWhiteSpace(reference.HintPath)
+                ? Path.GetFullPath(Path.Combine(projectDir!, reference.HintPath))
+                : null;
+
+            if (string.IsNullOrWhiteSpace(fullPath) || !File.Exists(fullPath))
             {
-                try { metadataReferences.Add(MetadataReference.CreateFromFile(fullPath)); }
+                // Try resolving by assembly name from SDK/runtime references
+                fullPath = ResolveReferenceByAssemblyName(fullPath ?? reference.Include, projectDir);
+            }
+
+            if (string.IsNullOrWhiteSpace(fullPath) || !File.Exists(fullPath))
+                continue;
+
+            try
+            {
+                var properties = string.IsNullOrWhiteSpace(reference.Aliases)
+                    ? default(MetadataReferenceProperties)
+                    : new MetadataReferenceProperties(
+                        aliases: reference.Aliases
+                            .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(static a => a.Trim())
+                            .Where(static a => a.Length > 0)
+                            .ToImmutableArray());
+
+                metadataReferences.Add(MetadataReference.CreateFromFile(fullPath, properties));
+            }
+            catch { }
+        }
+
+        // ── Shared Projects (.shproj) ──
+        foreach (var shprojRel in projectItems.SharedProjectImports)
+        {
+            var shprojPath = Path.GetFullPath(Path.Combine(projectDir!, shprojRel));
+            if (!File.Exists(shprojPath)) continue;
+            try
+            {
+                var shprojDoc = XDocument.Load(shprojPath);
+                var import = shprojDoc.Descendants()
+                    .FirstOrDefault(e => e.Name.LocalName == "Import");
+                var projitemsRel = import?.Attribute("Project")?.Value;
+                if (string.IsNullOrWhiteSpace(projitemsRel)) continue;
+
+                var projitemsPath = Path.GetFullPath(Path.Combine(
+                    Path.GetDirectoryName(shprojPath)!, projitemsRel));
+                if (!File.Exists(projitemsPath)) continue;
+
+                var itemsDoc = XDocument.Load(projitemsPath);
+                foreach (var compile in itemsDoc.Descendants()
+                    .Where(e => e.Name.LocalName == "Compile"))
+                {
+                    var include = compile.Attribute("Include")?.Value;
+                    if (string.IsNullOrWhiteSpace(include)) continue;
+                    var fullPath = Path.GetFullPath(Path.Combine(
+                        Path.GetDirectoryName(projitemsPath)!, include));
+                    if (File.Exists(fullPath) && !sourceFiles.Contains(fullPath, PathComparer))
+                        sourceFiles.Add(fullPath);
+                }
+            }
+            catch { }
+        }
+
+        // ── Linked Files (files outside project dir via <Compile Link="...">) ──
+        foreach (var linkedFile in projectItems.LinkedFiles)
+        {
+            var fullPath = Path.GetFullPath(Path.Combine(projectDir!, linkedFile.Include));
+            if (File.Exists(fullPath) && !sourceFiles.Contains(fullPath, PathComparer))
+                sourceFiles.Add(fullPath);
+        }
+
+        // ── COM References ──
+        foreach (var comRef in projectItems.ComReferences)
+        {
+            var interopDll = ResolveComReference(comRef, projectDir);
+            if (interopDll is not null)
+            {
+                try { metadataReferences.Add(MetadataReference.CreateFromFile(interopDll)); }
                 catch { }
             }
         }
@@ -164,6 +275,16 @@ internal static class RoslynProjectFactory
 
         documents.AddRange(CreateSyntheticAvaloniaDocuments(projectId, additionalFiles, sourceTextsByPath));
 
+        // ── Global usings (ImplicitUsings + explicit global using directives) ──
+        var globalUsingDocument = CreateGlobalUsingsDocument(projectId, sourceTextsByPath, projectProperties);
+        if (globalUsingDocument is not null)
+            documents.Add(globalUsingDocument);
+
+        // ── Synthetic AssemblyInfo (SDK-generated attributes) ──
+        var assemblyInfoDoc = CreateAssemblyInfoDocument(projectId, projectProperties);
+        if (assemblyInfoDoc is not null)
+            documents.Add(assemblyInfoDoc);
+
         var parseOptions = CreateParseOptions(projectProperties, generatedEditorConfig);
         var compilationOptions = CreateCompilationOptions(projectProperties);
 
@@ -189,12 +310,18 @@ internal static class RoslynProjectFactory
             analyzerReferences: analyzerReferences,
             additionalDocuments: additionalDocuments);
 
+        var editorConfigPaths = new List<string>();
+        var editorConfigPath = FindEditorConfig(projectDir);
+        if (editorConfigPath is not null)
+            editorConfigPaths.Add(editorConfigPath);
+
         return new RoslynProjectBuild(
             projectInfo,
             activeDocumentId,
             documentIds,
             userSourceFiles,
-            metadataReferences.Count > baseReferences.Count);
+            metadataReferences.Count > baseReferences.Count,
+            editorConfigPaths);
     }
 
     public static string NormalizePath(string path)
@@ -399,6 +526,138 @@ internal static class RoslynProjectFactory
         return allReferences;
     }
 
+    /// <summary>
+    /// Attempt to resolve a reference by assembly name. Searches SDK ref pack
+    /// directories and the project's own output directory.
+    /// </summary>
+    private static string? ResolveReferenceByAssemblyName(string assemblyName, string? projectDir)
+    {
+        if (string.IsNullOrWhiteSpace(assemblyName))
+            return null;
+
+        // Strip extension if provided
+        var name = assemblyName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+            ? assemblyName[..^4]
+            : assemblyName;
+
+        var searchDirs = new List<string>();
+
+        // Add SDK ref pack directories
+        var sdkRefDirs = GetSdkReferenceDirectories();
+        searchDirs.AddRange(sdkRefDirs);
+
+        // Add project output directory
+        if (!string.IsNullOrWhiteSpace(projectDir))
+        {
+            foreach (var config in new[] { "Debug", "Release" })
+            {
+                foreach (var tfm in new[] { "net10.0", "net9.0", "net8.0", "net7.0", "net6.0" })
+                {
+                    var outDir = Path.Combine(projectDir, "bin", config, tfm);
+                    if (Directory.Exists(outDir))
+                        searchDirs.Add(outDir);
+                }
+            }
+        }
+
+        foreach (var dir in searchDirs)
+        {
+            var candidate = Path.Combine(dir, name + ".dll");
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Try to resolve a COM reference to its interop assembly.
+    /// Searches: project obj/ and bin/ directories, typical interop locations.
+    /// </summary>
+    private static string? ResolveComReference(ComReferenceInfo comRef, string? projectDir)
+    {
+        var searchPatterns = new List<string>();
+
+        // Common interop DLL naming conventions
+        var nameVariants = new List<string> { comRef.Include };
+        if (!comRef.Include.EndsWith("Lib", StringComparison.OrdinalIgnoreCase))
+            nameVariants.Add(comRef.Include + "Lib");
+        nameVariants.Add("Interop." + comRef.Include);
+        nameVariants.Add(comRef.Include + ".Interop");
+
+        foreach (var dir in EnumeratePossibleInteropDirs(projectDir))
+        {
+            foreach (var variant in nameVariants)
+            {
+                var dll = Path.Combine(dir, variant + ".dll");
+                if (File.Exists(dll)) return dll;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnumeratePossibleInteropDirs(string? projectDir)
+    {
+        // Project obj/ and bin/ directories
+        if (!string.IsNullOrWhiteSpace(projectDir))
+        {
+            foreach (var config in new[] { "Debug", "Release" })
+            {
+                foreach (var tfm in new[] { "net10.0", "net9.0", "net8.0", "net7.0", "net6.0" })
+                {
+                    yield return Path.Combine(projectDir, "bin", config, tfm);
+                    yield return Path.Combine(projectDir, "obj", config, tfm);
+                    yield return Path.Combine(projectDir, "obj", config, tfm, "Interop");
+                    yield return Path.Combine(projectDir, "obj", config, tfm, "TEMP");
+                }
+            }
+        }
+
+        // User TEMP (where TlbImp sometimes writes)
+        var temp = Path.GetTempPath();
+        if (!string.IsNullOrWhiteSpace(temp))
+            yield return temp;
+    }
+
+    private static List<string> GetSdkReferenceDirectories()
+    {
+        var dirs = new List<string>();
+        var dotnetRoots = new[]
+        {
+            Environment.GetEnvironmentVariable("DOTNET_ROOT"),
+            Environment.GetEnvironmentVariable("DOTNET_ROOT(x86)"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+        };
+
+        foreach (var root in dotnetRoots)
+        {
+            if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root)) continue;
+
+            foreach (var pack in new[] { "Microsoft.NETCore.App.Ref", "Microsoft.WindowsDesktop.App.Ref" })
+            {
+                var packDir = Path.Combine(root, "packs", pack);
+                if (!Directory.Exists(packDir)) continue;
+                try
+                {
+                    var newest = Directory.GetDirectories(packDir)
+                        .OrderByDescending(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+                        .FirstOrDefault();
+                    if (newest is null) continue;
+                    foreach (var tfm in new[] { "net10.0", "net9.0", "net8.0", "net7.0", "net6.0" })
+                    {
+                        var refDir = Path.Combine(newest, "ref", tfm);
+                        if (Directory.Exists(refDir)) { dirs.Add(refDir); break; }
+                    }
+                }
+                catch { }
+            }
+        }
+
+        return dirs;
+    }
+
     private static List<AnalyzerReference> ResolveAnalyzerReferences(string? projectFilePath, ParsedProjectItems projectItems)
     {
         var references = new List<AnalyzerReference>();
@@ -496,19 +755,32 @@ internal static class RoslynProjectFactory
 
     // ── Project item types (parsed from .csproj ItemGroup elements) ──
 
+    private sealed record ReferenceInfo(string Include, string? HintPath, string? Aliases);
+
+    private sealed record ComReferenceInfo(
+        string Include, string? Guid, int? VersionMajor, int? VersionMinor, int? Lcid, string? WrapperTool);
+
+    private sealed record LinkedFileInfo(string Include, string? Link);
+
     private sealed record ParsedProjectItems(
         IReadOnlyList<string> AdditionalFiles,
         IReadOnlyList<string> AnalyzerPaths,
-        IReadOnlyList<(string Include, string? HintPath)> References);
+        IReadOnlyList<ReferenceInfo> References,
+        IReadOnlyList<ComReferenceInfo> ComReferences,
+        IReadOnlyList<LinkedFileInfo> LinkedFiles,
+        IReadOnlyList<string> SharedProjectImports);
 
     private static ParsedProjectItems ParseProjectItems(string csprojPath)
     {
         var additionalFiles = new List<string>();
         var analyzerPaths = new List<string>();
-        var references = new List<(string, string?)>();
+        var references = new List<ReferenceInfo>();
+        var comReferences = new List<ComReferenceInfo>();
+        var linkedFiles = new List<LinkedFileInfo>();
+        var sharedProjectImports = new List<string>();
 
         if (!File.Exists(csprojPath))
-            return new ParsedProjectItems(additionalFiles, analyzerPaths, references);
+            return new ParsedProjectItems(additionalFiles, analyzerPaths, references, comReferences, linkedFiles, sharedProjectImports);
 
         try
         {
@@ -537,9 +809,47 @@ internal static class RoslynProjectFactory
                         if (string.IsNullOrWhiteSpace(include)) break;
                         var hintPath = item.Elements()
                             .FirstOrDefault(e => e.Name.LocalName == "HintPath")?.Value;
-                        references.Add((include, hintPath));
+                        var aliases = item.Attribute("Aliases")?.Value;
+                        references.Add(new ReferenceInfo(include, hintPath, aliases));
                         break;
                     }
+                    case "COMReference":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (string.IsNullOrWhiteSpace(include)) break;
+                        var guid = item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "Guid")?.Value;
+                        var vmaj = TryParseInt(item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "VersionMajor")?.Value);
+                        var vmin = TryParseInt(item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "VersionMinor")?.Value);
+                        var lcid = TryParseInt(item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "Lcid")?.Value);
+                        var wrapper = item.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "WrapperTool")?.Value;
+                        comReferences.Add(new ComReferenceInfo(include, guid, vmaj, vmin, lcid, wrapper));
+                        break;
+                    }
+                    case "Compile":
+                    {
+                        var include = item.Attribute("Include")?.Value;
+                        if (string.IsNullOrWhiteSpace(include)) break;
+                        var link = item.Element(item.Name.Namespace + "Link")?.Value
+                                   ?? item.Attribute("Link")?.Value;
+                        linkedFiles.Add(new LinkedFileInfo(include, link));
+                        break;
+                    }
+                }
+            }
+
+            // Parse <Import> elements to find shared project references (.shproj)
+            foreach (var import in doc.Descendants().Where(e => e.Name.LocalName == "Import"))
+            {
+                var project = import.Attribute("Project")?.Value;
+                if (!string.IsNullOrWhiteSpace(project) &&
+                    project.EndsWith(".shproj", StringComparison.OrdinalIgnoreCase))
+                {
+                    sharedProjectImports.Add(project);
                 }
             }
         }
@@ -547,8 +857,11 @@ internal static class RoslynProjectFactory
         {
         }
 
-        return new ParsedProjectItems(additionalFiles, analyzerPaths, references);
+        return new ParsedProjectItems(additionalFiles, analyzerPaths, references, comReferences, linkedFiles, sharedProjectImports);
     }
+
+    private static int? TryParseInt(string? s)
+        => int.TryParse(s, out var v) ? v : null;
 
     private static string GetNuGetGlobalCacheDirectory()
     {
@@ -627,6 +940,8 @@ internal static class RoslynProjectFactory
                 properties.CheckForOverflowUnderflow = GetProperty(xElements, "CheckForOverflowUnderflow") ?? properties.CheckForOverflowUnderflow;
                 properties.Deterministic = GetProperty(xElements, "Deterministic") ?? properties.Deterministic;
                 properties.Optimize = GetProperty(xElements, "Optimize") ?? properties.Optimize;
+                properties.ImplicitUsings = GetProperty(xElements, "ImplicitUsings") ?? properties.ImplicitUsings;
+                properties.TargetFrameworks = GetProperty(xElements, "TargetFrameworks") ?? properties.TargetFrameworks;
             }
             catch
             {
@@ -640,8 +955,20 @@ internal static class RoslynProjectFactory
         if (evaluatedProperties.TryGetValue("TargetFramework", out var targetFramework) && !string.IsNullOrWhiteSpace(targetFramework))
             properties.TargetFramework = targetFramework;
 
+        if (evaluatedProperties.TryGetValue("TargetFrameworks", out var targetFrameworks) && !string.IsNullOrWhiteSpace(targetFrameworks))
+            properties.TargetFrameworks = targetFrameworks;
+
         if (evaluatedProperties.TryGetValue("DefineConstants", out var defineConstants) && !string.IsNullOrWhiteSpace(defineConstants))
             properties.DefineConstants = defineConstants;
+
+        if (evaluatedProperties.TryGetValue("ImplicitUsings", out var implicitUsings) && !string.IsNullOrWhiteSpace(implicitUsings))
+            properties.ImplicitUsings = implicitUsings;
+
+        if (evaluatedProperties.TryGetValue("Nullable", out var nullable) && !string.IsNullOrWhiteSpace(nullable))
+            properties.Nullable = nullable;
+
+        if (evaluatedProperties.TryGetValue("LangVersion", out var langVersion) && !string.IsNullOrWhiteSpace(langVersion))
+            properties.LangVersion = langVersion;
 
         if (string.IsNullOrWhiteSpace(properties.RootNamespace) && !string.IsNullOrWhiteSpace(properties.AssemblyName))
             properties.RootNamespace = SanitizeNamespace(properties.AssemblyName);
@@ -887,6 +1214,95 @@ internal static class RoslynProjectFactory
         }
     }
 
+    /// <summary>
+    /// Resolves the effective target framework from <c>TargetFramework</c> or
+    /// <c>TargetFrameworks</c> (multi-targeting). Returns the first entry.
+    /// </summary>
+    private static string? ResolveTargetFramework(ProjectProperties properties)
+    {
+        if (!string.IsNullOrWhiteSpace(properties.TargetFramework))
+            return properties.TargetFramework;
+
+        if (!string.IsNullOrWhiteSpace(properties.TargetFrameworks))
+        {
+            var tfms = properties.TargetFrameworks.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return tfms.Select(static t => t.Trim()).FirstOrDefault(static t => !string.IsNullOrWhiteSpace(t));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Creates a synthetic <c>AssemblyInfo.g.cs</c> document with common assembly-level
+    /// attributes that the .NET SDK normally generates during build. Without this,
+    /// analyzers may report false positives (e.g. CS0114 on types with assembly attributes).
+    /// Returns <c>null</c> if the project name is unavailable.
+    /// </summary>
+    private static DocumentInfo? CreateAssemblyInfoDocument(ProjectId projectId, ProjectProperties properties)
+    {
+        var projectName = properties.AssemblyName ?? properties.ProjectName;
+        if (string.IsNullOrWhiteSpace(projectName))
+            return null;
+
+        var guid = GuidFromString(projectName);
+        var tfm = ResolveTargetFramework(properties) ?? "net10.0";
+        var config = "Debug";
+        var source = $@"// <auto-generated />
+using System.Reflection;
+using System.Runtime.InteropServices;
+
+[assembly: AssemblyVersion(""1.0.0.0"")]
+[assembly: AssemblyFileVersion(""1.0.0.0"")]
+[assembly: AssemblyCompany("""")]
+[assembly: AssemblyConfiguration(""{config}"")]
+[assembly: AssemblyCopyright("""")]
+[assembly: AssemblyDescription("""")]
+[assembly: AssemblyProduct(""{projectName}"")]
+[assembly: AssemblyTitle(""{projectName}"")]
+[assembly: AssemblyTrademark("""")]
+[assembly: ComVisible(false)]
+[assembly: Guid(""{guid}"")]
+";
+
+        return DocumentInfo.Create(
+            DocumentId.CreateNewId(projectId),
+            name: "AssemblyInfo.g.cs",
+            loader: TextLoader.From(TextAndVersion.Create(SourceText.From(source, Encoding.UTF8), VersionStamp.Create())),
+            filePath: Path.Combine(Path.GetTempPath(), "RoslynAssemblyInfo.g.cs"));
+    }
+
+    private static string GuidFromString(string input)
+    {
+        using var md5 = System.Security.Cryptography.MD5.Create();
+        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+        return new Guid(hash.Take(16).ToArray()).ToString("D");
+    }
+
+    /// <summary>
+    /// Finds the closest <c>.editorconfig</c> file starting from the project directory
+    /// and walking up. Returns <c>null</c> if none found.
+    /// </summary>
+    private static string? FindEditorConfig(string? projectDir)
+    {
+        if (string.IsNullOrWhiteSpace(projectDir) || !Directory.Exists(projectDir))
+            return null;
+
+        var dir = Path.GetFullPath(projectDir);
+        while (dir is not null)
+        {
+            var candidate = Path.Combine(dir, ".editorconfig");
+            if (File.Exists(candidate))
+                return candidate;
+
+            var parent = Path.GetDirectoryName(dir);
+            if (string.Equals(dir, parent, StringComparison.OrdinalIgnoreCase))
+                break;
+            dir = parent;
+        }
+
+        return null;
+    }
+
     private static string SanitizeNamespace(string value)
     {
         var chars = value.Select(static ch => char.IsLetterOrDigit(ch) || ch == '_' || ch == '.' ? ch : '_').ToArray();
@@ -895,6 +1311,63 @@ internal static class RoslynProjectFactory
             return "RoslynLiveProject";
 
         return char.IsDigit(sanitized[0]) ? "_" + sanitized : sanitized;
+    }
+
+    /// <summary>
+    /// Creates a synthetic source document containing all effective global usings:
+    ///   1. <c>global using</c> directives extracted from every source file in the project.
+    ///   2. Standard implicit usings if <c>&lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;</c> is set.
+    ///
+    /// Returns <c>null</c> when there are no global usings to add.
+    /// </summary>
+    private static DocumentInfo? CreateGlobalUsingsDocument(
+        ProjectId projectId,
+        IReadOnlyDictionary<string, string> sourceTextsByPath,
+        ProjectProperties properties)
+    {
+        var usings = new HashSet<string>(StringComparer.Ordinal);
+        var isImplicitUsingsEnabled = string.Equals(properties.ImplicitUsings, "enable", StringComparison.OrdinalIgnoreCase);
+        var isWebSdk = properties.TargetFramework?.Contains("aspnet", StringComparison.OrdinalIgnoreCase) == true
+                       || properties.OutputType == "Web";
+
+        // 1. Collect explicit `global using` directives from all source files
+        foreach (var text in sourceTextsByPath.Values)
+        {
+            foreach (Match match in GlobalUsingRegex.Matches(text))
+            {
+                var ns = match.Groups["ns"].Value.Trim();
+                if (!string.IsNullOrWhiteSpace(ns))
+                    usings.Add(ns);
+            }
+        }
+
+        // 2. Add implicit usings if enabled
+        if (isImplicitUsingsEnabled)
+        {
+            foreach (var ns in DefaultImplicitUsings)
+                usings.Add(ns);
+
+            if (isWebSdk)
+            {
+                foreach (var ns in WebImplicitUsings)
+                    usings.Add(ns);
+            }
+        }
+
+        if (usings.Count == 0)
+            return null;
+
+        var sb = new StringBuilder();
+        sb.AppendLine("// <auto-generated /> — Global Usings");
+        foreach (var ns in usings.OrderBy(static n => n, StringComparer.Ordinal))
+            sb.Append("global using ").Append(ns).AppendLine(";");
+
+        var sourceText = SourceText.From(sb.ToString(), Encoding.UTF8);
+        return DocumentInfo.Create(
+            DocumentId.CreateNewId(projectId),
+            name: "GlobalUsings.g.cs",
+            loader: TextLoader.From(TextAndVersion.Create(sourceText, VersionStamp.Create())),
+            filePath: Path.Combine(Path.GetTempPath(), "RoslynGlobalUsings.g.cs"));
     }
 
     private sealed class ProjectProperties
@@ -908,6 +1381,7 @@ internal static class RoslynProjectFactory
         public string? OutputType { get; set; }
         public string? AllowUnsafe { get; set; }
         public string? TargetFramework { get; set; }
+        public string? TargetFrameworks { get; set; }
         public string? TreatWarningsAsErrors { get; set; }
         public string? WarningLevel { get; set; }
         public string? NoWarn { get; set; }
@@ -916,6 +1390,7 @@ internal static class RoslynProjectFactory
         public string? CheckForOverflowUnderflow { get; set; }
         public string? Deterministic { get; set; }
         public string? Optimize { get; set; }
+        public string? ImplicitUsings { get; set; }
     }
 }
 
