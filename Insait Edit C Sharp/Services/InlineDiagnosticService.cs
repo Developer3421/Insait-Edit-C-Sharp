@@ -133,9 +133,12 @@ public sealed class InlineDiagnosticService : IDisposable
                         return;
 
                     var resultSpans = new List<DiagnosticSpan>(syntaxResult.Diagnostics.Count);
+                    var seenDiag = new HashSet<(string code, int line, int col, string msg)>();
                     foreach (var fd in syntaxResult.Diagnostics)
                     {
                         if (ct.IsCancellationRequested) return;
+                        if (!seenDiag.Add((fd.Code, fd.Line, fd.Column, fd.Message)))
+                            continue;
                         resultSpans.Add(new DiagnosticSpan
                         {
                             StartOffset = fd.StartOffset,

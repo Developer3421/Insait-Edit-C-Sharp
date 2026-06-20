@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Insait_Edit_C_Sharp.Services;
+using Insait_Edit_C_Sharp.ToastNotifications;
 using System.IO;
 using System.Linq;
 
@@ -18,6 +19,9 @@ public partial class App : Application
     {
         // Load the default language dictionary from AXAML resources
         LocalizationService.Initialize();
+
+        // Initialize Windows Toast Notifications (registers AppUserModelID shortcut)
+        ToastNotificationService.Instance.Initialize();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

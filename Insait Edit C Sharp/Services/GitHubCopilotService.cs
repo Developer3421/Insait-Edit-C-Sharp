@@ -763,7 +763,7 @@ public static class GitHubCopilotService
             <x:String x:Key="Welcome.WindowLabel">Welcome Window</x:String>
             <x:String x:Key="Welcome.Title">Welcome to Insait Edit</x:String>
             <x:String x:Key="Welcome.Subtitle">C# IDE powered by Insait Code Editor</x:String>
-            <x:String x:Key="Welcome.Version">Version 1.0.0 Preview</x:String>
+            <x:String x:Key="Welcome.Version">Version 1.0.2 Preview</x:String>
             <x:String x:Key="Welcome.NewSolution">New Solution</x:String>
             <x:String x:Key="Welcome.NewSolutionDesc">Create a new .sln solution</x:String>
             <x:String x:Key="Welcome.NewProject">New Project</x:String>

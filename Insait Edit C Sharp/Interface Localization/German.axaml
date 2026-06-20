@@ -390,7 +390,7 @@
     <x:String x:Key="Welcome.WindowLabel">Willkommen-Fenster</x:String>
     <x:String x:Key="Welcome.Title">Willkommen bei Insait Edit</x:String>
     <x:String x:Key="Welcome.Subtitle">C# IDE mit Insait Code Editor</x:String>
-    <x:String x:Key="Welcome.Version">Version 1.0.1 Vorschau</x:String>
+    <x:String x:Key="Welcome.Version">Version 1.0.2 Vorschau</x:String>
     <x:String x:Key="Welcome.NewSolution">Neue Projektmappe</x:String>
     <x:String x:Key="Welcome.NewSolutionDesc">Neue .sln Projektmappe erstellen</x:String>
     <x:String x:Key="Welcome.NewProject">Neues Projekt</x:String>

@@ -389,7 +389,7 @@
     <x:String x:Key="Welcome.WindowLabel">Hoş Geldiniz Penceresi</x:String>
     <x:String x:Key="Welcome.Title">Insait Edit'e Hoş Geldiniz</x:String>
     <x:String x:Key="Welcome.Subtitle">Insait Code Editor tabanlı C# IDE</x:String>
-    <x:String x:Key="Welcome.Version">Sürüm 1.0.1 Önizleme</x:String>
+    <x:String x:Key="Welcome.Version">Sürüm 1.0.2 Önizleme</x:String>
     <x:String x:Key="Welcome.NewSolution">Yeni Çözüm</x:String>
     <x:String x:Key="Welcome.NewSolutionDesc">Yeni bir .sln çözümü oluştur</x:String>
     <x:String x:Key="Welcome.NewProject">Yeni Proje</x:String>

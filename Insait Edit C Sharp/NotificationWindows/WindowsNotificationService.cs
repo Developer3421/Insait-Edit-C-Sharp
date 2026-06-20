@@ -2,9 +2,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
 
 namespace NotificationWindows;
 
@@ -12,6 +9,37 @@ public static class WindowsNotificationService
 {
     private static bool _initialized;
     private const string AppId = "InsaitEdit.InsaitEditCSharp";
+
+    private const uint NIM_ADD = 0;
+    private const uint NIM_DELETE = 2;
+    private const uint NIF_INFO = 16;
+    private const uint NIF_GUID = 32;
+    [DllImport("shell32.dll", SetLastError = true)]
+    private static extern bool Shell_NotifyIcon(uint cmd, ref NOTIFYICONDATA data);
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct NOTIFYICONDATA
+    {
+        public int cbSize;
+        public nint hWnd;
+        public uint uID;
+        public uint uFlags;
+        public uint uCallbackMessage;
+        public nint hIcon;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string szTip;
+        public uint dwState;
+        public uint dwStateMask;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string szInfo;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string szInfoTitle;
+        public uint uTimeoutOrVersion;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string szInfoFlags;
+        public Guid guidItem;
+        public nint hBalloonIcon;
+    }
 
     public static void Initialize()
     {
@@ -24,7 +52,6 @@ public static class WindowsNotificationService
         }
         catch
         {
-            // Notifications unavailable — non-critical
         }
     }
 
@@ -75,24 +102,27 @@ public static class WindowsNotificationService
         {
             if (!_initialized) Initialize();
 
-            var builder = new StringBuilder();
-            builder.Append("<toast><visual><binding template='ToastGeneric'>");
-            builder.Append("<text>" + Escape(title) + "</text>");
-            builder.Append("<text>" + Escape(content) + "</text>");
-            builder.Append("</binding></visual></toast>");
+            var hWnd = Process.GetCurrentProcess().MainWindowHandle;
+            if (hWnd == nint.Zero) return;
 
-            var doc = new XmlDocument();
-            doc.LoadXml(builder.ToString());
+            var data = new NOTIFYICONDATA
+            {
+                cbSize = Marshal.SizeOf<NOTIFYICONDATA>(),
+                hWnd = hWnd,
+                uID = 0,
+                uFlags = NIF_INFO | NIF_GUID,
+                szInfo = content ?? "",
+                szInfoTitle = title ?? "",
+                szInfoFlags = "NIIF_INFO",
+                guidItem = Guid.NewGuid(),
+                uTimeoutOrVersion = 5000,
+                szTip = "Insait Edit",
+            };
 
-            var toast = new ToastNotification(doc);
-            ToastNotificationManager.CreateToastNotifier(AppId).Show(toast);
+            Shell_NotifyIcon(NIM_ADD, ref data);
         }
         catch
         {
-            // Silently fail — notifications are non-critical
         }
     }
-
-    private static string Escape(string s) =>
-        s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
 }

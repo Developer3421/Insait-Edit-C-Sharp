@@ -757,9 +757,13 @@ public partial class MainWindow : Window
             foreach (var r in toRemove)
                 _viewModel.Problems.Remove(r);
 
-            // Add new diagnostics
+            // Deduplicate incoming spans (same code + line + column + message)
+            var seen = new HashSet<(string code, int line, int col, string msg)>();
             foreach (var span in e.Diagnostics)
             {
+                if (!seen.Add((span.Code, span.Line, span.Column, span.Message)))
+                    continue;
+
                 _viewModel.Problems.Add(new DiagnosticItem
                 {
                     FilePath = filePath,

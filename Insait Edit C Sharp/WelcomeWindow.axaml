@@ -226,7 +226,7 @@
                                         Padding="10,5" HorizontalAlignment="Left"
                                         BorderBrush="#30DCC4FF" BorderThickness="1">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                         <TextBlock Name="WelcomeVersionText" Text="Version 1.0.1 Preview"
+                                         <TextBlock Name="WelcomeVersionText" Text="Version 1.0.2 Preview"
                                                     FontSize="11" Foreground="{StaticResource AccentPurpleBrush}"
                                                     VerticalAlignment="Center"/>
                                     </StackPanel>

@@ -69,6 +69,7 @@ public class CodeAnalysisService
             targets.Count, targets.Count);
 
         results = results
+            .DistinctBy(d => (d.Code, d.FilePath, d.Line, d.Column, d.Message))
             .OrderBy(d => d.Severity == AppDiagnosticSeverity.Error ? 0
                        : d.Severity == AppDiagnosticSeverity.Warning ? 1 : 2)
             .ThenBy(d => d.FilePath)
@@ -106,6 +107,9 @@ public class CodeAnalysisService
                 result.CompilationDiagnostics.Length + result.AnalyzerDiagnostics.Count);
             mapped.AddRange(MapDiags(result.CompilationDiagnostics, result.HasProjectReferences));
             mapped.AddRange(MapDiags(result.AnalyzerDiagnostics, result.HasProjectReferences));
+            mapped = mapped
+                .DistinctBy(d => (d.Code, d.FilePath, d.Line, d.Column, d.Message))
+                .ToList();
             return mapped;
         }
         catch (OperationCanceledException) { throw; }
